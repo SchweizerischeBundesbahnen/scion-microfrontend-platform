@@ -1,0 +1,49 @@
+{
+  "name": "@scion/microfrontend-platform",
+  "version": "1.0.0-beta.1",
+  "description": "SCION Microfrontend Platform enables you to successfully implement a framework-agnostic microfrontend architecture using iframes. It provides you fundamental APIs for microfrontends to communicate with each other across origin, allows embedding microfrontends using a web component and enables routing between microfrontends. SCION Microfrontend Platform is a lightweight, web stack agnostic library that has no user-facing components and does not dictate any form of application structure.",
+  "license": "EPL-2.0",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/SchweizerischeBundesbahnen/microfrontend-platform",
+  "bugs": {
+    "url": "https://github.com/SchweizerischeBundesbahnen/microfrontend-platform/issues"
+  },
+  "author": {
+    "name": "SCION contributors"
+  },
+  "dependencies": {
+    "js-sha256": "0.9.0"
+  },
+  "peerDependencies": {
+    "rxjs": "^6.0.0",
+    "@scion/toolkit": "^9.0.0-beta.3 || ^9.0.0-rc.0 || ^9.0.0"
+  },
+  "keywords": [
+    "scion",
+    "microfrontend",
+    "micro-frontend",
+    "micro frontend",
+    "microfrontend platform",
+    "messaging",
+    "communication",
+    "routing",
+    "cross-origin",
+    "embedding",
+    "iframe",
+    "web component",
+    "webcomponent",
+    "web-component",
+    "typescript",
+    "javascript",
+    "framework-agnostic",
+    "intent",
+    "intention"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SchweizerischeBundesbahnen/microfrontend-platform.git"
+  }
+}

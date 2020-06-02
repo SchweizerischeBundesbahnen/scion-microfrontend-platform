@@ -1,0 +1,15 @@
+<header>
+  <span class="page-title" *ngIf="pageTitle; else logo">{{pageTitle}}</span>
+  <span class="chip focus-within e2e-focus-within" title="This document or its embedded web content has received focus" *ngIf="isFocusWithin">focus-within</span>
+  <span class="chip app-name e2e-console" title="Click to show the console" (click)="onConsoleToggle()">{{appSymbolicName}}</span>
+</header>
+
+<sci-viewport>
+  <router-outlet #outlet=outlet (activate)="onRouteActivate(outlet.activatedRoute)"></router-outlet>
+</sci-viewport>
+
+<app-console-panel *ngIf="isConsoleVisible" (close)="onConsoleToggle()"></app-console-panel>
+
+<ng-template #logo>
+  <img src="assets/scion-microfrontend-platform-banner.svg" alt="SCION Microfrontend Platform" class="banner">
+</ng-template>

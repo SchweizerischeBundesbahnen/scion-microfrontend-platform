@@ -1,0 +1,32 @@
+:host {
+  display: flex;
+  flex-direction: column;
+
+  > * {
+    flex: none;
+
+    &:not(:first-child) {
+      margin-top: .5em;
+    }
+  }
+
+  > form {
+    display: grid;
+    grid-template-columns: 1fr;
+
+    grid-auto-rows: min-content;
+    row-gap: .25em;
+  }
+
+  > output.subscribe-error {
+    border: 1px solid var(--sci-color-warn);
+    background-color: var(--sci-color-W100);
+    border-radius: 3px;
+    padding: 1em;
+  }
+
+  > sci-list.messages {
+    flex: auto;
+    min-height: 300px;
+  }
+}

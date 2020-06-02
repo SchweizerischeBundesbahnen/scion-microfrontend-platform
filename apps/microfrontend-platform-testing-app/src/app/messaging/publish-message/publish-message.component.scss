@@ -1,0 +1,43 @@
+@use 'sci-toolkit-styles' as sci-toolkit-styles;
+
+:host {
+  display: flex;
+  flex-direction: column;
+
+  > * {
+    flex: none;
+
+    &:not(:first-child) {
+      margin-top: .5em;
+    }
+  }
+
+  > form {
+    display: grid;
+    grid-auto-rows: min-content;
+    row-gap: .25em;
+
+    div.subscriber-badge {
+      display: flex;
+      margin: 2px 0 10px 0;
+      @include sci-toolkit-styles.chip(var(--sci-color-primary), var(--sci-color-P100), var(--sci-color-primary));
+      padding: .25em 1em;
+
+      > span.count {
+        margin-right: .25em;
+      }
+    }
+  }
+
+  > output.publish-error {
+    border: 1px solid var(--sci-color-warn);
+    background-color: var(--sci-color-W100);
+    border-radius: 3px;
+    padding: 1em;
+  }
+
+  > sci-list.replies {
+    flex: auto;
+    min-height: 300px;
+  }
+}

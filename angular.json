@@ -1,0 +1,169 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "@scion/microfrontend-platform": {
+      "projectType": "library",
+      "root": "projects/scion/microfrontend-platform",
+      "sourceRoot": "projects/scion/microfrontend-platform/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/scion/microfrontend-platform/tsconfig.lib.json",
+            "project": "projects/scion/microfrontend-platform/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/scion/microfrontend-platform/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/scion/microfrontend-platform/src/test.ts",
+            "tsConfig": "projects/scion/microfrontend-platform/tsconfig.spec.json",
+            "karmaConfig": "projects/scion/microfrontend-platform/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/scion/microfrontend-platform/tsconfig.lib.json",
+              "projects/scion/microfrontend-platform/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "@scion/microfrontend-platform.e2e": {
+      "projectType": "application",
+      "root": "projects/scion/microfrontend-platform.e2e",
+      "architect": {
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "projects/scion/microfrontend-platform.e2e/protractor.conf.js"
+          },
+          "configurations": {
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": "projects/scion/microfrontend-platform.e2e/tsconfig.json",
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "microfrontend-platform-testing-app": {
+      "projectType": "application",
+      "root": "apps/microfrontend-platform-testing-app",
+      "sourceRoot": "apps/microfrontend-platform-testing-app/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/microfrontend-platform-testing-app",
+            "index": "apps/microfrontend-platform-testing-app/src/index.html",
+            "main": "apps/microfrontend-platform-testing-app/src/main.ts",
+            "polyfills": "apps/microfrontend-platform-testing-app/src/polyfills.ts",
+            "tsConfig": "apps/microfrontend-platform-testing-app/tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              "apps/microfrontend-platform-testing-app/src/assets",
+              {
+                "glob": "favicon.ico",
+                "input": "docs/branding",
+                "output": "/"
+              },
+              {
+                "glob": "scion-microfrontend-platform-banner.svg",
+                "input": "docs/branding",
+                "output": "/assets"
+              }
+            ],
+            "styles": [
+              "apps/microfrontend-platform-testing-app/src/styles.scss"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "node_modules/@scion/toolkit.internal/widgets"
+              ]
+            },
+            "scripts": []
+          },
+          "configurations": {
+            "production-vercel": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/microfrontend-platform-testing-app/src/environments/environment.ts",
+                  "with": "apps/microfrontend-platform-testing-app/src/environments/environment.vercel.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "outputPath": "dist/microfrontend-platform-testing-app-vercel"
+            },
+            "production-localhost": {
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "outputPath": "dist/microfrontend-platform-testing-app-localhost"
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "microfrontend-platform-testing-app:build"
+          },
+          "configurations": {
+            "production-localhost": {
+              "browserTarget": "microfrontend-platform-testing-app:build:production-localhost"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "apps/microfrontend-platform-testing-app/tsconfig.app.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      },
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      }
+    }
+  },
+  "defaultProject": "@scion/microfrontend-platform"
+}

@@ -1,0 +1,39 @@
+@use 'sci-toolkit-styles' as sci-toolkit-styles;
+
+:host {
+  display: flex;
+  flex-direction: column;
+
+  > form {
+    flex: none;
+    display: flex;
+    margin-bottom: .25em;
+
+    > input.outlet-name {
+      flex: auto;
+      @include sci-toolkit-styles.input-field();
+    }
+
+    > button {
+      flex: none;
+      margin-left: .25em;
+    }
+  }
+
+  > sci-router-outlet {
+    flex: auto;
+    border: 1px solid var(--sci-color-P300);
+    border-radius: 3px;
+  }
+
+  > div.empty-note {
+    flex: none;
+    border: 1px solid var(--sci-color-P500);
+    background-color: var(--sci-color-P50);
+    color: var(--sci-color-P900);
+    text-align: center;
+    padding: .25em;
+    margin-top: .5em;
+    border-radius: .25em;
+  }
+}

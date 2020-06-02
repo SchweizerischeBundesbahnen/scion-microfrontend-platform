@@ -1,0 +1,61 @@
+@use 'sci-toolkit-styles' as sci-toolkit-styles;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 1em;
+
+  > header {
+    flex: none;
+    display: grid;
+    margin-bottom: 1.5em;
+    grid-template-columns: auto repeat(2, max-content);
+    align-items: start;
+    column-gap: .25em;
+
+    > span.page-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    > img.banner {
+      height: 35px;
+    }
+
+    > .chip.focus-within {
+      @include sci-toolkit-styles.chip(var(--sci-color-accent), null, var(--sci-color-accent));
+      padding: .25em 1.5em;
+      font-size: 1.1rem;
+    }
+
+    > .chip.app-name {
+      @include sci-toolkit-styles.chip(var(--sci-color-accent), var(--sci-color-A50), var(--sci-color-accent));
+      padding: .25em 1.5em;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  }
+
+  > sci-viewport {
+    flex: auto;
+
+    router-outlet {
+      position: absolute; // out of the document flow
+    }
+  }
+
+  > app-console-panel {
+    flex: none;
+  }
+
+  &:not(.top-window) img.banner {
+    visibility: hidden;
+  }
+}
+

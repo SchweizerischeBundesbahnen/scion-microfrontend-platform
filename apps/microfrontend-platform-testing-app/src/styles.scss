@@ -1,0 +1,16 @@
+@use 'sci-toolkit-theme';
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px; // defines 1rem as 14px
+}
+
+body {
+  font-family: Roboto, Arial, sans-serif;
+  color: var(--sci-color-foreground);
+  background-color: var(--sci-color-background);
+  margin: 0;
+}
