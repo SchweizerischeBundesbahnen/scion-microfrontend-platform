@@ -1,0 +1,225 @@
+name: Continuous Integration and Delivery
+on: push
+jobs:
+  install:
+    name: 'Installing NPM modules'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Caching NPM modules if necessary'
+        uses: actions/cache@v2
+        id: node-modules-cache
+        with:
+          path: ./node_modules
+          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm ci
+  lint:
+    name: 'Linting'
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Restoring NPM modules from cache'
+        uses: actions/cache@v2
+        with:
+          path: ./node_modules
+          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - run: npm run lint
+  build-platform:
+    name: 'Building Platform'
+    needs: install
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.root-package-json.outputs.version }}
+      version-dasherized: ${{ steps.root-package-json.outputs.version-dasherized }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Reading package.json version of project root'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/package-json@master
+        id: root-package-json
+        with:
+          path: package.json
+      - name: 'Reading package.json version of scion/microfrontend-platform'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/package-json@master
+        id: microfrontend-platform-package-json
+        with:
+          path: projects/scion/microfrontend-platform/package.json
+      - name: 'Asserting package.json versions to be equal'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/equality-checker@master
+        with:
+          values: |
+            ${{ steps.root-package-json.outputs.version }},
+            ${{ steps.microfrontend-platform-package-json.outputs.version }}
+      - name: 'Restoring NPM modules from cache'
+        uses: actions/cache@v2
+        with:
+          path: ./node_modules
+          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - name: 'Building @scion/microfrontend-platform'
+        run: npm run microfrontend-platform:build
+      - name: 'Building API Documentation (TypeDoc)'
+        run: npm run microfrontend-platform:typedoc
+      - name: 'Building Reference Documentation (Developer Guide)'
+        run: npm run microfrontend-platform:adoc -- -a revnumber=${{ steps.root-package-json.outputs.version }} -a revnumber-dasherized=${{ steps.root-package-json.outputs.version-dasherized }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist
+  build-apps:
+    name: 'Building Apps'
+    needs: build-platform
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app:
+          - microfrontend-platform-testing-app-vercel
+          - microfrontend-platform-testing-app-localhost
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Restoring NPM modules from cache'
+        uses: actions/cache@v2
+        with:
+          path: ./node_modules
+          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+      - run: npm run ${{ matrix.app }}:build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.app }}
+          path: dist/${{ matrix.app }}
+  test:
+    name: 'Unit Testing'
+    needs: build-platform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+      - name: 'Restoring NPM modules from cache'
+        uses: actions/cache@v2
+        with:
+          path: ./node_modules
+          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - run: npm run test:headless
+  e2e:
+    name: 'E2E Testing'
+    needs: [build-platform, build-apps]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        suite:
+          - activator
+          - context
+          - focus
+          - keyboardEvent
+          - manifest
+          - messaging
+          - preferredSize
+          - properties
+          - routing
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+      - uses: actions/download-artifact@v2
+        with:
+          name: microfrontend-platform-testing-app-localhost
+          path: dist/microfrontend-platform-testing-app-localhost
+      - name: 'Restoring NPM modules from cache'
+        uses: actions/cache@v2
+        with:
+          path: ./node_modules
+          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - run: npm run e2e:headless -- --suite ${{ matrix.suite }}
+  release-guard:
+    name: 'Should release?'
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - build-platform
+      - build-apps
+      - lint
+      - test
+      - e2e
+    runs-on: ubuntu-latest
+    outputs:
+      should-release: ${{ steps.tag-release-commit.outputs.is-release-commit }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'If release commit present, add release tag'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/tag-release-commit@master
+        id: tag-release-commit
+        with:
+          release-commit-message-pattern: 'release: v(.*)'
+          expected-version: ${{ needs.build-platform.outputs.version }}
+  release:
+    name: 'Releasing'
+    if: ${{ needs.release-guard.outputs.should-release == 'true' }}
+    needs: [release-guard, build-platform]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Downloading built artifacts (microfrontend-platform, documentation)'
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+      - name: 'Downloading built artifacts (testing-app)'
+        uses: actions/download-artifact@v2
+        with:
+          name: microfrontend-platform-testing-app-vercel
+          path: dist/microfrontend-platform-testing-app-vercel
+      - name: 'Restoring NPM modules from cache'
+        uses: actions/cache@v2
+        with:
+          path: ./node_modules
+          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - name: 'Deploying microfrontend-platform-testing-app to Vercel'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
+        with:
+          dist-folder: dist/microfrontend-platform-testing-app-vercel
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          org-id: ${{ secrets.VERCEL_ORG_ID }}
+          project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_TESTING_APP_PROJECT_ID }}
+          version: ${{ needs.build-platform.outputs.version }}
+          aliases: |
+            scion-microfrontend-platform-testing-app1-v%v.now.sh,
+            scion-microfrontend-platform-testing-app2-v%v.now.sh,
+            scion-microfrontend-platform-testing-app3-v%v.now.sh,
+            scion-microfrontend-platform-testing-app4-v%v.now.sh
+      - name: 'Deploying API Documentation (TypeDoc) to Vercel'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
+        with:
+          dist-folder: dist/microfrontend-platform-api
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          org-id: ${{ secrets.VERCEL_ORG_ID }}
+          project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_API_PROJECT_ID }}
+          version: ${{ needs.build-platform.outputs.version }}
+          aliases: |
+            scion-microfrontend-platform-api.now.sh,
+            scion-microfrontend-platform-api-v%v.now.sh
+      - name: 'Deploying Reference Documentation (Developer Guide) to Vercel'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
+        with:
+          dist-folder: dist/microfrontend-platform-developer-guide
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          org-id: ${{ secrets.VERCEL_ORG_ID }}
+          project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_DEVELOPER_GUIDE_PROJECT_ID }}
+          version: ${{ needs.build-platform.outputs.version }}
+          aliases: |
+            scion-microfrontend-platform-developer-guide.now.sh,
+            scion-microfrontend-platform-developer-guide-v%v.now.sh
+      - name: 'Publishing @scion/microfrontend-platform to NPM'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/npm-publish@master
+        with:
+          dist-folder: dist/scion/microfrontend-platform
+          npm-token: ${{ secrets.NPM_TOKEN }}
+          dry-run: true
+
