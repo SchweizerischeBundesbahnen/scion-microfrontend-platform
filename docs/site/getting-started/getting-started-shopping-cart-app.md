@@ -107,9 +107,9 @@ In this section, we will render the products added to the shopping cart in an un
    }
    ```
    > Lines to be added are preceded by the [+] mark.
-1. Allow the user to remove all items from the shopping cart.
+1. Next, allow the user to remove all items from the shopping cart.
         
-   Next, we add a button so that the user can remove all items from the shopping cart.
+   We add a button to the HTML template so that the user can remove all items from the shopping cart.
    
    Open the HTML template `shopping-cart.html` and add the button, as follows: 
    ```html
@@ -231,7 +231,7 @@ Like a regular microfrontend, an activator must connect to the platform host to 
 
 In this section, we will listen for messages published to the topic `shopping-cart/add-product` and put the message's payload into session storage. Like in the previous chapter, we use the `ShoppingCartService`.
 
-> Since an activator runs in a separate browsing context, the micro applications's microfrontends cannot directly access its state. Instead, an activator could put data, for example, into session storage, so that microfrontends of its micro application can access it. For more information, refer to chapter [Sharing State][link-developer-guide#activator:state-sharing] in the Developer Guide.
+> Since an activator runs in a separate browsing context, other microfrontends cannot access the state of the activator microfrontend. Instead, an activator could put data, for example, into session storage, so that microfrontends of its micro application can access it. For more information, refer to chapter [Sharing State][link-developer-guide#activator:state-sharing] in the Developer Guide.
   
 > Session storage is visible to applications running on the same protocol, domain, and port. Since this condition is met by all microfrontends of a micro application, session storage is the perfect place for sharing state among microfrontend instances of the same micro application.
 

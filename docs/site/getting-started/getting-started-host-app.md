@@ -76,7 +76,7 @@ In this section, we will embed the `products` and `shopping cart` microfrontends
      <button class="shopping-cart">Shopping Cart</button>
    </nav>
    ```
-1. Add two router outlets to the HTML template, as following:
+1. Add two router outlets to the HTML template, as follows:
    ```html
    <sci-router-outlet></sci-router-outlet>
    <sci-router-outlet name="SHOPPING-CART"></sci-router-outlet>
@@ -85,9 +85,8 @@ In this section, we will embed the `products` and `shopping cart` microfrontends
    
    > A router outlet is a placeholder that the platform dynamically fills based on the current router state. Using the router, you can instruct an outlet to embed a microfrontend. By giving an outlet a name, you can reference it as the routing target. If not naming an outlet, its name defaults to `primary`. The concept of the router outlet is inspired by the Angular routing mechanism. For more information, refer to the [Developer Guide][link-developer-guide#routing].
 1. Open the TypeScript file `host-controller.ts`.
-1. Navigate to the `products` microfrontend in the primary router outlet.
+1. Now, we want to route the primary router outlet to display the `products` microfrontend, as follows:
 
-   In the `init` method, look up the `OutletRouter` from the bean manager and navigate, as following: 
    ```ts
    public async init(): Promise<void> {
          // Start the platform
@@ -98,9 +97,11 @@ In this section, we will embed the `products` and `shopping cart` microfrontends
    }
    ```
    > Lines to be added are preceded by the [+] mark.
-1. Navigate to the `shopping cart` microfrontend when the user clicks the shopping cart button.
 
-   In the constructor, add a click listener to the button and invoke the method `onToggleShoppingCart`, as following:
+   The `OutletRouter` allows us to route the content of a `<sci-router-outlet>`. Since we do not specify a target outlet, navigation refers to the primary router outlet. We get the router via the platform's bean manager.
+1. Next, we want to display the `shopping cart` microfrontend when the user clicks the shopping cart button.
+
+   In the constructor, add a click listener to the shopping cart button and invoke the method `onToggleShoppingCart`, as follows:
    ```ts
    constructor() {
      document.querySelector('button.shopping-cart').addEventListener('click', () => this.onToggleShoppingCart());
@@ -117,7 +118,7 @@ In this section, we will embed the `products` and `shopping cart` microfrontends
    > Note: It would be even better to use the Intention API for showing a microfrontend, which, however, would go beyond the scope of this Getting Started Guide. For more information, refer to the [Developer Guide][link-developer-guide#routing-in-the-activator].
 1. Work around Parcel transpilation issue preventing web components from working.
 
-   Include the following adapter as the first import into `host-controller.ts` to make web component work for `ES5` transpiled code.
+   Include the following adapter as the first import into `host-controller.ts` to make web component work with `ES5` transpiled code.
 
    ```ts
    import '@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js';
@@ -159,7 +160,7 @@ Create the file `manifest.json` in the `src` folder, as follows:
 }
 ```
 
-The manifest must declare at least the human-readable name of the application. The name has no meaning for the platform itself but is used, for example, for the DevTools to list the apps.
+The manifest must declare at least the human-readable name of the application. The name has no meaning to the platform, but is used, for example, by the DevTools to list the micro applications.
 
 To learn more about the manifest, refer to the [Developer Guide][link-developer-guide#manifest].
 
