@@ -221,5 +221,4 @@ jobs:
         with:
           dist-folder: dist/scion/microfrontend-platform
           npm-token: ${{ secrets.NPM_TOKEN }}
-          dry-run: true
-
+          dry-run: false
