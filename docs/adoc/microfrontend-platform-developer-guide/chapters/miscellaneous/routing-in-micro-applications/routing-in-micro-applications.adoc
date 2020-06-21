@@ -1,0 +1,12 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:miscellaneous:routing-in-micro-applications]]
+== Routing in Micro Applications
+
+The platform recommends using hash-based routing over HTML 5 push-state routing in micro applications.
+
+When routing between microfrontends, the router outlet sets the iframe location to the URL of the routed microfrontend. When navigating between microfrontends of the same micro application, push-state routing would cause the micro-application to reload on every routing. As hash-based routing uses the fragment part (`#`) of the URL to simulate different routes, routing does not cause the user agent to load the application anew, resulting in better user experience.
+
+Refer to the documentation of the UI framework of the micro application on how to activate hash-based routing.
+

@@ -1,0 +1,88 @@
+[[chapter:message-interception]]
+== Intercepting Messages
+The platform provides a common mechanism to intercept messages or intents before their publication using interceptors.
+
+[.chapter-toc]
+****
+[.chapter-title]
+In this Chapter
+
+- <<chapter:message-interception:how-to-intercept-messages>>
+- <<chapter:message-interception:registering-interceptors>>
+- <<chapter:message-interception:filtering-messages-for-interception>>
+- <<chapter:message-interception:implementing-a-message-validator>>
+
+****
+'''
+
+[[chapter:message-interception:how-to-intercept-messages]]
+[discrete]
+=== How Intercepting Messages?
+An interceptor can reject or modify messages, allowing you to audit messages, or to perform schema validation to reject messages with an invalid payload. Multiple interceptors can be registered, forming a chain in which each interceptor is called one by one in registration order.
+
+[.text-center]
+image::interceptor-chain.svg[]
+
+An interceptor must implement the `intercept` method of the `MessageInterceptor` for intercepting messages sent to a topic. Intercepting intents is similar, just implement `IntentInterceptor` instead. For each message or intent sent, the platform invokes the intercept method of the first registered interceptor, passing the message and the next handler as arguments. By calling the next handler in the `intercept` method, message dispatching is continued. If there is no more interceptor in the chain, the message is transported to the receivers, if any. But, if throwing an error in the `intercept` method, message dispatching is aborted, and the error transported back to the sender.
+
+[source,typescript]
+----
+include::message-interception.snippets.ts[tags=message-logger-interceptor]
+----
+
+[[chapter:message-interception:registering-interceptors]]
+[discrete]
+=== Registering Interceptors
+You register interceptors with the bean manager when the host application starts. Interceptors can be registered only in the host application. They are invoked in registration order.
+
+[source,typescript]
+----
+include::message-interception.snippets.ts[tags=message-logger-interceptor-registration]
+----
+<1> Registers a message interceptor when starting the platform.
+<2> Registers an intent interceptor when starting the platform.
+<3> Starts the platform.
+
+NOTE: Message interceptors and intent interceptors are registered as `multi` beans under the token `MessageInterceptor` or `IntentInterceptor`, respectively. For more information about bean registration, see chapter <<chapter:bean-manager>>.
+
+[[chapter:message-interception:filtering-messages-for-interception]]
+[discrete]
+=== Filtering Messages for Interception
+The platform passes all messages to the interceptors, including platform messages vital for its operation. Interceptors must filter messages on their own, e.g. by topic, and let all other messages pass.
+
+For message filtering, you can use the `TopicMatcher`, allowing you to test whether a topic matches a pattern. The pattern must be a topic, not a regular expression; thus, it must consist of one or more segments, each separated by a forward slash. The pattern can contain wildcard segments. Wildcard segments start with a colon (`:`), acting act as a placeholder for any segment value.
+
+[source,typescript]
+----
+include::message-interception.snippets.ts[tags=topic-matcher]
+----
+
+[[chapter:message-interception:implementing-a-message-validator]]
+[discrete]
+=== Implementing a Message Validator
+A typical use case for an interceptor is to perform schema validation to reject messages with an invalid payload.
+
+The following code snippet illustrates how to implement an interceptor to validate the payload of messages. The interceptor expects a filter topic and JSON schema for its construction. The interceptor validates all messages that match the given filter topic against the given JSON schema.
+
+NOTE: JSON message validation is out of scope of the platform. A good library is link:https://github.com/epoberezkin/ajv[AJV (Another JSON Schema Validator), window=\"_blank\"]. For illustrative purposes, the below code uses the `JsonSchemaValidator` pseudo class.
+
+[source,typescript]
+----
+include::message-interception.snippets.ts[tags=message-validator]
+----
+<1> Constructs the topic matcher to filter messages subject for validation.
+<2> Constructs the JSON validator to validate messages against given JSON schema.
+<3> Lets messages pass that do not match the topic.
+<4> Lets messages with a valid JSON payload pass.
+<5> Rejects messages if not passing JSON validation. The platform sends the error back to the sender.
+
+As this interceptor requires a filter topic and JSON schema as its constructor arguments, we register it in the bean manager using a factory function, as shown below.
+
+[source,typescript]
+----
+include::message-interception.snippets.ts[tags=message-validator-registration]
+----
+<1> Specifies the topic to filter messages for validation. The topic contains the product id (`:id`) as wildcard segment.
+<2> Loads the JSON schema using a dynamic import.
+<3> Constructs the interceptor.
+

@@ -1,0 +1,19 @@
+:basedir: ../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:microfrontend-architecture]]
+== Microfrontend Architecture
+
+Web frontends are becoming more and more common, even for complex business applications. To tackle the complexity of enterprise application landscapes, a strong trend towards microservice-based backends and microfrontends on the client-side is emerging. The microfrontend design approach is very tempting and has obvious advantages, especially for large-scale and long-lasting projects, most notably because we are observing an enormous dynamic in web frameworks.
+
+[.text-center]
+image::microfrontend-architecture.svg[]
+
+The microservice and microfrontend architecture design approach enables us to form development teams full-stack in line with the business functionality, resulting in independent so-called micro applications. A micro application deals with well-defined business functionality. Its backend services are collectively referred to as microservice and its user-facing parts as microfrontend.
+
+====
+include::{terminologydir}/microfrontend.adoc[]
+====
+
+For the end-user, however, it is still a single application that he loads into his browser. The composition of the microfrontends is entirely transparent to him. By striving for a uniform look and feel of the microfrontends, the user does not even notice that different micro applications are involved.
+

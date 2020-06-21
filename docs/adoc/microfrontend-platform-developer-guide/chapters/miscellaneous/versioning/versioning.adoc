@@ -1,0 +1,19 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:semantic-versioning-scheme]]
+== Semantic Versioning Scheme
+SCION Microfrontend Platform follows the semantic versioning scheme (SemVer) for its releases. In this scheme, a release is represented by three numbers: `MAJOR.MINOR.PATCH`. For example, version `1.5.3` indicates major version `1`, minor version `5`, and patch level `3`.
+
+Major Version::
+The major version number is incremented when introducing any backwards incompatible changes to the API.
+Minor Version::
+The minor version number is incremented when introducting some new, backwards compatible functionality.
+Patch Level::
+The patch or maintenance level is incremented when fixing bugs.
+
+In the development of a new major release, we usually release pre-releases and tag them with the beta tag (`-beta.x`). A beta pre-release is a snapshot of current development, so it is potentially unstable and incomplete. Before releasing the major version, we start releasing one or more release candidates, which we tag with the rc tag (`-rc.x`). We will publish the official and stable major release if the platform is working as expected and we do not find any critical problems.
+
+[.text-center]
+image::semver.svg[]
+

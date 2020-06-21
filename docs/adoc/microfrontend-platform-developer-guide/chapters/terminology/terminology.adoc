@@ -1,0 +1,112 @@
+:basedir: ../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:terminology]]
+== Terminology
+
+[#terminology:activator]
+Activator::
+An activator allows a <<terminology:micro-application,micro application>> to initialize and connect to the <<terminology:platform,platform>> when the user loads the <<terminology:host-app,host application>> into his browser.
++
+In the broadest sense, an activator is a kind of <<terminology:microfrontend,microfrontend>>, i.e. an HTML page that runs in an iframe. In contrast to regular <<terminology:microfrontend,microfrontends>>, however, at platform startup, the <<terminology:platform,platform>> loads activator microfrontends into hidden iframes for the entire platform lifecycle, thus, providing a stateful session to the <<terminology:micro-application,micro application>> on the client-side.
+
+[#terminology:application]
+Application::
+This term is used throughout this guide to refer to the entire application as presented to the user, also implying <<terminology:microfrontend,microfrontends>> provided by <<terminology:micro-application,micro applications>>.
+
+[#terminology:bean-manager]
+Bean Manager::
+The bean manager is the central point to obtain bean instances.
+
+[#terminology:capability]
+Capability::
+A <<terminology:micro-application,micro application>> can provide functionality to micro applications by declaring a capability in its <<terminology:manifest,manifest>>. Micro applications can then look up the capability, or invoke it via <<terminology:intent,intent>>. When a micro application invokes the capability, the platform transports the intent to the providing micro application.
++
+include::capability-formulation.adoc[]
++
+Arbitrary metadata can be associated with a capability. A capability can have _private_ or _public_ visibility. If _private_, the capability is not visible to other <<terminology:micro-application,micro applications>>.
+
+[#terminology:cross-origin-messaging]
+Cross-Origin Messaging::
+Cross-origin messaging means the communication between web content loaded from different <<terminology:origin,origins>>.
+
+[#terminology:host-app]
+Host Application::
++
+include::host-application.adoc[]
++
+The host app starts the <<terminology:platform,platform>> host and registers <<terminology:micro-application,micro applications>>. If the host app wants to interact with either the <<terminology:platform,platform>> or the <<terminology:micro-application,micro applications>>, the host app has to register itself as a <<terminology:micro-application,micro application>>. The host app has no extra privileges compared to other <<terminology:micro-application,micro applications>>.
+
+[#terminology:intent]
+Intent::
+The intent is the message that a <<terminology:micro-application,micro application>> passes to interact with functionality that is available in the form of a <<terminology:capability,capability>>.
++
+The platform transports the intent to the <<terminology:micro-application,micro applications>> that provide the requested <<terminology:capability,capability>>. A micro application can issue an intent only if having declared an <<terminology:intention,intention>> in its <<terminology:manifest,manifest>>. Otherwise, the platform rejects the intent.
++
+An intent is formulated in an abstract way, having assigned a _type_, and optionally a <<terminology:qualifier,qualifier>>. This information is used for resolving the capability; thus, it can be thought of as a form of capability addressing. See the definition of a <<terminology:capability,capability>> for more information.
+
+[#terminology:intention]
+Intention::
+A <<terminology:micro-application,micro application>> must declare an intention in its <<terminology:manifest,manifest>> when using functionality provided via a <<terminology:capability,capability>>.
++
+include::intention-declaration.adoc[]
++
+An intention is formulated in an abstract way, having assigned a _type_, and optionally a <<terminology:qualifier,qualifier>>.
+The qualifier of an <<terminology:intention,intention>> allows using wildcards (such as `{asterisk}` or `?`) to match multiple <<terminology:capability,capabilities>> simultaneously. See the definition of a <<terminology:qualifier,qualifier>> for more information.
+
+[#terminology:intention-api]
+Intention API::
+The Intention API allows controlled collaboration between <<terminology:micro-application,micro applications>>. It is inspired by the Android platform where an application can start an _Activity_ via an _Intent_ (such as sending an email).
++
+A <<terminology:micro-application,micro application>> can make functionality available to micro applications in the form of <<terminology:capability,capabilities>>. For a micro application to read or invoke a capability, the micro application must declare an <<terminology:intention,intention>> in its <<terminology:manifest,manifest>>. To invoke a capability, a micro application issues an <<terminology:intent,intent>>.
+
+[#terminology:manifest]
+Manifest::
+The manifest is a special file that contains information about a <<terminology:micro-application,micro application>>.
++
+A micro application declares its <<terminology:intention,intentions>> and <<terminology:capability,capabilities>> in its manifest file. The manifest needs to be registered in the <<terminology:host-app,host application>>.
+
+[#terminology:micro-application]
+Micro Application::
++
+include::micro-application.adoc[]
++
+
+[#terminology:microfrontend]
+Microfrontend::
++
+include::microfrontend.adoc[]
++
+
+[#terminology:origin]
+Origin::
+The origin is defined by the scheme (protocol), host (domain), and port. Two objects have the same origin only when the scheme, host, and port all match.
+
+[#terminology:platform]
+Platform::
+SCION Microfrontend Platform is a TypeScript-based open-source library that helps to implement a <<chapter:microfrontend-architecture,microfrontend architecture>> using iframes.
++
+The platform provides fundamental building blocks for implementing a microfrontend architecture. These include <<chapter:cross-application-communication,cross-microfrontend communication>>, <<chapter:router-outlet,embedding of microfrontends>>, and <<chapter:routing,routing between microfrontends>>. SCION Microfrontend Platform is a lightweight, web stack agnostic library but not a framework. It has no user-facing components, and does not dictate any form of application structure.
++
+Refer to chapter <<chapter:scion-microfrontend-platform>> for more information about the platform.
+
+[#terminology:pub-sub]
+Publish/Subscribe::
+The publish/subscribe pattern (also known as pub/sub) decouples the client that sends a message (the publisher) from the client or clients that receive the message (the subscribers). Clients do not know about each other. A broker dispatches the messages to interested (subscribed) clients.
+
+[#terminology:qualifier]
+Qualifier::
+The qualifier is a dictionary of arbitrary key-value pairs to differentiate <<terminology:capability,capabilities>> of the same _type_.
+
+[#terminology:router]
+Router::
+Allows controlling the content displayed in a <<terminology:router-outlet,router outlet>>. Routing works across <<terminology:microfrontend,microfrontend>> and <<terminology:micro-application,micro application>> boundaries, allowing the URL of an outlet to be set from anywhere in the  <<terminology:application,application>>.
+
+[#terminology:router-outlet]
+Router Outlet::
+Web component for embedding web content using the <<terminology:router,router>>. The outlet uses an iframe to achieve the highest possible level of isolation via a separate browsing context. The URL is set indirectly via the <<terminology:router,router>>, allowing to control the outlet content from anywhere in the <<terminology:application,application>>.
+
+[#terminology:same-origin-policy]
+Same-Origin Policy::
+The same-origin policy is a critical security mechanism that restricts how a document or script loaded from one origin can interact with a resource from another origin.
+

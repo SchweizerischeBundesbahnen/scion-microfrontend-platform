@@ -1,0 +1,5 @@
+//-----------------------------------------------------------------------------
+// PATHS: Defines path variables used in every adoc file
+//-----------------------------------------------------------------------------
+ifndef::imagesdir[:imagesdir: {basedir}/images]
+:terminologydir: {basedir}/chapters/terminology

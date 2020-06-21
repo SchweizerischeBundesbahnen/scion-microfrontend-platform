@@ -1,0 +1,10 @@
+:basedir: ../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:technology]]
+== Technology and Limitations
+
+SCION Microfrontend Platform uses the iframe approach for embedding microfrontends. An iframe provides the highest possible level of isolation through a separate browsing context, allowing the integration of any web page and the use of different web stacks. With iframes, however, there also come restrictions. If embedding a web application in an iframe, the browser loads the app from scratch, so embedded web applications must be optimized for small bundle size and fast startup time. While the separate browsing context is excellent in terms of application isolation, it makes it more difficult to maintain state across same-application instances and to communicate across application boundaries. Also, web content embedded in an iframe is clipped at the iframe boundaries, preventing overlays from overlapping it.
+
+The platform provides API to shield developers from the iframe element and the low-level `postMessage` mechanism to focus instead on integrating microfrontends. It adds a pub/sub layer on top of the `postMessage` mechanism and provides a web component for embedding microfrontends using a router. SCION Microfrontend Platform is written in TypeScript and has a peer dependency on `RxJS`.
+

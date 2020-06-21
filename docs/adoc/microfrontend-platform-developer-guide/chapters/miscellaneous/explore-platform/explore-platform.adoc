@@ -1,0 +1,75 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:explore-scion-microfrontend-platform]]
+== Explore SCION Microfrontend Platform
+To explore the platform and experiment with its features, you can play around with our technical demo app, available at the following URL: link:{testing-app-url}[window=\"_blank\"].
+
+We use this application internally to run our end-to-end test-suite against it, so the focus is not on an attractive user interface, responsive design, or easy navigation. The application is a composition of browser outlets to display multiple microfrontends simultaneously. A browser outlet is like an internal browser in the application, implemented as a named router-outlet. If you enter a URL in the address bar of a browser outlet, internal routing takes place to display the requested web content.
+
+[.chapter-toc]
+****
+[.chapter-title]
+In this Chapter
+
+- <<chapter:explore-scion-microfrontend-platform:displaying-web-app-as-microfrontend>>
+- <<chapter:explore-scion-microfrontend-platform:discovering-platform-features>>
+- <<chapter:explore-scion-microfrontend-platform:messaging-in-action>>
+- <<chapter:explore-scion-microfrontend-platform:router-outlet-in-action>>
+- <<chapter:explore-scion-microfrontend-platform:opening-browser-outlets>>
+****
+'''
+
+[[chapter:explore-scion-microfrontend-platform:displaying-web-app-as-microfrontend]]
+[discrete]
+=== Displaying a Web App as Microfrontend
+When you open the application in your browser, the application displays two browser outlets. If you enter a URL in the address bar of a browser outlet, the application loads the page as a microfrontend.
+
+[.text-center]
+image::e2e-testing-app.svg[]
+
+NOTE: The web application must support embedding in an iframe, i.e., the page must not have the HTTP header `X-Frame-Options` set. Otherwise, the browser will refuse the embedding.
+
+[[chapter:explore-scion-microfrontend-platform:discovering-platform-features]]
+[discrete]
+=== Discovering Platform Features
+Various platform features are available as microfrontends, which you can open from the drop-down list in the address bar of a browser outlet. The demo app is deployed multiple times under different origins, allowing for testing of platform features across origin boundaries.
+
+[.text-center]
+image::e2e-testing-app_microfrontend-chooser.svg[]
+
+
+[[chapter:explore-scion-microfrontend-platform:messaging-in-action]]
+[discrete]
+=== Messaging in Action
+The demo app provides a microfrontend for receiving messages and another microfrontend for publishing messages. To experience messaging in action, in the left browser outlet, enter `receive` in the address bar and select the microfrontend of the desired origin. Then, do the same in the right browser outlet, but enter `publish` instead.
+
+You can now subscribe to messages published on a topic. In the left browser outlet, choose `Topic` as the flavor, and enter the topic. Then, click on the `Subscribe` button. In the right browser outlet, you can publish messages. Select `Topic` as the flavor, enter a topic name and a message. Then, click on the `Publish` button.
+
+The example below subscribes to the topic `myhome/:room/temperature` using `:room` as a wildcard path segment, thus receives the temperatures of any room.
+
+[.text-center]
+image::e2e-testing-app_pub-sub-example.svg[]
+
+[[chapter:explore-scion-microfrontend-platform:router-outlet-in-action]]
+[discrete]
+=== Router-Outlet in Action
+The demo app provides a microfrontend for embedding web content in a named router-outlet. To experience routing in action, in the left browser outlet, enter `router-outlet` in the address bar and select the microfrontend of the desired origin. Then, do the same in the right browser outlet, but enter `outlet-router` instead.
+
+The left browser outlet should now show a blank router-outlet. Enter a name for the router-outlet, e.g., `test`, then click on the `Apply` button. The router-outlet stays blank because no routing took place yet for that router-outlet. In the right browser outlet, enter the name of the target router-outlet, which in our example is `test`, and enter the URL of the microfrontend to display in the target router-outlet, e.g., https://micro-frontends.org. Then, click on the `Navigate` button. The microfrontend should now display in the router-outlet on the left.
+
+[.text-center]
+image::e2e-testing-app_router-outlet-example.svg[]
+
+[[chapter:explore-scion-microfrontend-platform:opening-browser-outlets]]
+[discrete]
+=== Opening Browser Outlets
+The demo application is not limited to two adjacent browser outlets. By changing the matrix parameter `count` in the browser URL, you can control how many browser outlets to display at the top level.
+
+[.text-center]
+image::e2e-testing-app_browser-outlets-example.svg[]
+
+You can also nest browser outlets by loading the `browser-outlets` microfrontend and playing around with its `count` matrix parameter.
+
+[.text-center]
+image::e2e-testing-app_nested-browser-outlets-example.svg[]

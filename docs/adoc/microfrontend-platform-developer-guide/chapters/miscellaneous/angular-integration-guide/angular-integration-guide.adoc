@@ -1,0 +1,245 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:angular_integration_guide]]
+== Angular Integration Guide
+This part of the documentation is for developers who want to integrate the SCION Microfrontend Platform in an Angular application.
+
+[.chapter-toc]
+****
+[.chapter-title]
+In this Chapter
+
+- <<chapter:angular-integration-guide:configuring-hash-based-routing>>
+- <<chapter:angular-integration-guide:starting-platform-in-app-initializer>>
+- <<chapter:angular-integration-guide:starting-platform-in-route-resolver>>
+- <<chapter:angular-integration-guide:activate-custom-elements-schema>>
+- <<chapter:angular-integration-guide:providing-activator-services>>
+- <<chapter:angular-integration-guide:providing-platform-beans-for-dependency-injection>>
+- <<chapter:angular-integration-guide:providing-microfrontends-as-lazy-loaded-modules>>
+- <<chapter:angular-integration-guide:preparing-messageclient-for-use-with-angular>>
+****
+'''
+
+[[chapter:angular-integration-guide:configuring-hash-based-routing]]
+[discrete]
+=== Configuring Hash-Based Routing
+====
+TIP: Read chapter <<chapter:miscellaneous:routing-in-micro-applications>> to learn more about why to prefer hash-based routing.
+====
+
+We recommend using hash-based routing over HTML 5 push-state routing in micro applications. To enable hash-based routing in an Angular application, pass `{useHash: true}` when configuring the router in `AppRoutingModule`, as follows.
+
+[source,typescript]
+----
+include::angular-integration-guide.snippets.ts[tags=configure-hash-based-routing]
+----
+
+[[chapter:angular-integration-guide:starting-platform-in-app-initializer]]
+[discrete]
+=== Starting the Platform in an Angular App Initializer
+====
+TIP: Refer to chapter <<chapter:starting-the-platform>> for detailed instructions on how to start the platform in the host and micro applications.
+====
+
+The platform should be started during the bootstrapping of the Angular application, that is, before displaying content to the user. For an Angular host application and also for Angular micro applications, we recommend to start the the platform in an app initializer.
+
+NOTE: Angular allows hooking into the process of initialization by providing an initializer to the `APP_INITIALIZER` injection token. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
+
+The following code snippet configures an Angular `APP_INITIALIZER` to start the platform. In the provider definition, we reference a higher order factory function and instruct Angular to inject the `PlatformInitializer` as function argument.
+
+[source,typescript]
+----
+include::start-platform-via-initializer.snippets.ts[tags=host-app:register-initializer]
+----
+<1> Provides an initializer to the `APP_INITIALIZER` injection token.
+<2> Instructs Angular to pass the `PlatformInitializer` to the higher order function.
+<3> Returns the initializer function. When Angular invokes the initializer function, we delegate platform startup to the `PlatformInitializer` service.
+
+IMPORTANT: Angular is very strict when compiling module definitions ahead-of-time (if enabled the AOT compilation). Therefore, you may need to replace the lamdas with the ES5 function syntax. Also, do not forget to export all functions that you reference in the module metadata definition.
+
+Next, we implement the `PlatformInitializer` to start the platform.
+
+[source,typescript]
+----
+include::start-platform-via-initializer.snippets.ts[tags=host-app:initializer]
+----
+<1> Injects the Angular `HttpClient`.
+<2> Registers the Angular `HttpClient` as bean in the bean manager, allowing the `HttpPlatformConfigLoader` to load the platform config over the network.
+<3> Starts the platform host.
+
+And finally, in the code snippet below, the `HttpPlatformConfigLoader` to load the platform config over the network.
+[source,typescript]
+----
+include::start-platform-via-initializer.snippets.ts[tags=host-app:platform-config-loader]
+----
+<1> Fetches the config over the network. Because the loader is constructed by the platform and not Angular, constructor injection is not available. Instead, we can look up the `HttpClient` via the bean manager.
+
+'''
+
+As for the host application, a micro application can also start the platform via an Angular app initializer, as illustrated by the code snippet below. For reasons of simplicity, we have inlined the platform startup.
+
+[source,typescript]
+----
+include::start-platform-via-initializer.snippets.ts[tags=micro-app:initializer]
+----
+<1> Starts the platform in the name of the `product-catalog-app` micro application.
+
+[[chapter:angular-integration-guide:starting-platform-in-route-resolver]]
+[discrete]
+=== Starting the Platform in an Angular Route Resolver
+====
+TIP: Refer to chapter <<chapter:starting-the-platform>> for detailed instructions on how to start the platform in the host and micro applications.
+====
+
+If you cannot use an initializer for whatever reason, an alternative would be to use a route resolver.
+
+NOTE: Angular allows installing resolvers on a route, allowing data to be resolved asynchronously before the route is finally activated.
+
+The following code snippet refers to starting the platform in a micro application. However, the same applies to starting the platform in the host application.
+
+For a micro application, the resolver implementation could look similar to the following:
+
+[source,typescript]
+----
+include::start-platform-via-resolver.snippets.ts[tags=resolver]
+----
+<1> Starts the platform in the `resolve` method, returning a Promise that resolves when the platform started.
+
+It is absolutely essential for an application instance to start the platform only once. Therefore, it is recommended to install the resolver in a parent route common to all microfrontend routes. When loading a microfrontend for the first time, Angular will wait activating the child route until the platform finished starting. When navigating to another microfrontend of the micro application, the resolver would not resolve anew.
+
+[source,typescript]
+----
+include::start-platform-via-resolver.snippets.ts[tags=resolver-registration]
+----
+<1> Installs the resolver on a component-less, empty-path route, which is parent to the microfrontend routes.
+<2> Registers microfronted routes as child routes.
+
+[[chapter:angular-integration-guide:activate-custom-elements-schema]]
+[discrete]
+=== Instruct Angular to allow Custom Elements in Templates
+The `<sci-router-outlet>` element for embedding microfrontends is a custom element according to the web component standard. We must tell Angular that we are using custom elements in our templates that are not registered Angular components. Otherwise, the Angular compiler would complain.
+
+Doing this is straightforward. In your app module, add the `CUSTOM_ELEMENTS_SCHEMA` schema to allow the use of custom elements, as follows:
+
+[source,typescript]
+----
+include::angular-integration-guide.snippets.ts[tags=add-custom-elements-schema]
+----
+
+[[chapter:angular-integration-guide:providing-activator-services]]
+[discrete]
+=== Providing Activator Services
+====
+TIP: Read chapter <<chapter:activator>> to learn more about activators.
+====
+
+In order to install an activator, you need to register an _activator_ capability in your manifest.
+
+[source,json]
+----
+include::activator.snippets.ts[tags=activator-capability]
+----
+<1> Activators have the type `activator`.
+<2> Activators must have public visibility.
+<3> Path where the platform can load the activator microfrontend. The path is relative to the base URL of the micro application, as specified in the application manifest.
+
+We recommend creating a component-less, lazy-loaded activator module, that you register as routing target for the _activator_ path specified in the manifest.
+
+[source,typescript]
+----
+include::activator.snippets.ts[tags=activator-route]
+----
+
+The activator module declares a DI token under which you can register one or more activator services. By injecting the DI token into the module constructor, Angular constructs all registered activator services.
+
+The module implementation could look similar to the following:
+
+[source,typescript]
+----
+include::activator.snippets.ts[tags=activator-module]
+----
+<1> Declares a DI token under which you can register activator services. If you use Angular 9 or later, you do not need to export the token.
+<2> By way of example, registers the `AuthenticatorService` as activator service, e.g., to obtain the user's access token and preemtively refresh it before its expected expiration.
+<3> By way of example, registers the `MicrofrontendRouter` as activator service, e.g., to handle microfrontend intents, instructing the router to navigate.
+<4> Installs an empty routes array. Do not omit the empty routes definition, as otherwise, route resolvers, if any, would be resolved multiple times.
+<5> Injects registered activator services in order to construct them.
+
+It turned out that when using a route resolver to start the platform, Angular constructs the activator module instantly, that is, before the `PlatformInitializer` returns. For this reason, if you start the platform within a route resolver, and only then, you must wait to inject the activator services until the platform finished starting.
+
+The module constructor would then look as follows:
+
+[source,typescript]
+----
+include::activator.snippets.ts[tags=activator-module-using-resolver]
+----
+<1> Waits until the platform started.
+<2> Injects registered activator services via Angular `Injector`.
+
+Activator can perform activation tasks in the constructor.
+
+[source,typescript]
+----
+include::activator.snippets.ts[tags=activator-services]
+----
+
+For implementing the `MicrofrontendRouter`, refer to chapter <<chapter:activator:routing-in-the-activator>>.
+
+[[chapter:angular-integration-guide:providing-platform-beans-for-dependency-injection]]
+[discrete]
+=== Providing Platform Beans for Dependency Injection
+With Angular, it is easy to provide platform-specific beans for dependency injection using the factory provider definition, allowing objects managed by Angular to constructor-inject platform beans.
+
+[source,typescript]
+----
+include::angular-integration-guide.snippets.ts[tags=provide-platform-beans-for-dependency-injection]
+----
+
+[[chapter:angular-integration-guide:providing-microfrontends-as-lazy-loaded-modules]]
+[discrete]
+=== Providing Microfrontends as Lazy-Loaded Modules
+For good user experience, microfrontends should have a fast bootstrap time and load only the modules and data they need. Therefore, we recommend providing microfrontends as small, lazy-loaded modules grouped by functionality.
+
+[source,typescript]
+----
+include::lazy-loaded-modules.snippets.ts[tags=routes]
+----
+<1> Registers the lazy-loaded route for the `microfrontend-1` microfrontend.
+<2> Registers the lazy-loaded route for the `microfrontend-2` microfrontend.
+<3> Registers the lazy-loaded route for the `activator` microfrontend.
+
+A microfrontend module could look similar to the following:
+
+[source,typescript]
+----
+include::lazy-loaded-modules.snippets.ts[tags=microfrontend-1-module]
+----
+
+[[chapter:angular-integration-guide:preparing-messageclient-for-use-with-angular]]
+[discrete]
+=== Preparing the MessageClient for Use with Angular
+====
+TIP: Refer to chapter <<chapter:bean-manager:decorating-beans>> to learn more about bean decorators.
+====
+
+Messages are pushed to the message client via a separate browsing context, preventing Angular (or more precisely zone.js) from triggering a change detection cycle, causing the UI not to update as expected.
+
+Therefore, we recommend to decorate the `MessageClient` with a bean decorator and pipe its Observables to emit inside the Angular zone, as following:
+
+[source,typescript]
+----
+include::angular-zone-message-client-decorator.snippets.ts[tags=decorator]
+----
+<1> Obtains the `NgZone` from the bean manager.
+<2> Creates an anonymous class for the `MessageClient`, delegating invocations to the 'actual' message client, but piping Observables to emit inside the Angular zone.
+<3> Mirrors the source Observable, but continues the operator chain inside the Angular zone.
+
+You register the decorator as following:
+
+[source,typescript]
+----
+include::angular-zone-message-client-decorator.snippets.ts[tags=register-decorator]
+----
+<1> Registers `NgZone` in the bean manager.
+<2> Registers `AngularZoneMessageClientDecorator` for decorating the `MessageClient` bean.
+

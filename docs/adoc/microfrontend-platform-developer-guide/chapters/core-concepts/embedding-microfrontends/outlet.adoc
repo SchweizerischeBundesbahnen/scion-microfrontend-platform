@@ -1,0 +1,178 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:router-outlet]]
+== Router Outlet
+The Router Outlet is a web component that allows embedding web content using the router.
+
+[.chapter-toc]
+****
+[.chapter-title]
+In this Chapter
+
+- <<chapter:router-outlet:concepts-and-usage>>
+- <<chapter:router-outlet:outlet-size>>
+- <<chapter:router-outlet:scrollable-content>>
+- <<chapter:router-outlet:keystroke-bubbling>>
+- <<chapter:router-outlet:router-outlet-events>>
+- <<chapter:router-outlet:outlet-context>>
+- <<chapter:router-outlet:router-outlet-api>>
+****
+'''
+
+[[chapter:router-outlet:concepts-and-usage]]
+[discrete]
+=== Concepts and Usage
+Embedding web content using an iframe can quickly become a daunting task. For this reason, the SCION Microfrontend Platform provides a router outlet that solves many of the cumbersome quirks of iframes. The outlet is a web component that wraps an iframe. It can be used like a native HTML element. As its name suggests, the web content of the outlet is controlled by a router. The router is a platform service, allowing you to set the URL of an outlet from anywhere in the application, even across application boundaries. When adding the outlet to the DOM, the outlet displays the last URL routed for it, if any. When repeating routing for an outlet, its content is replaced.
+
+The router outlet can be added to a HTML template as follows.
+
+[source,html]
+----
+include::outlet.snippets.ts[tags=router-outlet]
+----
+
+To display web content in the outlet, set its URL using the outlet router.
+
+[source,typescript]
+----
+include::outlet.snippets.ts[tags=outlet-router]
+----
+
+NOTE: If no content is routed for display in the router outlet, the CSS class `sci-empty` is added to the outlet. An outlet does not display content if no navigation has taken place yet, or if the outlet content has been cleared.
+
+'''
+
+The host application typically adds one or more top-level outlets to its main application shell.
+
+[.text-center]
+image::top-level-router-outlets.svg[]
+
+<1> _PRIMARY_ outlet to display the main content
+<2> _ASIDE_ outlet to display context sensitive content
+
+Outlets can be nested, allowing a microfrontend to embed another microfrontend. There is no limit to the number of nested outlets. However, be aware that nested content is loaded cascaded, that is, only loaded once its parent content finished loading.
+
+The following figure shows a microfrontend that embeds another microfrontend.
+
+[.text-center]
+image::nested-router-outlets.svg[]
+
+TIP: If using the <<chapter:intention-api, Intention API>>, you do not need to know the URL of the microfrontend you want to embed. Simply issue an intent for showing the microfrontend, pass the outlet name along with the intent, and let the microfrontend embedding itself. See chapter <<chapter:intent-based-messaging:issue-intent>> for an example.
+
+[[chapter:router-outlet:outlet-size]]
+[discrete]
+=== Outlet size
+The router outlet can adapt its size to the preferred size of its embedded content. The preferred size is set by the microfrontend embedded in the router outlet, which, however, requires the microfrontend to be provided by a registered micro application. For detailed instructions on how to register a micro application, refer to the chapter <<chapter:platform-configuration:configuring-micro-applications>>.
+
+NOTE: The preferred size of an element is the minimum size that allows it to display normally. Setting a preferred size is useful if the outlet is displayed in a layout that aligns its items based on the items' content size.
+
+A microfrontend embedded in an outlet can report its preferred size using the `PreferredSizeService`, causing the outlet to change its size, as illustrated by the code snippet below.
+
+[source,typescript]
+----
+include::outlet.snippets.ts[tags=router-outlet:preferred-size]
+----
+
+The platform provides a convenience API to bind a DOM element via `PreferredSizeService.fromDimension` to automatically report its content size as preferred size to the outlet.
+
+[source,typescript]
+----
+include::outlet.snippets.ts[tags=router-outlet:preferred-size-fromDimension]
+----
+
+IMPORTANT: The element to be observed via `PreferredSizeService.fromDimension` must behave as a `block-level` box and not as an `inline-level` box. So, if you want to observe an inline element, you have to override its display type to either `block` or `inline-block`.
+
+[[chapter:router-outlet:scrollable-content]]
+[discrete]
+=== Scrollable Content
+By default, page scrolling is enabled for the embedded content, displaying a scrollbar when it overflows. If disabled, overflowing content is clipped, unless the embedded content uses a viewport, or reports its preferred size to the outlet.
+
+The below code snippet illustrates how to disable page scrolling for the embedded content.
+
+[source,html]
+----
+include::outlet.snippets.ts[tags=router-outlet:page-scrolling-disabled]
+----
+
+[[chapter:router-outlet:keystroke-bubbling]]
+[discrete]
+=== Keystroke Bubbling
+The router outlet allows the registration of keystrokes, instructing embedded content at any nesting level to propagate corresponding keyboard events to this outlet.
+
+The outlet dispatches keyboard events for registered keystrokes as synthetic keyboard events via its event dispatcher. They bubble up the DOM tree like regular events. Propagated events are of the original type, meaning that when the user presses a key on the keyboard, a `keydown` keyboard event is dispatched, or a `keyup` event when releasing a key, respectively.
+
+A keystroke has the following syntax.
+[.text-center]
+image::keystroke-syntax.svg[]
+
+A keystroke is a `string` that has several parts, each separated with a dot. The first part specifies the event type (`keydown` or `keyup`), followed by optional modifier part(s) (`alt`, `shift`, `control`, `meta`, or a combination thereof) and with the keyboard key as the last part. The key is a case-insensitive value of the `KeyboardEvent.key` property. Two keys are an exception to the value of the `KeyboardEvent.key` property: `dot` and `space`.
+
+TIP: For a complete list of valid key values, see link:https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values[window=\"_blank\"].
+
+You can register keystrokes on a `<sci-router-outlet>` as follows. Multiple keystrokes are separated with a comma.
+
+[source,html]
+----
+include::outlet.snippets.ts[tags=router-outlet:keystrokes-html-template]
+----
+
+Alternatively, you can register keystrokes on the DOM element as shown below.
+[source,typescript]
+----
+include::outlet.snippets.ts[tags=router-outlet:keystrokes-typescript]
+----
+
+[[chapter:router-outlet:router-outlet-events]]
+[discrete]
+=== Router Outlet Events
+The router outlet emits an activate event when a microfrontend is mounted, and a deactivate event when a microfrontend is unmounted.
+
+The events are emitted as a custom DOM event and contain the URL of the mounted or unmounted microfrontend. You can attach an event listener declaratively in the HTML template using the `onevent` handler syntax, or programmatically using the `addEventListener` method.
+
+The following example attaches an event listener in the HTML template.
+[source,html]
+----
+include::outlet.snippets.ts[tags=router-outlet:listen-to-activate-event-in-template]
+----
+
+The example below adds an event listener programmatically.
+[source,typescript]
+----
+include::outlet.snippets.ts[tags=router-outlet:listen-to-activate-event]
+----
+
+[[chapter:router-outlet:outlet-context]]
+[discrete]
+=== Outlet Context
+The router outlet allows associating contextual data, which then is available to embedded content at any nesting level. Data must be serializable with the structured clone algorithm. Embedded content can look up contextual data using the `ContextService`. Typically, contextual data is used to provide microfrontends with information about their embedding environment.
+
+Each outlet spans a new context. A context is like a `Map` with key-value entries. Contexts form a hierarchical tree structure. When looking up a value and if the value is not found in the current context, the lookup is retried on the parent context, repeating until either a value is found, or the root of the context tree has been reached.
+
+'''
+
+Imagine a tab bar with tabs implemented as a microfrontend. As an example, a microfrontend should highlight its tab in the tab bar when its data changes. For each tab, you can define a random highlighting topic and put it to the context of the tab router outlet. The microfrontend can then send an event to that topic when its data changes.
+
+[source,typescript]
+----
+include::outlet.snippets.ts[tags=router-outlet:set-context-value]
+----
+<1> Generates some random UUID.
+<2> Puts the UUID to the context.
+
+Embedded microfrontend can then read the `highlighting-topic` from the current context and send an event to that topic when its data changes.
+
+[source,typescript]
+----
+include::outlet.snippets.ts[tags=router-outlet:observe-context-value]
+----
+<1> Looks up the `highlighting-topic` from the current context.
+<2> Sends an event to the `highlighting-topic` when its data changes.
+
+[[chapter:router-outlet:router-outlet-api]]
+[discrete]
+=== Router Outlet API
+You can find the full list of available properties and methods of `SciRouterOutletElement` in the  link:{typedoc-url}/classes/scirouteroutletelement.html[TypeDoc, window=\"_blank\"].
+
+TIP: To hide inherited properties and methods of the `HTMLElement` in the TypeDoc, uncheck the `Inherited` checkbox in the upper right corner of the _TypeDoc_.
+

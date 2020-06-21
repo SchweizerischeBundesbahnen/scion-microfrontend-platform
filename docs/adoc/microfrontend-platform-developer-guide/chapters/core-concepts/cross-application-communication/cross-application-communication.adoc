@@ -1,0 +1,22 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:cross-application-communication]]
+== Cross Application Communication
+
+This part explains how micro applications and microfrontends can communicate with each other.
+
+Cross-application communication is an integral part when implementing a microfrontend architecture. By using the browser's native `postMessage()` mechanism, you can send messages to applications loaded from different domains. For posting a message, however, you need a reference to the `Window` of the receiving application, which can quickly become complicated, also due to restrictions imposed by the <<terminology:same-origin-policy,Same-origin Policy>>.
+
+For that reason and because of the lack of message routing, the SCION Microfrontend Platform provides a Messaging API, allowing microfrontends to communicate with each other in an easy way on the client-side. Internally, it uses the `postMessage()` mechanism. The Messaging API offers publish/subscribe messaging to microfrontends in two flavors: <<chapter:topic-based-messaging>> and <<chapter:intent-based-messaging>>.
+
+NOTE: Data sent from one JavaScript realm to another is serialized with the _Structured Clone Algorithm_. The algorithm supports structured objects such as nested objects, arrays, and maps.
+
+TIP: Cross-application communication should be reduced to a minimum to keep the applications as independent as possible. Also, be careful not to introduce tight data coupling between applications, as this would mitigate the advantage of microfrontends.
+
+:leveloffset: +1
+include::topic-based-messaging.adoc[]
+include::intent-based-messaging.adoc[]
+include::message-interception.adoc[]
+:leveloffset: -1
+

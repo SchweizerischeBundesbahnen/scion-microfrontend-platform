@@ -1,0 +1,62 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[core-concepts:overview]]
+== Overview
+
+SCION Microfrontend Platform provides you the fundamental building blocks for implementing a microfrontend architecture using iframes. It provides APIs for microfrontends to communicate with each other across origin, allows embedding microfrontends using a web component and enables routing between microfrontends. SCION Microfrontend Platform is a lightweight, web stack agnostic library that has no user-facing components and does not dictate any form of application structure.
+
+This chapter explains the core concepts of the platform and introduces you to important APIs.
+
+****
+[NOTE]
+For illustration purposes, we use a simple webshop in this chapter to explain the core concepts of the SCION Microfrontend Platform. The user can choose a product from the product catalog, show customer reviews for a product, add products to the shopping cart, and finally checkout. The webshop consists of multiple web applications that contribute microfrontends.
+****
+
+[discrete]
+=== Microfronted
+
+====
+include::{terminologydir}/microfrontend.adoc[]
+====
+
+The following figure shows the webshop that consists of multiple microfrontends provided by different web applications. The color of a microfrontend indicates the web app which provides the microfrontend.
+
+[.text-center]
+image::webshop-microfrontends.svg[]
+
+Microfrontends can be nested, as illustrated by the `product` microfrontend that embeds the `customer-reviews` microfrontend. A single web application can provide multiple microfrontends, as shown by the _Product Catalog Application_ that provides the `product-list` and `product` microfrontends.
+
+SCION Microfrontend Platform uses iframes to embed microfrontends; thus, any web page can be integrated as a microfrontend. If the providing web app is registered with the platform, the microfrontend can further interact with other microfrontends. Registered web apps are referred to as micro applications.
+
+[discrete]
+=== Micro Application
+
+====
+include::{terminologydir}/micro-application.adoc[]
+====
+
+A micro application provides zero, one or more microfrontends and may contribute functionality to other micro applications via the <<chapter:intention-api>>. Micro applications can communicate with each other via <<chapter:cross-application-communication,client-side messaging>>.
+
+The following figure shows the micro applications of the webshop application and the microfrontends they provide.
+
+[.text-center]
+image::webshop-micro-applications.svg[]
+
+Every micro application must provide an application manifest. The manifest is a JSON file that contains information about the micro application. If using the <<chapter:intention-api>>, the micro application declares its intentions and capabilities in the manifest file.
+
+When a microfrontend is displayed, the microfrontend starts a new instance of its micro application, resulting in zero, one or more instances of the same micro application running simultaneously. Each microfrontend instance forms a separate browsing context with a separate `Window` and `Document`. Consequently, sharing state client-side between the different instances of the same micro application is limited to using session or local storage, broadcast channel, or client-side messaging.
+
+[discrete]
+=== Host Application
+
+====
+include::{terminologydir}/host-application.adoc[]
+====
+
+The host application is the topmost application for integrating microfrontends. It starts the platform host and registers the micro applications.
+
+If the host application wants to interact with either the platform or the micro applications, the host application has to register itself as a micro application. The host application has no extra privileges compared to other micro applications.
+
+NOTE: It is conceivable- although rare - to have more than one host app in the <<terminology:application,application>>. As a prerequisite, every host app must be unique in its window hierarchy, i.e., must not be embedded (nor directly nor indirectly) by another host app. Each host app forms a separate and completely isolated namespace.
+

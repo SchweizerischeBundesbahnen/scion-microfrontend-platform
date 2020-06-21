@@ -1,0 +1,4 @@
+--
+A microfrontend is a term of the microfrontend architecture design approach to developing frontend applications as a composition of small, self-contained components, so-called microfrontends. Each microfrontend focuses on a single business functionality, breaking up hard-to-handle monoliths into parts by allowing independent development, autonomous lifecycles, true code splitting, and the use of different stacks. Microfrontends should be as independent and isolated as possible so that a change in one microfrontend has no impact on other microfrontends.
+--
+

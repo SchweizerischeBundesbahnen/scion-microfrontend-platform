@@ -1,0 +1,65 @@
+:doctype: book
+:doctitle: SCION Microfrontend Platform - Developer Guide
+:imagesdir: ./images
+:iconsdir: ./icons
+:stylesdir: ./styles
+:scriptsdir: ./scripts
+:chaptersdir: ./chapters
+:terminologydir: ./terminology
+:icons: font
+:toc: left
+:toc-title: Developer Guide
+:toclevels: 3
+:sectnums:
+:sectnumlevels: 3
+:sectanchors:
+:sectlinks:
+:favicon: {iconsdir}/favicon.ico
+:keywords: Microfrontend, Micro-Frontend, SCION
+:revnumber:
+:revnumber-dasherized:
+
+:typedoc-url: https://scion-microfrontend-platform-api-v{revnumber-dasherized}.now.sh
+:testing-app-url: https://scion-microfrontend-platform-testing-app1-v{revnumber-dasherized}.now.sh
+
+// Use prism.js instead of highlight.js to have typescript support; see https://www.npmjs.com/package/asciidoctor-prism-extension
+:source-highlighter: prism
+
+// See available prism themes: https://github.com/PrismJS/prism/tree/master/themes
+:prism-theme: prism.css
+:prism-languages: typescript,html,json
+
+// Include 'docinfo.html; see https://asciidoctor.org/docs/user-manual/#docinfo-file
+:docinfo: shared
+:table-caption!:
+:favicon: favicon.ico
+
+--
+This guide introduces you to the SCION Microfrontend Platform and covers all the concepts and API that are integral to the SCION Microfrontend Platform. Terms and expressions used in this guide are listed in chapter <<chapter:terminology>>. This guide assumes that you are already familiar with HTML and TypeScript.
+--
+
+****
+image::scion_microfrontend_platform_logo.svg[SCION Microfrontend Platform,75,75,role=right]
+
+SCION Microfrontend Platform API Reference::
+Refer to the link:{typedoc-url}[API Reference, window=\"_blank\"] for full details of the SCION Microfrontend Platform API.
+
+Explore SCION Microfrontend Platform::
+Play around with our <<chapter:explore-scion-microfrontend-platform,technical demo application>> to explore the platform and experiment with its features.
+
+Feedback and Contributions::
+We encourage other developers to join the project and contribute to making SCION Microfrontend Platform constantly better and more stable. If you are missing a feature, please create a link:https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/new?template=feature_request.md[feature request, window=\"_blank\"] so we can discuss it and coordinate further development. To report a bug, please check link:https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues[existing issues, window=\"_blank\"] first, and if found, leave a comment on the issue. Otherwise, link:https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/new?template=bug_report.md[file a bug, window=\"_blank\"] or, even better, create a pull request with a proposed fix.
++
+For more details, see our link:https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/blob/master/CONTRIBUTING.md[CONTRIBUTING GUIDELINES, window=\"_blank\"].
+
+****
+
+include::{chaptersdir}/scion-microfrontend-platform/scion-microfrontend-platform.adoc[]
+include::{chaptersdir}/microfrontend-architecture/microfrontend-architecture.adoc[]
+include::{chaptersdir}/technology/technology.adoc[]
+include::{chaptersdir}/core-concepts/core-concepts.adoc[]
+include::{chaptersdir}/miscellaneous/miscellaneous.adoc[]
+include::{chaptersdir}/security/security.adoc[]
+include::{chaptersdir}/configuration/configuration.adoc[]
+include::{chaptersdir}/terminology/terminology.adoc[]
+

@@ -1,0 +1,12 @@
+:basedir: ../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:security]]
+== Security
+
+The platform follows the advice for secure communication regarding the use of the native `postMessage` mechanism, as described here: https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage#Security_concerns
+
+The platform permits only registered micro applications to connect to the platform. The host application registers qualified micro applications via a manifest file and assigns a unique identity to each micro application when starting the platform host. A micro application must pass this identity when connecting to the platform host. If the origin of the connecting micro application does not match that identity's manifest origin, the platform rejects the connection attempt. This check prevents a micro application from pretending to be another micro application.
+
+Internally, the platform dispatches messages through a message broker in the platform host. Each connected micro application knows the message broker `Window`, and the broker knows the `Windows` of connected micro applications. Therefore, a connected micro application can post messages directly to the broker's `Window`, and the broker can then dispatch the message directly to the `Window` of the receiving application(s). As additional security, a message sender always specifies the target origin, and a message recipient always checks the origin of the sender. The only exception is when establishing a connection to the platform host or when constructing the context tree.
+

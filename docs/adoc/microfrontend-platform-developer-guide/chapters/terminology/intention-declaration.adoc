@@ -1,0 +1,3 @@
+--
+Interacting with a <<terminology:capability,capability>> requires the declaration of an intention in the <<terminology:manifest,manifest>> of the <<terminology:micro-application,micro application>>. The enforced declaration allows analyzing which micro applications depend on each other and to see, which capability is used by which micro application.
+--

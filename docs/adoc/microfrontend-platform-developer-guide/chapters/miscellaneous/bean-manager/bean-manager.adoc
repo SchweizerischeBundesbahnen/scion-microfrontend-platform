@@ -1,0 +1,184 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:bean-manager]]
+== Bean Manager
+The bean manager allows you to get references to platform singleton objects, so-called beans. The application may also register beans in the bean manager, e.g., register framework-specific objects and make them available in platform-managed beans, such as in message interceptors or bean decorators.
+
+[.chapter-toc]
+****
+[.chapter-title]
+In this Chapter
+
+- <<chapter:bean-manager:what-is-a-bean>>
+- <<chapter:bean-manager:bean-scope>>
+- <<chapter:bean-manager:bean-construction>>
+- <<chapter:bean-manager:registering-beans>>
+- <<chapter:bean-manager:register-multiple-beans-on-same-symbol>>
+- <<chapter:bean-manager:looking-up-beans>>
+- <<chapter:bean-manager:overriding-beans>>
+- <<chapter:bean-manager:decorating-beans>>
+- <<chapter:bean-manager:initializers>>
+****
+'''
+
+[[chapter:bean-manager:what-is-a-bean]]
+[discrete]
+=== What is a Bean?
+A bean can be any object or even a primitive like a `boolean`. A bean is registered under some symbol in the bean manager. In most cases, the class of the bean is used as the symbol. You can then look up the bean under its registration symbol. A symbol is either a class type or an abstract class type.
+
+[[chapter:bean-manager:bean-scope]]
+[discrete]
+=== Bean Scope
+Beans are application-scoped, sometimes also referred to as singleton objects.
+
+[[chapter:bean-manager:bean-construction]]
+[discrete]
+=== Bean Construction
+By default, the bean manager constructs beans lazily when looked up for the first time. Subsequent lookups then get the same bean instance. When registering a bean, however, you can instruct the bean manager to construct the bean eagerly at platform startup.
+
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=register-eager-bean]
+----
+
+[[chapter:bean-manager:registering-beans]]
+[discrete]
+=== Registering Beans
+A bean is registered in the bean manager under some class or abstract class symbol. In most cases, the symbol is also the type of the bean instance but does not have to be. You can then look up the bean from the bean manager using that symbol.
+
+When registering a bean, you must tell the bean manager how to construct the bean. Different strategies are supported, as listed below. For Angular developers, the API looks familiar because inspired by Angular.
+
+[[chapter:bean-manager:construct-strategies]]
+[cols="1,99"]
+|===
+| Strategy | Description
+
+a| `useClass`
+a| Instructs the bean manager to construct an instance of the specified class as the bean.
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=register-bean:use-class]
+----
+
+a| `useClass` +
+(shorthand)
+a| If the class and lookup symbols are identical, you can omit the `useClass` definition, as follows.
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=register-bean:use-class-shorthand-expression]
+----
+
+a| `useValue`
+a| Instructs the bean manager to use a given object or primitive as the bean.
+
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=register-bean:use-value]
+----
+
+a| `useFactory`
+a| Instructs the bean manager to invoke a given factory function to construct the bean.
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=register-bean:use-factory]
+----
+
+a| `useExisting`
+a| Instructs the bean manager to register an alias pointing to some other bean registered in the bean manager. The aliased bean is constructed only once.
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=register-bean:use-existing]
+----
+
+|===
+
+Typically, you register beans in the process of starting the platform. A good place to register beans is the `Starting` platform lifecycle hook.
+
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=bean-registration-hook]
+----
+
+[[chapter:bean-manager:register-multiple-beans-on-same-symbol]]
+[discrete]
+=== Registering multiple Beans on the same Symbol
+Multiple beans can be registered under the same symbol. For example, message interceptors are all registered under the same symbol. When looking up beans of a 'multi-bean' symbol, beans are returned in an array in registration order.
+
+You can register multiple beans under the same symbol by setting the `multi` flag to `true`. If not setting that flag, a previously registered bean would be replaced.
+
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=register-multi-bean]
+----
+
+[[chapter:bean-manager:looking-up-beans]]
+[discrete]
+=== Looking up Beans
+Beans are looked up using the symbol under which they were registered. The bean manager providers different methods to lookup beans, as listed below.
+
+[cols="1,99"]
+|===
+| Method | Description
+
+a| `Beans.get`
+a| Returns the bean registered under the given symbol. If no or multiple beans are registered under the given symbol, an error is thrown.
+
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=lookup-bean:get]
+----
+
+a| `Beans.opt`
+a| Returns the bean registered under the given symbol, if any, or returns `undefined` otherwise.
+
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=lookup-bean:opt]
+----
+
+a| `Beans.all`
+a| Returns all beans registered under the given symbol. Returns an empty array if no bean is found.
+
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=lookup-bean:all]
+----
+
+|===
+
+[[chapter:bean-manager:overriding-beans]]
+[discrete]
+=== Overriding Beans
+Some platform beans can be overridden, e.g., to override built-in platform behavior, or to mock beans in tests. For that, register the overridden bean(s) under its original symbol when starting the platform.
+
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=overriding-beans]
+----
+<1> Overrides the `RouterOutletUrlAssigner` with a custom implementation.
+<2> Starts the platform.
+
+[[chapter:bean-manager:decorating-beans]]
+[discrete]
+=== Decorating Beans
+The bean manager allows decorating a bean to intercept invocations to its methods and properties. Multiple decorators can decorate a single bean. Decoration takes place in decorator registration order.
+
+Decorators are registered in the bean manager using the `Beans.registerDecorator` method, passing the symbol of the bean to be decorated and the decorator. As with the registration of a bean, you must tell the bean manager how to construct the decorator. For more information, see <<chapter:bean-manager:construct-strategies,Bean Construction Strategies>>. Decorators must be registered in the process of starting the platform, i.e., in the `Starting` platform lifecycle hook.
+
+A decorator must implement the `decorate` method of the `BeanDecorator` interface and return the proxied bean. To proxy a bean, you can create a JavaScript proxy, or create an anonymous class delegating to the actual bean. Bean decoration can be particularly useful for the `MessageClient`, e.g., if using Angular, to pipe its Observables to emit inside the Angular zone.
+
+For an example, see the chapter <<chapter:angular-integration-guide:preparing-messageclient-for-use-with-angular>>.
+
+[[chapter:bean-manager:initializers]]
+[discrete]
+=== Initializers
+Initializers help to run initialization work before eager beans are constructed. Initializers are registered in the bean manager using the `Beans.registerInitializer` method, passing a function or an initializer class. Initializers may run in parallel. For this reason, there must be no dependency in any initializer on the order of the execution of the initializers.
+
+An initializer must return a Promise which to resolve when completed initialization. The platform waits with the construction of eager beans until all initializers resolved.
+
+[source,typescript]
+----
+include::bean-manager.snippets.ts[tags=initializer]
+----
+

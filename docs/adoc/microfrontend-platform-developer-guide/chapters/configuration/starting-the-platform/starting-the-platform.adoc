@@ -1,0 +1,63 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:starting-the-platform]]
+== Starting the Platform
+
+The platform is started differently in the host application and a micro application.
+
+[.chapter-toc]
+****
+[.chapter-title]
+In this Chapter
+
+- <<chapter:starting-the-platform-in-host-application>>
+- <<chapter:starting-the-platform-in-micro-application>>
+
+****
+'''
+
+[[chapter:starting-the-platform-in-host-application]]
+[discrete]
+=== Starting the Platform in the Host Application
+
+The host app starts the platform using the method `MicrofrontendPlatform.startHost` and passes a list of web applications to be registered as micro applications. The platform then loads the manifests of all registered micro applications and starts platform services such as the message broker for client-side messaging.
+
+The following code snippet shows how to start the platform in the host application.
+[source,typescript]
+----
+include::starting-the-platform.snippets.ts[tags=startHost1]
+----
+<1> Defines the applications to be registered in the platform.
+<2> Starts the platform host.
+
+IMPORTANT: If the host application wants to interact with the micro applications, it also must register itself as a micro application. The host application has no extra privileges compared to other micro applications.
+
+The following code snippet shows how to start the platform on behalf of a micro application.
+
+[source,typescript]
+----
+include::starting-the-platform.snippets.ts[tags=startHost2]
+----
+<1> Defines the applications to be registered in the platform.
+<2> Starts the platform host on behalf of the _webshop-app_.
+
+IMPORTANT: The method for starting the platform host returns a `Promise` that resolves when the platform started successfully, or that rejects if the startup fails. You should wait for the Promise to resolve before interacting with the platform.
+
+See the chapter <<chapter:platform-configuration:configuring-micro-applications>> for more information about application registration.
+
+[[chapter:starting-the-platform-in-micro-application]]
+[discrete]
+=== Starting the Platform in a Micro Application
+
+A micro application connects to the platform host by invoking the method `MicrofrontendPlatform.connectToHost` and passing its identity as argument. The host does check whether the connecting micro application is authorized to connect, i.e., is registered in the host platform; otherwise, the host will reject the connection attempt.
+
+The following code snippet shows how to start the platform in a micro application, e.g. when displaying a microfrontend.
+
+[source,typescript]
+----
+include::starting-the-platform.snippets.ts[tags=connectToHost]
+----
+
+IMPORTANT: The method for connecting to the platform host returns a `Promise` that resolves when connected to the platform host, or that rejects if not finding the platform host or if the micro application is not authorized to connect. You should wait for the Promise to resolve before interacting with the platform.
+

@@ -1,0 +1,17 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:embedding-microfrontends]]
+== Embedding Microfrontends
+
+This chapter describes how you can embed microfrontends in the host application and a micro application.
+
+With SCION Microfrontend Platform, you can integrate any web page as a microfrontend using an iframe. If the microfrontend wants to interact with other microfrontends, you need to register its web app as a micro application in the host application.
+
+NOTE: The web page to embed must not have the HTTP header 'X-Frame-Options' set because the browser would prevent its integration otherwise.
+
+:leveloffset: +1
+include::outlet.adoc[]
+include::routing.adoc[]
+:leveloffset: -1
+

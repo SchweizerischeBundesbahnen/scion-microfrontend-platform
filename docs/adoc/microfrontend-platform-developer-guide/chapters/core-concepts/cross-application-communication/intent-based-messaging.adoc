@@ -1,0 +1,191 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:intent-based-messaging]]
+== Intent-Based Messaging
+This chapter introduces the intent-based communication for controlled collaboration between micro applications.
+[.chapter-toc]
+****
+[.chapter-title]
+In this Chapter
+
+- <<chapter:intent-based-messaging:what-is-intent-based-messaging>>
+- <<chapter:intent-based-messaging:declaring-an-intention>>
+- <<chapter:intent-based-messaging:issuing-an-intent>>
+- <<chapter:intent-based-messaging:declaring-a-capability>>
+- <<chapter:intent-based-messaging:handling-intents>>
+- <<chapter:intent-based-messaging:issuing-an-intent-with-headers>>
+- <<chapter:intent-based-messaging:request-response-message-exchange-pattern>>
+****
+'''
+
+[[chapter:intent-based-messaging:what-is-intent-based-messaging]]
+[discrete]
+=== What is Intent-Based Messaging?
+Intent-based messaging enables controlled collaboration between micro applications. It is inspired by the Android platform where an application can start an _Activity_ via an _Intent_ (such as sending an email).
+
+This kind of communication is similar to the <<chapter:topic-based-messaging,topic-based>> communication, thus implements also the publish-subscribe messaging pattern, but additionally requires the sending application to declare an intention in its manifest. Unlike topic-based communication, the message (also called the intent) is exclusively transported to micro applications that provide a fulfilling capability through their manifest.
+
+____
+In other words, a micro application can invoke functionality, that is available as capabilities, by issuing an intent. The invoking micro application must declare an intention in its manifest, and the providing micro application a capability in its manifest.
+____
+
+
+Terminology and concepts are explained in more detail in chapter <<chapter:intention-api>>. This chapter focuses on communication, i.e., how intents are sent (usually referred to as issued) and received.
+
+In topic-based communication, messages are published to a topic destination. In intent-based communication, however, the destination are capabilities, formulated in an abstract way, consisting of a a _type_, and optionally a _qualifier_. The _type_ categorizes a capability in terms of its functional semantics (e.g., `microfrontend` if representing a microfrontend). A capability may also define a _qualifier_ to differentiate the different capabilities of the same type. The _type_ is a `string` literal and the qualifier a dictionary of key-value pairs.
+
+[[chapter:intent-based-messaging:declaring-an-intention]]
+[discrete]
+=== Declaring an Intention
+A micro application must declare an intention in its manifest when using functionality provided via a capability.
+
+The following code snippet illustrates how to declare an intention in the manifest, allowing the micro application to open the `product` microfrontend via intent.
+
+[source,json]
+----
+include::intent-based-communication.snippets.ts[tags=intention-declaration]
+----
+<1> Lists intentions of the micro application.
+<2> Declares the intention to open a microfrontend for showing a product.
++
+The _type_ of the intention must correspond one-to-one with the _type_ of the capability. In specifying the qualifier, you are more flexible. For instance, you could use wildcards to match multiple capabilities with a single intention declaration. +
+
+NOTE: A micro application is implicitly qualified to interact with capabilities that it provides; thus, it must not declare an intention.
+
+TIP: You can use the asterisk wildcard (`*`) or optional wildcard character (`?`) in the qualifier of the intention.
+
+To learn more about an intention, see chapter <<chapter:intention-api:intention>> in <<chapter:intention-api>>.
+
+[[chapter:intent-based-messaging:issuing-an-intent]]
+[discrete]
+=== Issuing an Intent
+A micro application is eligible to issue an intent if having declared the corresponding intention in its manifest. The platform transports the intent to micro applications that provide a fulfilling capability. The intent must be exact, thus not contain wildcards. Optionally, you can pass transfer data along with the intent, or set message headers. Transfer data and headers must be serializable with the _Structured Clone Algorithm_.
+
+The following code snippet shows how to issue an intent to open a microfrontend for showing a product.
+
+[source,typescript]
+----
+include::intent-based-communication.snippets.ts[tags=issue-intent]
+----
+<1> Constructs the intent for showing the product microfrontend.
+<2> Defines in which outlet to show the microfrontend. Passing transfer data along with the intent is optional.
+<3> Looks up the `MessageClient` from the bean manager and issues the intent.
+
+NOTE: The method to issue an intent returns a Promise that resolves when dispatched the intent, or that rejects if the message broker rejected the intent.
+
+To learn more about an intent, see chapter <<chapter:intention-api:intent>> in <<chapter:intention-api>>.
+
+[[chapter:intent-based-messaging:declaring-a-capability]]
+[discrete]
+=== Declaring a Capability
+A micro application can provide functionality to micro applications by declaring a capability in its manifest.
+
+The following code snippet illustrates how to declare a capability in the manifest, allowing micro applications to open the `product` microfrontend via intent.
+
+[source,json]
+----
+include::intent-based-communication.snippets.ts[tags=capability-declaration]
+----
+<1> Lists capabilities of the micro application.
+<2> Describes the capability briefly.
+<3> Classifies the capability as a `microfrontend`.
+<4> Qualifies the capability as there are almost certainly multiple `microfrontend` capabilities:
+- `"entity": "product"` +
+  Adds the domain entity name to the qualifier. Since each micro application owns its distinct domain data, using the entity name in the qualifier of the capability should make it unambiguously identifiable.
+- `"id": "*"` +
+  Adds the `id` to the qualifier, allowing consumers to pass the id of the product which to display. The asterisk wildcard (`{asterisk}`) indicates that any id is allowed.
+<5> Allows other micro applications to invoke this capability. If `true`, which is by default, the capability is only available to the providing micro application, and, thus, not public API.
+<6> Adds the relative path of the microfrontend to the properties of the capability. Note the usage of the named parameter `:id` in the URL. Later, when handling intents, that named parameter is replaced with the effective product id as passed with the intent qualifier.
+
+TIP: To have consistency among the qualifiers in the entire <<terminology:application,application>>, we recommend defining guidelines how to name qualifier entries.
+
+TIP: Data ownership is an important rule to follow when implementing a microservices/microfrontend architecture. Therefore, adding the domain entity name to the qualifier is an easy way to uniquely address capabilities.
+
+To learn more about a capability, see chapter <<chapter:intention-api:capability>> in <<chapter:intention-api>>.
+
+[[chapter:intent-based-messaging:handling-intents]]
+[discrete]
+=== Handling Intents
+Intents are transported to all running micro application instances that provide a fulfilling capability. Intents are typically handled in an activator. An activator is a special microfrontend that a micro application can provide to interact with the platform. Activators are loaded when starting the host application and run for the entire application lifecycle. An activator microfrontend is special in that it is never displayed to the user. Learn more about activator in the chapter <<chapter:activator>>.
+
+The following code snippet illustrates how to listen to intents.
+
+[source,typescript]
+----
+include::intent-based-communication.snippets.ts[tags=handle-intent]
+----
+<1> Defines a selector, allowing filtering intents. Using an intent selector is optional. Without a selector, you would receive all intents for which you declared a fulfilling capability in the manifest. As with declaring capabilities, the selector supports the use of wildcards.
+<2> Subscribes to intents that match the selector.
+<3> Reads the microfrontend URL from the properties of the resolved capability. In this example, the configured path is as follows: `/products/:id`.
+<4> Instructs the router to show the given microfrontend in the specified target outlet.
+<5> Specifies the outlet in which to display the microfrontend. In this example, the outlet name is transported along with the intent as transfer data.
+<6> Lets the router substitute named URL path parameters with values from the qualifier. In this example, the microfrontend URL contains the named path segment `:id`, which the router replaces with the product id from the qualifier.
+
+IMPORTANT: Regardless of the intent selector, a micro application will only receive intents for which it declares a fulfilling capability in its manifest.
+
+[[chapter:intent-based-messaging:issuing-an-intent-with-headers]]
+[discrete]
+=== Issuing an Intent with Headers
+The platform allows issuing an intent with message headers, which the receiver then can read. A message header can contain any data that is serializable with the _Structured Clone Algorithm_.
+
+[source,typescript]
+----
+include::intent-based-communication.snippets.ts[tags=issue-intent-with-headers]
+----
+<1> Adds a custom message header. In this example, we provide the name of the outlet where to display the microfrontend.
+
+'''
+
+The recipient can then access the message headers via the `headers` property on the received intent, as illustrated in the following example.
+
+[source,typescript]
+----
+include::intent-based-communication.snippets.ts[tags=handle-intent-with-headers]
+----
+<1> Reads the message header from the received intent. In this example, the provided header represents the name of the outlet where to display the microfrontend.
+<2> Sets the name of the outlet where to display the microfrontend.
+
+[NOTE]
+====
+The platform adds some platform-specific headers to each intent, like the message id or the publishing timestamp. Platform headers start with the Theta (`ɵ`) symbol. Some platform headers are public API and available to the application via the enum `MessageHeaders`.
+ +
+----
+{"ɵMESSAGE_ID" => "8e53d603-ff12-400b-9d6e-8f41fbbe5f2b"}
+{"ɵTIMESTAMP" => 1584124022134}
+{"ɵAPP_SYMBOLIC_NAME" => "app-1"}
+{"ɵCLIENT_ID" => "c8ce089f-10d7-4c82-b91e-11a7f60c15d3"}
+----
+====
+
+[[chapter:intent-based-messaging:request-response-message-exchange-pattern]]
+[discrete]
+=== Request-Response Message Exchange
+The platform facilitates the _request-response_ message exchange pattern for synchronous communication.
+
+The communication is initiated by the requestor by sending a request. The recipient can then respond to the request. Just as in JMS (_Java Message Service_), the platform sets a `ReplyTo` message header on the intent, which contains the topic of a temporary inbox where the replier can send replies to. The inbox is destroyed when the requestor unsubscribes.
+
+The following code snippet shows how to initiate a _request-response_ communication via intent-based messaging and receiving replies. To explain this kind of communication, we have a requestor requesting the user’s access token.
+[source,typescript]
+----
+include::intent-based-communication.snippets.ts[tags=request]
+----
+<1> Initiates a _request-response_ communication by invoking the `requestByIntent$` method on the `MessageClient`. In this example, we request the user’s access token.
+<2> Prints the received token to the console.
+
+TIP: The `Observable` never completes. If expecting a single reply, use the `take(1)` RxJS operator to unsubscribe upon the receipt of the first reply.
+
+'''
+
+The following code snippet shows how to reply to a request. For illustrative purposes, when receiving a request, a subscription to the auth service is created to get the user’s access token. The token Observable is a hot Observable, meaning it never completes and emits upon renewal of the token.
+
+[source,typescript]
+----
+include::intent-based-communication.snippets.ts[tags=reply]
+----
+<1> Reads the `ReplyTo` topic from the request where to send replies to.
+<2> Sends the user’s access token to the requestor.
+<3> Stops replying when the requestor unsubscribes.
+
+TIP: If streaming data like in the example above, the replier can use the RxJS `takeUntilUnsubscribe` operator of the platform to stop replying when the requestor unsubscribes.
+

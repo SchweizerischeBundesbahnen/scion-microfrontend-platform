@@ -1,0 +1,122 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:activator]]
+== Activator
+This chapter covers the Activator API of the SCION Microfrontend Platform.
+
+[.chapter-toc]
+****
+[.chapter-title]
+In this Chapter
+
+- <<chapter:activator:what-is-an-activator>>
+- <<chapter:activator:context>>
+- <<chapter:activator:multiple-activators>>
+- <<chapter:activator:sharing-state>>
+- <<chapter:activator:contributing-capabilities-in-the-activator>>
+- <<chapter:activator:routing-in-the-activator>>
+
+****
+'''
+
+[[chapter:activator:what-is-an-activator]]
+[discrete]
+=== What is an Activator?
+An activator allows a micro application to initialize and connect to the platform when the user loads the host application into his browser. In the broadest sense, an activator is a kind of microfrontend, i.e. an HTML page that runs in an iframe. In contrast to regular microfrontends, however, at platform startup, the platform loads activator microfrontends into hidden iframes for the entire platform lifecycle, thus, providing a stateful session to the micro application on the client-side.
+
+A micro application registers an activator as public _activator_ capability in its manifest, as follows:
+
+[source,json]
+----
+include::activator.snippets.ts[tags=register-activator]
+----
+<1> Activators have the type `activator`.
+<2> Activators must have public visibility.
+<3> Path where the platform can load the activator microfrontend. The path is relative to the base URL of the micro application, as specified in the application manifest.
+
+Some typical use cases for activators are receiving messages and intents, preloading data, or flexibly providing capabilities. If implementing single sign-on authentication, you could, for example, obtain the user's access token and preemptively refresh it before its expected expiration.
+
+[[chapter:activator:context]]
+[discrete]
+=== Activation Context
+An activator's microfrontend runs inside an activation context. The context provides access to the activator capability, allowing to read properties declared on the activator capability.
+
+You can obtain the activation context using the `ContextService` as following.
+
+[source,typescript]
+----
+include::activator.snippets.ts[tags=activation-context]
+----
+
+[[chapter:activator:multiple-activators]]
+[discrete]
+=== Multiple Activators
+A micro application can register multiple activators. Note, that each activator boots the micro application on its own and runs in a separate browsing context. The platform nominates one activator of each micro application as its primary activator. The nomination has no relevance to the platform but can help code decide whether or not to install singleton functionality.
+
+You can test if running in the primary activation context as following.
+
+[source,typescript]
+----
+include::activator.snippets.ts[tags=activation-context:primary]
+----
+
+[[chapter:activator:sharing-state]]
+[discrete]
+=== Sharing State
+Since an activator runs in a separate browsing context, microfrontends cannot directly access its state. Instead, an activator could put data, for example, into session storage, so that microfrontends of its micro application can access it. Alternatively, an activator could install a message listener, allowing microfrontends to request data via client-side messaging. For more information, refer to <<chapter:cross-application-communication>>.
+
+[[chapter:activator:contributing-capabilities-in-the-activator]]
+[discrete]
+=== Contributing Capabilities in the Activator
+An activator is the perfect place for flexibly adding capabilities to the platform. For illustrative purposes, the following code registers a user notification capability to inform the user about an upcoming maintenance window. After 30 seconds, the activator unregisters the capability again.
+
+[source,typescript]
+----
+include::activator.snippets.ts[tags=contribute-capability-in-activator]
+----
+
+For more information about how to register capabilities, refer to chapter <<chapter:intention-api:capability-registration>>.
+
+[[chapter:activator:routing-in-the-activator]]
+[discrete]
+=== Routing in the Activator
+Using the router, you can control which microfrontend to display in a router outlet. Routing, however, requires knowing the microfrontend URL, which leads to a tight coupling between the micro applications. Instead, consider moving routing to the providing micro application, keeping the microfrontend URL an implementation detail of the micro application that provides the microfrontend.
+
+The idea is as follows: Micro applications provide microfrontends as microfrontend capabilities and listen for microfrontend intents in their activator, initiating routing when receiving a microfrontend intent. The URL of the microfrontend can be added to the properties of the microfrontend capability. Micro applications can then issue a microfrontend intent to display the microfrontend, passing the target outlet as message header along with the intent.
+
+A microfrontend capability is declared as following:
+
+[source,json]
+----
+include::activator.snippets.ts[tags=microfrontend-capability]
+----
+<1> Uses the name `microfrontend` as the capability type. Note that it can be any name, not necessarily `microfrontend`.
+<2> Requires the caller to provide the product id (`id`) in the qualifier.
+<3> Allows other micro applications to open the microfrontend.
+<4> Path to the microfrontend. The path contains a wildcard segment for the product id (`:id`).
+
+In the activator, the micro application installs an intent listener to handle microfrontend intents. Note that a micro application receives only microfrontend intents for which it declared a capability in its manifest.
+
+[source,typescript]
+----
+include::activator.snippets.ts[tags=microfrontend-routing]
+----
+<1> Reads the target outlet from the message headers.
+<2> Reads the path to the microfrontend from the capability properties.
+<3> Sets the routing target.
+<4> Lets the router substitute named path segments with values from the qualifier.
+
+Finally, micro applications can display the microfrontend in a router outlet as following.
+
+[source,typescript]
+----
+include::activator.snippets.ts[tags=issue-microfrontend-intent]
+----
+<1> Constructs the intent to show the product microfrontend.
+<2> Specifies in which outlet to display the microfrontend.
+<3> Issues the microfrontend intent.
+
+NOTE: Issuing an intent requires the intending micro application to declare an intention in its manifest. The enforced declaration of intentions allows to identify which micro application depends on which other micro application.
+
+

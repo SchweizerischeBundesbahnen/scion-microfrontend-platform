@@ -1,0 +1,4 @@
+--
+A micro application deals with well-defined business functionality. It is a regular web application that provides one or more <<terminology:microfrontend,microfrontends>>. A micro application can communicate with other micro applications safely using the <<terminology:platform,platform>>'s cross-origin messaging API. A micro application has to provide an <<terminology:manifest,application manifest>> which to register in the <<terminology:host-app,host application>>.
+--
+

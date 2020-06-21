@@ -1,0 +1,13 @@
+:basedir: ../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:configuration]]
+== Configuration
+
+This chapter describes how to start and configure the SCION Microfrontend Platform.
+
+:leveloffset: +1
+include::starting-the-platform/starting-the-platform.adoc[]
+include::platform-configuration/platform-configuration.adoc[]
+:leveloffset: -1
+

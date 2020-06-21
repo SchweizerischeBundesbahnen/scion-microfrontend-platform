@@ -1,0 +1,154 @@
+<!-- See https://asciidoctor.org/docs/user-manual/#docinfo-file -->
+
+<!-- Override asciidoctor theme -->
+<style>
+  @media screen and (min-width: 1280px) {
+    #toc.toc2 {
+      width: 23em;
+    }
+
+    body.toc2 {
+      padding-left: 23em;
+    }
+  }
+
+  h1, h2, h3, h4, h5, h6, a, caption, h1 > a.link, h2 > a.link, h3 > a.link, h4 > a.link, h5 > a.link, h6 > a.link, #content h1 > a.link, a {
+    color: #3d7e9a !important;
+  }
+
+  h1, h2, h3, h4, h5, h6, a, caption, h1 > a.link:hover, h2 > a.link:hover, h3 > a.link:hover, h4 > a.link:hover, h5 > a.link:hover, h6 > a.link:hover, #content h1 > a.link:hover, a:hover {
+    color: #3d7e9a !important;
+  }
+
+  #toctitle {
+    color: black;
+  }
+
+  .chapter-toc {
+    position: relative;
+    font-family: "Open Sans", "DejaVu Sans", sans-serif;
+  }
+
+  .chapter-toc::before {
+    background-color: #3d7e9a;
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    height: 5px;
+  }
+
+  .chapter-toc .chapter-title {
+    font-size: 1.25em;
+  }
+
+  .chapter-toc ul {
+    list-style: none;
+  }
+
+  @media screen and (min-width: 768px) {
+    h1 {
+      font-size: 2.75em !important;
+    }
+
+    h2 {
+      font-size: 2.3125em !important;
+    }
+
+    h3, h4, h5, h6 {
+      font-size: 1.6875em !important;
+    }
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  blockquote::before {
+    color: #3d7e9a !important;
+  }
+
+  .exampleblock > .content {
+    background: none;
+  }
+</style>
+
+<!-- Override code highlighting of 'prism' theme; see https://prismjs.com/-->
+<style>
+  .listingblock pre[class^="highlight "] {
+    background: none !important;
+  }
+
+  .listingblock pre[class*="language-"] > code {
+    background: #f3f3f2 !important;
+    box-shadow: none !important;
+    _border: 1px solid #dbdbd6 !important;
+    border: none !important;
+    border-left: 5px solid #3d7e9a !important;
+    border-radius: 0 !important;
+    padding: .75em !important;
+    _border-radius: 4px !important;
+    text-shadow: none !important;
+  }
+
+  .listingblock code::before {
+    top: 0 !important;
+    right: 1.5em !important;
+  }
+
+  .listingblock pre[class*="language-"] > code .conum {
+    _background: rgba(61, 126, 154, .5) !important;
+  }
+
+  .listingblock pre[class*="language-"] > code span.token {
+    /*color: #000000 !important;*/
+    color: #000000 !important;
+  }
+
+  .listingblock pre[class*="language-"] > code span.token.builtin {
+    color: #006699 !important;
+    font-weight: bold !important;
+  }
+
+  .listingblock pre[class*="language-"] > code span.token.tag {
+    color: #006699 !important;
+  }
+
+  .listingblock pre[class*="language-"] > code span.token.attr-value {
+    color: #0008ff !important;
+  }
+
+  .listingblock pre[class*="language-"] > code span.token.string {
+    color: #0008ff !important;
+  }
+
+  .listingblock pre[class*="language-"] > code span.token.comment {
+    color: #008000ed !important;
+  }
+
+  .listingblock pre[class*="language-"] > code span.token.keyword:not(.keyword-type):not(.keyword-get) {
+    color: #006699 !important;
+    font-weight: bold !important;
+  }
+
+  .listingblock pre[class*="language-"] > code span.token.function {
+    color: #006699 !important;
+  }
+
+  .listingblock pre[class*="language-"] > code span.token.class-name {
+    color: #000000 !important;
+  }
+
+  .listingblock pre[class*="language-"] > code :not(.conum) {
+    background: none !important;
+  }
+
+  .listingblock pre[class*="language-"]:before, pre[class*="language-"]:after {
+    box-shadow: none !important;
+  }
+</style>

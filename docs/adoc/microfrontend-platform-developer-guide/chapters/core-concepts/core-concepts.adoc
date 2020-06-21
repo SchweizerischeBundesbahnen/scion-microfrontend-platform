@@ -1,0 +1,15 @@
+:basedir: ../..
+include::{basedir}/_common.adoc[]
+
+== Core Concepts
+
+This part of the developer guide covers all the concepts and API that are integral to the SCION Microfrontend Platform. Refer to chapter <<chapter:terminology>> for an overview of the terms and expressions used in this guide.
+
+:leveloffset: +1
+include::overview/overview.adoc[]
+include::cross-application-communication/cross-application-communication.adoc[]
+include::intention-api/intention-api.adoc[]
+include::embedding-microfrontends/embedding-microfrontends.adoc[]
+include::activator/activator.adoc[]
+:leveloffset: -1
+

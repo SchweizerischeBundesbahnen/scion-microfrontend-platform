@@ -1,0 +1,7 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:compatibility-and-deprecation-policy]]
+== Compatibility and Deprecation Policy
+We are aware that you need stability from the SCION Microfrontend Platform, primarily because microfrontends with potential different lifecycles are involved. Therefore, you can expect a decent release cycle of one or two major releases per year. Changes in the communication protocol between the host and micro applications are backward compatible with the previous major version. When deprecating API, which can occur in any release, it will still be present in the next major release. Removal of deprecated API will occur only in a major release.
+

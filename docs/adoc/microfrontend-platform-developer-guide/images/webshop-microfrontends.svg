@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="951px" height="551px" viewBox="-0.5 -0.5 951 551"
+  content="&lt;mxfile host=&quot;Electron&quot; modified=&quot;2020-03-26T12:28:59.682Z&quot; agent=&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/12.6.5 Chrome/80.0.3987.86 Electron/8.0.0 Safari/537.36&quot; etag=&quot;VbDNyhBNJsl4hBz8vGFU&quot; version=&quot;12.6.5&quot; type=&quot;device&quot; pages=&quot;5&quot;&gt;&lt;diagram name=&quot;webshop-microfrontends&quot; id=&quot;f1b7ffb7-ca1e-a977-7cf5-a751b3c06c05&quot;&gt;7ZhLk5s4EIB/jY92AeLl49ibx1YlqVRmq+YsRAOqAUSEGDz59SsZ8cZZJzEzqdTig6Ebulvdn1qCDTpmp3ccF8lHFkK6sYzwtEF/bSzLNHxX/inJcyPZu1oQcxrqm3rBPf0G7ZNaWtEQytGNgrFU0GIsJCzPgYiRDHPO6vFtEUvHXgscw0xwT3A6lz7QUCSN1LfcXv4eaJy0nk1332gCTB5jzqpc+9tYKDofjTrDrS090DLBIasHIvRmg46cMdGcZacjpCq3bdqa595e0HZxc8jFNQ94iUeyJDiQT3+jTw7hh/gz3XrazBNOK2jHcY5WPLcZKgVnj11yzA06dEMx5AVOaZzLcyLjAC4FicjS/sZCWclOsaJnlzHyWBU7WUuBaQ683AWqgsAfaH62eOCaEGW5cXxkKePWORR0tNVvrEKNitjqJ1WZtPwPnJqcHJVJIBUv6RN8gbI3TlhGiT5PGKffVExt3E/ABZWM3OmxZTQMVToOBXCagRznfYEJzWNtIGcfcADpPG4d9vmQmnnN2vxLh3AaiHQN3wGT7vizvKXVthNHzzfT1td1T+/e0bJkQK7TCrGeMXFnu6dGnmhwfgQiawbRAwRlwoofZSnEZQLhTcDCOUlU/g+RlGmoTE9fD2rjno+BuxQisViq70+gqwvoTupnzcrXlXhYvrYh3b56aFa9RAjVfe+UYettXde7uqnnjrLfoaTDJvG7lddE4/q68+lpLU3P9eprL7R4N1VJCORJ3GSjEajkjarrfq1Yq9g23VNSYZhuceqV59W5zXgvRI7pGao79aLG23tWKi93RdH6lQNrXI/DkeJBiBPuzktvR1adUAGqKSttLQGawdUj2bZ+c6lX+1aARsB0rE4XBcGKzkCLP7q8RsQpLsvppFAhRDRNBwGEDvihvSai1rQDLawgSy3INldbQZyLjN4WSZu4tu/NkZzNiI+UcBZx6QPkBm+RR/0EbyUFZ2FFxDalCu8LYL8MxC7xIYiugbjb2Yw5tibAThnF4EdkTUadCaMLbbSTDRlF6+1y3D+H0f/x/NUWiv6bT2eph67Ip/9CfPqmi/xoHT7VJrOQa+aWYP7alO5dD+GrdgI/RymYcqn31qTUm75rLHXRxc3ofjVK9y9E6R48y1jYfN6CUlKVQuaDbzk8UajLVwY19PaBsfh6dRtQowhcsm47tceg2sYcVNtfANU0VgPVuzmoi+9ay/AS27PtleBNgDyy6nJ3nT7wynQHvmM7a9LtE1iX7mkbtq9twz+xV5CX/Sfls27w3R69+Rc=&lt;/diagram&gt;&lt;diagram id=&quot;NwYp4i5vGVmQkq5KpZBq&quot; name=&quot;webshop-micro applications&quot;&gt;7ZtLc5s6GIZ/jZfuiDte2tRNzyLT9Himabs5IwsZ1ACiAsdOfv2RQNhgiG9jCO2AF8GfhG58D+87MhlpTri9YzD276mLg5EK3O1I+zhSVV23Tf5HRF7yiApMGfEYcfOYsg8syCuWQSCja+LipFIxpTRISVwNIhpFGKWVGGSMbqrVVjSo9hpDD9cCCwSDevSRuKmfR20D7OOfMfH8omcFyJIQFpVlIPGhSzelkDYfaQ6jNM3Pwq2DA7F6xbp4Pyz7x3+a9uvLJlx8X2jq3fppnDf26ZJLdlNgOEqvbvrr9P7Xw+9X8O3ucfNzrn8j3+f38hLwDIO1XK+Raga8k1nMTzxxUgRWlHcu7lNAWVbV/L2meQVtgnRL18uh6rVJDCOxgumLvC1FRdHoOMmSZsorKGa8fbuVZRFwfIye6FoMZxrHRTGf+rJ2CTuM8Fr5aGTYUUdTHgT3BDGaNxgQBFNCxYhF8ax8bb4KZ3RSWj+1MnWV0XXkYnFXAC/e+CTFixgiUbrhEPKYn4YB/6aIlSuSTtRFNCSoKEgZfcLO7m5oS9vQDVELBsSLeAzxbMG8cPaMWcqnFExlQUrjXQMFEzybZ14Ak0R25VNGXvlcYTGQFQmCUm8rG2GEdtM7mZsyh8VQ8LZEpszVO0xDnLIXXkWWjlW9YFQ+esa2JQObPciqLWN+GeKiIpQPD2/X/B4QfiIZuYAX5RgvDfmd3d1xkt9ekeERZSFf09M5fg52NhCfemP3MCIrnKQn8rYJmGrm3nRq18zkH57CkWAxqcPmwBguSUBSgpPTM32bx9MExqIk3HpCIj8sYULQB5eidZilfJ1EMztqiInGXJj4GfrFlweYckijLMKff03kNeN7yKMhPnKVS/H8aJdT/ZBTUOfUasDUNlqiVL2Nqq2y4wpVC0iEx8VMM10ThsG4nPrTgqk3CWamZStGBTzuFQ+B06p5qa43DhPtZPxoJ9cw3YbGRjTC58hrSFxXjOMQRcAPx2l8LFyivLNC59sjWqspbwPRitkl0tqNjCq2VNCgM20Z1XWS8gXgOIF/8TPBm8GxljLZtSZL0J1jXWGzZceq9NCx6p051gbX2YW9vMIi/nVe8A3P95ZHbJGA3nlBY/CCf4QXlEo5ZplOJic6GzxhheyP1mQG2vWEoH+e0LwN2rZiavY1aF/nCRc+jWMSefwKB7JhD7OslhPT0qDZlSPEimtgq1VqrB46QmvYwxz2MPvhW3uzh2n1zrfag2/9E3xrItV8jDItH0zr+fIrxH5qtoq12T/TOrkN1wb3B3p3G5mPeCky/TY29TNN0utc6nt4UltdamZnnpQ7UtvVu4VCAWaDKW2iosUf1o++iTLsU/4dfq83+5SGYVQZmEze2e8pR18tOV8YdGTqttWZMDww6q5Rmm1m8NtPvWE/o0wVsvFy1Zl2QGyv2v2FSzPP0Y7dm1sdacfR9z0G7Ri047YMHPqn99eOG70dMWwWtLtZEOdiOQ5I0s+9AlDDuyd7BaZjz2efxEUMugTvu5Dja4929VDxmmjvdgtBOfpOx4B7z3DvJem93RXckd4e0mDSIdL86/5fhLKy0n9aafP/AQ==&lt;/diagram&gt;&lt;diagram id=&quot;m6ldWMAA3LLmdDvs0R3L&quot; name=&quot;intention-api&quot;&gt;7VrbcqM4EP0aP8bF1ZfHhGQys7veuMZzedySQQZNBGKEHDvz9dsCgbnIt4zZma2ykyrgSLRE9zndEvbA9uLtI0dpNGMBpgPLCLYD+35gWebYnMBBIq8FYhkjhYScBKrXDliQH1iBhkLXJMBZo6NgjAqSNkGfJQn2RQNDnLNNs9uK0eaoKQpxB1j4iHbRryQQUYFOXGOHv8ckjMqRTUO1xKjsrIAsQgHb1CD7YWB7nDFRnMVbD1PpvdIvyV38x/fkIybf5smXz9vPnx5n3k1h7N05t1SPwHEiLmvaKky/ILpW/hpYIwqD3K0YjAUPLV6VJ0ff16xsuMnyON9CB3OUbneNcBaqY25lWQIz4nMG3W/TlBIfCcKSsg9Medm+D7BiAiVsNeZibSIi8CJFvrzeAHWhUyRiClcmnKIsLbi0IlsMz3/H2ToJ5Nm9AVdVJOVFSFGWqXOfxcRXNjLB2TP2GGU8H9OeGPKvainZZEufEEprPVf5R9rmKCAQtLItYQlWLtQZjhgnP6ANlc/xgrkAb9FbSsIEMMHSyhuyDW9bJD/CELOiLQgesxgL/gr3lVZGiulK6zemo4DNTjlVp6iumhJESq1hZXzHSDhRpDyDoO5egnY4czJjLR1jZyghK5yJvQzcT9YlP4783OQ+JAIC29TMQX0Aw1OcE05Iwh2RyxL5z2Eukae1oERyNMcDxJ+f4C4iJCOMoeH2KyXrclJCSjE+3IJ5/ixZlM/aVBdzJKAlyRHwu5xMUbxMs0eNVXWx1NikKzGdwiZ9Ccw2riXgWgJKerrO71cCbPNaA+DooRQtCZW5+FoE/t9FwJ3+uiKA//749c/H8MO3py+OuIlS03sMNausOUVixXjcIVWZj/5CS0znLCN5Hrfvl0wIFjcp1QpjFRd9TutEK2UkEfmjunfwD9QbDSyvPAxcsOnl+NQ5iBeHGq7sdHDLzYEmqMPGXdDMTSoLTVCHjV2dSVMzdhuzNKDWpGZsozVJ+FduxvzhBRfeNgtF56kj3obyvcDQJ5nP/snQCg8R92Ui8cWa4yHkgSJWZyYE44yEYB9QeF8KdU5YpjkahTp9KdTWbYRa0pTZO93rEfWCBS3L7sZFPGWftGmUimv7yu3LV5ZuwdDyVS1LHc1oncREZc+7ql7qKpU+xXUr3QER1DVUFS5DI07CsvGQQHyzYYwIbajRPCDAC1XZkzR4gNT790qjDpEmGs31x6NRDwtPZ//+/qxlZ4vP4HvRLL5NZpUxrIVcQR12t6kbkyCg+xaQb8j7/zmPnC6PdLnb6i13n5CPigW3JkEEhEPWLjJSBtU2akb5Lf7vaXHNmUBqotPD9b23SI+HbqMYmXa+2OlUI8321SxvvXz4dS/Zr+HvIfx2vgaux98Znhj+aV/Bt6/B7zn4ZazdKvpHgm2N+tO6bsnQCnczbN0dUZ0BOAlu5ZegcjlKmf/8KSJJa48NIXqHYkKlG7zcmGUsUJLBYbZQHRZqdLPNk30BPhY/HHS+dX3bLqIWKvfA2o5jCvx6aY6pi54aYS73tLXEYLU2KSNj6FhNKyAw7mN1Y/171Jatztaw/eJTIB5i0TGU86l68p+g2PhKsd+QYo6roZg5rT4Tx30b3zqv5C/GN7jc/Xqh6L77EYj98C8=&lt;/diagram&gt;&lt;diagram name=&quot;manifest-service&quot; id=&quot;gx8B6oZ72qLvmQ2wbxYL&quot;&gt;7Zpdk6I4FIZ/jZd2QfgQL21ndqd2u2u6yqrdqbmLECFj4LAhtDq/fhMIKB/aTivT1dV2XwhvwkkMz3k9REfWPN7+yXEaPUJA2AgZwXZkfRohhAwXyRel7LSCXLNUQk6DUjsQFvQn0aKh1ZwGJGt0FABM0LQp+pAkxBcNDXMOm2a3FbDmqCkOSUdY+Jh11X9pIKJS9Rxjr38hNIyqkU1Dt8S46qyFLMIBbA4k6/PImnMAUR7F2zlhavWqdflkPmxFbKXfJl7y1+Tv2VRMduMy2B+/ckn9FjhJxHVDW2XoZ8xyvV4j5DI5yP1SHoTqoBJWIAeXqyB2emnd/3KoGsZZceNnsoNpp9t9YxXlESd0RTJRRZPzLAM2B5FyZ+Alf1k5e3Kob3JznOIlZVRQSerRMTpTRo0RkeQjVYcJCPlyv4moIIsU+0rbyOySWiRiJs9MFR/765BDngRfc8FoQrQeYL7+Kq+iQmWccWc4Uiz6EXUjDXlWg6hOQoazTB/7EFNfx8kEhzWZAwNeTM/y0NJy3bqlSgakFokydtAzcIgX2FLHjIaJ1HzJHeHF5LKomIapT56wkC1JocjVVdFLBzDNeomeCRdk28rGF1A26/ySzkQgJoLv5HU6ijPVKalNaWzZWtjsU3yipegguz2tYW0qYR16nzjyQOfOr6Soc0ukj5JIS8+xHeOcRFp5PvH995RItvXWieTeEumjJJLre2S5OusTCRNv9a4SyUFvnUjTo4l0Npre6bwxFoQ/U0nTmTg2mXmBxlcWOYb67yBl9Xhz8adicxxQee+rtgQU+cVa9AXuEBgBpz9lZ8z0BDkILCioTmOzuGYo6uxzqHN7qKvFq2OH7Mux67Xr17tgE7tDfH7kcbrQHTFX/gJcRBBCgtkDQFp1I0Ls9JMtzgWcAPVcINEJwso3QILOc+1FrBh3putNG7ggrzzlhElgn5vD9ZGhgz8BLe6kjmy57Wp80qIrg5z7RF92+IjaimR77UjIaUYSmIdEnIhUdYTVKiOig3O9LhcQbgxNeO201Ocgu8/SlFG/9JQTVcm51UAes5kvFHb3ypJkZPaAl4Q9QUa1by1BCIhlB6Ya7uvCoM8/qxgzbYwCWk4OZTUxrzd4jCvVD29g9kM5uWW2C/EeJ7d6nHw4I+97or056xFntVHTWc1hnNU2r+Wsdtujf6+zBt/Xj2Tyff0t3K5FvvwnD1frcZ+xtogjSTBTm8IqJ5VNKOAkAJiLrvyOSDpIcqcnySvtQpwcpw2BZ9w5rwOqu3PQjXUEqWvhgm64/F5crOn1cOmJNTAufV913HAZEhfjirh0Yw2My1DPsQxgnafn1uyyzBQt2Bp8VfXrQbmrpU7p2q7TYxoE7Ni24CvK82MwH26HIGfIGrrzkeR2a2i7bzfkCjV0L0PHvxS6jCFOQpqpu/ohKUKDbqkZTst5JoNBJE/3vx4ofWv/Iwzr8/8=&lt;/diagram&gt;&lt;diagram id=&quot;gctYu_sAWFdK_tP99Igm&quot; name=&quot;Page-5&quot;&gt;7ZlNb6MwEIZ/DUckbBIK19Jkc2nVFZVW2psDw4dqMDLOkuyvXxMMgThSFWm7tdCeMrzjj3ieMWbAcsPy+I2TOn9mCVALO8nRcp8sjLGDffnTKade8Ty3FzJeJL2ELkJU/AYlOko9FAk0s4aCMSqKei7GrKogFjONcM7aebOU0fmsNclAE6KYUF39USQi71V/7Vz0HRRZPsyMHOUpydBYCU1OEtZOJHdjuSFnTPRWeQyBdsEb4sK+v9hP2y37CW+bXRSyRyif7X6w7T1dxiVwqMTfHXrdD/2L0IOK19urhT0qp3ncc2llnbUjVMA7qQToPuwMpBtxGoLO2aFKoJvYkU3avBAQ1STuvK1MM6nloqTyCklzjGvXNqOkaZQds7KIld0Izt5Hgl03QousknYsgwJcCmlBacgo4+f/4CYE/DQeu048XuzDPpUetXjgAo5X2fJBqNHIX24cYCUIfpL91ChrV4VE7Rnsq+t2koFKyifJt1IaUTmfjSNfuEpDob0Ds3c3ZknV+c/1iivChnF90LgiY7bjZ0HAV5vLQ18MIbgFAS0bgmsahGH+OQW8bAor4yggjcIeUsZvPDdEgggou9UvGtH6itBXA8IaoCAIlo3A9g07tZGrQTDnKfqzKHgr0yisblFY+Ln9YFplgvQKFC/+3PZNqyOQXiAGgb9sCDYy7lzQy7kPy3RjMJlTpdvYOLD+3WA9Unagqn1Tn0N147WbITdJc8AHxt1W9VcDApqFVzzIsJJnSIoJBJJ2IVg0hX9XeMrLyzeQs2/yJcnd/AE=&lt;/diagram&gt;&lt;/mxfile&gt;"
+  style="background-color: rgb(255, 255, 255);">
+  <defs/>
+  <g>
+    <path d="M 0 0 L 950 0 L 950 550 L 0 550 Z" fill="#ffffff" stroke="#cccccc" stroke-miterlimit="10" pointer-events="all"/>
+    <ellipse cx="885" cy="15" rx="10" ry="10" fill="none" stroke="#cccccc" pointer-events="all"/>
+    <ellipse cx="910" cy="15" rx="10" ry="10" fill="none" stroke="#cccccc" pointer-events="all"/>
+    <ellipse cx="935" cy="15" rx="10" ry="10" fill="none" stroke="#c4c4c4" pointer-events="all"/>
+    <path d="M 0 40 L 30 40 L 30 15 C 30 12.24 32.24 10 35 10 L 170 10 C 172.76 10 175 12.24 175 15 L 175 40 L 950 40" fill="none" stroke="#c4c4c4" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 0 110 L 950 110" fill="none" stroke="#c4c4c4" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 100 60 C 100 57.24 102.24 55 105 55 L 935 55 C 937.76 55 940 57.24 940 60 L 940 85 C 940 87.76 937.76 90 935 90 L 105 90 C 102.24 90 100 87.76 100 85 Z" fill="none" stroke="#c4c4c4" stroke-miterlimit="10" pointer-events="all"/>
+    <g fill="#666666" font-family="Arial,Helvetica" font-size="17px"/>
+    <g fill="#666666" font-family="Arial,Helvetica" font-size="17px"/>
+    <path d="M 37 17 L 48 17 L 52 21 L 52 35 L 37 35 Z" fill="none" stroke="#c4c4c4" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 48 17 L 48 21 L 52 22" fill="none" stroke="#c4c4c4" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 107 64 L 118 64 L 122 68 L 122 82 L 107 82 Z" fill="none" stroke="#c4c4c4" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 118 64 L 118 68 L 122 69" fill="none" stroke="#c4c4c4" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 12 74 L 22 64 L 22 70 L 32 70 L 32 78 L 22 78 L 22 84 Z" fill="#c4c4c4" stroke="#c4c4c4" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 62 74 L 52 64 L 52 70 L 42 70 L 42 78 L 52 78 L 52 84 Z" fill="#c4c4c4" stroke="#c4c4c4" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+    <path d="M 87.6 77.3 C 85.9 80.13 82.22 81.06 79.38 79.36 C 76.54 77.67 75.61 74 77.29 71.15 C 78.98 68.31 82.65 67.36 85.5 69.04 L 83.9 70.5 L 91.8 72.3 L 90 64.8 L 88.3 66.4 C 85.11 64.03 80.8 63.82 77.39 65.87 C 73.99 67.92 72.16 71.83 72.77 75.76 C 73.37 79.69 76.3 82.86 80.16 83.79 C 84.03 84.72 88.07 83.22 90.4 80 Z" fill="#c4c4c4" stroke="#c4c4c4" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 25px; margin-left: 62px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: left; ">
+              <div style="display: inline-block; font-size: 17px; font-family: Helvetica; color: #666666; line-height: 1.2; pointer-events: all; white-space: nowrap; ">Webshop</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="62" y="30" fill="#666666" font-family="Helvetica" font-size="17px">Webshop</text>
+      </switch>
+    </g>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 73px; margin-left: 132px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: left; ">
+              <div style="display: inline-block; font-size: 17px; font-family: Helvetica; color: #666666; line-height: 1.2; pointer-events: all; white-space: nowrap; ">https://www.webshop.io</div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="132" y="78" fill="#666666" font-family="Helvetica" font-size="17px">https://www.webshop.io</text>
+      </switch>
+    </g>
+    <path
+      d="M 20 120 L 20 119.61 L 30 120.33 L 40 120.19 L 50 119.9 L 60 119.39 L 70 120.67 L 80 120.17 L 90 119.31 L 100 119.88 L 110 119.98 L 120 119.28 L 130 120.46 L 140 120.15 L 150 119.68 L 160 120.09 L 170 119.39 L 180 120.65 L 190 120.13 L 200 119.53 L 210 120.71 L 220 119.28 L 230 119.98 L 240 120.72 L 250 120.09 L 260 119.5 L 270 119.78 L 280 120.01 L 290 119.44 L 300 119.34 L 310 120.56 L 320 119.58 L 330 120.1 L 340 120.08 L 350 120.56 L 360 120.16 L 370 120.19 L 380 119.82 L 390 119.75 L 400 119.51 L 410 119.9 L 420 119.26 L 430 119.49 L 440 119.86 L 450 119.69 L 460 120.62 L 470 119.42 L 480 120.59 L 490 119.34 L 500 120.45 L 510 120.55 L 520 120.16 L 530 119.84 L 540 119.35 L 550 120.45 L 560 120.53 L 570 119.42 L 580 120.25 L 590 120.7 L 600 119.74 L 610 119.91 L 620 120.51 L 630 120.45 L 640 119.9 L 650 120.57 L 660 120.4 L 670 120.13 L 680 120.24 L 690 119.92 L 700 119.64 L 710 119.66 L 720 119.4 L 730 119.49 L 740 120.22 L 750 120.15 L 760 119.52 L 770 120.23 L 780 119.41 L 790 119.29 L 800 119.43 L 810 119.76 L 820 119.61 L 830 120.53 L 840 120.04 L 850 120.73 L 860 119.32 L 870 119.95 L 880 119.5 L 890 120.6 L 900 120.01 L 910 120.66 L 920 120.21 L 930 120 L 930.19 120 L 929.4 130 L 929.53 140 L 930.21 150 L 929.61 160 L 929.71 170 L 929.69 180 L 930.11 190 L 929.27 200 L 930.72 210 L 929.74 220 L 930 230 L 930.54 240 L 929.98 250 L 930.09 260 L 930.22 270 L 929.59 280 L 929.6 290 L 930.22 300 L 929.47 310 L 930.74 320 L 929.67 330 L 929.79 340 L 930.5 350 L 929.25 360 L 930.09 370 L 930.34 380 L 929.78 390 L 929.69 400 L 930.31 410 L 930.36 420 L 930.27 430 L 930.16 440 L 930.16 450 L 929.67 460 L 930.63 470 L 929.75 480 L 929.75 490 L 930.4 500 L 930.18 510 L 930.49 520 L 930 530 L 930 529.49 L 920 529.57 L 910 530.27 L 900 530.63 L 890 530.37 L 880 530.35 L 870 530.68 L 860 529.26 L 850 529.81 L 840 529.95 L 830 529.72 L 820 529.6 L 810 529.42 L 800 529.57 L 790 529.99 L 780 530.27 L 770 529.51 L 760 529.89 L 750 529.34 L 740 529.4 L 730 530.5 L 720 530.28 L 710 530.15 L 700 530.02 L 690 529.38 L 680 529.59 L 670 529.69 L 660 529.93 L 650 530.49 L 640 530.71 L 630 530.15 L 620 530.54 L 610 530.16 L 600 530.49 L 590 530.67 L 580 530.6 L 570 529.5 L 560 529.98 L 550 529.37 L 540 529.95 L 530 529.84 L 520 530.57 L 510 529.41 L 500 530.57 L 490 529.43 L 480 529.59 L 470 529.76 L 460 529.73 L 450 530.68 L 440 529.77 L 430 530.71 L 420 529.96 L 410 529.98 L 400 529.46 L 390 529.86 L 380 529.92 L 370 529.33 L 360 530.37 L 350 529.51 L 340 530.63 L 330 530.45 L 320 530.4 L 310 529.98 L 300 530.51 L 290 530.32 L 280 529.92 L 270 530.7 L 260 530.12 L 250 530.62 L 240 530.71 L 230 530.24 L 220 529.51 L 210 530.46 L 200 529.54 L 190 530.21 L 180 530.17 L 170 530.12 L 160 530.09 L 150 530.41 L 140 530.04 L 130 530.62 L 120 529.82 L 110 529.95 L 100 530.33 L 90 529.54 L 80 530.02 L 70 529.89 L 60 530.02 L 50 529.49 L 40 529.89 L 30 529.51 L 20 530 L 20.49 530 L 19.92 520 L 20.21 510 L 20.62 500 L 19.62 490 L 20.53 480 L 20.26 470 L 19.78 460 L 20.31 450 L 20.59 440 L 20.39 430 L 19.77 420 L 19.66 410 L 19.87 400 L 19.33 390 L 20.07 380 L 20.4 370 L 19.93 360 L 19.6 350 L 19.74 340 L 19.43 330 L 19.69 320 L 20.42 310 L 19.37 300 L 20.74 290 L 19.95 280 L 20.04 270 L 20.19 260 L 19.92 250 L 19.6 240 L 20.06 230 L 19.77 220 L 19.97 210 L 19.39 200 L 19.56 190 L 19.32 180 L 19.44 170 L 20.39 160 L 20.36 150 L 19.47 140 L 20.74 130 L 20 120 L 20 120 Z Z"
+      fill="#d5e8d4" stroke="#82b366" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="10" stroke-dasharray="9 9" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 908px; height: 1px; padding-top: 127px; margin-left: 21px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                <b>
+                  <font style="font-size: 16px" color="#517040">Host App</font>
+                </b>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="475" y="139" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">Host App</text>
+      </switch>
+    </g>
+    <path
+      d="M 50 160 L 50 159.79 L 60 159.32 L 70 160.15 L 80 160.07 L 90 160.55 L 100 159.36 L 110 159.92 L 120 160.66 L 130 159.54 L 140 160.08 L 150 159.87 L 160 160.42 L 170 159.26 L 180 160.39 L 190 160.16 L 200 160.47 L 210 160 L 209.75 160 L 210.41 170 L 209.74 180 L 210.11 190 L 210.59 200 L 210.39 210 L 210.59 220 L 210.39 230 L 209.87 240 L 210.19 250 L 210.53 260 L 209.68 270 L 209.34 280 L 209.47 290 L 209.93 300 L 210.47 310 L 210.31 320 L 210.31 330 L 210.52 340 L 209.6 350 L 210.54 360 L 209.79 370 L 210.33 380 L 210.47 390 L 210.43 400 L 209.53 410 L 209.4 420 L 209.95 430 L 210.01 440 L 209.33 450 L 209.39 460 L 209.77 470 L 209.77 480 L 209.69 490 L 209.72 500 L 210 510 L 210 510.45 L 200 510.67 L 190 509.31 L 180 510.15 L 170 509.46 L 160 509.86 L 150 510.48 L 140 510.25 L 130 509.66 L 120 509.3 L 110 509.56 L 100 509.29 L 90 510.05 L 80 510.57 L 70 510.28 L 60 510.06 L 50 510 L 50.15 510 L 50.68 500 L 49.69 490 L 50.05 480 L 50.05 470 L 49.39 460 L 49.43 450 L 50.39 440 L 49.29 430 L 50.45 420 L 50.73 410 L 50.64 400 L 49.81 390 L 50.66 380 L 49.94 370 L 49.9 360 L 49.63 350 L 50.71 340 L 49.99 330 L 49.43 320 L 49.64 310 L 50.28 300 L 50.29 290 L 49.51 280 L 50.21 270 L 49.96 260 L 49.44 250 L 49.75 240 L 50.72 230 L 49.88 220 L 50.02 210 L 49.96 200 L 49.72 190 L 50.71 180 L 50.34 170 L 50 160 L 50 160 Z Z"
+      fill="#dae8fc" stroke="#6c8ebf" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 158px; height: 1px; padding-top: 335px; margin-left: 51px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                <font style="font-size: 16px" color="#4c6487">
+                  <b>Microfrontend</b>
+                  <br/>product-list
+                </font>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="130" y="339" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">Microfrontend...</text>
+      </switch>
+    </g>
+    <path
+      d="M 230 160 L 230 160.56 L 240 159.47 L 250 160.52 L 260 159.55 L 270 160.72 L 280 160.54 L 290 160.49 L 300 160.69 L 310 159.79 L 320 159.61 L 330 159.59 L 340 159.54 L 350 159.76 L 360 159.71 L 370 160.29 L 380 160.01 L 390 160.4 L 400 159.92 L 410 159.51 L 420 159.35 L 430 160.14 L 440 159.88 L 450 160.36 L 460 159.64 L 470 159.33 L 480 159.26 L 490 159.67 L 500 159.65 L 510 159.73 L 520 159.58 L 530 160.6 L 540 159.58 L 550 160.58 L 560 160.25 L 570 159.89 L 580 160.13 L 590 160.4 L 600 159.5 L 610 160.58 L 620 160.35 L 630 159.64 L 640 159.51 L 650 160.58 L 660 159.94 L 670 159.69 L 680 160.42 L 690 160.07 L 700 160.65 L 710 160.12 L 720 160.38 L 730 159.79 L 740 160 L 739.27 160 L 739.39 170 L 740.25 180 L 739.39 190 L 740.54 200 L 739.76 210 L 739.85 220 L 740.5 230 L 739.99 240 L 740.56 250 L 740.52 260 L 739.85 270 L 740.68 280 L 740.33 290 L 740.46 300 L 740.05 310 L 739.61 320 L 740.54 330 L 740.37 340 L 739.8 350 L 740.19 360 L 740.23 370 L 739.88 380 L 740.01 390 L 739.27 400 L 739.95 410 L 740.22 420 L 740.11 430 L 740.26 440 L 740.14 450 L 739.33 460 L 739.26 470 L 739.43 480 L 740.4 490 L 739.81 500 L 740 510 L 740 510.04 L 730 509.34 L 720 510.65 L 710 509.7 L 700 509.57 L 690 509.36 L 680 510.22 L 670 510.24 L 660 510.7 L 650 510.49 L 640 509.69 L 630 509.7 L 620 509.57 L 610 510.04 L 600 509.85 L 590 509.3 L 580 509.81 L 570 510.14 L 560 510.06 L 550 510.5 L 540 510.24 L 530 510.21 L 520 510.42 L 510 509.4 L 500 510.23 L 490 510.33 L 480 510.27 L 470 509.3 L 460 509.29 L 450 510.1 L 440 509.44 L 430 510.47 L 420 509.44 L 410 510.14 L 400 510.06 L 390 510.57 L 380 510.09 L 370 509.32 L 360 510.18 L 350 510.46 L 340 510.64 L 330 509.96 L 320 510.59 L 310 510.3 L 300 509.89 L 290 510.09 L 280 509.73 L 270 509.32 L 260 510.5 L 250 509.46 L 240 510.11 L 230 510 L 229.7 510 L 230.54 500 L 230.03 490 L 229.31 480 L 229.91 470 L 229.31 460 L 229.69 450 L 230.31 440 L 230.25 430 L 230.65 420 L 230.56 410 L 229.54 400 L 229.39 390 L 229.85 380 L 230 370 L 229.3 360 L 229.81 350 L 230.04 340 L 229.32 330 L 230 320 L 229.61 310 L 229.49 300 L 229.98 290 L 230.37 280 L 229.61 270 L 230.16 260 L 230.38 250 L 230.59 240 L 229.92 230 L 229.57 220 L 230 210 L 229.76 200 L 230.12 190 L 229.88 180 L 229.34 170 L 230 160 L 230 160 Z Z"
+      fill="#dae8fc" stroke="#6c8ebf" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 508px; height: 1px; padding-top: 335px; margin-left: 231px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                <font style="font-size: 16px" color="#4c6487">
+                  <b>Microfrontend</b>
+                  <br/>product
+                </font>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="485" y="339" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">Microfrontend...</text>
+      </switch>
+    </g>
+    <path
+      d="M 760 160 L 760 159.39 L 770 160.15 L 780 160.12 L 790 160.05 L 800 160.71 L 810 160.26 L 820 160.31 L 830 159.86 L 840 159.85 L 850 159.34 L 860 160.38 L 870 160.56 L 880 160.13 L 890 159.83 L 900 160.16 L 910 160 L 910.67 160 L 909.45 170 L 909.8 180 L 909.9 190 L 910.29 200 L 910.64 210 L 909.4 220 L 910.62 230 L 910.18 240 L 909.8 250 L 909.7 260 L 910.1 270 L 910.65 280 L 909.25 290 L 910.38 300 L 910.25 310 L 910.62 320 L 910.41 330 L 910.4 340 L 910.42 350 L 909.25 360 L 909.33 370 L 910.34 380 L 910.07 390 L 910.42 400 L 910.46 410 L 910.61 420 L 909.46 430 L 910.66 440 L 910 450 L 910 449.91 L 900 450.05 L 890 450.39 L 880 449.85 L 870 450.37 L 860 449.78 L 850 450.18 L 840 450.23 L 830 449.51 L 820 449.77 L 810 449.33 L 800 449.82 L 790 449.85 L 780 449.86 L 770 450.05 L 760 450 L 760.48 450 L 760.08 440 L 760.15 430 L 759.93 420 L 760 410 L 759.36 400 L 759.27 390 L 759.79 380 L 760.13 370 L 760.01 360 L 760.6 350 L 759.96 340 L 760.04 330 L 760.26 320 L 759.7 310 L 760.43 300 L 760.7 290 L 759.64 280 L 759.29 270 L 759.38 260 L 759.6 250 L 760.19 240 L 759.4 230 L 760.39 220 L 759.94 210 L 759.8 200 L 759.96 190 L 759.86 180 L 759.46 170 L 760 160 L 760 160 Z Z"
+      fill="#e1d5e7" stroke="#9673a6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 148px; height: 1px; padding-top: 305px; margin-left: 761px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                <font style="font-size: 16px" color="#81638f">
+                  <b>Microfrontend</b>
+                  <br/>shopping-cart
+                </font>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="835" y="309" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">Microfrontend...</text>
+      </switch>
+    </g>
+    <path
+      d="M 240 400 L 240 400.35 L 250 399.34 L 260 399.91 L 270 399.79 L 280 399.37 L 290 400.38 L 300 400.69 L 310 400.45 L 320 400.52 L 330 399.68 L 340 399.36 L 350 399.67 L 360 399.43 L 370 400.19 L 380 400.5 L 390 399.83 L 400 400.02 L 410 399.84 L 420 400.45 L 430 400.33 L 440 399.88 L 450 400.44 L 460 399.88 L 470 400.63 L 480 399.37 L 490 400.71 L 500 399.29 L 510 399.61 L 520 400.32 L 530 400.7 L 540 400.23 L 550 400.53 L 560 400.73 L 570 400.74 L 580 400.03 L 590 400.51 L 600 399.27 L 610 400.17 L 620 399.77 L 630 400.53 L 640 400.38 L 650 400.36 L 660 400.13 L 670 400.2 L 680 400.43 L 690 399.4 L 700 400.12 L 710 399.36 L 720 400 L 720.17 400 L 720.18 410 L 719.94 420 L 719.52 430 L 719.85 440 L 720.34 450 L 720.69 460 L 719.86 470 L 719.39 480 L 720.56 490 L 720 500 L 720 499.83 L 710 499.87 L 700 500.46 L 690 500.56 L 680 500.03 L 670 500.71 L 660 499.82 L 650 500.48 L 640 499.67 L 630 499.27 L 620 499.74 L 610 500.39 L 600 500.62 L 590 500.49 L 580 500.38 L 570 500.69 L 560 500.16 L 550 500.22 L 540 499.49 L 530 499.71 L 520 500.23 L 510 499.81 L 500 500.34 L 490 500.27 L 480 499.27 L 470 500.03 L 460 500.16 L 450 499.94 L 440 500.37 L 430 499.6 L 420 500.14 L 410 499.6 L 400 500.21 L 390 499.79 L 380 499.87 L 370 499.49 L 360 500.41 L 350 499.42 L 340 499.49 L 330 500.22 L 320 500.56 L 310 500.2 L 300 500.17 L 290 499.59 L 280 500.51 L 270 500.3 L 260 499.68 L 250 500.53 L 240 500 L 240.6 500 L 239.53 490 L 239.91 480 L 240.04 470 L 239.28 460 L 239.41 450 L 239.61 440 L 240.4 430 L 240.15 420 L 239.5 410 L 240 400 L 240 400 Z Z"
+      fill="#ffe6cc" stroke="#d79b00" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 478px; height: 1px; padding-top: 450px; margin-left: 241px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                <font style="font-size: 16px" color="#9e7200">
+                  <b>Microfrontend</b>
+                  <br/>customer-reviews
+                </font>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="480" y="454" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">Microfrontend...</text>
+      </switch>
+    </g>
+    <path d="M 760 460 L 760 459.41 L 770 460.33 L 780 460.46 L 790 460.07 L 800 460.56 L 810 460.1 L 820 459.78 L 830 460.66 L 840 460.16 L 850 459.64 L 860 459.31 L 870 459.43 L 880 459.77 L 890 460.2 L 900 460.14 L 910 460 L 909.6 460 L 910.25 470 L 910.07 480 L 910.35 490 L 910.52 500 L 910 510 L 910 510.45 L 900 510.65 L 890 509.44 L 880 510.26 L 870 510.11 L 860 509.71 L 850 510.32 L 840 510.7 L 830 510.74 L 820 510.13 L 810 509.45 L 800 509.36 L 790 509.68 L 780 510.35 L 770 509.45 L 760 510 L 760.44 510 L 759.5 500 L 760.38 490 L 759.89 480 L 759.34 470 L 760 460 L 760 460 Z Z" fill="#f8cecc" stroke="#b85450" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-miterlimit="10" pointer-events="all"/>
+    <g transform="translate(-0.5 -0.5)">
+      <switch>
+        <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 148px; height: 1px; padding-top: 485px; margin-left: 761px;">
+            <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                <font style="font-size: 16px">
+                  <font color="#9c4744">
+                    <b>Microfrontend</b>
+                    <br/>checkout
+                  </font>
+                  <br/>
+                </font>
+              </div>
+            </div>
+          </div>
+        </foreignObject>
+        <text x="835" y="489" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">Microfrontend...</text>
+      </switch>
+    </g>
+  </g>
+  <switch>
+    <g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/>
+    <a transform="translate(0,-5)" xlink:href="https://desk.draw.io/support/solutions/articles/16000042487" target="_blank">
+      <text text-anchor="middle" font-size="10px" x="50%" y="100%">Viewer does not support full SVG 1.1</text>
+    </a>
+  </switch>
+</svg>

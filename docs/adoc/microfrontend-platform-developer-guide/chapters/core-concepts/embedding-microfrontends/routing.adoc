@@ -1,0 +1,130 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:routing]]
+== Routing
+Routing refers to the navigation in a router outlet using the router of the SCION Microfrontend Platform.
+
+[.chapter-toc]
+****
+[.chapter-title]
+In this Chapter
+
+- <<chapter:outlet-router:concepts-and-usage>>
+- <<chapter:outlet-router:relative-navigation>>
+- <<chapter:outlet-router:persistent-navigation>>
+- <<chapter:outlet-router:named-url-parameters>>
+- <<chapter:outlet-router:unloading-outlet-content>>
+- <<chapter:outlet-router:browsing-history-and-session-history>>
+****
+'''
+
+[[chapter:outlet-router:concepts-and-usage]]
+[discrete]
+=== Concepts and Usage
+In SCION Microfrontend Platform, routing means instructing a `<sci-router-outlet>` to display the content of a URL. Routing works across microfrontend and micro application boundaries, allowing the URL of an outlet to be set from anywhere in the application. The web content displayed in an outlet can be any HTML document that has not set the HTTP header `X-Frame-Options`. Routing is sometimes also referred to as navigating.
+
+The router supports multiple outlets in the same application to co-exist. By giving an outlet a name, you can reference it as the routing target. If not naming an outlet, its name defaults to _primary_. If multiple outlets have the same name, they all show the same content. If routing in the context of a router outlet, that is inside a microfrontend, and not specifying a routing target, the content of the current outlet is replaced.
+
+An outlet does not necessarily have to exist at the time of routing. When adding the outlet to the DOM, the outlet displays the last URL routed for it. When repeating routing for an outlet, its content is replaced.
+
+The following code snippet illustrates how to instruct the router outlet named _aside_ to show the content of link:https://micro-frontends.org[window=\"_blank\"].
+
+[source,typescript]
+----
+include::routing.snippets.ts[tags=outlet-router]
+----
+
+The outlet is defined as follows.
+
+[source,html]
+----
+include::routing.snippets.ts[tags=router-outlet]
+----
+
+[[chapter:outlet-router:relative-navigation]]
+[discrete]
+=== Relative Navigation
+The router allows to use both absolute and relative paths. A relative path begins with a navigational symbol `/`, `./`, or `../`. By default, relative navigation is relative to the current window location of the navigating application, unless specifying a base path for the navigation.
+
+[source,typescript]
+----
+include::routing.snippets.ts[tags=relative-navigation]
+----
+
+[[chapter:outlet-router:persistent-navigation]]
+[discrete]
+=== Persistent Navigation
+Persistent navigation refers to the mechanism for restoring the navigational state after an application reload.
+
+The router does not provide an implementation for persistent navigation out-of-the-box, mostly because many persistence strategies are imaginable. For example, the navigational state could be added to the top-level URL, stored in local storage, or persisted in the backend.
+
+However, you can easily implement persistent navigation yourself. The router publishes navigations to the topic `sci-router-outlets/:outlet/url`; thus, they can be captured and persisted. When starting the application, you can then replay persisted navigations using the router.
+
+For illustrative purposes, the following code snippet shows how to capture and persist navigations.
+
+[source,typescript]
+----
+include::routing.snippets.ts[tags=persistent-navigation:capture-and-persist]
+----
+<1> Captures navigations by subscribing to the wildcard topic `sci-router-outlets/:outlet/url`.
+<2> Persists navigations, e.g., adds the navigations to the top-level URL.
+
+When starting the application, you can replay persisted navigations as following.
+
+[source,typescript]
+----
+include::routing.snippets.ts[tags=persistent-navigation:replay]
+----
+<1> Loads persisted navigations, e.g., from the top-level URL.
+<2> Replays persisted navigations, instructing outlets to restore their content.
+
+[[chapter:outlet-router:named-url-parameters]]
+[discrete]
+=== Named URL Parameters
+The URL passing to the router can contain named parameters which the router replaces with values of the provided params object. Parameter substitution is useful if reading the URL from a capability to display a microfrontend. You can then pass the qualifier of the intent as the params object to replace named path segments with values of the intent qualifier.
+
+A named parameter begins with a colon (`:`) and is allowed in path segments, query parameters, matrix parameters and the fragment part, e.g., `product/:id` or `product;id=:id` or `products?id=:id`.
+
+For illustrative purposes, the code snippet below declares a _microfrontend_ capability to display a microfrontend. The path to the microfrontend contains the named path segment `:id`.
+
+[source,json]
+----
+include::routing.snippets.ts[tags=named-url-parameter:capability]
+----
+<1> Requires the caller to provide the product id (`id`) in the qualifier.
+<2> Uses the product id (`:id`) as a named path segment.
+
+When receiving an intent for the capability, you can pass the qualifier of the intent as params object to the router.
+
+[source,typescript]
+----
+include::routing.snippets.ts[tags=named-url-parameter:handle-intent]
+----
+<1> Reads the path to the microfrontend from the capability.
+<2> Passes the path to the router. The path contains the product id (`:id`) as named path segment.
+<3> Passes the qualifier of the intent as params object.
+
+[[chapter:outlet-router:unloading-outlet-content]]
+[discrete]
+=== Unloading Outlet Content
+To unload an outlet's content, use `null` as the URL when routing, as follows:
+[source,typescript]
+----
+include::routing.snippets.ts[tags=clear-outlet-content]
+----
+
+[[chapter:outlet-router:browsing-history-and-session-history]]
+[discrete]
+=== Browsing History and Session History
+Routing does not add an entry to the browsing history, and, by default, not push a navigational state to the browser's session history stack.
+
+You can instruct the router to add a navigational state to the browser’s session history stack, allowing the user to use the back button of the browser to navigate back in an outlet.
+
+[source,typescript]
+----
+include::routing.snippets.ts[tags=push-state-to-session-history-stack]
+----
+<1> Navigates pushing a new state to the browser’s session history stack.
+
+
