@@ -36,6 +36,10 @@ We recommend cloning the source code repository for this guide. It contains mini
    ```console
    git clone https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform-getting-started
    ```
+   or
+   ```console
+   git clone git@github.com:SchweizerischeBundesbahnen/scion-microfrontend-platform-getting-started.git
+   ```
 1. Navigate to the new cloned project directory: 
    ```console
    cd scion-microfrontend-platform-getting-started
