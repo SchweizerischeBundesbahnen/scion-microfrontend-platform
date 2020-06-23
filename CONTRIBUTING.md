@@ -82,7 +82,7 @@ The following is a summary of commands useful for development of `scion-microfro
   Use to generate the API documentation (TypeDoc) for the SCION Microfrontend Platform library. The output is written to `dist/microfrontend-platform-api`.
   
 - `npm run changelog`\
-  Use to generate the changelog based on the commit history. The output is written to `CHANGELOG.md`, which will be included in `docs/changelog.md` using the template `docs/changelog.template.md`. 
+  Use to generate the changelog based on the commit history. The output is written to `CHANGELOG.md`, which will be included in `docs/site/changelog/changelog.md` using the template `docs/site/changelog/changelog.template.md`. 
 
 </details>
 
