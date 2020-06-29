@@ -7,9 +7,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/SchweizerischeBundesbahnen/microfrontend-platform",
+  "homepage": "https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform",
   "bugs": {
-    "url": "https://github.com/SchweizerischeBundesbahnen/microfrontend-platform/issues"
+    "url": "https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues"
   },
   "author": {
     "name": "SCION contributors"
@@ -44,6 +44,6 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SchweizerischeBundesbahnen/microfrontend-platform.git"
+    "url": "https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform.git"
   }
 }
