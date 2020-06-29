@@ -116,6 +116,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform.git"
+    "url": "https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform.git"
   }
 }
