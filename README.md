@@ -32,6 +32,11 @@ SCION Microfrontend Platform enables you to successfully implement a framework-a
 - [**API Documentation**][link-reference-documentation]\
   Consult our Public API documentation for a complete overview of the API.
 
+#### Miscellaneous
+
+- [**Announcements**][link-announcements]\
+  Get the latest news about the further development of the SCION Microfrontend Platform.
+
 - [**Features**][link-features]\
   Get an overview of existing and planned features of the SCION Microfrontend Platform.
 
@@ -58,6 +63,7 @@ SCION Microfrontend Platform enables you to successfully implement a framework-a
 [link-reference-documentation]: https://scion-microfrontend-platform-api.now.sh
 [link-versioning]: /docs/site/versioning.md
 [link-features]: /docs/site/features.md
+[link-announcements]: /docs/site/announcements.md
 
 [menu-home]: /README.md
 [menu-projects-overview]: /docs/site/projects-overview.md
