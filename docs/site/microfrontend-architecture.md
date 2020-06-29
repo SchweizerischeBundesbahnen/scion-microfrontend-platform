@@ -8,7 +8,7 @@
 Web frontends are becoming more and more common, even for complex business applications. To tackle the complexity of enterprise application landscapes, a strong trend towards microservice-based backends and microfrontends on the client-side is emerging. The microfrontend design approach is very tempting and has obvious advantages, especially for large-scale and long-lasting projects, most notably because we are observing an enormous dynamic in web frameworks.
 
 <p align="center">
-  <img src="/docs/adoc/microfrontend-platform-developer-guide/images/microfrontend-architecture.svg" alt="Microfrontend Architecture">
+  <a href="https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/raw/master/docs/adoc/microfrontend-platform-developer-guide/images/microfrontend-architecture.svg"><img src="/docs/adoc/microfrontend-platform-developer-guide/images/microfrontend-architecture.svg" alt="Microfrontend Architecture"></a>
 </p>
 
 The microservice and microfrontend architecture design approach enables us to form development teams full-stack in line with the business functionality, resulting in independent so-called micro applications. A micro application deals with well-defined business functionality. Its backend services are collectively referred to as microservice and its user-facing parts as microfrontend.
