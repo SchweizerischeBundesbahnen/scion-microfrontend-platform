@@ -5,6 +5,10 @@
 
 ## Changelog
 
+# [1.0.0-beta.2](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.1...1.0.0-beta.2) (2020-06-29)
+
+
+
 # 1.0.0-beta.1 (2020-06-21)
 
 
