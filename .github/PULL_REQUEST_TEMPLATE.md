@@ -2,8 +2,8 @@
 Please check if your PR fulfills the following requirements:
 
 - [ ] The commit message follows our [guidelines](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/blob/master/CONTRIBUTING.md)
-- [ ] Tests for the changes have been added (for bug fixes / features)
-- [ ] Docs have been added or updated (for bug fixes and features)
+- [ ] Tests for the changes have been added
+- [ ] Docs have been added or updated
 
 
 ## PR Type
@@ -11,9 +11,9 @@ What kind of change does this PR introduce?
 
 <!-- Please check the one that applies to this PR using "x". -->
 
-- [ ] Fix (bug fix)
-- [ ] Feature (new feature)
-- [ ] Documentation (changes to the documentation)
+- [ ] Fix
+- [ ] Feature
+- [ ] Documentation
 - [ ] Refactoring (changes that neither fixes a bug nor adds a feature)
 - [ ] Performance (changes that improve performance)
 - [ ] Test (adding missing tests, refactoring tests; no production code change)
