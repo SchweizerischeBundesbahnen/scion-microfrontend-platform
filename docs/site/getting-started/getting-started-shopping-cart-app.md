@@ -49,8 +49,14 @@ In this section, we will connect the `shopping cart` micro application to the pl
 1. Open the TypeScript file `shopping-cart-controller.ts`.
 1. Connect to the platform host by adding the following content to the `init` method, as follows:
    ```ts
-   await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+        import { MicrofrontendPlatform } from '@scion/microfrontend-platform';   
+   
+        public async init(): Promise<void> {
+   [+]    await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+        }   
    ```
+   > Lines to be added are preceded by the [+] mark.   
+
    The only argument we pass is our identity. The platform host then checks whether we are a registered micro application. It also checks our origin, i.e., that our origin matches the manifest origin. This check prevents other micro applications from connecting to the platform on behalf of us.
 1. Next, we provide the manifest JSON file that we registered in the host application in the [Getting Started for the Host Application][link-getting-started:host-app].
 
@@ -93,18 +99,20 @@ In this section, we will render the products added to the shopping cart in an un
    Add the lines preceded by the [+] mark to the `init` method.
    
    ```ts
-   public async init(): Promise<void> {
-         // Connect to the platform host
-         await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+        import { ShoppingCartService } from './shopping-cart-service';
+   
+        public async init(): Promise<void> {
+          // Connect to the platform host
+          await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
  
-     [+] // Render products added to the shopping cart
-     [+] ShoppingCartService.products$.subscribe(products => {
-     [+]   const cartElement = document.querySelector('ul.cart');
-     [+]   cartElement.innerHTML = products
-     [+]     .map(product => `<li>${product.name}</li>`)
-     [+]     .join('');
-     [+] });
-   }
+   [+]    // Render products added to the shopping cart
+   [+]    ShoppingCartService.products$.subscribe(products => {
+   [+]      const cartElement = document.querySelector('ul.cart');
+   [+]      cartElement.innerHTML = products
+   [+]        .map(product => `<li>${product.name}</li>`)
+   [+]        .join('');
+   [+]    });
+        }
    ```
    > Lines to be added are preceded by the [+] mark.
 1. Next, allow the user to remove all items from the shopping cart.
@@ -221,8 +229,13 @@ Like a regular microfrontend, an activator must connect to the platform host to 
 1. Open the TypeScript file `activator.ts`.
 1. Connect to the platform host by adding the following content to the `init` method, as follows:
    ```ts
-   await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+        import { MicrofrontendPlatform } from '@scion/microfrontend-platform';   
+   
+        public async init(): Promise<void> {
+   [+]    await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+        }   
    ```
+   > Lines to be added are preceded by the [+] mark.   
 </details>
 
 <details>
@@ -238,6 +251,9 @@ In this section, we will listen for messages published to the topic `shopping-ca
 1. Open the TypeScript file `activator.ts`.
 1. Subscribe to messages published to the topic `shopping-cart/add-product`, as follows:
    ```ts
+       import { Beans, MessageClient } from '@scion/microfrontend-platform';
+       import { Product, ShoppingCartService } from './shopping-cart-service';
+           
        public async init(): Promise<void> {
          // Connect to the platform host
          await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
@@ -270,6 +286,8 @@ If we recall the implementation of the host application, we notice that we have 
    Also, we open the panel when the user adds a product to the shopping cart.
    
    ```ts
+       import { OutletRouter } from '@scion/microfrontend-platform';   
+
        class Activator {
        
    [+]   private panelVisible: boolean;

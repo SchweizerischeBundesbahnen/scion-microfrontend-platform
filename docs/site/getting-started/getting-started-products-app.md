@@ -49,8 +49,14 @@ In this section, we will connect the `products` micro application to the platfor
 1. Open the TypeScript file `products-controller.ts`.
 1. Connect to the platform host by adding the following content to the `init` method, as follows:
    ```ts
-   await MicrofrontendPlatform.connectToHost({symbolicName: 'products-app'});
+        import { MicrofrontendPlatform } from '@scion/microfrontend-platform';   
+   
+        public async init(): Promise<void> {
+   [+]    await MicrofrontendPlatform.connectToHost({symbolicName: 'products-app'});
+        }   
    ```
+   > Lines to be added are preceded by the [+] mark.   
+   
    The only argument we pass is our identity. The platform host then checks whether we are a registered micro application. It also checks our origin, i.e., that our origin matches the manifest origin. This check prevents other micro applications from connecting to the platform on behalf of us.
 1. Next, we provide the manifest JSON file that we registered in the host application in the [Getting Started for the Host Application][link-getting-started:host-app].
 
@@ -114,13 +120,13 @@ In this section, we will render products in an unordered list.
    ```
 1. In the `init` method, iterate through the products and render them, as follows:
    ```ts
-   public async init(): Promise<void> {
-         // Connect to the platform host
-         await MicrofrontendPlatform.connectToHost({symbolicName: 'products-app'});
+        public async init(): Promise<void> {
+          // Connect to the platform host
+          await MicrofrontendPlatform.connectToHost({symbolicName: 'products-app'});
 
-     [+] // Render the products
-     [+] this.products.forEach(product => this.renderProduct(product));
-   }    
+   [+]    // Render the products
+   [+]    this.products.forEach(product => this.renderProduct(product));
+        }    
    ```
    > Lines to be added are preceded by the [+] mark.
 1. Allow the user to add products to the shopping cart.
@@ -128,6 +134,8 @@ In this section, we will render products in an unordered list.
    As you may have noticed, we have added an 'Add to cart' button to each product. We further registered a click event handler that calls the `onAddToCart` method when the user clicks on that button.
    Next, we add the missing method to the controller, as follows:
    ```ts
+   import { Beans, MessageClient } from '@scion/microfrontend-platform';
+   
    private onAddToCart(product: Product): void {
      Beans.get(MessageClient).publish('shopping-cart/add-product', product);
    }   
