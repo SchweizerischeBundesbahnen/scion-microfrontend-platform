@@ -29,12 +29,12 @@
     "microfrontend-platform:e2e:serve": "run-p -r microfrontend-platform-testing-app:serve \"microfrontend-platform:await-then-protractor -- {@}\" --",
     "microfrontend-platform:await-then-protractor": "run-s microfrontend-platform-testing-app:await:* \"microfrontend-platform:run-protractor -- {@}\" --",
     "microfrontend-platform:run-protractor": "ng e2e @scion/microfrontend-platform.e2e",
-    "microfrontend-platform:typedoc": "typedoc --plugin typedoc-plugin-extras --tsconfig projects/scion/microfrontend-platform/tsconfig.lib.prod.typedoc.json --favicon docs/branding/favicon.ico",
+    "microfrontend-platform:typedoc": "typedoc --plugin typedoc-plugin-extras --tsconfig projects/scion/microfrontend-platform/tsconfig.lib.prod.typedoc.json --favicon resources/branding/favicon.ico",
 
     "microfrontend-platform:adoc": "run-s \"microfrontend-platform:adoc:generate -- {@}\" microfrontend-platform:adoc:copy:* --",
     "microfrontend-platform:adoc:generate": "asciidoctor -r ./docs/adoc/extensions/prism-extension --destination-dir dist/microfrontend-platform-developer-guide docs/adoc/microfrontend-platform-developer-guide/index.adoc",
     "microfrontend-platform:adoc:copy:images": "cp -r ./docs/adoc/microfrontend-platform-developer-guide/images dist/microfrontend-platform-developer-guide",
-    "microfrontend-platform:adoc:copy:favicon": "cp ./docs/branding/favicon.ico dist/microfrontend-platform-developer-guide",
+    "microfrontend-platform:adoc:copy:favicon": "cp ./resources/branding/favicon.ico dist/microfrontend-platform-developer-guide",
 
     "microfrontend-platform-testing-app:ngserve": "run-p microfrontend-platform-testing-app:ngserve:*",
     "microfrontend-platform-testing-app:ngserve:4201": "ng serve microfrontend-platform-testing-app --port 4201",
