@@ -8,8 +8,7 @@
     "url": "https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues"
   },
   "author": {
-    "name": "SCION contributors",
-    "url": "https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform"
+    "name": "SCION contributors"
   },
   "scripts": {
     "before-push": "run-s build lint test:headless e2e:headless",
