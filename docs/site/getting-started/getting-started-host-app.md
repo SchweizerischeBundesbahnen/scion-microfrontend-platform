@@ -49,17 +49,25 @@ In this section, we will register the `host`, `products` and `shopping cart` as 
 1. Open the TypeScript file `host-controller.ts`.
 1. Configure the micro applications by adding the following content before the constructor:
    ```ts
-     private platformConfig: MicroApplicationConfig[] = [
-       {symbolicName: 'host-app', manifestUrl: '/manifest.json'},
-       {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
-       {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
-     ];
+   import { MicroApplicationConfig } from '@scion/microfrontend-platform';
+
+   private platformConfig: MicroApplicationConfig[] = [
+     {symbolicName: 'host-app', manifestUrl: '/manifest.json'},
+     {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
+     {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
+   ];
    ```  
    For each micro application, we provide an application config with the application's symbolic name and the URL to its manifest. Symbolic names must be unique and are used by the micro applications to connect to the platform host. The manifest is a JSON file that contains information about a micro application.
 1. Next, start the platform and register the micro applications by adding the following content to the `init` method, as follows:
    ```ts
-     await MicrofrontendPlatform.startHost(this.platformConfig, {symbolicName: 'host-app'});
+        import { MicrofrontendPlatform } from '@scion/microfrontend-platform';   
+   
+        public async init(): Promise<void> {
+   [+]    await MicrofrontendPlatform.startHost(this.platformConfig, {symbolicName: 'host-app'});
+        }   
    ```
+   > Lines to be added are preceded by the [+] mark.
+   
    The second argument is the symbolic name of the micro application starting the platform host. It is optional. If specified, we can interact with the platform and other micro applications, e.g., publish messages or navigate in router outlets.
 </details>
 
@@ -88,13 +96,15 @@ In this section, we will embed the `products` and `shopping cart` microfrontends
 1. Now, we want to route the primary router outlet to display the `products` microfrontend, as follows:
 
    ```ts
-   public async init(): Promise<void> {
-         // Start the platform
-         await MicrofrontendPlatform.startHost(this.platformConfig, {symbolicName: 'host-app'});
+        import { Beans, OutletRouter } from '@scion/microfrontend-platform';   
+   
+        public async init(): Promise<void> {
+          // Start the platform
+          await MicrofrontendPlatform.startHost(this.platformConfig, {symbolicName: 'host-app'});
  
-     [+] // Display the `products` microfrontend in the primary router outlet
-     [+] Beans.get(OutletRouter).navigate('http://localhost:4201/products.html');
-   }
+   [+]    // Display the `products` microfrontend in the primary router outlet
+   [+]    Beans.get(OutletRouter).navigate('http://localhost:4201/products.html');
+        }
    ```
    > Lines to be added are preceded by the [+] mark.
 
@@ -103,6 +113,8 @@ In this section, we will embed the `products` and `shopping cart` microfrontends
 
    In the constructor, add a click listener to the shopping cart button and invoke the method `onToggleShoppingCart`, as follows:
    ```ts
+   import { MessageClient } from '@scion/microfrontend-platform';
+   
    constructor() {
      document.querySelector('button.shopping-cart').addEventListener('click', () => this.onToggleShoppingCart());
    }
