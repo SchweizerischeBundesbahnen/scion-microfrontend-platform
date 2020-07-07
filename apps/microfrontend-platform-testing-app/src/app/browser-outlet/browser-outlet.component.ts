@@ -15,7 +15,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { Overlay } from '@angular/cdk/overlay';
 import { RouterOutletContextComponent } from '../router-outlet-context/router-outlet-context.component';
 import { RouterOutletSettingsComponent } from '../router-outlet-settings/router-outlet-settings.component';
-import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ConsoleService } from '../console/console.service';
 
 export const URL = 'url';
@@ -50,7 +50,7 @@ export class BrowserOutletComponent {
 
   constructor(host: ElementRef<HTMLElement>,
               formBuilder: FormBuilder,
-              private _router: Router,
+              private _activatedRoute: ActivatedRoute,
               private _overlay: Overlay,
               private _injector: Injector,
               private _consoleService: ConsoleService) {
@@ -108,7 +108,7 @@ export class BrowserOutletComponent {
             const origin = application.origin;
             const symbolicName = application.symbolicName;
 
-            this._router.config
+            this._activatedRoute.parent.routeConfig.children
               .filter(route => !!route.data)
               .forEach(route => {
                 const matrixParams: Map<string, any> = route.data['matrixParams'] || new Map();

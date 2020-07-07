@@ -11,13 +11,18 @@
 import { NgModule } from '@angular/core';
 import { ACTIVATION_CONTEXT, ActivationContext, Beans, ContextService, MessageClient, MicroApplicationConfig, PlatformState, PlatformStates } from '@scion/microfrontend-platform';
 import { TestingAppTopics } from './testing-app.topics';
+import { RouterModule } from '@angular/router';
 
 /**
  * Module which operates as activator.
  *
  * When loaded it publishes an activate event to the topic {@link TestingAppTopics.ApplicationActivated}.
  */
-@NgModule({})
+@NgModule({
+  imports: [
+    RouterModule.forChild([]),
+  ],
+})
 export class ActivatorModule {
 
   constructor() {
