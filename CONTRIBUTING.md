@@ -159,6 +159,7 @@ The following scopes are allowed:
   
 - `platform`: If the change affects the `@scion/microfrontend-platform` NPM package.
 - `devtools`: If the change affects the `SCION DevTools` application.
+- `testapp`: If the change only affects the internal test application.
 </details>
 
 

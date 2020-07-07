@@ -41,10 +41,12 @@ import { SciViewportModule } from '@scion/toolkit/viewport';
 import { A11yModule } from '@angular/cdk/a11y';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { SciAccordionModule, SciCheckboxModule, SciFormFieldModule, SciListModule, SciParamsEnterModule, SciPropertyModule, SciQualifierChipListModule } from '@scion/toolkit.internal/widgets';
+import { AppShellComponent } from './app-shell/app-shell.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    AppShellComponent,
     BrowserOutletsComponent,
     BrowserOutletComponent,
     RouterOutletComponent,
