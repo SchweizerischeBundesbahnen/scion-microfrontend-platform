@@ -8,11 +8,15 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { AngularZoneMessageClientDecorator } from './angular-zone-message-client.decorator';
-import { ApplicationConfig, Beans, Handler, IntentInterceptor, IntentMessage, MessageClient, MessageInterceptor, MicrofrontendPlatform, PlatformMessageClient, PlatformState, PlatformStates, TopicMessage } from '@scion/microfrontend-platform';
+import { ApplicationConfig, Beans, Handler, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatform, PlatformMessageClient, PlatformState, PlatformStates, TopicMessage } from '@scion/microfrontend-platform';
 import { environment } from '../environments/environment';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+import { ConsoleService } from './console/console.service';
+import { TestingAppTopics } from './testing-app.topics';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 /**
  * Initializes the SCION Microfrontend Platform.
@@ -20,11 +24,12 @@ import { HashLocationStrategy, LocationStrategy } from '@angular/common';
  * The apps to be registered with the platform are read from the environment.
  */
 @Injectable({providedIn: 'root'})
-export class PlatformInitializer {
+export class PlatformInitializer implements OnDestroy {
 
   private readonly _queryParams: Map<string, string>;
+  private readonly _destroy$ = new Subject<void>();
 
-  constructor(private _zone: NgZone, locationStrategy: LocationStrategy) {
+  constructor(private _zone: NgZone, locationStrategy: LocationStrategy, private _consoleService: ConsoleService) {
     this._queryParams = this.getQueryParams(locationStrategy);
   }
 
@@ -37,7 +42,7 @@ export class PlatformInitializer {
     }
   }
 
-  private startHostPlatform(): Promise<void> {
+  private async startHostPlatform(): Promise<void> {
     // Make the platform to run with Angular
     Beans.get(PlatformState).whenState(PlatformStates.Starting).then(() => {
       Beans.register(NgZone, {useValue: this._zone});
@@ -64,11 +69,20 @@ export class PlatformInitializer {
 
     // Run the microfrontend platform as host app
 
-    return MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatform.startHost({
       apps: apps,
       properties: Array.from(this._queryParams.keys()).reduce((dictionary, key) => ({...dictionary, [key]: this._queryParams.get(key)}), {}),
       platformFlags: {activatorApiDisabled: activatorApiDisabled},
     }, {symbolicName: determineAppSymbolicName()});
+
+    // When starting the app with activators, send a ping request to the activators to test their readiness. (activator.e2e-spec.ts).
+    if (manifestClassifier === '-activator') {
+      Beans.get(MessageClient).request$<string>(TestingAppTopics.ActivatorPing)
+        .pipe(takeUntil(this._destroy$))
+        .subscribe(reply => {
+          this._consoleService.log('onActivate', `${reply.headers.get(MessageHeaders.AppSymbolicName)} - ${reply.body}`);
+        });
+    }
   }
 
   private startClientPlatform(): Promise<void> {
@@ -178,6 +192,9 @@ export class PlatformInitializer {
     return queryParams;
   }
 
+  public ngOnDestroy(): void {
+    this._destroy$.next();
+  }
 }
 
 /**

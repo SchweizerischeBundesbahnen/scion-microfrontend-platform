@@ -1,6 +1,4 @@
-import { BeanDecorator, Beans, Handler, Intent, IntentMessage, IntentSelector, MessageClient, MessageInterceptor, MessageOptions, MicrofrontendPlatform, PlatformConfig, PlatformConfigLoader, PlatformState, PlatformStates, PublishOptions, RouterOutletUrlAssigner, TopicMessage } from '@scion/microfrontend-platform';
-import { NgZone } from '@angular/core';
-import { MonoTypeOperatorFunction, Observable } from 'rxjs';
+import { Beans, Handler, MessageInterceptor, MicrofrontendPlatform, PlatformConfig, PlatformConfigLoader, PlatformState, PlatformStates, RouterOutletUrlAssigner, TopicMessage } from '@scion/microfrontend-platform';
 
 class YourPlatformConfigLoader implements PlatformConfigLoader {
   public load(): Promise<PlatformConfig> {

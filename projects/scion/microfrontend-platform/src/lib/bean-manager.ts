@@ -8,11 +8,14 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Defined } from '@scion/toolkit/util';
+import { Defined, Maps } from '@scion/toolkit/util';
 import { PlatformState, PlatformStates } from './platform-state';
+import { BehaviorSubject } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
+import { RUNLEVEL_2 } from './microfrontend-platform-runlevels';
 
 /** @ignore */
-const initializers: InitializerFn[] = [];
+const initializers: InitializerInfo[] = [];
 /** @ignore */
 const beanRegistry = new Map<Type<any> | AbstractType<any>, Set<BeanInfo>>();
 /** @ignore */
@@ -92,15 +95,18 @@ const beanDecoratorRegistry = new Map<Type<any> | AbstractType<any>, BeanDecorat
  * or create an anonymous class delegating to the actual bean.
  *
  * #### Initializers
- * Initializers help to run initialization work before eager beans are constructed. Initializers are registered in the bean manager using the `Beans.registerInitializer`
- * method, passing a function or an initializer class. Initializers may run in parallel. For this reason, there must be no dependency in any initializer on the order of
- * the execution of the initializers.
+ * Initializers help to run initialization tasks during platform startup. Initializers can specify a runlevel in which to execute. Initializers bound to lower
+ * runlevels execute before initializers of higher runlevels. Initializers of the same runlevel may execute in parallel.
  *
- * An initializer must return a Promise which to resolve when completed initialization. The platform waits with the construction of eager beans until all initializers resolved.
+ * Initializers are registered in the bean manager using the `Beans.registerInitializer` method, passing a function or an initializer class, and optionally a runlevel.
+ * If not specifying a runlevel, the initializer is executed in runlevel 2, that is after messaging is enabled.
+ *
  *
  * @category Platform
  */
 export class BeanManager {
+
+  private _runlevel$ = new BehaviorSubject<number>(-1);
 
   constructor() {
     this.register(PlatformState, {destroyPhase: 'none', eager: true});
@@ -154,14 +160,6 @@ export class BeanManager {
       beanRegistry.set(symbol, new Set<BeanInfo>([beanInfo]));
     }
 
-    // Construct the bean if eager unless the platform is not startet yet.
-    beanInfo.eager && this.get(PlatformState).whenState(PlatformStates.Started).then(() => {
-      // Check if the bean is still registered in the bean manager
-      if (beanRegistry.has(beanInfo.symbol) && beanRegistry.get(beanInfo.symbol).has(beanInfo)) {
-        getOrConstructBeanInstance(beanInfo);
-      }
-    });
-
     // Destroy the bean on platform shutdown.
     if (beanInfo.destroyPhase !== 'none') {
       this.get(PlatformState).whenState(PlatformStates.Starting) // wait until starting the platform
@@ -209,17 +207,32 @@ export class BeanManager {
   }
 
   /**
-   * Registers an initializer which is executed before the construction of beans having an eager construction strategy.
+   * Registers an initializer that is executed when the platform is started. The platform is fully started when all initializers are completed.
+   *
+   * Initializers can specify a runlevel in which to execute. Initializers bound to lower runlevels execute before initializers of higher runlevels.
+   * Initializers of the same runlevel may execute in parallel.
+   *
+   * ### Runlevel 0:
+   * The platform fetches platform manifests. Initializers with a runlevel highter than <code>0</code> can access the the manifest registry.
+   * @see RUNLEVEL_0
+   *
+   * ### Runlevel 1:
+   * The platform constructs eager beans.
+   * @see RUNLEVEL_1
+   *
+   * ### Runlevel 2:
+   * The platform enables messaging. Runlevel <code>2</code> is the default runlevel at which initializers execute if not specifying a runlevel.
+   * @see RUNLEVEL_2
    */
-  public registerInitializer(initializer: InitializerFn | { useFunction?: InitializerFn, useClass?: Type<Initializer> }): void {
+  public registerInitializer(initializer: InitializerFn | { useFunction?: InitializerFn, useClass?: Type<Initializer>, runlevel?: number }): void {
     if (typeof initializer === 'function') {
-      initializers.push(initializer);
+      initializers.push({fn: initializer, runlevel: RUNLEVEL_2});
     }
     else if (initializer.useFunction) {
-      initializers.push(initializer.useFunction);
+      initializers.push({fn: initializer.useFunction, runlevel: Defined.orElse(initializer.runlevel, RUNLEVEL_2)});
     }
     else if (initializer.useClass) {
-      initializers.push((): Promise<void> => new initializer.useClass().init());
+      initializers.push({fn: (): Promise<void> => new initializer.useClass().init(), runlevel: Defined.orElse(initializer.runlevel, RUNLEVEL_2)});
     }
     else {
       throw Error('[NullInitializerError] No initializer specified.');
@@ -293,18 +306,55 @@ export class BeanManager {
   }
 
   /**
+   * Runs registered initializers, where initializers with a lower runlevel are executed before initializers with a higher runlevel.
+   * After all initializers of the same runlevel have completed, initializers of the next higher runlevel are executed, and so on.
+   * Initializers of the same runlevel may run in parallel.
+   *
    * @internal
    */
-  public runInitializers(): Promise<void> {
-    return Promise.all(initializers.map(fn => fn()))
-      .then(() => Promise.resolve())
-      .catch(error => Promise.reject(`[BeanManagerInitializerError] Initializer rejected with an error: ${error}`));
+  public async runInitializers(): Promise<void> {
+    const initializersGroupedByRunlevel = initializers.reduce((grouped, initializer) => Maps.addListValue(grouped, initializer.runlevel, initializer.fn), new Map<number, InitializerFn[]>());
+    const runlevels = Array.from(initializersGroupedByRunlevel.keys());
+
+    for (const runlevel of runlevels.sort()) {
+      this._runlevel$.next(runlevel);
+      try {
+        await Promise.all(initializersGroupedByRunlevel.get(runlevel).map(initializerFn => initializerFn()));
+      }
+      catch (error) {
+        throw Error(`[InitializerError] Initializer rejected with an error: ${error} [runlevel=${runlevel}]`);
+      }
+    }
+  }
+
+  /**
+   * @internal
+   */
+  public constructEagerBeans(): void {
+    Array.from(beanRegistry.values())
+      .reduce((acc, beanInfos) => acc.concat(Array.from(beanInfos)), [] as BeanInfo[])
+      .filter(beanInfo => beanInfo.eager)
+      .forEach(beanInfo => getOrConstructBeanInstance(beanInfo));
+  }
+
+  /**
+   * Returns a Promise that resolves when the platform enters the specified runlevel.
+   * The Promise resolves immediately when the platform has already entered or completed that runlevel.
+   */
+  public async whenRunlevel(runlevel: number): Promise<void> {
+    return this._runlevel$
+      .pipe(filter(currentRunlevel => currentRunlevel >= runlevel), take(1))
+      .toPromise()
+      .then(() => Promise.resolve());
   }
 
   /** @internal */
   public destroy(): void {
     beanDecoratorRegistry.clear();
     initializers.length = 0;
+    beanRegistry.forEach(beanInfos => beanInfos.forEach(beanInfo => {
+      destroyBean(beanInfo);
+    }));
   }
 }
 
@@ -336,6 +386,10 @@ function getOrConstructBeanInstance<T>(beanInfo: BeanInfo): T {
 
 /** @ignore */
 function destroyBean(beanInfo: BeanInfo): void {
+  if (beanInfo.destroyPhase === 'none') {
+    return;
+  }
+
   // Destroy the bean instance unless it is an alias for another bean, or if the bean does not implement 'preDestroy' lifecycle hook.
   if (!beanInfo.useExisting && beanInfo.instance && typeof (beanInfo.instance as PreDestroy).preDestroy === 'function') {
     beanInfo.instance.preDestroy();
@@ -395,6 +449,14 @@ export interface BeanInfo<T = any> {
 }
 
 /**
+ * @ignore
+ */
+interface InitializerInfo {
+  fn: InitializerFn;
+  runlevel: number;
+}
+
+/**
  * Describes how an instance is created.
  *
  * @category Platform
@@ -440,19 +502,17 @@ export interface BeanInstanceConstructInstructions<T = any> extends InstanceCons
 }
 
 /**
- * Allows executing some asynchronous work before constructing eager beans.
+ * Allows executing initialization tasks (synchronous or asynchronous) when starting the platform. The platform is fully started when all initializers are completed.
  *
- * Initializers may run in parallel. For this reason, there must be no dependency in any initializer on the order
- * of execution of the initializers.
- *
- * It is allowed to lookup beans inside an initializer.
+ * Initializers can specify a runlevel in which to execute. Initializers bound to lower runlevels execute before initializers of higher runlevels.
+ * Initializers of the same runlevel may execute in parallel.
  *
  * @see {@link BeanManager.registerInitializer Beans.registerInitializer}
  * @category Platform
  */
 export interface Initializer {
   /**
-   * Invoked at platform startup to execute some work before constructing eager beans.
+   * Executes some work during platform startup.
    *
    * @return a Promise that resolves when this initializer completes its initialization.
    */
@@ -460,12 +520,11 @@ export interface Initializer {
 }
 
 /**
- * Allows executing some asynchronous work before constructing eager beans.
+ * Allows executing initialization tasks (synchronous or asynchronous) when starting the platform. The platform is fully started when all initializers are completed.
  *
- * Initializers may run in parallel. For this reason, there must be no dependency in any initializer on the order
- * of execution of the initializers.
+ * Initializers can specify a runlevel in which to execute. Initializers bound to lower runlevels execute before initializers of higher runlevels.
+ * Initializers of the same runlevel may execute in parallel.
  *
- * It is allowed to lookup beans inside an initializer.
  * The initializer function must return a Promise that resolves when completed its initialization.
  *
  * @see {@link BeanManager.registerInitializer Beans.registerInitializer}
@@ -507,3 +566,4 @@ export interface AbstractType<T> extends Function {
 export interface Type<T> extends Function {
   new(...args: any[]): T; // tslint:disable-line:callable-types
 }
+

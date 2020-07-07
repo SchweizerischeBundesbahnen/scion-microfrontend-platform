@@ -1,0 +1,17 @@
+{
+  "name": "Testing App 3",
+  "baseUrl": "#",
+  "capabilities": [
+    {
+      "type": "activator",
+      "private": false,
+      "properties": {
+        "path": "activator",
+        "X-APP-NAME": "app-3",
+        "readinessTopics": "activator/ready"
+      }
+    }
+   ],
+  "intentions": [
+  ]
+}

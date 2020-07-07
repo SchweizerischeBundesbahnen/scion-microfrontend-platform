@@ -14,9 +14,6 @@ import { Defined } from '@scion/toolkit/util';
 import { Urls } from '../url.util';
 import { ApplicationConfig } from './platform-config';
 import { ManifestRegistry } from './manifest-registry/manifest-registry';
-import { PlatformMessageClient } from './platform-message-client';
-import { MessageHeaders, ResponseStatusCodes } from '../messaging.model';
-import { PlatformTopics } from '../ɵmessaging.model';
 
 /**
  * Registry with all registered applications.
@@ -63,7 +60,6 @@ export class ApplicationRegistry {
 
     manifest.capabilities && manifest.capabilities.forEach(capability => Beans.get(ManifestRegistry).registerCapability(capability, applicationConfig.symbolicName));
     manifest.intentions && manifest.intentions.forEach(intention => Beans.get(ManifestRegistry).registerIntention(intention, applicationConfig.symbolicName));
-    Beans.get(PlatformMessageClient).publish(PlatformTopics.Applications, this.getApplications(), {retain: true, headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
   }
 
   public getApplication(symbolicName: string): Application {

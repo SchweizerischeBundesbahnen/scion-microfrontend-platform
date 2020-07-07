@@ -9,7 +9,6 @@
  */
 import { seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
 import { TestingAppPO } from '../testing-app.po';
-import { browser } from 'protractor';
 
 describe('Activator', () => {
 
@@ -19,21 +18,18 @@ describe('Activator', () => {
 
   it('should activate applications on platform startup', async () => {
     const testingAppPO = new TestingAppPO();
-    await testingAppPO.navigateTo({});
+    await testingAppPO.navigateTo({}, {queryParams: new Map().set('manifestClassifier', 'activator')});
 
     const consolePanelPO = testingAppPO.consolePanelPO();
     await consolePanelPO.open();
 
-    // Wait until micro applications started
-    await browser.sleep(2000);
-
     await expect(consolePanelPO.getLog(['onActivate'])).toEqual(jasmine.arrayWithExactContents([
-        jasmine.objectContaining({type: 'onActivate', message: 'app-1 [primary: true, X-APP-NAME: app-1]'}),
-        jasmine.objectContaining({type: 'onActivate', message: 'app-1 [primary: false, X-APP-NAME: app-1]'}),
-        jasmine.objectContaining({type: 'onActivate', message: 'app-2 [primary: true, X-APP-NAME: app-2]'}),
-        jasmine.objectContaining({type: 'onActivate', message: 'app-3 [primary: true, X-APP-NAME: app-3]'}),
-        jasmine.objectContaining({type: 'onActivate', message: 'app-4 [primary: true, X-APP-NAME: app-4]'}),
+        jasmine.objectContaining({type: 'onActivate', message: 'app-1 - app-1 [primary: true, X-APP-NAME: app-1]'}),
+        jasmine.objectContaining({type: 'onActivate', message: 'app-1 - app-1 [primary: false, X-APP-NAME: app-1]'}),
+        jasmine.objectContaining({type: 'onActivate', message: 'app-2 - app-2 [primary: true, X-APP-NAME: app-2]'}),
+        jasmine.objectContaining({type: 'onActivate', message: 'app-3 - app-3 [primary: true, X-APP-NAME: app-3]'}),
+        jasmine.objectContaining({type: 'onActivate', message: 'app-4 - app-4 [primary: true, X-APP-NAME: app-4]'}),
       ],
     ));
-  });
+  }, 20000); // Increase the timeout as activators signal readiness in the range from 0 to 10s.
 });

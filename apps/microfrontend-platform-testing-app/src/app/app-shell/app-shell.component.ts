@@ -10,9 +10,8 @@
 import { Component, ElementRef, HostBinding, OnDestroy } from '@angular/core';
 import { fromEvent, merge, Subject } from 'rxjs';
 import { ConsoleService } from '../console/console.service';
-import { Beans, ContextService, FocusMonitor, mapToBody, MessageClient, MicroApplicationConfig, OUTLET_CONTEXT, OutletContext } from '@scion/microfrontend-platform';
+import { Beans, ContextService, FocusMonitor, MicroApplicationConfig, OUTLET_CONTEXT, OutletContext } from '@scion/microfrontend-platform';
 import { filter, switchMapTo, takeUntil } from 'rxjs/operators';
-import { TestingAppTopics } from '../testing-app.topics';
 import { ActivatedRoute } from '@angular/router';
 import { Defined } from '@scion/toolkit/util';
 
@@ -36,7 +35,6 @@ export class AppShellComponent implements OnDestroy {
     this.installFocusWithinListener();
     this.installRouteActivateListener();
     this.installKeyboardEventListener(host);
-    this.installApplicationActivatedEventListener();
   }
 
   private installRouteActivateListener(): void {
@@ -71,17 +69,6 @@ export class AppShellComponent implements OnDestroy {
       )
       .subscribe(event => {
         this._consoleService.log(event.type, `[key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}]`);
-      });
-  }
-
-  private installApplicationActivatedEventListener(): void {
-    Beans.get(MessageClient).onMessage$<string>(TestingAppTopics.ApplicationActivated)
-      .pipe(
-        mapToBody(),
-        takeUntil(this._destroy$),
-      )
-      .subscribe(event => {
-        this._consoleService.log('onActivate', event);
       });
   }
 

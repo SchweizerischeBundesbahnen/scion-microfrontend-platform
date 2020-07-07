@@ -8,9 +8,10 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { BeanDecorator, Beans, Initializer, PreDestroy, Type } from './bean-manager';
-import { MicrofrontendPlatform } from './microfrontend-platform';
+import { BeanDecorator, Beans, PreDestroy } from './bean-manager';
 import { PlatformState, PlatformStates } from './platform-state';
+import { waitFor } from './spec.util.spec';
+import { MicrofrontendPlatform } from './microfrontend-platform';
 
 // tslint:disable:typedef
 describe('BeanManager', () => {
@@ -114,146 +115,19 @@ describe('BeanManager', () => {
     expect(constructed).toBeTruthy();
   });
 
-  it('should construct eager beans at platform startup', async () => {
-    let constructed = false;
-
-    class Bean {
-      constructor() {
-        constructed = true;
-      }
-    }
-
-    await MicrofrontendPlatform.startPlatform(() => {
-      Beans.register(Bean, {eager: true});
-    });
-
-    expect(constructed).toBeTruthy();
-  });
-
-  it('should construct eager beans in the order as registered', async () => {
-    const beanConstructionOrder: Type<any>[] = [];
-
-    class Bean1 {
-      constructor() {
-        beanConstructionOrder.push(Bean1);
-      }
-    }
-
-    class Bean2 {
-      constructor() {
-        beanConstructionOrder.push(Bean2);
-      }
-    }
-
-    class Bean3 {
-      constructor() {
-        beanConstructionOrder.push(Bean3);
-      }
-    }
-
-    await MicrofrontendPlatform.startPlatform(() => {
-      Beans.register(Bean1, {eager: true});
-      Beans.register(Bean2, {eager: true});
-      Beans.register(Bean3, {eager: true});
-    });
-
-    expect(beanConstructionOrder).toEqual([Bean1, Bean2, Bean3]);
-  });
-
-  it('should wait constructing eager beans until all initializers completed', async () => {
-    jasmine.clock().install();
-    let constructed = false;
-
-    class Bean {
-      constructor() {
-        constructed = true;
-      }
-    }
-
-    Beans.registerInitializer(() => new Promise(resolve => setTimeout(resolve, 5000)));
-    Beans.registerInitializer(() => new Promise(resolve => setTimeout(resolve, 2000)));
-    Beans.registerInitializer({useFunction: () => new Promise(resolve => setTimeout(resolve, 8000))});
-    Beans.registerInitializer({
-      useClass: class implements Initializer {
-        public init(): Promise<void> {
-          return Promise.resolve();
-        }
-      },
-    });
-
-    const whenStarted = MicrofrontendPlatform.startPlatform(() => {
-      Beans.register(Bean, {eager: true});
-    });
-
-    // Bring initializers to execution
-    await waitForCurrentMicrotasksToComplete(100);
-
-    // Ensure that eager beans are not yet constructed
-    expect(constructed).toBeFalsy();
-
-    // Simulate asynchronous passage of time for initializers to complete
-    jasmine.clock().tick(10000);
-    await whenStarted;
-
-    // Ensure that eager beans are constructed
-    expect(constructed).toBeTruthy();
-
-    jasmine.clock().uninstall();
-  })
-  ;
-
-  it('should not construct eager beans when some initializers reject', async () => {
-    jasmine.clock().install();
-    let constructed = false;
-
-    class Bean {
-      constructor() {
-        constructed = true;
-      }
-    }
-
-    const whenStarted = expectAsync(MicrofrontendPlatform.startPlatform(() => {
-      Beans.registerInitializer(() => new Promise(resolve => setTimeout(resolve, 5000)));
-      Beans.registerInitializer(() => new Promise((resolve, reject) => setTimeout(reject, 2000))); // reject initialization
-      Beans.registerInitializer({useFunction: () => new Promise(resolve => setTimeout(resolve, 8000))});
-      Beans.registerInitializer({
-        useClass: class implements Initializer {
-          public init(): Promise<void> {
-            return Promise.resolve();
-          }
-        },
-      });
-      Beans.register(Bean, {eager: true});
-    })).toBeRejected();
-
-    // Bring initializers to execution
-    await waitForCurrentMicrotasksToComplete(100);
-
-    // Ensure that eager beans are not yet constructed
-    expect(constructed).toBeFalsy();
-
-    // Simulate asynchronous passage of time for initializers to complete
-    jasmine.clock().tick(10000);
-    await whenStarted;
-
-    expect(constructed).toBeFalsy();
-
-    jasmine.clock().uninstall();
-  });
-
   it('should allow initializers to lookup beans', async () => {
     class Bean {
     }
 
     let actualBeanInInitializer: Bean = null;
-    await MicrofrontendPlatform.startPlatform(() => {
-      Beans.registerInitializer(() => {
-        actualBeanInInitializer = Beans.get(Bean);
-        return Promise.resolve();
-      });
 
-      Beans.register(Bean);
+    Beans.registerInitializer(() => {
+      actualBeanInInitializer = Beans.get(Bean);
+      return Promise.resolve();
     });
+
+    Beans.register(Bean);
+    await Beans.runInitializers();
 
     expect(actualBeanInInitializer).toBe(Beans.get(Bean));
   });
@@ -612,15 +486,174 @@ describe('BeanManager', () => {
     expect(Beans.get(Alias)).toEqual('some-other-bean' as any);
   });
 
+  it('should execute initializers with a lower runlevel before initializers with a higher runlevel', async () => {
+    jasmine.clock().install();
+
+    const log: string[] = [];
+
+    // Register initializers which resolve after 100ms.
+    Beans.registerInitializer({
+      useFunction: async () => {
+        await waitFor(100);
+        log.push('initializer [100ms, runlevel 0]');
+      },
+      runlevel: 0,
+    });
+    Beans.registerInitializer({
+      useFunction: async () => {
+        await waitFor(100);
+        log.push('initializer [100ms, runlevel 1]');
+      },
+      runlevel: 1,
+    });
+    Beans.registerInitializer({
+      useFunction: async () => {
+        await waitFor(100);
+        log.push('initializer [100ms, runlevel 2]');
+      },
+      runlevel: 2,
+    });
+
+    // Register initializers which resolve after 200ms.
+    Beans.registerInitializer({
+      useFunction: async () => {
+        await waitFor(200);
+        log.push('initializer [200ms, runlevel 0]');
+      },
+      runlevel: 0,
+    });
+    Beans.registerInitializer({
+      useFunction: async () => {
+        await waitFor(200);
+        log.push('initializer [200ms, runlevel 1]');
+      },
+      runlevel: 1,
+    });
+    Beans.registerInitializer({
+      useFunction: async () => {
+        await waitFor(200);
+        log.push('initializer [200ms, runlevel 2]');
+      },
+      runlevel: 2,
+    });
+
+    // Register initializers which resolve after 600ms.
+    Beans.registerInitializer({
+      useFunction: async () => {
+        await waitFor(600);
+        log.push('initializer [600ms, runlevel 0]');
+      },
+      runlevel: 0,
+    });
+    Beans.registerInitializer({
+      useFunction: async () => {
+        await waitFor(600);
+        log.push('initializer [600ms, runlevel 1]');
+      },
+      runlevel: 1,
+    });
+    Beans.registerInitializer({
+      useFunction: async () => {
+        await waitFor(600);
+        log.push('initializer [600ms, runlevel 2]');
+      },
+      runlevel: 2,
+    });
+
+    Beans.runInitializers();
+
+    // after 1s
+    jasmine.clock().tick(1000);
+    await drainMicrotaskQueue(100);
+    await expect(log).toEqual([
+      'initializer [100ms, runlevel 0]',
+      'initializer [200ms, runlevel 0]',
+      'initializer [600ms, runlevel 0]',
+    ]);
+
+    // after 2s
+    jasmine.clock().tick(1000);
+    await drainMicrotaskQueue(100);
+    await expect(log).toEqual([
+      'initializer [100ms, runlevel 0]',
+      'initializer [200ms, runlevel 0]',
+      'initializer [600ms, runlevel 0]',
+      'initializer [100ms, runlevel 1]',
+      'initializer [200ms, runlevel 1]',
+      'initializer [600ms, runlevel 1]',
+    ]);
+
+    // after 3s
+    jasmine.clock().tick(1000);
+    await drainMicrotaskQueue(100);
+    await expect(log).toEqual([
+      'initializer [100ms, runlevel 0]',
+      'initializer [200ms, runlevel 0]',
+      'initializer [600ms, runlevel 0]',
+      'initializer [100ms, runlevel 1]',
+      'initializer [200ms, runlevel 1]',
+      'initializer [600ms, runlevel 1]',
+      'initializer [100ms, runlevel 2]',
+      'initializer [200ms, runlevel 2]',
+      'initializer [600ms, runlevel 2]',
+    ]);
+
+    jasmine.clock().uninstall();
+  });
+
+  it('should by default register initializers in runlevel 2', async () => {
+    const log: string[] = [];
+
+    Beans.registerInitializer({
+      useFunction: async () => void (log.push('initializer runlevel 0')),
+      runlevel: 0,
+    });
+    Beans.registerInitializer({
+      useFunction: async () => void (log.push('initializer runlevel 1')),
+      runlevel: 1,
+    });
+    Beans.registerInitializer({
+      useFunction: async () => void (log.push('initializer runlevel 2')),
+      runlevel: 2,
+    });
+    Beans.registerInitializer({
+      useFunction: async () => void (log.push('initializer runlevel 3')),
+      runlevel: 3,
+    });
+    Beans.registerInitializer({
+      useFunction: async () => void (log.push('initializer-1 (no runlevel specified)')),
+    });
+    Beans.registerInitializer({
+      useFunction: async () => void (log.push('initializer-2 (no runlevel specified)')),
+    });
+    Beans.registerInitializer({
+      useFunction: async () => void (log.push('initializer-3 (no runlevel specified)')),
+    });
+
+    await Beans.runInitializers();
+
+    // after 1s
+    await expect(log).toEqual([
+      'initializer runlevel 0',
+      'initializer runlevel 1',
+      'initializer runlevel 2',
+      'initializer-1 (no runlevel specified)',
+      'initializer-2 (no runlevel specified)',
+      'initializer-3 (no runlevel specified)',
+      'initializer runlevel 3',
+    ]);
+  });
+
   /**
    * Waits until all microtasks currently in the microtask queue completed. When this method returns,
    * the microtask queue may still not be empty, that is, when microtasks are scheduling other microtasks.
    *
    * @param drainCycles the number of microtask cycles to wait for. Default is 1.
    */
-  async function waitForCurrentMicrotasksToComplete(drainCycles: number = 1): Promise<void> {
+  async function drainMicrotaskQueue(drainCycles: number = 1): Promise<void> {
     for (let i = 0; i < drainCycles; i++) {
       await Promise.resolve();
     }
   }
 });
+

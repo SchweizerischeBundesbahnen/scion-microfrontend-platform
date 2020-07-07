@@ -45,8 +45,9 @@ import { HostPlatformAppProvider } from './host/host-platform-app-provider';
 import { KeyboardEventDispatcher } from './client/keyboard-event/keyboard-event-dispatcher';
 import { ManifestService } from './client/manifest-registry/manifest-service';
 import { ɵManifestRegistry } from './host/manifest-registry/ɵmanifest-registry';
-import { ApplicationActivator } from './host/activator/application-activator';
 import { PlatformManifestService } from './client/manifest-registry/platform-manifest-service';
+import { ApplicationActivator } from './host/activator/application-activator';
+import { RUNLEVEL_0, RUNLEVEL_1, RUNLEVEL_2 } from './microfrontend-platform-runlevels';
 
 window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {once: true});
 
@@ -111,8 +112,9 @@ export class MicrofrontendPlatform {
    * The host application, sometimes also called the container application, provides the top-level integration container for microfrontends. Typically, it is the web
    * app which the user loads into his browser and provides the main application shell, defining areas to embed microfrontends.
    *
-   * The platform host loads the manifests of all registered micro applications and starts platform services such as the message broker for client-side messaging.
-   * Typically, the platform is started during bootstrapping the application. In Angular, for example, the platform should be started in an app initializer.
+   * The platform host loads the manifests of all registered micro applications and starts platform services such as the message broker for client-side messaging. It further may
+   * wait for activators to signal ready. Typically, the platform is started during bootstrapping the application. In Angular, for example, the platform should be started in an
+   * app initializer.
    *
    * You can pass the configuration statically, or load it asynchronously using a config loader, e.g., for loading the config over the network.
    *
@@ -122,11 +124,17 @@ export class MicrofrontendPlatform {
    * @param  platformConfig - Platform config declaring the micro applications allowed to interact with the platform. You can pass the configuration statically, or load it
    *                          asynchronously using a config loader, e.g., for loading the config over the network.
    * @param  hostAppConfig - Config of the micro application running in the host application; only required if interacting with the platform in the host application.
-   * @return A Promise that resolves when the platform started successfully, or that rejects if the startup fails.
+   * @return A Promise that resolves when the platform started successfully and activators, if any, signaled ready, or that rejects if the startup fails.
    */
   public static startHost(platformConfig: ApplicationConfig[] | PlatformConfig | Type<PlatformConfigLoader>, hostAppConfig?: MicroApplicationConfig): Promise<void> {
     return MicrofrontendPlatform.startPlatform(() => {
-        Beans.registerInitializer({useClass: ManifestCollector});
+        // Construct the message broker in runlevel 0 to buffer connect requests of micro applications.
+        Beans.registerInitializer({useFunction: async () => void (Beans.get(MessageBroker)), runlevel: RUNLEVEL_0});
+        // Fetch manifests in runlevel 0.
+        Beans.registerInitializer({useClass: ManifestCollector, runlevel: RUNLEVEL_0});
+        // Start application activators in runlevel 2.
+        Beans.registerInitializer({useClass: ApplicationActivator, runlevel: RUNLEVEL_2});
+        Beans.registerInitializer(() => SciRouterOutletElement.define());
 
         Beans.register(IS_PLATFORM_HOST, {useValue: true});
         Beans.register(HostPlatformAppProvider);
@@ -144,19 +152,15 @@ export class MicrofrontendPlatform {
         Beans.register(FocusInEventDispatcher, {eager: true});
         Beans.register(MouseMoveEventDispatcher, {eager: true});
         Beans.register(MouseUpEventDispatcher, {eager: true});
-        Beans.register(ApplicationActivator, {eager: true});
         Beans.register(PlatformManifestService);
-
-        // Construct the bean manager instantly to receive connect requests of micro applications.
-        Beans.registerIfAbsent(MessageBroker, {useValue: new MessageBroker(), destroyPhase: PlatformStates.Stopped});
+        Beans.register(MessageBroker, {destroyPhase: PlatformStates.Stopped});
+        Beans.registerIfAbsent(OutletRouter);
+        Beans.registerIfAbsent(RelativePathResolver);
+        Beans.registerIfAbsent(RouterOutletUrlAssigner);
 
         if (hostAppConfig) {
-          Beans.registerInitializer(() => SciRouterOutletElement.define());
           Beans.register(MicroApplicationConfig, {useValue: hostAppConfig});
           Beans.registerIfAbsent(MessageClient, provideMessageClient(hostAppConfig.symbolicName, hostAppConfig.messaging));
-          Beans.registerIfAbsent(OutletRouter);
-          Beans.registerIfAbsent(RelativePathResolver);
-          Beans.registerIfAbsent(RouterOutletUrlAssigner);
           Beans.register(FocusMonitor);
           Beans.register(PreferredSizeService);
           Beans.register(ManifestService);
@@ -173,7 +177,7 @@ export class MicrofrontendPlatform {
             Beans.get(PlatformMessageClient).publish(PlatformTopics.HostPlatformState, state, {retain: true});
           });
       },
-    ).then(() => Beans.get(HostPlatformState).whenStarted()); // Wait until the host platform reported its 'started' state before signalling the platform as started.
+    ).then(() => Beans.get(HostPlatformState).whenStarted()); // Wait until the host platform reported its 'started' state before signaling the platform as started.
   }
 
   /**
@@ -195,13 +199,15 @@ export class MicrofrontendPlatform {
    */
   public static connectToHost(config: MicroApplicationConfig): Promise<void> {
     return MicrofrontendPlatform.startPlatform(() => {
-        Beans.registerInitializer(() => SciRouterOutletElement.define());
-        // Obtain platform properties before signalling the platform as started to allow synchronous retrieval of platform properties.
-        Beans.registerInitializer(async () => {
-          if (await MicrofrontendPlatform.isConnectedToHost()) {
-            await Beans.get(PlatformPropertyService).whenPropertiesLoaded;
-          }
+        // Obtain platform properties before signaling the platform as started to allow synchronous retrieval of platform properties.
+        Beans.registerInitializer({
+          useFunction: async () => {
+            if (await MicrofrontendPlatform.isConnectedToHost()) {
+              await Beans.get(PlatformPropertyService).whenPropertiesLoaded;
+            }
+          }, runlevel: RUNLEVEL_2,
         });
+        Beans.registerInitializer(() => SciRouterOutletElement.define());
 
         Beans.register(IS_PLATFORM_HOST, {useValue: false});
         Beans.register(MicroApplicationConfig, {useValue: config});
@@ -242,15 +248,18 @@ export class MicrofrontendPlatform {
    */
   public static async destroy(): Promise<void> {
     await Beans.get(PlatformState).enterState(PlatformStates.Stopping);
-    Beans.destroy();
     await Beans.get(PlatformState).enterState(PlatformStates.Stopped);
+    Beans.destroy();
   }
 
   /** @internal */
-  public static async startPlatform(startupFn: () => void): Promise<void> {
+  public static async startPlatform(startupFn?: () => void): Promise<void> {
     await Beans.get(PlatformState).enterState(PlatformStates.Starting);
     try {
-      startupFn();
+      startupFn && startupFn();
+
+      // Construct eager beans in runlevel 1.
+      Beans.registerInitializer({useFunction: async () => Beans.constructEagerBeans(), runlevel: RUNLEVEL_1});
 
       return Beans.runInitializers()
         .then(() => Beans.get(PlatformState).enterState(PlatformStates.Started))

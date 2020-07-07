@@ -43,7 +43,6 @@ export class ManifestService {
     return this._messageClient.onMessage$<Application[]>(PlatformTopics.Applications)
       .pipe(
         take(1),
-        throwOnErrorStatus(),
         mapToBody(),
       );
   }

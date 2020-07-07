@@ -9,17 +9,16 @@
  */
 
 import { mapToBody, MessageClient, MessageOptions, PublishOptions } from './message-client';
-import { defer, EMPTY, from, merge, Observable, Observer, Subject, TeardownLogic, throwError } from 'rxjs';
+import { defer, EMPTY, merge, Observable, Observer, Subject, TeardownLogic, throwError } from 'rxjs';
 import { MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand } from '../../ɵmessaging.model';
 import { filterByChannel, filterByHeader, filterByTopic, pluckMessage } from '../../operators';
-import { filter, finalize, first, map, mergeMap, mergeMapTo, takeUntil, timeoutWith } from 'rxjs/operators';
+import { filter, finalize, first, map, mergeMap, takeUntil, timeoutWith } from 'rxjs/operators';
 import { Defined, Dictionaries } from '@scion/toolkit/util';
 import { UUID } from '@scion/toolkit/uuid';
 import { Intent, IntentMessage, Message, MessageHeaders, TopicMessage } from '../../messaging.model';
 import { matchesIntentQualifier } from '../../qualifier-tester';
 import { BrokerGateway } from './broker-gateway';
 import { Beans, PreDestroy } from '../../bean-manager';
-import { HostPlatformState } from '../host-platform-state';
 import { TopicMatcher } from '../../topic-matcher.util';
 import { Qualifier } from '../../platform.model';
 import { Logger, NULL_LOGGER } from '../../logger';
@@ -51,8 +50,7 @@ export class ɵMessageClient implements MessageClient, PreDestroy { // tslint:di
     return defer(() => {
       const topicMessage: TopicMessage = {topic, retain: false, headers: new Map(headers)};
       setBodyIfDefined(topicMessage, request);
-      // Delay the request until the host has completed its startup to not lose the request if handled by a replier in the host.
-      return from(Beans.get(HostPlatformState).whenStarted()).pipe(mergeMapTo(this.postMessageToBrokerAndReceiveReplies$(MessagingChannel.Topic, topicMessage)));
+      return this.postMessageToBrokerAndReceiveReplies$(MessagingChannel.Topic, topicMessage);
     });
   }
 
@@ -79,8 +77,7 @@ export class ɵMessageClient implements MessageClient, PreDestroy { // tslint:di
     return defer(() => {
       const intentMessage: IntentMessage = {intent, headers: new Map(headers)};
       setBodyIfDefined(intentMessage, body);
-      // Delay the request until the host has completed its startup to not lose the request if handled by a replier in the host.
-      return from(Beans.get(HostPlatformState).whenStarted()).pipe(mergeMapTo(this.postMessageToBrokerAndReceiveReplies$(MessagingChannel.Intent, intentMessage)));
+      return this.postMessageToBrokerAndReceiveReplies$(MessagingChannel.Intent, intentMessage);
     });
   }
 

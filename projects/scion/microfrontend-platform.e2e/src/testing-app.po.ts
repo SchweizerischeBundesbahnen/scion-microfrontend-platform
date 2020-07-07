@@ -10,7 +10,7 @@
 import { $, browser } from 'protractor';
 import { BrowserOutletPO, OutletDescriptorTypes, OutletPageObjectClass, OutletPageObjectDescriptor, SwitchToIframeFn } from './browser-outlet/browser-outlet.po';
 import { ConsolePanelPO } from './console/console-panel.po';
-import { waitUntilTestingAppInteractableElseNoop } from './spec.util';
+import { runOutsideAngularSynchronization, waitUntilTestingAppInteractableElseNoop } from './spec.util';
 
 /**
  * The central page object of the testing app to perform the initial navigation.
@@ -75,7 +75,7 @@ export class TestingAppPO {
    *   Provide a comma-separated list of app symbolic names for which to disable the 'Intention Register API'.
    * - manifestClassifier:
    *   Control which manifest files to collect by providing a classifier which is appended to the manifest filename.
-   *   E.g. if setting the classifier 'blank', the manifest 'app-1-manifest-blank.json' is collected instead of 'app-1-manifest.json'.
+   *   E.g. if setting the classifier 'activator', the manifest 'app-1-manifest-activator.json' is collected instead of 'app-1-manifest.json'.
    * - activatorApiDisabled:
    *   Controls if the 'Activator API' is disabled.
    * - intercept-message:reject
@@ -112,13 +112,18 @@ export class TestingAppPO {
 
     // For root outlets, perform the initial page navigation, for child outlets navigate to the outlets page.
     const outletNames = Object.keys(outlets);
-    if (parentOutletPO) {
-      await parentOutletPO.enterOutletsUrl(TestingAppOrigins.APP_1, outletNames);
-    }
-    else {
-      const queryParamsEncoded = (queryParams.size ? `?${new URLSearchParams([...queryParams]).toString()}` : '');
-      await browser.get(`/#/browser-outlets;names=${outletNames.join(',')}${queryParamsEncoded}`);
-    }
+
+    // Run outside Angular to avoid Protractor from crashing when the app takes long time to initialize, e.g., if activators delay the startup.
+    await runOutsideAngularSynchronization(async () => {
+      if (parentOutletPO) {
+        await parentOutletPO.enterOutletsUrl(TestingAppOrigins.APP_1, outletNames);
+      }
+      else {
+        const queryParamsEncoded = (queryParams.size ? `?${new URLSearchParams([...queryParams]).toString()}` : '');
+        await browser.get(`/#/browser-outlets;names=${outletNames.join(',')}${queryParamsEncoded}`);
+      }
+    });
+    await waitUntilTestingAppInteractableElseNoop();
 
     const browserOutletPOs = outletNames.map(outletName => new BrowserOutletPO(outletName, parentOutletPO));
     const pageObjectMap = new Map<string, object>();

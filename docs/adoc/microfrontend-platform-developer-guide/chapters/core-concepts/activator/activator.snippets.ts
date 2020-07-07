@@ -14,6 +14,21 @@ import { ACTIVATION_CONTEXT, ActivationContext, Beans, Capability, ContextServic
 // end::register-activator[]
 `;
 
+`
+// tag::register-activator-with-readiness-topic[]
+"capabilities": [
+  {
+    "type": "activator",
+    "private": false,
+    "properties": {
+      "path": "path/to/the/activator",
+      "readinessTopics": ["app/activator/ready"] // <1>
+    }
+  }
+]
+// end::register-activator-with-readiness-topic[]
+`;
+
 {
   async function asyncFunction(): Promise<void> {
     // tag::activation-context[]
@@ -42,7 +57,25 @@ import { ACTIVATION_CONTEXT, ActivationContext, Beans, Capability, ContextServic
 }
 
 {
-  void async function () {
+  // tag::signal-readiness[]
+  Beans.get(MessageClient).publish('app/activator/ready');
+  // end::signal-readiness[]
+}
+
+{
+  async function asyncFunctionSignalReadiness(): Promise<void> {
+    // tag::signal-readiness:read-topic-from-capability[]
+    // Looks up the activation context.
+    const activationContext = await Beans.get(ContextService).lookup<ActivationContext>(ACTIVATION_CONTEXT);
+
+    // Read the configured readiness topic from the activator capability.
+    Beans.get(MessageClient).publish(activationContext.activator.properties.readinessTopics as string);
+    // end::signal-readiness:read-topic-from-capability[]
+  }
+}
+
+{
+  void async function() {
     // tag::contribute-capability-in-activator[]
 
     // Declare the capability to inform the user about planned maintenance

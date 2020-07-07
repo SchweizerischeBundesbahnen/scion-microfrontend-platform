@@ -13,6 +13,7 @@ In this Chapter
 - <<chapter:activator:what-is-an-activator>>
 - <<chapter:activator:context>>
 - <<chapter:activator:multiple-activators>>
+- <<chapter:activator:signaling-readiness>>
 - <<chapter:activator:sharing-state>>
 - <<chapter:activator:contributing-capabilities-in-the-activator>>
 - <<chapter:activator:routing-in-the-activator>>
@@ -59,6 +60,35 @@ You can test if running in the primary activation context as following.
 [source,typescript]
 ----
 include::activator.snippets.ts[tags=activation-context:primary]
+----
+
+[[chapter:activator:signaling-readiness]]
+[discrete]
+=== Signaling Readiness
+Starting an activator may take some time. In order not to miss any messages or intents, you can instruct the platform host to wait to enter started state until you signal the activator to be ready.
+
+For this purpose, you can define a set of topics where to publish a ready message to signal readiness. If you specify multiple topics, the activator enters ready state after you have published a ready message to all these topics. A ready message is an event; thus, a message without payload.
+
+If not specifying a readiness topic, the platform host does not wait for this activator to become ready. However, if you specify a readiness topic, make sure that your activator has a fast startup time and signals readiness as early as possible not to delay the startup of the platform host.
+
+[source,json]
+----
+include::activator.snippets.ts[tags=register-activator-with-readiness-topic]
+----
+<1> Specifies one or more readiness topics. Activators of different applications can publish their readiness status on the same topic. The platform checks from which activator received readiness messages originate.
+
+In the activator, when you are ready, you can signal your readiness as follows:
+
+[source,typescript]
+----
+include::activator.snippets.ts[tags=signal-readiness]
+----
+
+Alternatively, you can read the configured readiness topic directly from the activator capability. However, this only works if you specify a single readiness topic.
+
+[source,typescript]
+----
+include::activator.snippets.ts[tags=signal-readiness:read-topic-from-capability]
 ----
 
 [[chapter:activator:sharing-state]]

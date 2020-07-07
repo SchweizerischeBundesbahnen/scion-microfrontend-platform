@@ -60,7 +60,7 @@ This short manual helps to install the SCION Microfrontend Platform and describe
       }
       ```
 
-      The method for starting the platform host returns a Promise that resolves when the platform started successfully. You should wait for the Promise to resolve before interacting with the platform.
+      The method for starting the platform host returns a Promise that resolves when the platform started successfully and activators, if any, signaled ready. You should wait for the Promise to resolve before interacting with the platform.
    </details>    
  
    <details>

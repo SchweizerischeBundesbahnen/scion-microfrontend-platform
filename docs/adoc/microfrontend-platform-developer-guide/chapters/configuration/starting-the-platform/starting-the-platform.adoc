@@ -21,7 +21,7 @@ In this Chapter
 [discrete]
 === Starting the Platform in the Host Application
 
-The host app starts the platform using the method `MicrofrontendPlatform.startHost` and passes a list of web applications to be registered as micro applications. The platform then loads the manifests of all registered micro applications and starts platform services such as the message broker for client-side messaging.
+The host app starts the platform using the method `MicrofrontendPlatform.startHost` and passes a list of web applications to be registered as micro applications. The platform then loads the manifests of all registered micro applications and starts platform services such as the message broker for client-side messaging. It further may wait for activators to signal ready.
 
 The following code snippet shows how to start the platform in the host application.
 [source,typescript]
@@ -42,7 +42,7 @@ include::starting-the-platform.snippets.ts[tags=startHost2]
 <1> Defines the applications to be registered in the platform.
 <2> Starts the platform host on behalf of the _webshop-app_.
 
-IMPORTANT: The method for starting the platform host returns a `Promise` that resolves when the platform started successfully, or that rejects if the startup fails. You should wait for the Promise to resolve before interacting with the platform.
+IMPORTANT: The method for starting the platform host returns a `Promise` that resolves when the platform started successfully and activators, if any, signaled ready, or that rejects if the startup fails. You should wait for the Promise to resolve before interacting with the platform.
 
 See the chapter <<chapter:platform-configuration:configuring-micro-applications>> for more information about application registration.
 

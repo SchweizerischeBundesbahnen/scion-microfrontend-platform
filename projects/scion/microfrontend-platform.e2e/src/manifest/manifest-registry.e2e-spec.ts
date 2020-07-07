@@ -27,7 +27,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupCapabilityPagePO>('lookup');
 
@@ -47,7 +47,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupCapabilityPagePO>('lookup');
 
@@ -71,7 +71,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupCapabilityPagePO>('lookup');
 
@@ -97,7 +97,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupCapabilityPagePO>('lookup');
 
@@ -138,7 +138,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupCapabilityPagePO>('lookup');
 
@@ -184,7 +184,7 @@ describe('Manifest Registry', () => {
         registrator_app3: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3},
         lookup_app2: {useClass: LookupCapabilityPagePO, origin: TestingAppOrigins.APP_2},
         lookup_app3: {useClass: LookupCapabilityPagePO, origin: TestingAppOrigins.APP_3},
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorApp2PO = pagePOs.get<RegisterCapabilityPagePO>('registrator_app2');
       const registratorApp3PO = pagePOs.get<RegisterCapabilityPagePO>('registrator_app3');
       const lookupApp2PO = pagePOs.get<LookupCapabilityPagePO>('lookup_app2');
@@ -223,7 +223,7 @@ describe('Manifest Registry', () => {
         registrator_app1: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_1},
         registrator_app3: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3},
         lookup_app1: {useClass: LookupCapabilityPagePO, origin: TestingAppOrigins.APP_1},
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorApp1PO = pagePOs.get<RegisterCapabilityPagePO>('registrator_app1');
       const registratorApp3PO = pagePOs.get<RegisterCapabilityPagePO>('registrator_app3');
       const lookupApp1PO = pagePOs.get<LookupCapabilityPagePO>('lookup_app1');
@@ -248,7 +248,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupCapabilityPagePO>('lookup');
 
@@ -275,7 +275,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupCapabilityPagePO>('lookup');
 
@@ -302,7 +302,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupCapabilityPagePO>('lookup');
 
@@ -329,7 +329,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupCapabilityPagePO>('lookup');
 
@@ -372,7 +372,7 @@ describe('Manifest Registry', () => {
         capabilityRegistrator_app1: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_1},
         intentionRegistrator_app2: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_2},
         lookup_app2: {useClass: LookupCapabilityPagePO, origin: TestingAppOrigins.APP_2},
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const capabilityRegistratorApp1PO = pagePOs.get<RegisterCapabilityPagePO>('capabilityRegistrator_app1');
       const intentionRegistratorApp2PO = pagePOs.get<RegisterIntentionPagePO>('intentionRegistrator_app2');
       const lookupApp2PO = pagePOs.get<LookupCapabilityPagePO>('lookup_app2');
@@ -397,7 +397,7 @@ describe('Manifest Registry', () => {
         capabilityRegistrator_app1: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_1},
         intentionRegistrator_app2: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_2},
         lookup_app2: {useClass: LookupCapabilityPagePO, origin: TestingAppOrigins.APP_2},
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const capabilityRegistratorApp1PO = pagePOs.get<RegisterCapabilityPagePO>('capabilityRegistrator_app1');
       const intentionRegistratorApp2PO = pagePOs.get<RegisterIntentionPagePO>('intentionRegistrator_app2');
       const lookupApp2PO = pagePOs.get<LookupCapabilityPagePO>('lookup_app2');
@@ -418,7 +418,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         capabilityRegistrator_app1: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_1},
         lookup_app2: {useClass: LookupCapabilityPagePO, origin: TestingAppOrigins.APP_2},
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const capabilityRegistratorApp1PO = pagePOs.get<RegisterCapabilityPagePO>('capabilityRegistrator_app1');
       const lookupApp2PO = pagePOs.get<LookupCapabilityPagePO>('lookup_app2');
 
@@ -435,7 +435,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupCapabilityPagePO>('lookup');
       await lookupPO.lookup(); // do a single lookup
@@ -473,7 +473,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3},
         lookup: {useClass: LookupIntentionPagePO, origin: TestingAppOrigins.APP_3},
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
 
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupIntentionPagePO>('lookup');
@@ -490,7 +490,7 @@ describe('Manifest Registry', () => {
       const testingAppPO = new TestingAppPO();
       const pagePOs = await testingAppPO.navigateTo({
         registrator: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_4},
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('intentionRegisterApiDisabled', 'app-4').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('intentionRegisterApiDisabled', 'app-4').set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
 
       // Try to register the intention
@@ -504,7 +504,7 @@ describe('Manifest Registry', () => {
       const testingAppPO = new TestingAppPO();
       const pagePOs = await testingAppPO.navigateTo({
         registrator: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_4},
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('intentionRegisterApiDisabled', 'app-4').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('intentionRegisterApiDisabled', 'app-4').set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
 
       // Try to unregister an intention
@@ -516,7 +516,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupIntentionPagePO>('lookup');
 
@@ -540,7 +540,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupIntentionPagePO>('lookup');
 
@@ -566,7 +566,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupIntentionPagePO>('lookup');
 
@@ -607,7 +607,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupIntentionPagePO>('lookup');
 
@@ -653,7 +653,7 @@ describe('Manifest Registry', () => {
         registrator_app3: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3},
         lookup_app2: {useClass: LookupIntentionPagePO, origin: TestingAppOrigins.APP_2},
         lookup_app3: {useClass: LookupIntentionPagePO, origin: TestingAppOrigins.APP_3},
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorApp2PO = pagePOs.get<RegisterIntentionPagePO>('registrator_app2');
       const registratorApp3PO = pagePOs.get<RegisterIntentionPagePO>('registrator_app3');
       const lookupApp2PO = pagePOs.get<LookupIntentionPagePO>('lookup_app2');
@@ -688,7 +688,7 @@ describe('Manifest Registry', () => {
         registrator_app1: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1},
         registrator_app2: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3},
         lookup_app1: {useClass: LookupIntentionPagePO, origin: TestingAppOrigins.APP_1},
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorApp1PO = pagePOs.get<RegisterIntentionPagePO>('registrator_app1');
       const registratorApp2PO = pagePOs.get<RegisterIntentionPagePO>('registrator_app2');
       const lookupApp1PO = pagePOs.get<LookupIntentionPagePO>('lookup_app1');
@@ -713,7 +713,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupIntentionPagePO>('lookup');
 
@@ -740,7 +740,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupIntentionPagePO>('lookup');
 
@@ -767,7 +767,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupIntentionPagePO>('lookup');
 
@@ -794,7 +794,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupIntentionPagePO>('lookup');
 
@@ -836,7 +836,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator_app1: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1},
         lookup_app2: {useClass: LookupIntentionPagePO, origin: TestingAppOrigins.APP_2},
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorApp1PO = pagePOs.get<RegisterIntentionPagePO>('registrator_app1');
       const lookupApp2PO = pagePOs.get<LookupIntentionPagePO>('lookup_app2');
 
@@ -856,7 +856,7 @@ describe('Manifest Registry', () => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
-      }, {queryParams: new Map().set('manifestClassifier', 'blank').set('activatorApiDisabled', true)});
+      }, {queryParams: new Map().set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
       const lookupPO = pagePOs.get<LookupIntentionPagePO>('lookup');
       await lookupPO.lookup(); // do a single lookup
