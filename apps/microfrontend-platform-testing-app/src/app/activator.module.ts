@@ -9,14 +9,14 @@
  */
 
 import { NgModule } from '@angular/core';
-import { ACTIVATION_CONTEXT, ActivationContext, Beans, ContextService, MessageClient, MicroApplicationConfig, PlatformState, PlatformStates } from '@scion/microfrontend-platform';
+import { ACTIVATION_CONTEXT, ActivationContext, Beans, ContextService, MessageClient, MessageHeaders, MicroApplicationConfig } from '@scion/microfrontend-platform';
 import { TestingAppTopics } from './testing-app.topics';
 import { RouterModule } from '@angular/router';
 
 /**
  * Module which operates as activator.
  *
- * When loaded it publishes an activate event to the topic {@link TestingAppTopics.ApplicationActivated}.
+ * Note: This module is loaded only if loading the host app with the query parameter 'manifestClassifier=activator' into the browser.
  */
 @NgModule({
   imports: [
@@ -26,17 +26,31 @@ import { RouterModule } from '@angular/router';
 export class ActivatorModule {
 
   constructor() {
-    Beans.get(PlatformState).whenState(PlatformStates.Started).then(() => this.publishApplicationActivatedEvent());
+    const symbolicName = Beans.get(MicroApplicationConfig).symbolicName;
+    const randomDelay = Math.floor(Math.random() * 10000);
+
+    console.log(`[testing] Delay the readiness signaling of the app '${symbolicName}' by ${randomDelay}ms.`);
+    setTimeout(() => this.installPingReplierAndSignalReady(), randomDelay);
   }
 
-  private publishApplicationActivatedEvent(): void {
-    Beans.get(ContextService).lookup<ActivationContext>(ACTIVATION_CONTEXT).then((activationContext: ActivationContext) => {
-      if (!activationContext) {
-        throw Error('[NullActivatorContextError] Not running in an activator context.');
-      }
+  /**
+   * Installs a request-replier to respond to ping-requests and signals ready.
+   */
+  private async installPingReplierAndSignalReady(): Promise<void> {
+    const activationContext = await Beans.get(ContextService).lookup<ActivationContext>(ACTIVATION_CONTEXT);
+    if (!activationContext) {
+      throw Error('[NullActivatorContextError] Not running in an activator context.');
+    }
+    const symbolicName = Beans.get(MicroApplicationConfig).symbolicName;
+    const pingReply = `${symbolicName} [primary: ${activationContext.primary}, X-APP-NAME: ${activationContext.activator.properties['X-APP-NAME']}]`;
 
-      const event = `${Beans.get(MicroApplicationConfig).symbolicName} [primary: ${activationContext.primary}, X-APP-NAME: ${activationContext.activator.properties['X-APP-NAME']}]`;
-      Beans.get(MessageClient).publish(TestingAppTopics.ApplicationActivated, event);
-    });
+    // Subscribe for ping requests.
+    Beans.get(MessageClient).onMessage$(TestingAppTopics.ActivatorPing)
+      .subscribe(pingRequest => {
+        Beans.get(MessageClient).publish(pingRequest.headers.get(MessageHeaders.ReplyTo), pingReply);
+      });
+
+    // Signal the host platform that this activator is ready.
+    Beans.get(MessageClient).publish(activationContext.activator.properties.readinessTopics as string);
   }
 }

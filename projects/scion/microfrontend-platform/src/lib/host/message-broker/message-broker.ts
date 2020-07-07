@@ -16,7 +16,6 @@ import { ApplicationRegistry } from '../application-registry';
 import { ManifestRegistry } from '../manifest-registry/manifest-registry';
 import { Maps } from '@scion/toolkit/util';
 import { UUID } from '@scion/toolkit/uuid';
-import { PlatformState, PlatformStates } from '../../platform-state';
 import { Logger } from '../../logger';
 import { runSafe } from '../../safe-runner';
 import { PLATFORM_SYMBOLIC_NAME } from '../platform.constants';
@@ -27,6 +26,7 @@ import { TopicMatcher } from '../../topic-matcher.util';
 import { bufferUntil } from '../../operators';
 import { chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain } from './message-interception';
 import { Capability } from '../../platform.model';
+import { RUNLEVEL_1, RUNLEVEL_2 } from '../../microfrontend-platform-runlevels';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -65,7 +65,7 @@ export class MessageBroker implements PreDestroy {
     this._clientRequests$ = fromEvent<MessageEvent>(window, 'message')
       .pipe(
         filterMessage(MessagingTransport.ClientToBroker),
-        bufferUntil(Beans.get(PlatformState).whenState(PlatformStates.Started)),
+        bufferUntil(Beans.whenRunlevel(RUNLEVEL_2)),
         checkOriginTrusted(this._clientRegistry, {transport: MessagingTransport.BrokerToClient}),
         catchErrorAndRetry(),
         share(),
@@ -93,7 +93,7 @@ export class MessageBroker implements PreDestroy {
     fromEvent<MessageEvent>(window, 'message')
       .pipe(
         filterByTransportAndTopic(MessagingTransport.GatewayToBroker, PlatformTopics.ClientConnect),
-        bufferUntil(Beans.get(PlatformState).whenState(PlatformStates.Started)),
+        bufferUntil(Beans.whenRunlevel(RUNLEVEL_1)),
         catchErrorAndRetry(),
         takeUntil(this._destroy$),
       )
@@ -158,7 +158,7 @@ export class MessageBroker implements PreDestroy {
     fromEvent<MessageEvent>(window, 'message')
       .pipe(
         filterByTransportAndTopic(MessagingTransport.GatewayToBroker, PlatformTopics.ClientDisconnect),
-        bufferUntil(Beans.get(PlatformState).whenState(PlatformStates.Started)),
+        bufferUntil(Beans.whenRunlevel(RUNLEVEL_1)),
         checkOriginTrusted<TopicMessage<void>>(this._clientRegistry, {transport: MessagingTransport.BrokerToGateway}),
         catchErrorAndRetry(),
         takeUntil(this._destroy$),

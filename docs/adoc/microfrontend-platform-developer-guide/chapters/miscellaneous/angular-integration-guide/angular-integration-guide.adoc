@@ -173,7 +173,7 @@ The module constructor would then look as follows:
 ----
 include::activator.snippets.ts[tags=activator-module-using-resolver]
 ----
-<1> Waits until the platform started.
+<1> Waits until the platform started; only required if starting the platform in a resolver.
 <2> Injects registered activator services via Angular `Injector`.
 
 Activator can perform activation tasks in the constructor.

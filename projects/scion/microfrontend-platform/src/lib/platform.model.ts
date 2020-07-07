@@ -290,7 +290,7 @@ export enum PlatformCapabilityTypes {
  * const isPrimary: boolean = ctx.primary;
  * ```
  *
- *  #### Sharing State
+ * #### Sharing State
  * Since an activator runs in a separate browsing context, microfrontends cannot directly access its state.
  * Instead, an activator could put data, for example, into session storage, so that microfrontends of its micro
  * application can access it. Alternatively, an activator could install a message listener, allowing microfrontends
@@ -307,5 +307,16 @@ export interface Activator extends Capability {
      * of the micro application, as specified in the application manifest.
      */
     path: string;
+    /**
+     * Starting an activator may take some time. In order not to miss any messages or intents, you can instruct the platform host to
+     * wait to enter started state until you signal the activator to be ready. For this purpose, you can define a set of topics where
+     * to publish a ready message to signal readiness. If you specify multiple topics, the activator enters ready state after you have
+     * published a ready message to all these topics. A ready message is an event; thus, a message without payload.
+     *
+     * If not specifying a readiness topic, the platform host does not wait for this activator to become ready. However, if you specify a
+     * readiness topic, make sure that your activator has a fast startup time and signals readiness as early as possible not to delay
+     * the startup of the platform host.
+     */
+    readinessTopics?: string | string[];
   };
 }

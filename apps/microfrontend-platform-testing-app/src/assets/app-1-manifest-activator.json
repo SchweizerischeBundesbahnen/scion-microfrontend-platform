@@ -1,0 +1,32 @@
+{
+  "name": "Testing App 1",
+  "baseUrl": "#",
+  "capabilities": [
+    {
+      "type": "activator",
+      "qualifier": {
+        "activator": "A"
+      },
+      "private": false,
+      "properties": {
+        "path": "activator",
+        "X-APP-NAME": "app-1",
+        "readinessTopics": "activator/ready-1"
+      }
+    },
+    {
+      "type": "activator",
+      "qualifier": {
+        "activator": "B"
+      },
+      "private": false,
+      "properties": {
+        "path": "activator",
+        "X-APP-NAME": "app-1",
+        "readinessTopics": "activator/ready-2"
+      }
+    }
+  ],
+  "intentions": [
+  ]
+}

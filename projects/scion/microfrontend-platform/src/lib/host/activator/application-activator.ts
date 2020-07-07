@@ -7,57 +7,96 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Beans, PreDestroy } from '../../bean-manager';
+import { Beans, Initializer } from '../../bean-manager';
 import { Activator, PlatformCapabilityTypes } from '../../platform.model';
 import { PlatformManifestService } from '../../client/manifest-registry/platform-manifest-service';
-import { of, Subject } from 'rxjs';
-import { first, mergeMap, reduce, take } from 'rxjs/operators';
+import { filter, mergeMapTo, take } from 'rxjs/operators';
 import { ApplicationRegistry } from '../application-registry';
 import { OutletRouter } from '../../client/router-outlet/outlet-router';
 import { SciRouterOutletElement } from '../../client/router-outlet/router-outlet.element';
-import { Maps } from '@scion/toolkit/util';
+import { Arrays, Maps } from '@scion/toolkit/util';
 import { UUID } from '@scion/toolkit/uuid';
 import { Logger } from '../../logger';
+import { PlatformMessageClient } from '../platform-message-client';
+import { MessageHeaders } from '../../messaging.model';
+import { PlatformState, PlatformStates } from '../../platform-state';
+import { EMPTY } from 'rxjs';
 
 /**
- * Activates applications which provide an activator capability.
+ * Activates micro applications which provide an activator capability.
  *
- * Activators are loaded on platform startup so that applications can interact with the system
- * even when no microfrontend of that app is currently displayed. For example, it allows an
- * application to handle intents, or to flexibly provide capabilities.
+ * Activators enable micro applications to interact with the platform for the entire platform lifecycle.
+ * Activators can signal when ready for operation, causing this initializer to wait until received respective readiness messages.
  *
  * @ignore
  */
-export class ApplicationActivator implements PreDestroy {
+export class ApplicationActivator implements Initializer {
 
-  private _destroy$ = new Subject<void>();
-  private _whenDestroy = this._destroy$.pipe(first()).toPromise();
+  public async init(): Promise<void> {
+    // Lookup activators.
+    const activators: Activator[] = await Beans.get(PlatformManifestService).lookupCapabilities$<Activator>({type: PlatformCapabilityTypes.Activator})
+      .pipe(take(1))
+      .toPromise();
 
-  constructor() {
-    Beans.get(PlatformManifestService).lookupCapabilities$({type: PlatformCapabilityTypes.Activator})
-      .pipe(
-        take(1),
-        mergeMap(activators => of(...activators)),
-        reduce((activatorsByApp, activator) => Maps.addListValue(activatorsByApp, activator.metadata.appSymbolicName, activator), new Map<string, Activator[]>()),
-      )
-      .subscribe((activatorsByApp: Map<string, Activator[]>) => {
-        activatorsByApp.forEach((activators: Activator[]) => {
-          // Nominate one activator of each app as primary activator.
-          const primaryActivator = activators[0];
-          activators.forEach(activator => this.mountActivator(activator, activator === primaryActivator));
-        });
-      });
+    // Group activators by their providing application.
+    const activatorsGroupedByApp: Map<string, Activator[]> = activators
+      .filter(this.skipInvalidActivators())
+      .reduce((grouped, activator) => Maps.addListValue(grouped, activator.metadata.appSymbolicName, activator), new Map<string, Activator[]>());
+
+    // Create Promises that wait for activators to signal ready.
+    const activatorReadyPromises: Promise<void>[] = Array
+      .from(activatorsGroupedByApp.entries())
+      .reduce((acc, [appSymbolicName, appActivators]) => acc.concat(this.waitForActivatorsToSignalReady(appSymbolicName, appActivators)), [] as Promise<void>[]);
+
+    // Mount activators in hidden iframes
+    activatorsGroupedByApp.forEach((sameAppActivators: Activator[]) => {
+      // Nominate one activator of each app as primary activator.
+      const primaryActivator = sameAppActivators[0];
+      sameAppActivators.forEach(activator => this.mountActivator(activator, activator === primaryActivator));
+    });
+
+    // Wait until activators signal ready.
+    await Promise.all(activatorReadyPromises);
+  }
+
+  private skipInvalidActivators(): (activator: Activator) => boolean {
+    return (activator: Activator): boolean => {
+      if (!activator.properties || !activator.properties.path) {
+        Beans.get(Logger).error(`[ActivatorError] Failed to activate the application '${activator.metadata.appSymbolicName}'. Missing required 'path' property in the provided activator capability.`, activator);
+        return false;
+      }
+      return true;
+    };
+  }
+
+  /**
+   * Creates a Promise that resolves when given activators signal ready.
+   */
+  private async waitForActivatorsToSignalReady(appSymbolicName: string, activators: Activator[]): Promise<void> {
+    const t0 = Date.now();
+    const readinessPromises: Promise<void>[] = activators
+      .reduce((acc, activator) => acc.concat(Arrays.coerce(activator.properties.readinessTopics)), []) // concat readiness topics
+      .map(readinessTopic => Beans.get(PlatformMessageClient).onMessage$<void>(readinessTopic)
+        .pipe(
+          filter(msg => msg.headers.get(MessageHeaders.AppSymbolicName) === appSymbolicName),
+          take(1),
+          mergeMapTo(EMPTY),
+        )
+        .toPromise(),
+      );
+
+    if (!readinessPromises.length) {
+      return Promise.resolve();
+    }
+
+    await Promise.all(readinessPromises);
+    Beans.get(Logger).info(`Activator startup of '${appSymbolicName}' took ${Date.now() - t0}ms.`);
   }
 
   /**
    * Mounts a hidden <sci-router-outlet> and loads the activator endpoint.
    */
   private mountActivator(activator: Activator, primary: boolean): void {
-    if (!activator.properties || !activator.properties.path) {
-      Beans.get(Logger).error(`[ActivatorError] Failed to activate the application '${activator.metadata.appSymbolicName}'. Missing required 'path' property in the provided activator capability.`);
-      return;
-    }
-
     const application = Beans.get(ApplicationRegistry).getApplication(activator.metadata.appSymbolicName);
     const activatorUrl = `${trimPath(application.baseUrl)}/${trimPath(activator.properties.path)}`;
 
@@ -77,11 +116,7 @@ export class ApplicationActivator implements PreDestroy {
     // Add the router outlet to the DOM
     document.body.appendChild(routerOutlet);
     // Unmount the router outlet on platform shutdown
-    this._whenDestroy.then(() => document.body.removeChild(routerOutlet));
-  }
-
-  public preDestroy(): void {
-    this._destroy$.next();
+    Beans.get(PlatformState).whenState(PlatformStates.Stopped).then(() => document.body.removeChild(routerOutlet));
   }
 }
 

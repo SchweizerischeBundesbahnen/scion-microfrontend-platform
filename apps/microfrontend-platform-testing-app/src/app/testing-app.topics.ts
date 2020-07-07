@@ -13,8 +13,7 @@
  */
 export enum TestingAppTopics {
   /**
-   * Activators send an activation event to this topic when activated.
-   * The events are then logged in the console of the top-level app.
+   * The host app sends a ping request to the activators when started the platform.
    */
-  ApplicationActivated = 'APPLICATION_ACTIVATED',
+  ActivatorPing = 'activators/ping',
 }

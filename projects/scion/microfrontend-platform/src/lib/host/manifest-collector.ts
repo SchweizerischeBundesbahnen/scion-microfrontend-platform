@@ -18,6 +18,7 @@ import { Logger } from '../logger';
 import { HostPlatformAppProvider } from './host-platform-app-provider';
 import { PlatformMessageClient } from '../host/platform-message-client';
 import { PlatformTopics } from '../ɵmessaging.model';
+import { RUNLEVEL_2 } from '../microfrontend-platform-runlevels';
 
 /**
  * Collects manifests of registered applications.
@@ -27,18 +28,22 @@ import { PlatformTopics } from '../ɵmessaging.model';
  */
 export class ManifestCollector implements Initializer {
 
-  public init(): Promise<void> {
-    return Beans.get(PlatformConfigLoader).load()
-      .then((platformConfig: PlatformConfig) => {
-        Defined.orElseThrow(platformConfig, () => Error('[PlatformConfigError] No platform config provided.'));
-        Defined.orElseThrow(platformConfig.apps, () => Error('[PlatformConfigError] Missing \'apps\' property in platform config. Did you forget to register applications?'));
-        Beans.register(PlatformFlags, {useValue: this.computePlatformFlags(platformConfig)});
-        Beans.get(PlatformMessageClient).publish(PlatformTopics.PlatformProperties, platformConfig.properties || {}, {retain: true});
-        return [Beans.get(HostPlatformAppProvider).appConfig, ...platformConfig.apps];
-      })
-      .then((appConfigs: ApplicationConfig[]): Promise<void> => {
-        return Promise.all(this.fetchAndRegisterManifests(appConfigs)).then();
-      });
+  public async init(): Promise<void> {
+    // Load platform config
+    const platformConfig: PlatformConfig = await Beans.get(PlatformConfigLoader).load();
+    Defined.orElseThrow(platformConfig, () => Error('[PlatformConfigError] No platform config provided.'));
+    Defined.orElseThrow(platformConfig.apps, () => Error('[PlatformConfigError] Missing \'apps\' property in platform config. Did you forget to register applications?'));
+    Beans.register(PlatformFlags, {useValue: this.computePlatformFlags(platformConfig)});
+
+    // Load application manifests
+    const appConfigs: ApplicationConfig[] = [Beans.get(HostPlatformAppProvider).appConfig, ...platformConfig.apps];
+    await Promise.all(this.fetchAndRegisterManifests(appConfigs));
+
+    // Wait until messaging is enabled to avoid running into a publish timeout.
+    Beans.whenRunlevel(RUNLEVEL_2).then(() => {
+      Beans.get(PlatformMessageClient).publish(PlatformTopics.PlatformProperties, platformConfig.properties || {}, {retain: true});
+      Beans.get(PlatformMessageClient).publish(PlatformTopics.Applications, Beans.get(ApplicationRegistry).getApplications(), {retain: true});
+    });
   }
 
   private fetchAndRegisterManifests(appConfigs: ApplicationConfig[]): Promise<void>[] {

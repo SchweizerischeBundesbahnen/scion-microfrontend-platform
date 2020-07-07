@@ -173,9 +173,15 @@ For an example, see the chapter <<chapter:angular-integration-guide:preparing-me
 [[chapter:bean-manager:initializers]]
 [discrete]
 === Initializers
-Initializers help to run initialization work before eager beans are constructed. Initializers are registered in the bean manager using the `Beans.registerInitializer` method, passing a function or an initializer class. Initializers may run in parallel. For this reason, there must be no dependency in any initializer on the order of the execution of the initializers.
+Initializers help to run initialization tasks during platform startup. The platform is fully started when all initializers are completed.
 
-An initializer must return a Promise which to resolve when completed initialization. The platform waits with the construction of eager beans until all initializers resolved.
+Initializers can specify a runlevel in which to execute. Initializers bound to lower runlevels execute before initializers of higher runlevels. Initializers of the same runlevel may execute in parallel.
+
+Runlevel 0:: In runlevel 0, the platform fetches application manifests.
+Runlevel 1:: In runlevel 1, the platform constructs eager beans.
+Runlevel 2:: From runlevel 2 and above, messaging is enabled. This is the default runlevel at which initializers execute if not specifying a runlevel.
+
+Initializers are registered in the bean manager using the `Beans.registerInitializer` method, passing a function or an initializer class, and optionally a runlevel. If not specifying a runlevel, the initializer is executed in runlevel 2, that is after messaging is enabled.
 
 [source,typescript]
 ----
