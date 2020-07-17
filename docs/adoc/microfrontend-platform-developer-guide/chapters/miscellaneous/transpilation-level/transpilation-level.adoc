@@ -1,0 +1,33 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:transpilation-level]]
+== ECMAScript Transpilation Level
+
+We recommend using ES2015 transpilation level or higher to have native web component support because the SCION Microfrontend Platform uses a web component for embedding microfrontends. The web component wraps an iframe and loads, based on the current router state, the routed microfrontend into the iframe.
+
+By default, native web component browser support is only available for code transpiled to ES2015 or higher, mainly because the browser expects a web component to be a native ES2015 class. In ES5, ES2015 classes are represented as functions, which results in a runtime error when using web components.
+
+If you have to transpile your app to ES5 compliant code and still want to use the browser's native web component support, we recommend importing the adapter `custom-elements-es5-adapter.js`. This adapter converts ES5 style classes back into native ES2015 classes. Alternatively, you could also use a polyfill to simulate native web component support.
+
+For more information, see https://github.com/webcomponents/polyfills/tree/master/packages/webcomponentsjs.
+
+[NOTE]
+====
+Since version `1.0.0-beta.5` we no longer include the distributions for `esm5` and `fesm5` in the `@scion/microfrontend-platform`’s NPM package. Only the formats for `esm2015`, `fesm2015`, and UMD are distributed. Consequently, the module field in package.json points to the `fesm2015` distribution.
+
+If requiring `esm5` or `fesm5`, you will need to downlevel to ES5 yourself. If using Angular, the Angular CLI will automatically downlevel the code to ES5 if differential loading is enabled in the Angular project, so no action is required from Angular CLI users.
+
+----
+{
+  ...
+  "main": "bundles/scion-microfrontend-platform.umd.js",
+  "module": "fesm2015/scion-microfrontend-platform.js",
+  "es2015": "fesm2015/scion-microfrontend-platform.js",
+  "esm2015": "esm2015/scion-microfrontend-platform.js",
+  "fesm2015": "fesm2015/scion-microfrontend-platform.js",
+  ...
+}
+----
+====
+
