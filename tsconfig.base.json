@@ -1,0 +1,44 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "module": "es2020",
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "es2015",
+    "noUnusedLocals": true,
+    // to correctly transpile ES2015 collections to ES5; crucial to run on ES5
+    "downlevelIteration": true,
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "paths": {
+      "@scion/microfrontend-platform": [
+        "dist/scion/microfrontend-platform"
+      ]
+    }
+    /*
+     * ======================================+
+     * |    PATH-OVERRIDE-FOR-DEVELOPMENT    |
+     * |                                     |
+     * |   DO NOT ACTIVATE FOR PRODUCTION!   |
+     * +=====================================+
+     */
+    //
+    //    "paths": {
+    //      "@scion/microfrontend-platform": [
+    //        "projects/scion/microfrontend-platform/src/public_api"
+    //      ]
+    //    }
+  },
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true
+  }
+}

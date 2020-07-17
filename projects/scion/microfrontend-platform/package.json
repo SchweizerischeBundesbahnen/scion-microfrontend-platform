@@ -15,11 +15,12 @@
     "name": "SCION contributors"
   },
   "dependencies": {
-    "js-sha256": "0.9.0"
+    "js-sha256": "0.9.0",
+    "tslib": "^2.0.0"
   },
   "peerDependencies": {
     "rxjs": "^6.0.0",
-    "@scion/toolkit": "^9.0.0-beta.3 || ^9.0.0-rc.0 || ^9.0.0"
+    "@scion/toolkit": "^9.0.0-beta.0 || ^9.0.0-rc.0 || ^9.0.0 || ^10.0.0-beta.0 || ^10.0.0-rc.0 || ^10.0.0"
   },
   "keywords": [
     "scion",
