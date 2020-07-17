@@ -73,8 +73,10 @@ jobs:
     strategy:
       matrix:
         app:
-          - microfrontend-platform-testing-app-vercel
-          - microfrontend-platform-testing-app-localhost
+          - name: microfrontend-platform-testing-app-vercel
+            cmd: npm run microfrontend-platform-testing-app-vercel:build
+          - name: microfrontend-platform-testing-app-localhost
+            cmd: npm run microfrontend-platform-testing-app-localhost:build
     steps:
       - uses: actions/checkout@v2
       - name: 'Restoring NPM modules from cache'
@@ -82,22 +84,25 @@ jobs:
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      - uses: actions/download-artifact@v2
+      - name: 'Downloading platform (dist)'
+        uses: actions/download-artifact@v2
         with:
           name: dist
           path: dist
-      - run: npm run ${{ matrix.app }}:build
+      - name: 'Building ${{ matrix.app.name }}'
+        run: ${{ matrix.app.cmd }}
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.app }}
-          path: dist/${{ matrix.app }}
+          name: ${{ matrix.app.name }}
+          path: dist/${{ matrix.app.name }}
   test:
     name: 'Unit Testing'
     needs: build-platform
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - name: 'Downloading platform (dist)'
+        uses: actions/download-artifact@v2
         with:
           name: dist
           path: dist
@@ -125,11 +130,13 @@ jobs:
           - routing
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - name: 'Downloading platform (dist)'
+        uses: actions/download-artifact@v2
         with:
           name: dist
           path: dist
-      - uses: actions/download-artifact@v2
+      - name: 'Downloading app: microfrontend-platform-testing-app-localhost (dist)'
+        uses: actions/download-artifact@v2
         with:
           name: microfrontend-platform-testing-app-localhost
           path: dist/microfrontend-platform-testing-app-localhost
@@ -166,12 +173,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: 'Downloading built artifacts (microfrontend-platform, documentation)'
+      - name: 'Downloading platform and documentation (dist)'
         uses: actions/download-artifact@v2
         with:
           name: dist
           path: dist
-      - name: 'Downloading built artifacts (testing-app)'
+      - name: 'Downloading app: microfrontend-platform-testing-app-vercel (dist)'
         uses: actions/download-artifact@v2
         with:
           name: microfrontend-platform-testing-app-vercel
