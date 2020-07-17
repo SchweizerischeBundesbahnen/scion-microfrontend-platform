@@ -11,6 +11,7 @@ include::focus-monitor/focus-monitor.adoc[]
 include::routing-in-micro-applications/routing-in-micro-applications.adoc[]
 include::versioning/versioning.adoc[]
 include::compatibility/compatibility.adoc[]
+include::transpilation-level/transpilation-level.adoc[]
 include::explore-platform/explore-platform.adoc[]
 include::angular-integration-guide/angular-integration-guide.adoc[]
 :leveloffset: -1

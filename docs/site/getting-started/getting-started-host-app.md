@@ -128,19 +128,6 @@ In this section, we will embed the `products` and `shopping cart` microfrontends
    Unlike to embedding the `products` microfrontend, we publish a message to show the `shopping cart` microfrontend. As of now, nothing would happen when the user clicks on that button, because we did not register a message listener yet. It is important to understand that the platform transports that message to all micro applications. Later, when implementing the `shopping cart` micro application, we will subscribe to such messages and navigate accordingly. Of course, we could also use the `OutletRouter` directly. For illustrative purposes, however, we use an alternative approach, which further has the advantage that we do not have to know the URL of the microfrontend to embed it. Instead, we let the providing micro application perform the routing, keeping the microfrontend URL an implementation detail of the micro application that provides the microfrontend.
    
    > Note: It would be even better to use the Intention API for showing a microfrontend, which, however, would go beyond the scope of this Getting Started Guide. For more information, refer to the [Developer Guide][link-developer-guide#routing-in-the-activator].
-1. Work around Parcel transpilation issue preventing web components from working.
-
-   Include the following adapter as the first import into `host-controller.ts` to make web component work with `ES5` transpiled code.
-
-   ```ts
-   import '@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js';
-   ```
-
-   **Why do we need this adapter:**\
-   Unfortunately, with Parcel, we could not get differential loading to work for modules contained in `node_modules`. It turned out that whatever configuration we use, Parcel always uses the `ES5` representation of libraries contained in `node_modules`, i.e., the bundle to which the `module` entry-point of the library's `package.json` points. But, as per the `package.json` specification, the `module` entry-point always points to an `ES5` compatible bundle. Instead, Parcel should use the `fesm2015` entry point if transpiling to `ES2015`
-
-   **What is the problem with code transpiled to `ES5:`**\
-   Code transpiled to `ES5` uses functions to represent `ES2015 classes`. This, however, results in a runtime error because the browser expects a web component to be an `ES2015` class, and not a function. To still use the browser's native web component support, we must include `custom-elements-es5-adapter.js`. This adapter converts `ES5`-style classes back to native `ES2015` classes.
 
 </details>
 
@@ -224,7 +211,6 @@ We have added two router outlets to the HTML template of the host application fo
    <summary>The <code>host-controller.ts</code> looks as following:</summary>
 
 ```ts
-import '@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js';
 import { Beans, MessageClient, MicroApplicationConfig, MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';
 
 class HostController {

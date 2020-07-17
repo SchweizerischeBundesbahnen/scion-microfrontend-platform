@@ -13,7 +13,7 @@ This page gives you an overview of existing and planned platform features. Devel
 [![][planned]](#) Planned&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 [![][deprecated]](#) Deprecated
 
-|Feature|Status|Note|Link
+|Feature|Status|Note|Doc
 |-|-|-|-|
 |**Communication**|[![][done]](#)|The platform provides a pub/sub layer on top of the native `postMessage` mechanism to allow microfrontends to communicate with each other across origins. The platform supports messaging in two flavors: topic-based and intent-based.|[Doc](https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:cross-application-communication)
 |**Embedding of Microfrontends**|[![][done]](#)|Microfrontends are embedded using router outlets. A router outlet is a placeholder that the platform dynamically fills based on the current router state. A router outlet is implemented as a web component that wraps an iframe and solves many of the cumbersome quirks of iframes and helps to overcome iframe restrictions. Multiple outlets can display different content, determined by different outlet names, all at the same time. Router outlets can be nested.|[Doc](https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:router-outlet)
