@@ -58,5 +58,5 @@ The host application is the topmost application for integrating microfrontends. 
 
 If the host application wants to interact with either the platform or the micro applications, the host application has to register itself as a micro application. The host application has no extra privileges compared to other micro applications.
 
-NOTE: It is conceivable- although rare - to have more than one host app in the <<terminology:application,application>>. As a prerequisite, every host app must be unique in its window hierarchy, i.e., must not be embedded (nor directly nor indirectly) by another host app. Each host app forms a separate and completely isolated namespace.
+NOTE: It is conceivable - although rare - to have more than one host app in the <<terminology:application,application>>. As a prerequisite, every host app must be unique in its window hierarchy, i.e., must not be embedded (nor directly nor indirectly) by another host app. Each host app forms a separate and completely isolated namespace.
 
