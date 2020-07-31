@@ -71,12 +71,14 @@ Micro Application::
 +
 include::micro-application.adoc[]
 +
+// this comment is necessary for the below terminology:microfrontend anchor to work
 
 [#terminology:microfrontend]
 Microfrontend::
 +
 include::microfrontend.adoc[]
 +
+// this comment is necessary for the below terminology:origin anchor to work
 
 [#terminology:origin]
 Origin::

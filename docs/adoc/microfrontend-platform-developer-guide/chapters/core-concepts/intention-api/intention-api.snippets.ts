@@ -7,7 +7,17 @@ import { Beans, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestSer
   "baseUrl": "#",
   "capabilities": [
     {
-      "description": "Shows the product microfrontend.",
+      "description": "Shows the product list microfrontend.",
+      "type": "microfrontend",
+      "qualifier": {
+        "entity": "product-list"
+      }
+      "properties": {
+        "path": "/products",
+      }
+    },
+    {
+      "description": "Shows the product detail microfrontend.",
       "type": "microfrontend",
       "qualifier": {
         "entity": "product",
