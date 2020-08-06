@@ -36,7 +36,7 @@ This short manual helps to install the SCION Microfrontend Platform and describe
 
       For each micro application to register, you must provide an application config with the application's symbolic name and the URL to its manifest.
       ```ts
-      const platformConfig: MicroApplicationConfig[] = [
+      const platformConfig: ApplicationConfig[] = [
         {symbolicName: 'host-app', manifestUrl: '/manifest.json'}, // optional
         {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
         {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},

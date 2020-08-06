@@ -49,9 +49,9 @@ In this section, we will register the `host`, `products` and `shopping cart` as 
 1. Open the TypeScript file `host-controller.ts`.
 1. Configure the micro applications by adding the following content before the constructor:
    ```ts
-   import { MicroApplicationConfig } from '@scion/microfrontend-platform';
+   import { ApplicationConfig } from '@scion/microfrontend-platform';
 
-   private platformConfig: MicroApplicationConfig[] = [
+   private platformConfig: ApplicationConfig[] = [
      {symbolicName: 'host-app', manifestUrl: '/manifest.json'},
      {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
      {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
@@ -211,11 +211,11 @@ We have added two router outlets to the HTML template of the host application fo
    <summary>The <code>host-controller.ts</code> looks as following:</summary>
 
 ```ts
-import { Beans, MessageClient, MicroApplicationConfig, MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';
+import { ApplicationConfig, Beans, MessageClient, MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';
 
 class HostController {
 
-  private platformConfig: MicroApplicationConfig[] = [
+  private platformConfig: ApplicationConfig[] = [
     {symbolicName: 'host-app', manifestUrl: '/manifest.json'},
     {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
     {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
