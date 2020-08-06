@@ -471,7 +471,7 @@ new Activator().init();
    <summary>The <code>shopping-cart-service.ts</code> looks as following:</summary>
 
 ```ts
-import { fromEvent, merge, Observable, Subject } from 'rxjs';
+import { fromEvent, merge, Subject } from 'rxjs';
 import { filter, map, startWith } from 'rxjs/operators';
 
 /**
@@ -522,7 +522,7 @@ export class ShoppingCartService {
     localChange$.next();
   }
 
-  private static getProducts(): Observable<Product>[] {
+  private static getProducts(): Product[] {
     const products = sessionStorage.getItem(SHOPPING_CART_STORAGE_KEY);
     return products ? JSON.parse(products) : [];
   }
