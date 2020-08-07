@@ -177,17 +177,16 @@
     "template-banana-in-box": true,
     "template-no-negated-async": true,
     "use-lifecycle-interface": true,
-    "use-pipe-transform-interface": true
-  },
-  "linebreak-style": [
-    true,
-    "LF"
-  ],
-  "typedef": [
-    true,
-    "call-signature",
-    "arrow-call-signature",
-    "parameter",
-    "property-declaration"
-  ]
+    "use-pipe-transform-interface": true,
+    "linebreak-style": [
+      true,
+      "LF"
+    ],
+    "typedef": [
+      true,
+      "call-signature",
+      "parameter",
+      "property-declaration"
+    ]
+  }
 }
