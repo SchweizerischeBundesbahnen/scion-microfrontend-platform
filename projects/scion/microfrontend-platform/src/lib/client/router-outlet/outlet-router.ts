@@ -168,6 +168,6 @@ export class OutletRouter {
   private substituteNamedParameters(path: string, params?: Map<string, any>): string {
     // A named parameter can be followed by another path segment (`/`), by a query param (`?` or `&`), by a matrix param (`;`)
     // or by the fragment part (`#`).
-    return path.replace(/:([^/;&?#]+)/g, (match, $1) => params.get($1) || match);
+    return path.replace(/:([^/;&?#]+)/g, (match, $1) => params.has($1) ? params.get($1) : match);
   }
 }

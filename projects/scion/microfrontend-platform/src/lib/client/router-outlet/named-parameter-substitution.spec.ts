@@ -139,6 +139,18 @@ describe('OutletRouter', () => {
         });
         await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}a/PARAM1/b/PARAM2;mp1=PARAM3;mp2=PARAM4;mp3=PARAM1;m4=static?qp1=PARAM5&qp2=PARAM6&qp3=static#frag_PARAM7`);
       });
+
+      it('should substitute falsy params', async () => {
+        const url = navigate(`${basePath}a?orderId=:orderId&flag=:flag&object=:object&undefined=:undefined`, {
+          params: new Map()
+          .set('orderId', 0)
+          .set('flag', false)
+          .set('object', null)
+          .set('undefined', undefined),
+          relativeTo: options.relativeTo,
+        });
+        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}a?orderId=0&flag=false&object=null&undefined=undefined`);
+      });
     }
 
     async function navigate(url: string, navigationOptions: NavigationOptions): Promise<string> {
