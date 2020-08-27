@@ -29,6 +29,7 @@
     "microfrontend-platform:await-then-protractor": "run-s microfrontend-platform-testing-app:await:* \"microfrontend-platform:run-protractor -- {@}\" --",
     "microfrontend-platform:run-protractor": "ng e2e @scion/microfrontend-platform.e2e",
     "microfrontend-platform:typedoc": "typedoc --plugin typedoc-plugin-extras --tsconfig projects/scion/microfrontend-platform/tsconfig.lib.prod.typedoc.json --favicon resources/branding/favicon.ico",
+    "premicrofrontend-platform:run-protractor": "npx webdriver-manager update --versions.chrome=84.0.4147.0",
 
     "microfrontend-platform:adoc": "run-s \"microfrontend-platform:adoc:generate -- {@}\" microfrontend-platform:adoc:copy:* --",
     "microfrontend-platform:adoc:generate": "asciidoctor -r ./docs/adoc/extensions/prism-extension --destination-dir dist/microfrontend-platform-developer-guide docs/adoc/microfrontend-platform-developer-guide/index.adoc",
