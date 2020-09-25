@@ -1,4 +1,4 @@
-import { Beans, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MessageClient, MicrofrontendPlatform } from '@scion/microfrontend-platform';
+import { Beans, IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatform } from '@scion/microfrontend-platform';
 
 `
 // tag::manifest[]
@@ -76,7 +76,7 @@ import { Beans, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestSer
     qualifier: {entity: 'product', id: '*'},
   };
 
-  Beans.get(MessageClient).onIntent$(selector).subscribe((message: IntentMessage) => {
+  Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => {
     // handle the intent
   });
 // end::intent-handling[]
@@ -84,7 +84,7 @@ import { Beans, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestSer
 
 {
 // tag::issue-intent[]
-  Beans.get(MessageClient).issueIntent({
+  Beans.get(IntentClient).publish({
     type: 'microfrontend',
     qualifier: {
       entity: 'product',
@@ -120,7 +120,7 @@ import { Beans, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestSer
       // Issue an intent when clicking the toolbar item.
       toolbarItemElement.addEventListener('click', () => {
         const intent = {type: toolbarItem.type, qualifier: toolbarItem.qualifier};
-        Beans.get(MessageClient).issueIntent(intent);  // <2>
+        Beans.get(IntentClient).publish(intent);  // <2>
       });
     });
   });
@@ -128,7 +128,7 @@ import { Beans, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestSer
 }
 
 {
-  void async function () {
+  void async function() {
     // tag::capability-register-notification[]
 
     // Inform the user about planned maintenance.

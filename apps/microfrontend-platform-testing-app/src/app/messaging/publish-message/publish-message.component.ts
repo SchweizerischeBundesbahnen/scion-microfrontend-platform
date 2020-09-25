@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { Component, OnDestroy } from '@angular/core';
-import { Beans, MessageClient, Qualifier, TopicMessage } from '@scion/microfrontend-platform';
+import { Beans, IntentClient, MessageClient, Qualifier, TopicMessage } from '@scion/microfrontend-platform';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
 import { distinctUntilChanged, finalize, startWith, takeUntil } from 'rxjs/operators';
@@ -47,6 +47,7 @@ export class PublishMessageComponent implements OnDestroy {
 
   private _destroy$ = new Subject<void>();
   private _messageClient: MessageClient;
+  private _intentClient: IntentClient;
   private _requestResponseSubscription: Subscription;
 
   public form: FormGroup;
@@ -57,6 +58,7 @@ export class PublishMessageComponent implements OnDestroy {
 
   constructor(private _formBuilder: FormBuilder) {
     this._messageClient = Beans.get(MessageClient);
+    this._intentClient = Beans.get(IntentClient);
 
     this.form = this._formBuilder.group({
       [FLAVOR]: new FormControl(MessagingFlavor.Topic, Validators.required),
@@ -88,7 +90,7 @@ export class PublishMessageComponent implements OnDestroy {
   }
 
   public onPublish(): void {
-    this.isTopicFlavor() ? this.publishMessageToTopic() : this.issueIntent();
+    this.isTopicFlavor() ? this.publishMessage() : this.publishIntent();
   }
 
   public isTopicFlavor(): boolean {
@@ -126,7 +128,7 @@ export class PublishMessageComponent implements OnDestroy {
     });
   }
 
-  private publishMessageToTopic(): void {
+  private publishMessage(): void {
     const topic = this.form.get(DESTINATION).get(TOPIC).value;
     const message = this.form.get(MESSAGE).value === '' ? undefined : this.form.get(MESSAGE).value;
     const requestReply = this.form.get(REQUEST_REPLY).value;
@@ -159,7 +161,7 @@ export class PublishMessageComponent implements OnDestroy {
     }
   }
 
-  private issueIntent(): void {
+  private publishIntent(): void {
     const type: string = this.form.get(DESTINATION).get(TYPE).value;
     const qualifier: Qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(DESTINATION).get(QUALIFIER) as FormArray);
 
@@ -171,7 +173,7 @@ export class PublishMessageComponent implements OnDestroy {
     this.publishError = null;
     try {
       if (requestReply) {
-        this._requestResponseSubscription = this._messageClient.requestByIntent$({type, qualifier}, message, {headers: headers})
+        this._requestResponseSubscription = this._intentClient.request$({type, qualifier}, message, {headers: headers})
           .pipe(finalize(() => this.markPublishing(true)))
           .subscribe(
             reply => this.replies.push(reply),
@@ -179,7 +181,7 @@ export class PublishMessageComponent implements OnDestroy {
           );
       }
       else {
-        this._messageClient.issueIntent({type, qualifier}, message, {headers: headers})
+        this._intentClient.publish({type, qualifier}, message, {headers: headers})
           .catch(error => {
             this.publishError = error;
           })

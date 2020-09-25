@@ -11,8 +11,8 @@ import { concat, EMPTY, NEVER, Observable, Observer, of, Subject, TeardownLogic 
 import { filter, map, mergeMapTo, startWith, switchMapTo, take, takeUntil } from 'rxjs/operators';
 import { UUID } from '@scion/toolkit/uuid';
 import { Beans, PreDestroy } from '../../bean-manager';
-import { mapToBody, MessageClient } from '../messaging/message-client';
-import { MessageHeaders, ResponseStatusCodes } from '../../messaging.model';
+import { MessageClient } from '../messaging/message-client';
+import { mapToBody, MessageHeaders, ResponseStatusCodes } from '../../messaging.model';
 import { Contexts } from './context.model';
 import { IS_PLATFORM_HOST } from '../../platform.model';
 
@@ -127,7 +127,7 @@ export class ContextService implements PreDestroy {
       const contextValueLookupRequest = Contexts.newContextValueLookupRequest(name, replyTo);
 
       // Wait until the reply is received.
-      Beans.get(MessageClient).onMessage$<T>(replyTo)
+      Beans.get(MessageClient).observe$<T>(replyTo)
         .pipe(
           take(1),
           map(reply => reply.headers.get(MessageHeaders.Status) === ResponseStatusCodes.OK ? reply.body : null),
@@ -156,7 +156,7 @@ export class ContextService implements PreDestroy {
       const contextNamesLookupRequest = Contexts.newContextTreeNamesLookupRequest(replyTo);
 
       // Wait until the reply is received.
-      Beans.get(MessageClient).onMessage$<Set<string>>(replyTo)
+      Beans.get(MessageClient).observe$<Set<string>>(replyTo)
         .pipe(
           take(1),
           map(reply => reply.headers.get(MessageHeaders.Status) === ResponseStatusCodes.OK ? reply.body : new Set()),
@@ -183,7 +183,7 @@ export class ContextService implements PreDestroy {
 
     return new Promise<void>(resolve => {
       // Receive change notifications.
-      Beans.get(MessageClient).onMessage$<Contexts.ContextTreeChangeEvent | Contexts.RootContextSubscribeEventType>(replyTo)
+      Beans.get(MessageClient).observe$<Contexts.ContextTreeChangeEvent | Contexts.RootContextSubscribeEventType>(replyTo)
         .pipe(
           mapToBody(),
           takeUntil(this._destroy$),

@@ -312,8 +312,8 @@ export async function browserNavigateBack(): Promise<void> {
 /**
  * Waits until the location of the currently active execution context matches the given URL (exact match), or throws an error if not entering that location within 5 seconds.
  */
-export async function waitUntilLocation(url: string): Promise<void> {
-  const expiryDate = Date.now() + 5000;
+export async function waitUntilLocation(url: string, timeout: number = 5000): Promise<void> {
+  const expiryDate = Date.now() + timeout;
   while (true) {
     const currentUrl = await getUrlOfCurrentWebDriverExecutionContext();
     if (currentUrl === url) {

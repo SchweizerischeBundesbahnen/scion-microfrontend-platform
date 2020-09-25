@@ -7,15 +7,16 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { from, fromEvent, noop, Observable, of, Subject, throwError } from 'rxjs';
-import { MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics } from '../../ɵmessaging.model';
-import { first, map, mergeMap, share, switchMap, take, takeUntil, timeoutWith } from 'rxjs/operators';
-import { filterByOrigin, filterByTopic, filterByTransport, pluckEnvelope } from '../../operators';
+import { EMPTY, from, fromEvent, merge, NEVER, noop, Observable, Observer, of, Subject, TeardownLogic, throwError } from 'rxjs';
+import { MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand } from '../../ɵmessaging.model';
+import { finalize, first, map, mergeMap, share, switchMap, take, takeUntil, timeoutWith } from 'rxjs/operators';
+import { filterByChannel, filterByHeader, filterByOrigin, filterByTopic, filterByTransport, pluckEnvelope, pluckMessage } from '../../operators';
 import { UUID } from '@scion/toolkit/uuid';
-import { MessageHeaders, TopicMessage } from '../../messaging.model';
+import { IntentMessage, Message, MessageHeaders, TopicMessage } from '../../messaging.model';
 import { GatewayInfoResponse, getGatewayJavaScript } from './broker-gateway-script';
-import { Beans } from '../../bean-manager';
+import { Beans, PreDestroy } from '../../bean-manager';
 import { Logger, NULL_LOGGER } from '../../logger';
+import { Dictionaries } from '@scion/toolkit/util';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.
@@ -30,14 +31,82 @@ import { Logger, NULL_LOGGER } from '../../logger';
  *
  * @ignore
  */
-export class BrokerGateway {
+export abstract class BrokerGateway {
+
+  /**
+   * Returns whether this gateway is connected to the message broker.
+   */
+  public abstract isConnected(): Promise<boolean>;
+
+  /**
+   * Posts a message to the message broker. If not connected to the broker yet, waits posting the message
+   * until established the connection to the broker.
+   *
+   * @return a Promise that resolves when successfully posted the message to the broker, or that rejects otherwise.
+   */
+  public abstract async postMessage(channel: MessagingChannel, message: Message): Promise<void>;
+
+  /**
+   * Posts a message to the message broker and receives replies.
+   */
+  public abstract requestReply$<T = any>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>>;
+
+  /**
+   * Subscribes to messages published to the given topic.
+   */
+  public abstract subscribeToTopic<T>(topic: string): Observable<TopicMessage<T>>;
+
+  /**
+   * An Observable that emits when a message from the message broker is received.
+   */
+  public abstract get message$(): Observable<MessageEnvelope>;
+}
+
+/**
+ * Broker gateway that does nothing.
+ *
+ * Use this gateway in tests to not connect to the platform host.
+ *
+ * @ignore
+ */
+export class NullBrokerGateway implements BrokerGateway {
+
+  public constructor() {
+    console.log('[NullBrokerGateway] Using \'NullBrokerGateway\'. Messages cannot be sent or received.');
+  }
+
+  public isConnected(): Promise<boolean> {
+    return Promise.resolve(false);
+  }
+
+  public get message$(): Observable<MessageEnvelope> {
+    return NEVER;
+  }
+
+  public async postMessage(channel: MessagingChannel, message: Message): Promise<void> {
+    return Promise.resolve();
+  }
+
+  public requestReply$<T = any>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
+    return NEVER;
+  }
+
+  public subscribeToTopic<T>(topic: string): Observable<TopicMessage<T>> {
+    return NEVER;
+  }
+}
+
+/**
+ * @ignore
+ */
+export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:disable-line:class-name
 
   private _destroy$ = new Subject<void>();
   private _whenDestroy = this._destroy$.pipe(first()).toPromise();
   private _message$: Observable<MessageEnvelope>;
   private _whenGatewayInfo: Promise<GatewayInfo>;
 
-  constructor(private _clientAppName: string, private _config: { discoveryTimeout: number }) {
+  constructor(private _clientAppName: string, private _config: { discoveryTimeout: number, deliveryTimeout: number }) {
     // Get the JavaScript to discover the message broker and dispatch messages.
     const gatewayJavaScript = getGatewayJavaScript({clientAppName: this._clientAppName, clientOrigin: window.origin, discoverTimeout: this._config.discoveryTimeout});
     // Create a hidden iframe and load the gateway script.
@@ -56,33 +125,107 @@ export class BrokerGateway {
         switchMap(gateway => fromEvent<MessageEvent>(gateway.window, 'message').pipe(filterByOrigin(gateway.brokerOrigin))),
         filterByTransport(MessagingTransport.BrokerToClient),
         pluckEnvelope(),
+        map((envelope: MessageEnvelope) => {
+          envelope.message.headers = copyMap(envelope.message.headers);
+          return envelope;
+        }),
         takeUntil(this._destroy$), // no longer emit messages when destroyed
         share(),
       );
   }
 
-  /**
-   * Returns whether this gateway is connected to the message broker.
-   */
   public isConnected(): Promise<boolean> {
     return this._whenGatewayInfo.then(() => true).catch(() => false);
   }
 
-  /**
-   * Posts a message to the message broker. The message is buffered until broker discovery completed and connected to the broker.
-   *
-   * @return a Promise that resolves when the message is dispatched to the broker, or that rejects if not connected to the broker.
-   */
-  public postMessage(envelope: MessageEnvelope): Promise<void> {
-    return this._whenGatewayInfo.then(gateway => {
-      this.setSenderMessageHeaders(envelope, gateway.clientId);
+  public async postMessage(channel: MessagingChannel, message: Message): Promise<void> {
+    const gateway = await this._whenGatewayInfo; // wait until connected to the broker
+    const messageId = UUID.randomUUID();
+
+    const envelope: MessageEnvelope = {
+      transport: MessagingTransport.ClientToBroker,
+      channel: channel,
+      message: message,
+    };
+    envelope.message.headers.set(MessageHeaders.MessageId, messageId);
+    addSenderHeadersToEnvelope(envelope, {clientAppName: this._clientAppName, clientId: gateway.clientId});
+
+    // Create Promise waiting for the broker to accept and dispatch the message.
+    const postError$ = new Subject<never>();
+    const whenPosted = merge(this.message$, postError$)
+      .pipe(
+        filterByTopic<MessageDeliveryStatus>(messageId),
+        first(),
+        timeoutWith(new Date(Date.now() + this._config.deliveryTimeout), throwError(`[MessageDispatchError] Broker did not report message delivery state within the ${this._config.deliveryTimeout}ms timeout. [envelope=${stringifyEnvelope(envelope)}]`)),
+        takeUntil(this._destroy$),
+        mergeMap(statusMessage => statusMessage.body.ok ? EMPTY : throwError(statusMessage.body.details)),
+      )
+      .toPromise();
+
+    try {
       gateway.window.postMessage(envelope, gateway.window.origin);
+    }
+    catch (error) {
+      postError$.error(error);
+    }
+
+    await whenPosted;
+  }
+
+  public requestReply$<T = any>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
+    return new Observable((observer: Observer<TopicMessage>): TeardownLogic => {
+      message.headers.set(MessageHeaders.ReplyTo, UUID.randomUUID());
+      const unsubscribe$ = new Subject<void>();
+      const postError$ = new Subject<void>();
+
+      // Receive replies sent to the reply topic.
+      this.subscribeToTopic<T>(message.headers.get(MessageHeaders.ReplyTo))
+        .pipe(takeUntil(merge(this._destroy$, unsubscribe$, postError$)))
+        .subscribe(next => observer.next(next), error => observer.error(error)); // dispatch next and error, but not complete
+
+      // Post the message to the broker.
+      this.postMessage(channel, message)
+        .catch(error => {
+          postError$.next();
+          observer.error(error);
+        });
+
+      return (): void => unsubscribe$.next();
     });
   }
 
-  /**
-   * An Observable that emits when a message from the message broker is received.
-   */
+  public subscribeToTopic<T>(topic: string): Observable<TopicMessage<T>> {
+    return new Observable((observer: Observer<TopicMessage>): TeardownLogic => {
+      const unsubscribe$ = new Subject<void>();
+      const subscriberId = UUID.randomUUID();
+
+      // Receive messages sent to the given topic.
+      this._message$
+        .pipe(
+          filterByChannel<TopicMessage>(MessagingChannel.Topic),
+          pluckMessage(),
+          filterByHeader({key: MessageHeaders.ɵTopicSubscriberId, value: subscriberId}),
+          map(message => ({...message, headers: copyMap(message.headers), params: copyMap(message.params)})),
+          takeUntil(merge(this._destroy$, unsubscribe$)),
+          finalize(() => {
+            const command: TopicUnsubscribeCommand = {subscriberId, headers: new Map()};
+            this.postMessage(MessagingChannel.TopicUnsubscribe, command)
+              // Do not propagate unsubscription errors, only log them, e.g. when the broker is not available. Fall back using NULL_LOGGER when the platform is shutting down
+              .catch(error => Beans.get(Logger, {orElseGet: NULL_LOGGER}).warn(`[TopicUnsubscribeError] Failed to unsubscribe from topic '${topic}'. Caused by: ${error}`));
+          }),
+        )
+        .subscribe(observer);
+
+      // Subscribe for the messages sent to the given topic.
+      const topicSubscribeMessage: TopicSubscribeCommand = {subscriberId, topic, headers: new Map()};
+      this.postMessage(MessagingChannel.TopicSubscribe, topicSubscribeMessage)
+        // Do not propagate subscription errors, only log them, e.g. when the broker is not available. Fall back using NULL_LOGGER when the platform is shutting down
+        .catch(error => Beans.get(Logger, {orElseGet: NULL_LOGGER}).warn(`[TopicSubscribeError] Failed to subscribe to topic '${topic}'. Caused by: ${error}`));
+
+      return (): void => unsubscribe$.next();
+    });
+  }
+
   public get message$(): Observable<MessageEnvelope> {
     return this._message$;
   }
@@ -157,23 +300,12 @@ export class BrokerGateway {
       )
       .toPromise();
 
-    this.setSenderMessageHeaders(request);
+    addSenderHeadersToEnvelope(request, {clientAppName: this._clientAppName});
     gatewayWindow.postMessage(request, gatewayWindow.origin);
     return whenReply.then(neverResolveIfUndefined);
   }
 
-  /**
-   * Adds headers to the message to identify the sending app.
-   */
-  private setSenderMessageHeaders(envelope: MessageEnvelope, clientId?: string): void {
-    const headers = envelope.message.headers;
-
-    headers.set(MessageHeaders.Timestamp, Date.now());
-    headers.set(MessageHeaders.AppSymbolicName, this._clientAppName);
-    clientId && headers.set(MessageHeaders.ClientId, clientId);
-  }
-
-  public destroy(): void {
+  public preDestroy(): void {
     this._destroy$.next();
   }
 }
@@ -190,6 +322,17 @@ export interface GatewayInfo {
 }
 
 /**
+ * Adds headers to the message to identify the sending app.
+ */
+function addSenderHeadersToEnvelope(envelope: MessageEnvelope, sender: { clientAppName: string, clientId?: string }): void {
+  const headers = envelope.message.headers;
+
+  headers.set(MessageHeaders.Timestamp, Date.now());
+  headers.set(MessageHeaders.AppSymbolicName, sender.clientAppName);
+  sender.clientId && headers.set(MessageHeaders.ClientId, sender.clientId);
+}
+
+/**
  * Returns a Promise that never resolves if the given value is `undefined`.
  *
  * For instance, if creating a Promise from an Observable, the Promise resolves to `undefined`
@@ -199,6 +342,28 @@ export interface GatewayInfo {
  */
 function neverResolveIfUndefined<T>(value: T): Promise<T> {
   return value !== undefined ? Promise.resolve(value) : NEVER_PROMISE;
+}
+
+/**
+ * Creates a string representation of the given {@link MessageEnvelope}.
+ */
+function stringifyEnvelope(envelope: MessageEnvelope): string {
+  return JSON.stringify(envelope, (key, value) => (value instanceof Map) ? Dictionaries.coerce(value) : value);
+}
+
+/**
+ * Creates a copy from the given `Map`.
+ *
+ * Data sent from one JavaScript realm to another is serialized with the structured clone algorithm.
+ * Altought the algorithm supports the `Map` data type, a deserialized map object cannot be checked to be instance of `Map`.
+ * This is most likely because the serialization takes place in a different realm.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
+ * @see http://man.hubwiz.com/docset/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm.html
+ * @internal
+ */
+function copyMap<K, V>(data: Map<K, V>): Map<K, V> {
+  return new Map(data);
 }
 
 /**

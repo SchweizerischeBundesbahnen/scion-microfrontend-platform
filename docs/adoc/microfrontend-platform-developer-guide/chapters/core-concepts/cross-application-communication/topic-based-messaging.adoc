@@ -25,7 +25,10 @@ In this Chapter
 [[chapter:topic-based-messaging:what-is-topic-based-messaging]]
 [discrete]
 === What is Topic-Based Messaging?
-Topic-based messaging allows publishing a message to a topic, which then is transported to consumers subscribed to the topic. Topics are case-sensitive and consist of one or more segments, each separated by a forward slash. When publishing a message to a topic, the topic must be exact, thus not contain wildcards. Messages published to a topic are transported to all consumers subscribed to the topic. Consumers, on the other hand, can subscribe to multiple topics simultaneously by using wildcard segments in the topic.
+Topic-based messaging allows publishing a message to a topic, which then is transported to consumers subscribed to the topic. Topics are case-sensitive and consist of one or more segments, each separated by a forward slash. Consumers can subscribe to multiple topics simultaneously by using wildcard segments in the topic.
+
+The platform provides the link:{typedoc-url}/classes/messageclient.html[MessageClient, window=\"_blank\"] service for sending and receiving messages on a common topic. You can obtain this service from the platform's bean manager as follows: `Beans.get(MessageClient)`.
+
 
 [[chapter:topic-based-messaging:publishing-a-message]]
 [discrete]
@@ -134,7 +137,9 @@ TIP: The `Observable` never completes. If expecting a single reply, use the `tak
 
 '''
 
-The following code snippet shows how to reply to a request. For illustrative purposes, when receiving a request, a subscription to the temperature sensor is created. The sensor Observable is a hot Observable, meaning it never completes and emits at every temperature change.
+The following code snippet shows how requests are received and answered. You can reply to a request by sending one or more replies to the `replyTo` topic contained in the request's headers.
+
+_As an illustration, in the following example, a temperature sensor is subscribed to for each request. When the sensor emits the temperature, the temperature is sent to the requester. The sensor Observable is a hot Observable, meaning it never completes, emitting the new temperature with every temperature change._
 
 [source,typescript]
 ----

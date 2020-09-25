@@ -1,4 +1,4 @@
-import { Beans, ContextService, ManifestService, MessageClient, OutletRouter } from '@scion/microfrontend-platform';
+import { Beans, ContextService, IntentClient, ManifestService, MessageClient, OutletRouter } from '@scion/microfrontend-platform';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
@@ -6,6 +6,7 @@ import { RouterModule, Routes } from '@angular/router';
 @NgModule({
   providers: [
     {provide: MessageClient, useFactory: () => Beans.get(MessageClient)},
+    {provide: IntentClient, useFactory: () => Beans.get(IntentClient)},
     {provide: OutletRouter, useFactory: () => Beans.get(OutletRouter)},
     {provide: ContextService, useFactory: () => Beans.get(ContextService)},
     {provide: ManifestService, useFactory: () => Beans.get(ManifestService)},

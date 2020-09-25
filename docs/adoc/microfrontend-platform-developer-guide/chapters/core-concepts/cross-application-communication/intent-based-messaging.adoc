@@ -35,6 +35,8 @@ Terminology and concepts are explained in more detail in chapter <<chapter:inten
 
 In topic-based communication, messages are published to a topic destination. In intent-based communication, however, the destination are capabilities, formulated in an abstract way, consisting of a a _type_, and optionally a _qualifier_. The _type_ categorizes a capability in terms of its functional semantics (e.g., `microfrontend` if representing a microfrontend). A capability may also define a _qualifier_ to differentiate the different capabilities of the same type. The _type_ is a `string` literal and the qualifier a dictionary of key-value pairs.
 
+The platform provides the link:{typedoc-url}/classes/intentclient.html[IntentClient, window=\"_blank\"] service for issuing and receiving intents. You can obtain this service from the platform's bean manager as follows: `Beans.get(IntentClient)`.
+
 [[chapter:intent-based-messaging:declaring-an-intention]]
 [discrete]
 === Declaring an Intention
@@ -70,7 +72,7 @@ include::intent-based-communication.snippets.ts[tags=issue-intent]
 ----
 <1> Constructs the intent for showing the product microfrontend.
 <2> Defines in which outlet to show the microfrontend. Passing transfer data along with the intent is optional.
-<3> Looks up the `MessageClient` from the bean manager and issues the intent.
+<3> Looks up the `IntentClient` from the bean manager and issues the intent.
 
 NOTE: The method to issue an intent returns a Promise that resolves when dispatched the intent, or that rejects if the message broker rejected the intent.
 
@@ -166,18 +168,21 @@ The platform facilitates the _request-response_ message exchange pattern for syn
 The communication is initiated by the requestor by sending a request. The recipient can then respond to the request. Just as in JMS (_Java Message Service_), the platform sets a `ReplyTo` message header on the intent, which contains the topic of a temporary inbox where the replier can send replies to. The inbox is destroyed when the requestor unsubscribes.
 
 The following code snippet shows how to initiate a _request-response_ communication via intent-based messaging and receiving replies. To explain this kind of communication, we have a requestor requesting the user’s access token.
+
 [source,typescript]
 ----
 include::intent-based-communication.snippets.ts[tags=request]
 ----
-<1> Initiates a _request-response_ communication by invoking the `requestByIntent$` method on the `MessageClient`. In this example, we request the user’s access token.
+<1> Initiates a _request-response_ communication by invoking the `request$` method on the `IntentClient`. In this example, we request the user’s access token.
 <2> Prints the received token to the console.
 
 TIP: The `Observable` never completes. If expecting a single reply, use the `take(1)` RxJS operator to unsubscribe upon the receipt of the first reply.
 
 '''
 
-The following code snippet shows how to reply to a request. For illustrative purposes, when receiving a request, a subscription to the auth service is created to get the user’s access token. The token Observable is a hot Observable, meaning it never completes and emits upon renewal of the token.
+The following code snippet shows how requests (intents) are received and answered. You can reply to an intent by sending one or more replies to the `replyTo` topic contained in the intent's headers. Please note to send replies via the `MessageClient` and not via the `IntentClient`.
+
+_As an illustration, in the following example, the auth service is subscribed to for each intent to obtain the user’s access token. The token Observable is a hot Observable, meaning it never completes, emitting the refreshed token upon renewal of the token._
 
 [source,typescript]
 ----

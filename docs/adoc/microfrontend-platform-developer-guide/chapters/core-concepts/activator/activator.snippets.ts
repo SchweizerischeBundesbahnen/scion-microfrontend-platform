@@ -1,4 +1,4 @@
-import { ACTIVATION_CONTEXT, ActivationContext, Beans, Capability, ContextService, Intent, IntentMessage, IntentSelector, ManifestService, MessageClient, OutletRouter } from '@scion/microfrontend-platform';
+import { ACTIVATION_CONTEXT, ActivationContext, Beans, Capability, ContextService, Intent, IntentClient, IntentMessage, IntentSelector, ManifestService, MessageClient, OutletRouter } from '@scion/microfrontend-platform';
 
 `
 // tag::register-activator[]
@@ -127,7 +127,7 @@ import { ACTIVATION_CONTEXT, ActivationContext, Beans, Capability, ContextServic
     qualifier: {entity: 'product', id: '*'},
   };
 
-  Beans.get(MessageClient).onIntent$(selector).subscribe((message: IntentMessage) => {
+  Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => {
     const outlet = message.headers.get('outlet');  // <1>
     const microfrontendPath = message.capability.properties.path; // <2>
 
@@ -148,6 +148,6 @@ import { ACTIVATION_CONTEXT, ActivationContext, Beans, Capability, ContextServic
   };
   const headers = new Map().set('outlet', 'aside'); // <2>
 
-  Beans.get(MessageClient).issueIntent(intent, null, {headers}); // <3>
+  Beans.get(IntentClient).publish(intent, null, {headers}); // <3>
   // end::issue-microfrontend-intent[]
 }

@@ -24,7 +24,6 @@ import { filterArray } from '@scion/toolkit/operators';
 import { ManifestRegistry } from './manifest-registry';
 import { matchesIntentQualifier, matchesWildcardQualifier } from '../../qualifier-tester';
 
-// tslint:disable:unified-signatures
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tslint:disable-line:class-name
 
   private _capabilityStore: ManifestObjectStore<Capability>;
@@ -140,7 +139,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
   }
 
   private installCapabilityRegisterRequestHandler(): void {
-    Beans.get(PlatformMessageClient).onMessage$(ManifestRegistryTopics.RegisterCapability)
+    Beans.get(PlatformMessageClient).observe$(ManifestRegistryTopics.RegisterCapability)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<Capability>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
@@ -158,7 +157,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
   }
 
   private installCapabilityUnregisterRequestHandler(): void {
-    Beans.get(PlatformMessageClient).onMessage$(ManifestRegistryTopics.UnregisterCapabilities)
+    Beans.get(PlatformMessageClient).observe$(ManifestRegistryTopics.UnregisterCapabilities)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
@@ -176,7 +175,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
   }
 
   private installIntentionRegisterRequestHandler(): void {
-    Beans.get(PlatformMessageClient).onMessage$(ManifestRegistryTopics.RegisterIntention)
+    Beans.get(PlatformMessageClient).observe$(ManifestRegistryTopics.RegisterIntention)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<Intention>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
@@ -195,7 +194,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
   }
 
   private installIntentionUnregisterRequestHandler(): void {
-    Beans.get(PlatformMessageClient).onMessage$(ManifestRegistryTopics.UnregisterIntentions)
+    Beans.get(PlatformMessageClient).observe$(ManifestRegistryTopics.UnregisterIntentions)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
@@ -214,7 +213,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
   }
 
   private installCapabilitiesLookupRequestHandler(): void {
-    Beans.get(PlatformMessageClient).onMessage$(ManifestRegistryTopics.LookupCapabilities)
+    Beans.get(PlatformMessageClient).observe$(ManifestRegistryTopics.LookupCapabilities)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
@@ -240,7 +239,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
   }
 
   private installIntentionsLookupRequestHandler(): void {
-    Beans.get(PlatformMessageClient).onMessage$(ManifestRegistryTopics.LookupIntentions)
+    Beans.get(PlatformMessageClient).observe$(ManifestRegistryTopics.LookupIntentions)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);

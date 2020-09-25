@@ -45,7 +45,7 @@ export class ActivatorModule {
     const pingReply = `${symbolicName} [primary: ${activationContext.primary}, X-APP-NAME: ${activationContext.activator.properties['X-APP-NAME']}]`;
 
     // Subscribe for ping requests.
-    Beans.get(MessageClient).onMessage$(TestingAppTopics.ActivatorPing)
+    Beans.get(MessageClient).observe$(TestingAppTopics.ActivatorPing)
       .subscribe(pingRequest => {
         Beans.get(MessageClient).publish(pingRequest.headers.get(MessageHeaders.ReplyTo), pingReply);
       });

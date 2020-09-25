@@ -166,9 +166,9 @@ The bean manager allows decorating a bean to intercept invocations to its method
 
 Decorators are registered in the bean manager using the `Beans.registerDecorator` method, passing the symbol of the bean to be decorated and the decorator. As with the registration of a bean, you must tell the bean manager how to construct the decorator. For more information, see <<chapter:bean-manager:construct-strategies,Bean Construction Strategies>>. Decorators must be registered in the process of starting the platform, i.e., in the `Starting` platform lifecycle hook.
 
-A decorator must implement the `decorate` method of the `BeanDecorator` interface and return the proxied bean. To proxy a bean, you can create a JavaScript proxy, or create an anonymous class delegating to the actual bean. Bean decoration can be particularly useful for the `MessageClient`, e.g., if using Angular, to pipe its Observables to emit inside the Angular zone.
+A decorator must implement the `decorate` method of the `BeanDecorator` interface and return the proxied bean. To proxy a bean, you can create a JavaScript proxy, or create an anonymous class delegating to the actual bean. Bean decoration can be particularly useful for the `MessageClient` or `IntentClient`, e.g., if using Angular, to pipe its Observables to emit inside the Angular zone.
 
-For an example, see the chapter <<chapter:angular-integration-guide:preparing-messageclient-for-use-with-angular>>.
+For an example, see the chapter <<chapter:angular-integration-guide:preparing-messaging-for-use-with-angular>>.
 
 [[chapter:bean-manager:initializers]]
 [discrete]

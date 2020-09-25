@@ -11,8 +11,9 @@ import { noop, Observable } from 'rxjs';
 import { filter, shareReplay, take } from 'rxjs/operators';
 import { PlatformTopics } from '../ɵmessaging.model';
 import { PlatformStates } from '../platform-state';
-import { mapToBody, MessageClient } from './messaging/message-client';
+import { MessageClient } from './messaging/message-client';
 import { Beans } from '../bean-manager';
+import { mapToBody } from '../messaging.model';
 
 /**
  * Allows observing the state of the host platform.
@@ -24,7 +25,7 @@ export class HostPlatformState {
   private _state$: Observable<PlatformStates>;
 
   constructor() {
-    this._state$ = Beans.get(MessageClient).onMessage$<PlatformStates>(PlatformTopics.HostPlatformState)
+    this._state$ = Beans.get(MessageClient).observe$<PlatformStates>(PlatformTopics.HostPlatformState)
       .pipe(
         mapToBody(),
         shareReplay(1),

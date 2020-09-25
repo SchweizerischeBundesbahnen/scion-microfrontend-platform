@@ -76,7 +76,7 @@ export class ApplicationActivator implements Initializer {
     const t0 = Date.now();
     const readinessPromises: Promise<void>[] = activators
       .reduce((acc, activator) => acc.concat(Arrays.coerce(activator.properties.readinessTopics)), []) // concat readiness topics
-      .map(readinessTopic => Beans.get(PlatformMessageClient).onMessage$<void>(readinessTopic)
+      .map(readinessTopic => Beans.get(PlatformMessageClient).observe$<void>(readinessTopic)
         .pipe(
           filter(msg => msg.headers.get(MessageHeaders.AppSymbolicName) === appSymbolicName),
           take(1),

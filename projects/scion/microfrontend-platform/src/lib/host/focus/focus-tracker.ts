@@ -38,7 +38,7 @@ export class FocusTracker implements PreDestroy {
    * Monitors when a client gains the focus.
    */
   private monitorFocusInEvents(): void {
-    Beans.get(PlatformMessageClient).onMessage$<void>(PlatformTopics.FocusIn)
+    Beans.get(PlatformMessageClient).observe$<void>(PlatformTopics.FocusIn)
       .pipe(
         map(event => event.headers.get(MessageHeaders.ClientId)),
         distinctUntilChanged(),
@@ -53,7 +53,7 @@ export class FocusTracker implements PreDestroy {
    * Replies to 'focus-within' requests.
    */
   private replyToIsFocusWithinRequests(): void {
-    Beans.get(PlatformMessageClient).onMessage$<void>(PlatformTopics.IsFocusWithin)
+    Beans.get(PlatformMessageClient).observe$<void>(PlatformTopics.IsFocusWithin)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<void>) => runSafe(() => {
         const clientId = request.headers.get(MessageHeaders.ClientId);

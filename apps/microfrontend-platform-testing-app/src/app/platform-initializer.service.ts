@@ -9,8 +9,8 @@
  */
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
-import { AngularZoneMessageClientDecorator } from './angular-zone-message-client.decorator';
-import { ApplicationConfig, Beans, Handler, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatform, PlatformMessageClient, PlatformState, PlatformStates, TopicMessage } from '@scion/microfrontend-platform';
+import { AngularZoneIntentClientDecorator, AngularZoneMessageClientDecorator } from './angular-zone-messaging-decorators';
+import { ApplicationConfig, Beans, Handler, IntentClient, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatform, PlatformState, PlatformStates, TopicMessage } from '@scion/microfrontend-platform';
 import { environment } from '../environments/environment';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { ConsoleService } from './console/console.service';
@@ -47,7 +47,7 @@ export class PlatformInitializer implements OnDestroy {
     Beans.get(PlatformState).whenState(PlatformStates.Starting).then(() => {
       Beans.register(NgZone, {useValue: this._zone});
       Beans.registerDecorator(MessageClient, {useClass: AngularZoneMessageClientDecorator});
-      Beans.registerDecorator(PlatformMessageClient, {useClass: AngularZoneMessageClientDecorator});
+      Beans.registerDecorator(IntentClient, {useClass: AngularZoneIntentClientDecorator});
     });
 
     // Read the config from the query params
@@ -90,6 +90,7 @@ export class PlatformInitializer implements OnDestroy {
     Beans.get(PlatformState).whenState(PlatformStates.Starting).then(() => {
       Beans.register(NgZone, {useValue: this._zone});
       Beans.registerDecorator(MessageClient, {useClass: AngularZoneMessageClientDecorator});
+      Beans.registerDecorator(IntentClient, {useClass: AngularZoneIntentClientDecorator});
     });
 
     // Run the microfrontend platform as client app

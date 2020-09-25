@@ -10,7 +10,7 @@
 
 import { AbstractType, BeanInfo, Beans, Type } from './bean-manager';
 import { MicrofrontendPlatform } from './microfrontend-platform';
-import { MessageClient, NullMessageClient } from './client/messaging/message-client';
+import { MessageClient } from './client/messaging/message-client';
 import { PlatformState, PlatformStates } from './platform-state';
 import { ApplicationConfig } from './host/platform-config';
 import { HostPlatformState } from './client/host-platform-state';
@@ -39,14 +39,12 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should enter state \'started\' when started', async () => {
-    Beans.register(MessageClient, {useClass: NullMessageClient});
-    await expectAsync(MicrofrontendPlatform.connectToHost({symbolicName: 'A'})).toBeResolved();
+    await expectAsync(MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}})).toBeResolved();
     expect(Beans.get(PlatformState).state).toEqual(PlatformStates.Started);
   });
 
   it('should reject starting the client platform multiple times', async () => {
-    Beans.register(MessageClient, {useClass: NullMessageClient});
-    await expectAsync(MicrofrontendPlatform.connectToHost({symbolicName: 'A'})).toBeResolved();
+    await expectAsync(MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}})).toBeResolved();
 
     try {
       await MicrofrontendPlatform.connectToHost({symbolicName: 'A'});

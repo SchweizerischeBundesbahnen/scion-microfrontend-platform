@@ -10,7 +10,7 @@
 import { TopicSubscriptionRegistry } from './topic-subscription.registry';
 import { Client } from './client.registry';
 import { take } from 'rxjs/operators';
-import { collectToPromise } from '../../spec.util.spec';
+import { expectEmissions, ObserveCaptor } from '../../spec.util.spec';
 
 describe('TopicSubscriptionRegistry', () => {
 
@@ -22,7 +22,8 @@ describe('TopicSubscriptionRegistry', () => {
     const client1 = newClient('client#1');
     const client2 = newClient('client#2');
     const client3 = newClient('client#3');
-    const subscriptionCountCollector = collectToPromise(subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature'), {take: 7, timeout: 500});
+    const subscriptionCountCaptor = new ObserveCaptor();
+    subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature').subscribe(subscriptionCountCaptor);
 
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
@@ -44,12 +45,13 @@ describe('TopicSubscriptionRegistry', () => {
     subscriptionRegistry.unsubscribe('subscriber#3');
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
-    await expectAsync(subscriptionCountCollector).toBeResolvedTo([0, 1, 2, 3, 2, 1, 0]);
+    await expectEmissions(subscriptionCountCaptor).toEqual([0, 1, 2, 3, 2, 1, 0]);
   });
 
   it('should allow multiple subscriptions on the same topic from the same client', async () => {
     const client = newClient('client');
-    const subscriptionCountCollector = collectToPromise(subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature'), {take: 7, timeout: 500});
+    const subscriptionCountCaptor = new ObserveCaptor();
+    subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature').subscribe(subscriptionCountCaptor);
 
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
@@ -71,7 +73,7 @@ describe('TopicSubscriptionRegistry', () => {
     subscriptionRegistry.unsubscribe('subscriber#3');
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
-    await expectAsync(subscriptionCountCollector).toBeResolvedTo([0, 1, 2, 3, 2, 1, 0]);
+    await expectEmissions(subscriptionCountCaptor).toEqual([0, 1, 2, 3, 2, 1, 0]);
   });
 
   it('should ignore an unsubscribe attempt if there is no subscription for it', async () => {
@@ -85,8 +87,12 @@ describe('TopicSubscriptionRegistry', () => {
 
   it('should allow multiple subscriptions on different topics from the same client', async () => {
     const client = newClient('client');
-    const subscriptionCountCollector1 = collectToPromise(subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature'), {take: 5, timeout: 500});
-    const subscriptionCountCollector2 = collectToPromise(subscriptionRegistry.subscriptionCount$('myhome/livingroom/humidity'), {take: 5, timeout: 500});
+
+    const temperatureSubscriptionCountCaptor = new ObserveCaptor();
+    subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature').subscribe(temperatureSubscriptionCountCaptor);
+
+    const humiditySubscriptionCountCaptor = new ObserveCaptor();
+    subscriptionRegistry.subscriptionCount$('myhome/livingroom/humidity').subscribe(humiditySubscriptionCountCaptor);
 
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(0);
@@ -115,8 +121,8 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(0);
 
-    await expectAsync(subscriptionCountCollector1).toBeResolvedTo([0, 1, 2, 1, 0]);
-    await expectAsync(subscriptionCountCollector2).toBeResolvedTo([0, 1, 2, 1, 0]);
+    await expectEmissions(temperatureSubscriptionCountCaptor).toEqual([0, 1, 2, 1, 0]);
+    await expectEmissions(humiditySubscriptionCountCaptor).toEqual([0, 1, 2, 1, 0]);
   });
 
   it('should count wildcard subscriptions when observing the subscriber count on a topic', async () => {
@@ -191,7 +197,8 @@ describe('TopicSubscriptionRegistry', () => {
   it('should remove all subscriptions of a client', async () => {
     const client1 = newClient('client#1');
     const client2 = newClient('client#2');
-    const subscriptionCountCollector = collectToPromise(subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature'), {take: 11, timeout: 500});
+    const subscriptionCountCaptor = new ObserveCaptor();
+    subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature').subscribe(subscriptionCountCaptor);
 
     subscriptionRegistry.subscribe('myhome/livingroom/temperature', client1, 'subscriber#1');
     subscriptionRegistry.subscribe('myhome/livingroom/:measurement', client1, 'subscriber#2');
@@ -211,7 +218,7 @@ describe('TopicSubscriptionRegistry', () => {
     subscriptionRegistry.unsubscribeClient(client2.id);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
-    await expectAsync(subscriptionCountCollector).toBeResolvedTo([0, 1, 2, 3, 4, 5, 6, 7, 8, 4, 0]);
+    await expectEmissions(subscriptionCountCaptor).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 4, 0]);
   });
 
   it('should resolve subscribers which observe the topic \'myhome/livingroom/temperature\'', async () => {

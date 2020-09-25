@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { browserNavigateBack, expectMap, seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
+import { browserNavigateBack, expectMap, seleniumWebDriverClickFix, SeleniumWebDriverClickFix, waitUntilLocation } from '../spec.util';
 import { TestingAppOrigins, TestingAppPO } from '../testing-app.po';
 import { browser } from 'protractor';
 import { OutletRouterPagePO } from './outlet-router-page.po';
@@ -28,11 +28,11 @@ describe('RouterOutlet', () => {
     const testingAppPO = new TestingAppPO();
     const pagePOs = await testingAppPO.navigateTo({
       router: OutletRouterPagePO,
-      testee: RouterOutletPagePO,
+      routerOutlet: RouterOutletPagePO,
     });
 
     const routerPO = pagePOs.get<OutletRouterPagePO>('router');
-    const routerOutletPO = pagePOs.get<RouterOutletPagePO>('testee');
+    const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
 
     // Load the outlet router into the router outlet under test in order to self navigate inside the router outlet
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -44,11 +44,11 @@ describe('RouterOutlet', () => {
     await routerOutletPO.clickApply();
 
     // Navigate to another site (microfrontend-1) inside the outlet under test
-    const outletRouterRouterPO = new OutletRouterPagePO((): Promise<void> => routerOutletPO.switchToRouterOutletIframe());
-    await outletRouterRouterPO.enterUrl(`../${Microfrontend1PagePO.pageUrl}`); // do not specify a target outlet
-    await outletRouterRouterPO.clickNavigate();
+    const testeePO = new OutletRouterPagePO((): Promise<void> => routerOutletPO.switchToRouterOutletIframe());
+    await testeePO.enterUrl(`../${Microfrontend1PagePO.pageUrl}`); // do not specify a target outlet
+    await testeePO.clickNavigate();
 
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(await getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend1PagePO.pageUrl}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend1PagePO.pageUrl}));
   });
 
   it('should not reload the app when navigating within the app in the same outlet [pushState=disabled]', async () => {
@@ -316,7 +316,7 @@ describe('RouterOutlet', () => {
     await routerOutletPO.clickApply();
 
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
   });
 
   it('should show the requested page when setting the outlet name after navigation has taken place', async () => {
@@ -339,7 +339,7 @@ describe('RouterOutlet', () => {
     await routerOutletPO.clickApply();
 
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
   });
 
   it('should show the requested page when an outlet name is set for which a previous navigation has taken place', async () => {
@@ -365,14 +365,14 @@ describe('RouterOutlet', () => {
     await routerOutletPO.clickApply();
 
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
 
     // Change the outlet name to some name for which a previous routing has taken place
     await routerOutletPO.enterOutletName('microfrontend-outlet-2');
     await routerOutletPO.clickApply();
 
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
   });
 
   it('should show a blank page when an outlet name is set for which no previous navigation has been done yet', async () => {
@@ -396,7 +396,7 @@ describe('RouterOutlet', () => {
     await routerOutletPO.clickApply();
 
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
     await expect(routerOutletPO.isEmpty()).toBe(false);
 
     // Change the outlet name to some name for which no previous routing has taken place
@@ -404,7 +404,7 @@ describe('RouterOutlet', () => {
     await routerOutletPO.clickApply();
 
     // Verify that an empty page is displayed
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual('about:blank');
+    await expectRouterOutletUrl(routerOutletPO).toEqual('about:blank');
     await expect(routerOutletPO.isEmpty()).toBe(true);
   });
 
@@ -428,7 +428,7 @@ describe('RouterOutlet', () => {
     await routerPO.enterUrl(`../${Microfrontend1PagePO.pageUrl}`);
     await routerPO.clickNavigate();
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
     await expect(routerOutletPO.isEmpty()).toBe(false);
 
     // Navigate to the `null` page
@@ -436,7 +436,7 @@ describe('RouterOutlet', () => {
     await routerPO.enterUrl(null);
     await routerPO.clickNavigate();
     // Verify that an empty page is displayed
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual('about:blank');
+    await expectRouterOutletUrl(routerOutletPO).toEqual('about:blank');
     await expect(routerOutletPO.isEmpty()).toBe(true);
   });
 
@@ -464,8 +464,8 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
     // Verify that navigation was successful
     await expect(routerOutletPO.isEmpty()).toBe(false);
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
-    await expect(otherRouterOutletPO.getRouterOutletUrl()).toEqual('about:blank');
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(otherRouterOutletPO).toEqual('about:blank');
 
     // Navigate to the 'microfrontend-2' page
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -473,8 +473,8 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
     // Verify that navigation was successful
     await expect(routerOutletPO.isEmpty()).toBe(false);
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
-    await expect(otherRouterOutletPO.getRouterOutletUrl()).toEqual('about:blank');
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(otherRouterOutletPO).toEqual('about:blank');
   });
 
   it('should show the requested page in all outlets having set the specified outlet name', async () => {
@@ -510,9 +510,9 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify that all outlets show 'microfrontend-1' page
-    await expect(routerOutlet1PO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
-    await expect(routerOutlet2PO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
-    await expect(routerOutlet3PO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutlet1PO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutlet2PO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutlet3PO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
   });
 
   it('should mount a router outlet as primary outlet if not specifying an outlet name', async () => {
@@ -531,7 +531,7 @@ describe('RouterOutlet', () => {
 
     // Verify that navigation was successful
     const routerOutletPO = pagePOs.get<RouterOutletPagePO>('testee');
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
   });
 
   it('should show the requested page in the primary outlet if not in the context of an outlet and if no target outlet is specified', async () => {
@@ -553,7 +553,7 @@ describe('RouterOutlet', () => {
 
     // Verify that navigation was successful
     const routerOutletPO = pagePOs.get<RouterOutletPagePO>('testee');
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
   });
 
   it('should not create a browser history entry when navigating (by default)', async () => {
@@ -573,14 +573,14 @@ describe('RouterOutlet', () => {
     await routerPO.enterUrl(`../${Microfrontend1PagePO.pageUrl}`);
     await routerPO.clickNavigate();
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
 
     // Navigate to the 'microfrontend-2' page
     await routerPO.enterOutletName('microfrontend-outlet');
     await routerPO.enterUrl(`../${Microfrontend2PagePO.pageUrl}`);
     await routerPO.clickNavigate();
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
 
     // Navigate back in the browser
     await browserNavigateBack();
@@ -608,7 +608,7 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
 
     // Navigate to the 'microfrontend-2' page
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -616,7 +616,7 @@ describe('RouterOutlet', () => {
     await routerPO.togglePushState(true);
     await routerPO.clickNavigate();
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
 
     // Navigate back in the browser
     await browserNavigateBack();
@@ -643,7 +643,7 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
 
     // Navigate to the 'microfrontend-2' page
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -656,7 +656,7 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
 
     // Navigate to the 'microfrontend-2' page
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -664,7 +664,7 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
 
     // Navigate to the 'microfrontend-2' page
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -672,7 +672,7 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify that navigation was successful
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: OutletRouterPagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: OutletRouterPagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
   });
 
   it('should substitute matrix params when navigating', async () => {
@@ -805,7 +805,7 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify the navigation and the emitted activation events
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
     await routerOutletPO.consolePanelPO.open();
     await expect(routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
       jasmine.objectContaining({type: 'sci-router-outlet:activate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
@@ -820,7 +820,7 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify the emitted events
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
     await routerOutletPO.consolePanelPO.open();
     await expect(routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
       jasmine.objectContaining({type: 'sci-router-outlet:deactivate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
@@ -876,7 +876,7 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify the page 'about:blank' to be displayed
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual('about:blank');
+    await expectRouterOutletUrl(routerOutletPO).toEqual('about:blank');
 
     // Navigate to the 'microfrontend-1' page
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -893,7 +893,7 @@ describe('RouterOutlet', () => {
       jasmine.objectContaining({type: 'sci-router-outlet:activate', message: await getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
     ]);
     // Verify the page 'microfrontend-2' to be displayed
-    await expect(routerOutletPO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
   });
 
   it('should allow nesting outlets', async () => {
@@ -915,7 +915,7 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify that the nested <sci-router-outlet> is displayed
-    await expect(routerOutletL1PO.getRouterOutletUrl()).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_2}));
+    await expectRouterOutletUrl(routerOutletL1PO).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_2}));
 
     // Load another nested <sci-router-outlet> into the <sci-router-outlet>
     const routerOutletL2PO = new RouterOutletPagePO((): Promise<void> => routerOutletL1PO.switchToRouterOutletIframe());
@@ -925,7 +925,7 @@ describe('RouterOutlet', () => {
     await routerPO.enterUrl(await getPageUrl({origin: TestingAppOrigins.APP_3, path: RouterOutletPagePO.pageUrl}));
     await routerPO.clickNavigate();
     // Verify that the nested <sci-router-outlet> is displayed
-    await expect(routerOutletL2PO.getRouterOutletUrl()).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_3}));
+    await expectRouterOutletUrl(routerOutletL2PO).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_3}));
 
     // Load another nested <sci-router-outlet> into the <sci-router-outlet> but showing another app
     const routerOutletL3PO = new RouterOutletPagePO((): Promise<void> => routerOutletL2PO.switchToRouterOutletIframe());
@@ -935,7 +935,7 @@ describe('RouterOutlet', () => {
     await routerPO.enterUrl(await getPageUrl({origin: TestingAppOrigins.APP_4, path: Microfrontend1PagePO.pageUrl}));
     await routerPO.clickNavigate();
     // Verify that the nested <sci-router-outlet> is displayed
-    await expect(routerOutletL3PO.getRouterOutletUrl()).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_4}));
+    await expectRouterOutletUrl(routerOutletL3PO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_4}));
   });
 
   it('should work around Chrome bug when displaying nested outlets of the same app (see method `RouterOutletUrlAssigner#patchUrl` for more detail about the problem)', async () => {
@@ -956,7 +956,7 @@ describe('RouterOutlet', () => {
     await routerPO.enterUrl(await getPageUrl({origin: TestingAppOrigins.APP_1, path: RouterOutletPagePO.pageUrl}));
     await routerPO.clickNavigate();
     // Verify that the nested <sci-router-outlet> is displayed
-    await expect(routerOutletL1PO.getRouterOutletUrl()).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletL1PO).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
 
     // Load another nested <sci-router-outlet> into the <sci-router-outlet>
     const routerOutletL2PO = new RouterOutletPagePO((): Promise<void> => routerOutletL1PO.switchToRouterOutletIframe());
@@ -966,7 +966,7 @@ describe('RouterOutlet', () => {
     await routerPO.enterUrl(await getPageUrl({origin: TestingAppOrigins.APP_1, path: RouterOutletPagePO.pageUrl}));
     await routerPO.clickNavigate();
     // Verify that the nested <sci-router-outlet> is displayed
-    await expect(routerOutletL2PO.getRouterOutletUrl()).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletL2PO).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
 
     // Load another nested <sci-router-outlet> into the <sci-router-outlet> but showing another app
     const routerOutletL3PO = new RouterOutletPagePO((): Promise<void> => routerOutletL2PO.switchToRouterOutletIframe());
@@ -976,7 +976,7 @@ describe('RouterOutlet', () => {
     await routerPO.enterUrl(await getPageUrl({origin: TestingAppOrigins.APP_2, path: RouterOutletPagePO.pageUrl}));
     await routerPO.clickNavigate();
     // Verify that the nested <sci-router-outlet> is displayed
-    await expect(routerOutletL3PO.getRouterOutletUrl()).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_2}));
+    await expectRouterOutletUrl(routerOutletL3PO).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_2}));
 
     // Load another nested <sci-router-outlet> into the <sci-router-outlet> but showing another app
     const routerOutletL4PO = new RouterOutletPagePO((): Promise<void> => routerOutletL3PO.switchToRouterOutletIframe());
@@ -986,7 +986,7 @@ describe('RouterOutlet', () => {
     await routerPO.enterUrl(await getPageUrl({origin: TestingAppOrigins.APP_1, path: RouterOutletPagePO.pageUrl}));
     await routerPO.clickNavigate();
     // Verify that the nested <sci-router-outlet> is displayed
-    await expect(routerOutletL4PO.getRouterOutletUrl()).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    await expectRouterOutletUrl(routerOutletL4PO).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
   });
 });
 
@@ -997,3 +997,20 @@ async function getPageUrl(parts: { origin: string, path: string }): Promise<stri
   return url.toString();
 }
 
+/**
+ * Expects the given router outlet to display content of the given URL. This expectation fails if not entering that location within 5 seconds.
+ */
+function expectRouterOutletUrl(routerOutletPO: RouterOutletPagePO): { toEqual: (expected: string | Promise<string>) => Promise<void> } {
+  return {
+    toEqual: async (expected: string | Promise<string>): Promise<void> => {
+      const expectedLocation = await expected;
+      try {
+        await routerOutletPO.switchToRouterOutletIframe();
+        await waitUntilLocation(expectedLocation, 5000);
+      }
+      catch {
+        fail(`Expected URL of router outlet to be '${expectedLocation}', but was '${await routerOutletPO.getRouterOutletUrl()}'.`);
+      }
+    },
+  };
+}

@@ -10,12 +10,13 @@
 
 import { EMPTY, Observable } from 'rxjs';
 import { Beans } from '../../bean-manager';
-import { mapToBody, MessageClient, throwOnErrorStatus } from '../messaging/message-client';
+import { MessageClient } from '../messaging/message-client';
 import { Application, Capability, Intention } from '../../platform.model';
 import { mergeMapTo, take } from 'rxjs/operators';
 import { PlatformTopics } from '../../ɵmessaging.model';
 import { ManifestRegistryTopics } from '../../host/manifest-registry/ɵmanifest-registry';
 import { ManifestObjectFilter } from '../../host/manifest-registry/manifest-object-store';
+import { mapToBody, throwOnErrorStatus } from '../../messaging.model';
 
 /**
  * Allows looking up capabilities available to the current app and managing the capabilities it provides.
@@ -40,7 +41,7 @@ export class ManifestService {
    * @return an Observable that emits the applications in the system and then completes.
    */
   public lookupApplications$(): Observable<Application[]> {
-    return this._messageClient.onMessage$<Application[]>(PlatformTopics.Applications)
+    return this._messageClient.observe$<Application[]>(PlatformTopics.Applications)
       .pipe(
         take(1),
         mapToBody(),

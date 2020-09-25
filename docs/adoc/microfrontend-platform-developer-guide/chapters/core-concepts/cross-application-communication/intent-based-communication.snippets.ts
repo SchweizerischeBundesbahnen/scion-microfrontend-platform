@@ -1,4 +1,4 @@
-import { Beans, Intent, IntentMessage, IntentSelector, MessageClient, MessageHeaders, OutletRouter, PRIMARY_OUTLET, takeUntilUnsubscribe } from '@scion/microfrontend-platform';
+import { Beans, Intent, IntentClient, IntentMessage, IntentSelector, MessageClient, MessageHeaders, OutletRouter, PRIMARY_OUTLET, takeUntilUnsubscribe } from '@scion/microfrontend-platform';
 import { Subject } from 'rxjs';
 
 `
@@ -45,7 +45,7 @@ import { Subject } from 'rxjs';
     qualifier: {entity: 'product', id: '*'},
   };
 
-  Beans.get(MessageClient).onIntent$(selector).subscribe((message: IntentMessage) => { // <2>
+  Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => { // <2>
     const microfrontendPath = message.capability.properties.path; // <3>
 
     // Instruct the router to display the microfrontend in an outlet.
@@ -68,7 +68,7 @@ import { Subject } from 'rxjs';
   };
   const transferData = PRIMARY_OUTLET; // <2>
 
-  Beans.get(MessageClient).issueIntent(intent, transferData); // <3>
+  Beans.get(IntentClient).publish(intent, transferData); // <3>
 // end::issue-intent[]
 }
 
@@ -80,7 +80,7 @@ import { Subject } from 'rxjs';
     qualifier: {entity: 'product', id: '3bca695e-411f-4e0e-908d-9568f1c61556'},
   };
 
-  Beans.get(MessageClient).issueIntent(intent, null, {headers: headers});
+  Beans.get(IntentClient).publish(intent, null, {headers: headers});
   // end::issue-intent-with-headers[]
 }
 
@@ -91,7 +91,7 @@ import { Subject } from 'rxjs';
     qualifier: {entity: 'product', id: '*'},
   };
 
-  Beans.get(MessageClient).onIntent$(selector).subscribe((message: IntentMessage) => {
+  Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => {
     const outlet = message.headers.get('outlet');  // <1>
     const microfrontendPath = message.capability.properties.path;
 
@@ -111,7 +111,7 @@ import { Subject } from 'rxjs';
     qualifier: {entity: 'user-access-token'},
   };
 
-  Beans.get(MessageClient).requestByIntent$(authTokenIntent).subscribe(reply => { // <1>
+  Beans.get(IntentClient).request$(authTokenIntent).subscribe(reply => { // <1>
     console.log(`token: ${reply.body}`); // <2>
   });
   // end::request[]
@@ -128,7 +128,7 @@ import { Subject } from 'rxjs';
     qualifier: {entity: 'user-access-token'},
   };
 
-  Beans.get(MessageClient).onIntent$(selector).subscribe((request: IntentMessage) => {
+  Beans.get(IntentClient).observe$(selector).subscribe((request: IntentMessage) => {
     const replyTo = request.headers.get(MessageHeaders.ReplyTo); // <1>
     authService.userAccessToken$
       .pipe(takeUntilUnsubscribe(replyTo)) // <3>

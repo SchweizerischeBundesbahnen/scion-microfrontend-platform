@@ -23,6 +23,10 @@ export abstract class MicroApplicationConfig {
    */
   public messaging?: {
     /**
+     * Disables messaging, useful in tests when not connecting to the platform host. By default, messaging is enabled.
+     */
+    enabled?: boolean;
+    /**
      * Specifies the maximal time (in milliseconds) to wait until the message broker is discovered on platform startup. If the broker is not discovered within
      * the specified time, platform startup fails with an error. By default, a timeout of 10s is used.
      */

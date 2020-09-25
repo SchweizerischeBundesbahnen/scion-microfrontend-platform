@@ -10,8 +10,9 @@
 import { fromEvent, Subject } from 'rxjs';
 import { Beans, PreDestroy } from '../../bean-manager';
 import { filter, takeUntil } from 'rxjs/operators';
-import { mapToBody, MessageClient } from '../messaging/message-client';
+import { MessageClient } from '../messaging/message-client';
 import { UUID } from '@scion/toolkit/uuid';
+import { mapToBody } from '../../messaging.model';
 
 /**
  * Dispatches 'mouseup' events originating from other documents as synthetic 'sci-mouseup' events on the document event bus.
@@ -49,7 +50,7 @@ export class MouseUpEventDispatcher implements PreDestroy {
    * Consumes synth events produced by dispatchers from other documents and dispatches them on the event bus of the current document.
    */
   private consumeSynthEvents(): void {
-    Beans.get(MessageClient).onMessage$<void>(MOUSEUP_EVENT_TOPIC)
+    Beans.get(MessageClient).observe$<void>(MOUSEUP_EVENT_TOPIC)
       .pipe(
         filter(msg => msg.headers.get(DISPATCHER_ID_HEADER) !== this._dispatcherId),
         mapToBody(),
