@@ -17,9 +17,9 @@ import { RUNLEVEL_2 } from './microfrontend-platform-runlevels';
 /** @ignore */
 const initializers: InitializerInfo[] = [];
 /** @ignore */
-const beanRegistry = new Map<Type<any> | AbstractType<any>, Set<BeanInfo>>();
+const beanRegistry = new Map<Type<any> | AbstractType<any> | symbol, Set<BeanInfo>>();
 /** @ignore */
-const beanDecoratorRegistry = new Map<Type<any> | AbstractType<any>, BeanDecorator<any>[]>();
+const beanDecoratorRegistry = new Map<Type<any> | AbstractType<any> | symbol, BeanDecorator<any>[]>();
 
 /**
  * The bean manager allows you to get references to platform singleton objects, so-called beans. The application may also register
@@ -124,7 +124,7 @@ export class BeanManager {
    * @param  symbol - Symbol under which to register the bean.
    * @param  instructions - Control bean construction; see {@link BeanInstanceConstructInstructions} for more detail.
    */
-  public register<T>(symbol: Type<T | any> | AbstractType<T | any>, instructions?: BeanInstanceConstructInstructions<T>): void {
+  public register<T>(symbol: Type<T | any> | AbstractType<T | any> | symbol, instructions?: BeanInstanceConstructInstructions<T>): void {
     if (!symbol) {
       throw Error('[BeanRegisterError] Missing bean lookup symbol.');
     }
@@ -178,7 +178,7 @@ export class BeanManager {
    *
    * @internal
    */
-  public registerIfAbsent<T>(symbol: Type<T | any> | AbstractType<T | any>, instructions?: BeanInstanceConstructInstructions<T>): void {
+  public registerIfAbsent<T>(symbol: Type<T | any> | AbstractType<T | any> | symbol, instructions?: BeanInstanceConstructInstructions<T>): void {
     if (!symbol) {
       throw Error('[BeanRegisterError] Missing bean lookup symbol.');
     }
@@ -197,7 +197,7 @@ export class BeanManager {
    * @param symbol - Identifies the bean(s) which to decorate. If multiple beans are registered under that symbol, they all are decorated.
    * @param decorator - Specifies the decorator.
    */
-  public registerDecorator<T extends BeanDecorator<any>>(symbol: Type<any> | AbstractType<any>, decorator: { useValue: T } | { useClass?: Type<T> } | { useFactory?: () => T }): void {
+  public registerDecorator<T extends BeanDecorator<any>>(symbol: Type<any> | AbstractType<any> | symbol, decorator: { useValue: T } | { useClass?: Type<T> } | { useFactory?: () => T }): void {
     if (!symbol) {
       throw Error('[BeanDecoratorRegisterError] A decorator requires a symbol.');
     }
@@ -248,7 +248,7 @@ export class BeanManager {
    * @param orElse - Controls what to do if no bean is found under the given symbol. If not set and if no bean is found, the bean manager throws an error.
    * @throws if not finding a bean, or if multiple beans are found under the given symbol.
    */
-  public get<T>(symbol: Type<T> | AbstractType<T> | Type<any> | AbstractType<any>, orElse?: { orElseGet?: T, orElseSupply?: () => T }): T {
+  public get<T>(symbol: Type<T> | AbstractType<T> | Type<any> | AbstractType<any> | symbol, orElse?: { orElseGet?: T, orElseSupply?: () => T }): T {
     const beans = this.all(symbol);
     switch (beans.length) {
       case 0: {
@@ -258,13 +258,14 @@ export class BeanManager {
         if (orElse && orElse.orElseSupply) {
           return orElse.orElseSupply();
         }
-        throw Error(`[NullBeanError] No bean registered under the symbol '${symbol.name}'.`);
+
+        throw Error(`[NullBeanError] No bean registered under the symbol '${getSymbolName(symbol)}'.`);
       }
       case 1: {
         return beans[0];
       }
       default: {
-        throw Error(`[MultiBeanError] Multiple beans registered under the symbol '${symbol.name}'.`);
+        throw Error(`[MultiBeanError] Multiple beans registered under the symbol '${getSymbolName(symbol)}'.`);
       }
     }
   }
@@ -275,7 +276,7 @@ export class BeanManager {
    * @param symbol - Symbol to lookup the bean.
    * @throws if multiple beans are found under the given symbol.
    */
-  public opt<T>(symbol: Type<T> | AbstractType<T> | Type<any> | AbstractType<any>): T | undefined {
+  public opt<T>(symbol: Type<T> | AbstractType<T> | Type<any> | AbstractType<any> | symbol): T | undefined {
     return this.get(symbol, {orElseSupply: (): undefined => undefined});
   }
 
@@ -284,13 +285,13 @@ export class BeanManager {
    *
    * @param symbol - Symbol to lookup the beans.
    */
-  public all<T>(symbol: Type<T> | AbstractType<T> | Type<any> | AbstractType<any>): T[] {
+  public all<T>(symbol: Type<T> | AbstractType<T> | Type<any> | AbstractType<any> | symbol): T[] {
     const beanInfos = Array.from(beanRegistry.get(symbol) || new Set<BeanInfo>());
     if (!beanInfos || !beanInfos.length) {
       return [];
     }
     if (beanInfos.some(beanInfo => beanInfo.constructing)) {
-      throw Error(`[BeanConstructError] Circular bean construction cycle detected [bean={${symbol.name}}].`);
+      throw Error(`[BeanConstructError] Circular bean construction cycle detected [bean={${getSymbolName(symbol)}}].`);
     }
 
     return beanInfos.map(beanInfo => getOrConstructBeanInstance(beanInfo));
@@ -301,7 +302,7 @@ export class BeanManager {
    *
    * @internal
    */
-  public getBeanInfo<T>(symbol: Type<T | any> | AbstractType<T | any>): Set<BeanInfo<T>> {
+  public getBeanInfo<T>(symbol: Type<T | any> | AbstractType<T | any> | symbol): Set<BeanInfo<T>> {
     return beanRegistry.get(symbol);
   }
 
@@ -403,7 +404,7 @@ function destroyBean(beanInfo: BeanInfo): void {
 }
 
 /** @ignore */
-function deriveConstructFunction<T>(symbol: Type<T | any> | AbstractType<T | any>, instructions?: InstanceConstructInstructions<T>): () => T {
+function deriveConstructFunction<T>(symbol: Type<T | any> | AbstractType<T | any> | symbol, instructions?: InstanceConstructInstructions<T>): () => T {
   if (instructions && instructions.useValue !== undefined) {
     return (): T => instructions.useValue;
   }
@@ -438,13 +439,13 @@ export interface PreDestroy {
  * @ignore
  */
 export interface BeanInfo<T = any> {
-  symbol: Type<T | any> | AbstractType<T | any>;
+  symbol: Type<T | any> | AbstractType<T | any> | symbol;
   instance?: T;
   constructing?: boolean;
   beanConstructFn: () => T;
   eager: boolean;
   multi: boolean;
-  useExisting: Type<any> | AbstractType<any>;
+  useExisting: Type<any> | AbstractType<any> | symbol;
   destroyPhase?: PlatformStates | 'none';
 }
 
@@ -477,7 +478,7 @@ export interface InstanceConstructInstructions<T = any> {
   /**
    * Set if to create an alias for another bean.
    */
-  useExisting?: Type<any> | AbstractType<any>;
+  useExisting?: Type<any> | AbstractType<any> | symbol;
 }
 
 /**
@@ -565,5 +566,9 @@ export interface AbstractType<T> extends Function {
  */
 export interface Type<T> extends Function {
   new(...args: any[]): T; // tslint:disable-line:callable-types
+}
+
+function getSymbolName(symbol: Type<any> | AbstractType<any> | symbol): string {
+  return (typeof symbol === 'function' ? symbol.name : symbol.toString());
 }
 

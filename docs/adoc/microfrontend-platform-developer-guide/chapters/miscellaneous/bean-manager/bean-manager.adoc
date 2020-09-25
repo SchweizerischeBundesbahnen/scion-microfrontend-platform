@@ -25,7 +25,7 @@ In this Chapter
 [[chapter:bean-manager:what-is-a-bean]]
 [discrete]
 === What is a Bean?
-A bean can be any object or even a primitive like a `boolean`. A bean is registered under some symbol in the bean manager. In most cases, the class of the bean is used as the symbol. You can then look up the bean under its registration symbol. A symbol is either a class type or an abstract class type.
+A bean can be any object or even a primitive like a `boolean`. A bean is registered under some symbol in the bean manager. In most cases, the class of the bean is used as the symbol. You can then look up the bean under its registration symbol. A symbol is either a class type, an abstract class type, or a `Symbol`.
 
 [[chapter:bean-manager:bean-scope]]
 [discrete]
@@ -45,7 +45,7 @@ include::bean-manager.snippets.ts[tags=register-eager-bean]
 [[chapter:bean-manager:registering-beans]]
 [discrete]
 === Registering Beans
-A bean is registered in the bean manager under some class or abstract class symbol. In most cases, the symbol is also the type of the bean instance but does not have to be. You can then look up the bean from the bean manager using that symbol.
+A bean is registered in the bean manager under some class type, abstract class type, or `Symbol`. In most cases, the symbol is also the type of the bean instance but does not have to be. You can then look up the bean from the bean manager using that symbol.
 
 When registering a bean, you must tell the bean manager how to construct the bean. Different strategies are supported, as listed below. For Angular developers, the API looks familiar because inspired by Angular.
 

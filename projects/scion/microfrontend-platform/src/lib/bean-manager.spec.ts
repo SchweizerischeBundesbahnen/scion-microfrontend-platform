@@ -29,6 +29,17 @@ describe('BeanManager', () => {
     expect(Beans.get(Bean)).toBe(Beans.get(Bean));
   });
 
+  it('should allow looking up a bean by a symbol', async () => {
+    const symbol1 = Symbol('SYMBOL');
+    Beans.register(symbol1, {useValue: 'bean'});
+    expect(Beans.get(symbol1)).toEqual('bean');
+
+    const symbol2 = Symbol('SYMBOL');
+    Beans.register(symbol2, {useValue: 'bean'});
+    expect(Beans.get(symbol2)).toEqual('bean');
+    expect(Beans.get(symbol1)).not.toBe(symbol2);
+  });
+
   it('should throw when looking up a bean not present in the bean manager', async () => {
     class Bean {
     }
