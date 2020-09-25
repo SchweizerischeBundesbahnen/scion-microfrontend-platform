@@ -260,7 +260,7 @@ In this section, we will listen for messages published to the topic `shopping-ca
  
    [+]   // Listener to add a product to the shopping cart
    [+]   Beans.get(MessageClient)
-   [+]     .onMessage$<Product>('shopping-cart/add-product')
+   [+]     .observe$<Product>('shopping-cart/add-product')
    [+]     .subscribe(msg => {
    [+]       ShoppingCartService.addProduct(msg.body);
    [+]     });
@@ -268,7 +268,7 @@ In this section, we will listen for messages published to the topic `shopping-ca
    ```
    > Lines to be added are preceded by the [+] mark.
 
-   Like when publishing a message, you can get a reference to the `MessageClient` using the bean manager of the platform. Using the method `onMessage$`, you can subscribe to messages published to the passed topic. For more information about cross-application communication, please refer to chapter [Cross Application Communication][link-developer-guide#cross-application-communication] in the Developer Guide.
+   Like when publishing a message, you can get a reference to the `MessageClient` using the bean manager of the platform. Using the method `observe$`, you can subscribe to messages published to the passed topic. For more information about cross-application communication, please refer to chapter [Cross Application Communication][link-developer-guide#cross-application-communication] in the Developer Guide.
    
    Each time we add a product to the session storage, the `shopping cart` microfrontend, if open, will update the shopping cart.
 </details>
@@ -298,7 +298,7 @@ If we recall the implementation of the host application, we notice that we have 
        
            // Listener to add a product to the shopping cart
            Beans.get(MessageClient)
-             .onMessage$<Product>('shopping-cart/add-product')
+             .observe$<Product>('shopping-cart/add-product')
              .subscribe(msg => {
                ShoppingCartService.addProduct(msg.body);
    [+]         this.setShoppingCartPanelVisibility(true);
@@ -306,7 +306,7 @@ If we recall the implementation of the host application, we notice that we have 
        
    [+]     // Listener to open or close the shopping cart panel
    [+]     Beans.get(MessageClient)
-   [+]       .onMessage$<Product>('shopping-cart/toggle-side-panel')
+   [+]       .observe$<Product>('shopping-cart/toggle-side-panel')
    [+]       .subscribe(() => this.setShoppingCartPanelVisibility(!this.panelVisible));
          }
        
@@ -423,7 +423,7 @@ class Activator {
 
     // Listener to add a product to the shopping cart
     Beans.get(MessageClient)
-      .onMessage$<Product>('shopping-cart/add-product')
+      .observe$<Product>('shopping-cart/add-product')
       .subscribe(msg => {
         ShoppingCartService.addProduct(msg.body);
         this.setShoppingCartPanelVisibility(true);
@@ -431,7 +431,7 @@ class Activator {
 
     // Listener to open or close the shopping cart panel
     Beans.get(MessageClient)
-      .onMessage$<Product>('shopping-cart/toggle-side-panel')
+      .observe$<Product>('shopping-cart/toggle-side-panel')
       .subscribe(() => this.setShoppingCartPanelVisibility(!this.panelVisible));
   }
 

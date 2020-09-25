@@ -9,9 +9,9 @@
  */
 
 import { ApplicationManifest } from './platform.model';
-import { Observable, throwError } from 'rxjs';
-import { reduce, take, timeoutWith } from 'rxjs/operators';
-import { Defined } from '@scion/toolkit/util';
+import { AsyncSubject, Observer, ReplaySubject, throwError } from 'rxjs';
+import { take, timeoutWith } from 'rxjs/operators';
+import { Arrays } from '@scion/toolkit/util';
 
 /**
  * Expects the given function to be rejected.
@@ -48,7 +48,7 @@ export function expectToBeRejectedWithError(promise: Promise<any>, expected?: Re
  *
  * Jasmine 3.5 provides 'mapContaining' matcher.
  */
-export function expectMap(actual: Promise<Map<any, any>>): ToContainMatcher & { not: ToContainMatcher } {
+export function expectMap(actual: Promise<Map<any, any>> | Map<any, any>): ToContainMatcher & { not: ToContainMatcher } {
   return {
     toContain: async (expected: Map<any, any>): Promise<void> => {
       const expectedTuples = [...expected];
@@ -86,7 +86,7 @@ export function waitFor(millis: number): Promise<void> {
 /**
  * Returns a Promise that resolves when the condition returns `true` or that rejects when the timeout expires.
  */
-export function waitForCondition(condition: () => boolean | Promise<boolean>, timeout: number): Promise<void> {
+export function waitForCondition(condition: () => boolean | Promise<boolean>, timeout: number = 5000): Promise<void> {
   return new Promise((resolve, reject) => {  // tslint:disable-line:typedef
     const expiryDate = Date.now() + timeout;
     const periodicConditionCheckerFn = async (): Promise<void> => {
@@ -105,15 +105,97 @@ export function waitForCondition(condition: () => boolean | Promise<boolean>, ti
 }
 
 /**
- * Subscribes to the given {@link Observable} and resolves to the emitted messages.
+ * Allows capturing emissions of an Observable.
  */
-export function collectToPromise<T, R = T>(observable$: Observable<T>, options: { take: number, timeout?: number, projectFn?: (msg: T) => R }): Promise<R[]> {
-  const timeout = Defined.orElse(options.timeout, 1000);
-  return observable$
-    .pipe(
-      take(options.take),
-      timeoutWith(new Date(Date.now() + timeout), throwError('[SpecTimeoutError] Timeout elapsed.')),
-      reduce((collected, item) => collected.concat(options.projectFn ? options.projectFn(item) : item), []),
-    )
-    .toPromise();
+export class ObserveCaptor<T = any, R = T> implements Observer<T> {
+
+  private _projectFn: (value: T) => R;
+
+  private _values: R[] = [];
+  private _completed = false;
+  private _error: any;
+
+  private _completeOrError$ = new AsyncSubject<void>();
+  private _emitCount$ = new ReplaySubject<void>();
+
+  constructor(projectFn?: (value: T) => R) {
+    this._projectFn = projectFn || ((value) => value as any);
+  }
+
+  /**
+   * @internal
+   */
+  public next = (value: T): void => {
+    this._values.push(this._projectFn(value));
+    this._emitCount$.next();
+  }
+
+  /**
+   * @internal
+   */
+  public error = (error: any): void => {
+    this._error = error;
+    this._completeOrError$.complete();
+  }
+
+  /**
+   * @internal
+   */
+  public complete = (): void => {
+    this._completed = true;
+    this._completeOrError$.complete();
+  }
+
+  public getValues(): R[] {
+    return this._values;
+  }
+
+  public getLastValue(): R {
+    return this._values[this._values.length - 1];
+  }
+
+  public getError(): any {
+    return this._error;
+  }
+
+  public hasCompleted(): boolean {
+    return this._completed;
+  }
+
+  public hasErrored(): boolean {
+    return this._error !== undefined;
+  }
+
+  /**
+   * Waits until the Observable emits the given number of items, or throws if the given timeout elapses.
+   */
+  public async waitUntilEmitCount(count: number, timeout: number = 5000): Promise<void> {
+    return this._emitCount$
+      .pipe(
+        take(count),
+        timeoutWith(new Date(Date.now() + timeout), throwError('[SpecTimeoutError] Timeout elapsed.')),
+      )
+      .toPromise();
+  }
+
+  /**
+   * Waits until the Observable completes or errors.
+   */
+  public async waitUntilCompletedOrErrored(): Promise<void> {
+    return this._completeOrError$.toPromise();
+  }
+}
+
+/**
+ * Expects the {@link ObserveCaptor} to capture given emissions. This expectation waits a maximum of 5 seconds until the expected element count
+ * is captured.
+ */
+export function expectEmissions<T = any, R = T>(captor: ObserveCaptor<T, R>): { toEqual: (expected: R | R[]) => Promise<boolean> } {
+  return {
+    toEqual: async (expected: R | R[]): Promise<boolean> => {
+      const expectedValues = Arrays.coerce(expected);
+      await captor.waitUntilEmitCount(expectedValues.length, 5000);
+      return expect(captor.getValues()).toEqual(expectedValues);
+    },
+  };
 }

@@ -17,7 +17,7 @@ In this Chapter
 - <<chapter:angular-integration-guide:providing-activator-services>>
 - <<chapter:angular-integration-guide:providing-platform-beans-for-dependency-injection>>
 - <<chapter:angular-integration-guide:providing-microfrontends-as-lazy-loaded-modules>>
-- <<chapter:angular-integration-guide:preparing-messageclient-for-use-with-angular>>
+- <<chapter:angular-integration-guide:preparing-messaging-for-use-with-angular>>
 ****
 '''
 
@@ -215,31 +215,52 @@ A microfrontend module could look similar to the following:
 include::lazy-loaded-modules.snippets.ts[tags=microfrontend-1-module]
 ----
 
-[[chapter:angular-integration-guide:preparing-messageclient-for-use-with-angular]]
+[[chapter:angular-integration-guide:preparing-messaging-for-use-with-angular]]
 [discrete]
-=== Preparing the MessageClient for Use with Angular
-====
-TIP: Refer to chapter <<chapter:bean-manager:decorating-beans>> to learn more about bean decorators.
-====
+=== Preparing the MessageClient and IntentClient for use with Angular
 
-Messages are pushed to the message client via a separate browsing context, preventing Angular (or more precisely zone.js) from triggering a change detection cycle, causing the UI not to update as expected.
+Messages and intents are published and received via a separate browsing context, preventing Angular (or more precisely zone.js) from triggering a change detection cycle, causing the UI not to update as expected. Therefore, we recommend to decorate the `MessageClient` and `IntentClient` with a bean decorator and pipe its Observables to emit inside the Angular zone.
 
-Therefore, we recommend to decorate the `MessageClient` with a bean decorator and pipe its Observables to emit inside the Angular zone, as following:
+TIP: Decorators allow intercepting bean method invocations. For more information about decorators, refer to chapter <<chapter:bean-manager:decorating-beans>>.
+
+**MessageClient decorator example:**
 
 [source,typescript]
 ----
-include::angular-zone-message-client-decorator.snippets.ts[tags=decorator]
+include::angular-zone-message-client-decorator.snippets.ts[tags=message-client-decorator]
 ----
-<1> Obtains the `NgZone` from the bean manager.
-<2> Creates an anonymous class for the `MessageClient`, delegating invocations to the 'actual' message client, but piping Observables to emit inside the Angular zone.
+<1> Obtains the `NgZone` from the bean manager to synchronize Observable emissions with Angular.
+<2> Creates an anonymous class for the `MessageClient`, delegating invocations to the actual message client, but piping Observables to emit inside the Angular zone.
 <3> Mirrors the source Observable, but continues the operator chain inside the Angular zone.
 
-You register the decorator as following:
+**IntentClient decorator example:**
+
+[source,typescript]
+----
+include::angular-zone-message-client-decorator.snippets.ts[tags=intent-client-decorator]
+----
+<1> Obtains the `NgZone` from the bean manager to synchronize Observable emissions with Angular.
+<2> Creates an anonymous class for the `IntentClient`, delegating invocations to the actual intent client, but piping Observables to emit inside the Angular zone.
+<3> Mirrors the source Observable, but continues the operator chain inside the Angular zone.
+
+**Custom RxJS operator for synchronization with the Angular Zone:**
+
+The above decorators use the following custom RxJS operator for synchronizing Observable emissions with the Angular zone.
+
+[source,typescript]
+----
+include::angular-zone-message-client-decorator.snippets.ts[tags=emit-inside-angular]
+----
+
+**Decorator registration example:**
+
+The decorators for the `MessageClient` and `IntentClient` can be registered as following:
 
 [source,typescript]
 ----
 include::angular-zone-message-client-decorator.snippets.ts[tags=register-decorator]
 ----
-<1> Registers `NgZone` in the bean manager.
+<1> Registers `NgZone` in the bean manager, so it can be looked up in decorators.
 <2> Registers `AngularZoneMessageClientDecorator` for decorating the `MessageClient` bean.
+<3> Registers `AngularZoneIntentClientDecorator` for decorating the `IntentClient` bean.
 

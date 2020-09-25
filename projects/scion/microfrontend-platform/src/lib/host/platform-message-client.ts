@@ -7,7 +7,6 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-// tslint:disable:unified-signatures
 import { MessageClient } from '../client/messaging/message-client';
 
 /**

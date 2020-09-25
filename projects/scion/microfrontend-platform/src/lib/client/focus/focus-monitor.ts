@@ -10,7 +10,8 @@
 import { Observable } from 'rxjs';
 import { Beans } from '../../bean-manager';
 import { PlatformTopics } from '../../ɵmessaging.model';
-import { mapToBody, MessageClient } from '../messaging/message-client';
+import { MessageClient } from '../messaging/message-client';
+import { mapToBody } from '../../messaging.model';
 
 /**
  * Allows observing if the current microfrontend has received focus or contains embedded web content that has received focus.

@@ -1,4 +1,4 @@
-import { Beans, IntentMessage, IntentSelector, MessageClient, OutletRouter, PRIMARY_OUTLET } from '@scion/microfrontend-platform';
+import { Beans, IntentClient, IntentMessage, IntentSelector, MessageClient, OutletRouter, PRIMARY_OUTLET } from '@scion/microfrontend-platform';
 
 {
   `
@@ -32,7 +32,7 @@ import { Beans, IntentMessage, IntentSelector, MessageClient, OutletRouter, PRIM
 
 {
   // tag::persistent-navigation:capture-and-persist[]
-  Beans.get(MessageClient).onMessage$<string>('sci-router-outlets/:outlet/url')
+  Beans.get(MessageClient).observe$<string>('sci-router-outlets/:outlet/url')
     .subscribe(navigation => { // <1>
       const topic = navigation.topic;
       const url = navigation.body;
@@ -79,7 +79,7 @@ import { Beans, IntentMessage, IntentSelector, MessageClient, OutletRouter, PRIM
     qualifier: {entity: 'product', id: '*'},
   };
 
-  Beans.get(MessageClient).onIntent$(selector).subscribe((message: IntentMessage) => {
+  Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => {
     const microfrontendPath = message.capability.properties.path; // <1>
 
     // Instruct the router to display the microfrontend in an outlet.

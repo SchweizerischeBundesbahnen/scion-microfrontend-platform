@@ -7,11 +7,12 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { MessageClient } from './client/messaging/message-client';
+import { MessageClient, ɵMessageClient } from './client/messaging/message-client';
+import { IntentClient, ɵIntentClient } from './client/messaging/intent-client';
+import { PlatformIntentClient } from './host/platform-intent-client';
 import { ManifestRegistry } from './host/manifest-registry/manifest-registry';
 import { ApplicationRegistry } from './host/application-registry';
-import { BeanInstanceConstructInstructions, Beans, InstanceConstructInstructions, Type } from './bean-manager';
-import { ɵMessageClient } from './client/messaging/ɵmessage-client';
+import { AbstractType, BeanInstanceConstructInstructions, Beans, InstanceConstructInstructions, Type } from './bean-manager';
 import { PlatformState, PlatformStates } from './platform-state';
 import { PlatformConfigLoader } from './host/platform-config-loader';
 import { from } from 'rxjs';
@@ -48,6 +49,7 @@ import { ɵManifestRegistry } from './host/manifest-registry/ɵmanifest-registry
 import { PlatformManifestService } from './client/manifest-registry/platform-manifest-service';
 import { ApplicationActivator } from './host/activator/application-activator';
 import { RUNLEVEL_0, RUNLEVEL_1, RUNLEVEL_2 } from './microfrontend-platform-runlevels';
+import { BrokerGateway, NullBrokerGateway, ɵBrokerGateway } from './client/messaging/broker-gateway';
 
 window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {once: true});
 
@@ -145,7 +147,6 @@ export class MicrofrontendPlatform {
         Beans.register(PlatformConfigLoader, createConfigLoaderBeanDescriptor(platformConfig));
         Beans.register(ManifestRegistry, {useClass: ɵManifestRegistry, eager: true, destroyPhase: PlatformStates.Stopped});
         Beans.register(ApplicationRegistry, {eager: true, destroyPhase: PlatformStates.Stopped});
-        Beans.registerIfAbsent(PlatformMessageClient, provideMessageClient(PLATFORM_SYMBOLIC_NAME, hostAppConfig && hostAppConfig.messaging));
         Beans.register(HostPlatformState);
         Beans.register(ContextService);
         Beans.register(FocusTracker, {eager: true});
@@ -158,9 +159,16 @@ export class MicrofrontendPlatform {
         Beans.registerIfAbsent(RelativePathResolver);
         Beans.registerIfAbsent(RouterOutletUrlAssigner);
 
+        const ɵPlatformBrokerGatewaySymbol = Symbol('INTERNAL_PLATFORM_BROKER_GATEWAY');
+        Beans.register(ɵPlatformBrokerGatewaySymbol, provideBrokerGateway(PLATFORM_SYMBOLIC_NAME, hostAppConfig && hostAppConfig.messaging));
+        Beans.registerIfAbsent(PlatformMessageClient, provideMessageClient(ɵPlatformBrokerGatewaySymbol));
+        Beans.registerIfAbsent(PlatformIntentClient, provideIntentClient(ɵPlatformBrokerGatewaySymbol));
+
         if (hostAppConfig) {
           Beans.register(MicroApplicationConfig, {useValue: hostAppConfig});
-          Beans.registerIfAbsent(MessageClient, provideMessageClient(hostAppConfig.symbolicName, hostAppConfig.messaging));
+          Beans.register(BrokerGateway, provideBrokerGateway(hostAppConfig.symbolicName, hostAppConfig.messaging));
+          Beans.registerIfAbsent(MessageClient, provideMessageClient(BrokerGateway));
+          Beans.registerIfAbsent(IntentClient, provideIntentClient(BrokerGateway));
           Beans.register(FocusMonitor);
           Beans.register(PreferredSizeService);
           Beans.register(ManifestService);
@@ -168,6 +176,7 @@ export class MicrofrontendPlatform {
         }
         else {
           Beans.registerIfAbsent(MessageClient, {useExisting: PlatformMessageClient});
+          Beans.registerIfAbsent(IntentClient, {useExisting: PlatformIntentClient});
         }
 
         // Notify micro application instances about host platform state changes.
@@ -214,7 +223,9 @@ export class MicrofrontendPlatform {
         Beans.register(PlatformPropertyService, {eager: true});
         Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger});
         Beans.registerIfAbsent(HttpClient);
-        Beans.registerIfAbsent(MessageClient, provideMessageClient(config.symbolicName, config.messaging));
+        Beans.registerIfAbsent(BrokerGateway, provideBrokerGateway(config.symbolicName, config.messaging));
+        Beans.registerIfAbsent(MessageClient, provideMessageClient(BrokerGateway));
+        Beans.registerIfAbsent(IntentClient, provideIntentClient(BrokerGateway));
         Beans.register(HostPlatformState);
         Beans.registerIfAbsent(OutletRouter);
         Beans.registerIfAbsent(RelativePathResolver);
@@ -238,7 +249,11 @@ export class MicrofrontendPlatform {
     if (Beans.get(PlatformState).state === PlatformStates.Stopped) {
       return false;
     }
-    return Beans.get(MessageClient).isConnected();
+    const brokerGateway = Beans.opt(BrokerGateway);
+    if (!brokerGateway) {
+      return false;
+    }
+    return brokerGateway.isConnected();
   }
 
   /**
@@ -292,12 +307,39 @@ function createConfigLoaderBeanDescriptor(config: ApplicationConfig[] | Platform
 }
 
 /** @ignore */
-function provideMessageClient(clientAppName: string, config?: { brokerDiscoverTimeout?: number, deliveryTimeout?: number }): BeanInstanceConstructInstructions {
+function provideBrokerGateway(clientAppName: string, config?: { enabled?: boolean, brokerDiscoverTimeout?: number, deliveryTimeout?: number }): BeanInstanceConstructInstructions {
+  if (!Defined.orElse(config?.enabled, true)) {
+    return {useClass: NullBrokerGateway};
+  }
   return {
-    useFactory: (): MessageClient => {
+    useFactory: (): BrokerGateway => {
       const discoveryTimeout = Defined.orElse(config && config.brokerDiscoverTimeout, 10000);
       const deliveryTimeout = Defined.orElse(config && config.deliveryTimeout, 10000);
-      return new ɵMessageClient(clientAppName, {discoveryTimeout, deliveryTimeout});
+      return new ɵBrokerGateway(clientAppName, {discoveryTimeout, deliveryTimeout});
+    },
+    eager: true,
+    destroyPhase: PlatformStates.Stopped,
+  };
+}
+
+/** @ignore */
+function provideMessageClient(brokerGatewayType: AbstractType<BrokerGateway> | symbol): BeanInstanceConstructInstructions {
+  return {
+    useFactory: (): MessageClient => {
+      const brokerGateway = Beans.get<BrokerGateway>(brokerGatewayType);
+      return new ɵMessageClient(brokerGateway);
+    },
+    eager: true,
+    destroyPhase: PlatformStates.Stopped,
+  };
+}
+
+/** @ignore */
+function provideIntentClient(brokerGatewayType: AbstractType<BrokerGateway> | symbol): BeanInstanceConstructInstructions {
+  return {
+    useFactory: (): IntentClient => {
+      const brokerGateway = Beans.get<BrokerGateway>(brokerGatewayType);
+      return new ɵIntentClient(brokerGateway);
     },
     eager: true,
     destroyPhase: PlatformStates.Stopped,

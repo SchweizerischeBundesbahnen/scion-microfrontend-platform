@@ -1,5 +1,5 @@
 import { Beans, ContextService, MessageClient, OutletRouter, PreferredSizeService, SciRouterOutletElement } from '@scion/microfrontend-platform';
-import { UUID } from '@scion/toolkit/util';
+import { UUID } from '@scion/toolkit/uuid';
 
 {
   `
@@ -79,7 +79,7 @@ import { UUID } from '@scion/toolkit/util';
   tabOutlet.setContextValue('highlighting-topic', highlightingTopic); // <2>
 
   // Subscribe to highlighting events to highlight the tab
-  Beans.get(MessageClient).onMessage$(highlightingTopic).subscribe(() => {
+  Beans.get(MessageClient).observe$(highlightingTopic).subscribe(() => {
     // highlight the tab
   });
 

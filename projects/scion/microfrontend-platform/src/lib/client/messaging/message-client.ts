@@ -7,41 +7,37 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-// tslint:disable:unified-signatures
-import { MonoTypeOperatorFunction, NEVER, Observable, of, OperatorFunction, throwError } from 'rxjs';
-import { Intent, IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage } from '../../messaging.model';
-import { first, map, mergeMap, takeUntil } from 'rxjs/operators';
+import { defer, MonoTypeOperatorFunction, Observable } from 'rxjs';
+import { IntentMessage, mapToBody, TopicMessage } from '../../messaging.model';
+import { first, takeUntil } from 'rxjs/operators';
 import { AbstractType, Beans, Type } from '../../bean-manager';
-import { Qualifier } from '../../platform.model';
+import { BrokerGateway } from './broker-gateway';
+import { Defined } from '@scion/toolkit/util';
+import { MessagingChannel, PlatformTopics } from '../../ɵmessaging.model';
+import { TopicMatcher } from '../../topic-matcher.util';
 
 /**
- * Message client for sending and receiving messages between applications across origins.
+ * Message client for sending and receiving messages between microfrontends across origins.
  *
- * This message client offers pub/sub messaging to microfrontends in two flavors: `Topic-Based Messaging` and `Intent-Based Messaging`.
- * Both models feature the request-response message exchange pattern, let you include message headers, and support message interception to implement
- * cross-cutting messaging concerns.
+ * This client implements the topic-based pub/sub (publish/subscribe) messaging model, allowing for one message to be delivered to
+ * multiple subscribers using topic addressing.
  *
- * #### Topic-based Messaging
- * Topic-based messaging allows publishing a message to a topic, which then is transported to consumers subscribed to the topic. Topics
- * are case-sensitive and consist of one or more segments, each separated by a forward slash. When publishing a message to a topic, the
- * topic must be exact, thus not contain wildcards. Messages published to a topic are transported to all consumers subscribed to the topic.
- * Consumers, on the other hand, can subscribe to multiple topics simultaneously by using wildcard segments in the topic.
+ * The communication is built on top of the native `postMessage` mechanism. The host app acts as message broker.
  *
- * The platform supports publishing a message as a retained message. Retained messages help newly-subscribed clients to get the last message
- * published to a topic immediately upon subscription. The broker stores one retained message per topic. To delete a retained message, send a
- * retained message without a body to the topic. Deletion messages are not transported to subscribers.
+ * ### Topic Addressing
+ * A publisher publishes a message to a topic, which then is transported to consumers subscribed to the topic. Topics are case-sensitive
+ * and consist of one or more segments, each separated by a forward slash. When publishing a message to a topic, the topic must be exact,
+ * thus not contain wildcards. Messages published to a topic are transported to all consumers subscribed to the topic. Consumers, on the
+ * other hand, can subscribe to multiple topics simultaneously by using wildcard segments in the topic.
  *
- * #### Intent-based Messaging
- * Intent-based messaging focuses on controlled collaboration between micro applications. It is inspired by the Android platform where an application
- * can start an Activity via an Intent (such as sending an email).
+ * ### Retained Message
+ * You can publish a message as a retained message for helping newly-subscribed clients to get the last message published to a topic
+ * immediately upon subscription. The broker stores one retained message per topic. To delete a retained message, send a retained message
+ * without a body to the topic. Deletion messages are not transported to subscribers.
  *
- * This kind of communication is similar to the topic-based communication, thus implements also the publish-subscribe messaging pattern, but additionally
- * requires the sending application to declare an intention in its manifest. Unlike topic-based communication, the message (also called the intent) is
- * exclusively transported to micro applications that provide a fulfilling capability through their manifest.
- *
- * In intent-based communication, the destination are capabilities, formulated in an abstract way, consisting of a a type, and optionally a qualifier. The
- * type categorizes a capability in terms of its functional semantics (e.g., microfrontend if representing a microfrontend). A capability may also define
- * a qualifier to differentiate the different capabilities of the same type. The type is a string literal and the qualifier a dictionary of key-value pairs.
+ * ### Request-Response Messaging
+ * Sometimes it is useful to initiate a request-response communication to wait for a response. Unlike with fire-and-forget messaging, a temporary
+ * inbox is created for the sender to receive replies. If there is no consumer subscribed on the topic, the platform throws an error.
  *
  * @see {@link TopicMessage}
  * @see {@link IntentMessage}
@@ -57,9 +53,9 @@ export abstract class MessageClient {
    * Publishes a message to the given topic. The message is transported to all consumers subscribed to the topic.
    *
    * A message can be sent as a retained message by setting the {@link PublishOptions.retain} flag to `true`. It instructs the broker to store this
-   * message as a retained message for the topic; thus, clients receive this message immediately upon subscription. The broker stores only one retained
-   * message per topic. To delete a retained message, send a retained message without a body to the topic - deletion messages are not transported to
-   * subscribers.
+   * message as a retained message for the topic; thus, clients receive this message immediately upon subscription. The broker stores only the latest
+   * retained message on a topic. To delete a retained message, send a retained message without a body to the topic - deletion messages are not
+   * transported to subscribers.
    *
    * @param  topic - Specifies the topic to which the message should be sent.
    *         Topics are case-sensitive and consist of one or more segments, each separated by a forward slash.
@@ -72,7 +68,8 @@ export abstract class MessageClient {
   public abstract publish<T = any>(topic: string, message?: T, options?: PublishOptions): Promise<void>;
 
   /**
-   * Sends a request to the given topic and receives one or more replies.
+   * Sends a request to the given topic and receives one or more replies. To publish a request, at least one subscriber must be subscribed to the topic.
+   * Otherwise, the request is rejected.
    *
    * @param  topic - Specifies the topic to which the request should be sent.
    *         Topics are case-sensitive and consist of one or more segments, each separated by a forward slash.
@@ -84,7 +81,7 @@ export abstract class MessageClient {
    *         could not be dispatched or if no replier is currently subscribed to the topic. If expecting a single reply,
    *         use the `take(1)` operator to unsubscribe upon the receipt of the first reply.
    */
-  public abstract request$<T>(topic: string, request?: any, options?: MessageOptions): Observable<TopicMessage<T>>;
+  public abstract request$<T>(topic: string, request?: any, options?: RequestOptions): Observable<TopicMessage<T>>;
 
   /**
    * Receives messages published to the given topic.
@@ -96,7 +93,7 @@ export abstract class MessageClient {
    * ```ts
    * const topic: string = 'myhome/:room/temperature';
    *
-   * Beans.get(MessageClient).onMessage$(topic).subscribe((message: TopicMessage) => {
+   * Beans.get(MessageClient).observe$(topic).subscribe((message: TopicMessage) => {
    *   console.log(message.params);
    * });
    * ```
@@ -108,7 +105,7 @@ export abstract class MessageClient {
    * ```ts
    * const topic: string = 'myhome/livingroom/temperature';
    *
-   * Beans.get(MessageClient).onMessage$(topic).subscribe((request: TopicMessage) => {
+   * Beans.get(MessageClient).observe$(topic).subscribe((request: TopicMessage) => {
    *   const replyTo = request.headers.get(MessageHeaders.ReplyTo);
    *   sensor$
    *     .pipe(takeUntilUnsubscribe(replyTo))
@@ -125,106 +122,7 @@ export abstract class MessageClient {
    *         string value. Substituted segment values are available in the {@link TopicMessage.params} on the received message.
    * @return An Observable that emits messages sent to the given topic. It never completes.
    */
-  public abstract onMessage$<T>(topic: string): Observable<TopicMessage<T>>;
-
-  /**
-   * Issues an intent. The platform transports the intent to micro applications that provide a fulfilling capability that is visible
-   * to the sending micro application. The intent must be exact, thus not contain wildcards. Optionally, you can pass transfer data
-   * along with the intent, or set message headers. Transfer data and headers must be serializable with the Structured Clone Algorithm.
-   *
-   * To publish the intent, this micro application must declare an intention intention in its manifest; otherwise, the intent is rejected.
-   * A micro application is implicitly qualified to interact with capabilities that it provides; thus, it must not declare an intention.
-   *
-   * @param  intent - Describes the intent. The qualifier, if any, must be exact, thus not contain wildcards.
-   * @param  body - Specifies optional transfer data to be carried along with the intent.
-   *         It can be any object which is serializable with the structured clone algorithm.
-   * @param  options - Controls how to issue the intent and allows setting message headers.
-   * @return A Promise that resolves when dispatched the intent, or that rejects if the intent could not be dispatched,
-   *         e.g., if missing the intention declaration, or because no application is registered to handle the intent.
-   */
-  public abstract issueIntent<T = any>(intent: Intent, body?: T, options?: MessageOptions): Promise<void>;
-
-  /**
-   * Issues an intent and receives one or more replies. The platform transports the intent to micro applications that provide a
-   * fulfilling capability that is visible to the sending micro application. The intent must be exact, thus not contain wildcards.
-   * Optionally, you can pass transfer data along with the intent, or set message headers. Transfer data and headers must be serializable
-   * with the Structured Clone Algorithm.
-   *
-   * To publish the intent, this micro application must declare an intention intention in its manifest; otherwise, the intent is rejected.
-   * A micro application is implicitly qualified to interact with capabilities that it provides; thus, it must not declare an intention.
-   *
-   * @param  intent - Describes the intent. The qualifier, if any, must be exact, thus not contain wildcards.
-   * @param  body - Specifies optional transfer data to be carried along with the intent.
-   *         It can be any object which is serializable with the structured clone algorithm.
-   * @param  options - Controls how to send the request and allows setting request headers.
-   * @return An Observable that emits when receiving a reply. It never completes. It throws an error if the intent
-   *         could not be dispatched or if no replier is currently available to handle the intent. If expecting a single reply,
-   *         use the `take(1)` operator to unsubscribe upon the receipt of the first reply.
-   */
-  public abstract requestByIntent$<T>(intent: Intent, body?: any, options?: MessageOptions): Observable<TopicMessage<T>>;
-
-  /**
-   * Receives an intent when some micro application wants to use functionality of this micro application.
-   *
-   * Intents are typically handled in an activator. Refer to {@link Activator} for more information.
-   *
-   * The micro application receives only intents for which it provides a fulfilling capability through its manifest.
-   * You can filter received intents by passing a selector. As with declaring capabilities, the selector supports the use
-   * of wildcards.
-   *
-   * ```typescript
-   * const selector: IntentSelector = {
-   *   type: 'microfrontend',
-   *   qualifier: {entity: 'product', id: '*'},
-   * };
-   *
-   * Beans.get(MessageClient).onIntent$(selector).subscribe((message: IntentMessage) => {
-   *   const microfrontendPath = message.capability.properties.path;
-   *   // Instruct the router to display the microfrontend in an outlet.
-   *   Beans.get(OutletRouter).navigate(microfrontendPath, {
-   *     outlet: message.body,
-   *     params: message.intent.qualifier,
-   *   });
-   * });
-   * ```
-   *
-   * If the received intent has the {@link MessageHeaders.ReplyTo} header field set, the publisher expects the receiver to send one or more
-   * replies to that {@link MessageHeaders.ReplyTo ReplyTo} topic. If streaming responses, you can use the {@link takeUntilUnsubscribe}
-   * operator to stop replying when the requestor unsubscribes.
-   *
-   * ```typescript
-   *  const selector: IntentSelector = {
-   *    type: 'auth',
-   *    qualifier: {entity: 'user-access-token'},
-   *  };
-   *
-   *  Beans.get(MessageClient).onIntent$(selector).subscribe((request: IntentMessage) => {
-   *    const replyTo = request.headers.get(MessageHeaders.ReplyTo);
-   *    authService.userAccessToken$
-   *      .pipe(takeUntilUnsubscribe(replyTo))
-   *      .subscribe(token => {
-   *        Beans.get(MessageClient).publish(replyTo, token);
-   *      });
-   *  });
-   * ```
-   *
-   * @param  selector - Allows filtering intents. The qualifier allows using wildcards (such as `*` or `?`) to match multiple intents simultaneously.\
-   *         <p>
-   *         <ul>
-   *           <li>**Asterisk wildcard character (`*`):**\
-   *             <ul>
-   *               <li>If used as qualifier property key, matches intents even if having additional properties. Use it like this: `{'*': '*'}`.</li>
-   *               <li>If used as qualifier property value, requires intents to contain that property, but with any value allowed (except for `null` or `undefined` values).</li>
-   *             </ul>
-   *           </li>
-   *           <li>**Optional wildcard character (`?`):**\
-   *               Is allowed as qualifier property value only and matches intents regardless of having or not having that property.
-   *           </li>
-   *         </ul>
-   *
-   * @return An Observable that emits intents for which this application provides a satisfying capability. It never completes.
-   */
-  public abstract onIntent$<T>(selector?: IntentSelector): Observable<IntentMessage<T>>;
+  public abstract observe$<T>(topic: string): Observable<TopicMessage<T>>;
 
   /**
    * Allows observing the number of subscriptions on a topic.
@@ -234,17 +132,14 @@ export abstract class MessageClient {
    *         emits continuously when the number of subscribers changes.
    */
   public abstract subscriberCount$(topic: string): Observable<number>;
-
-  /**
-   * Returns whether this client is connected to the message broker.
-   *
-   * This client connects to the message broker automatically at platform startup. If not connected, this app may be running standalone.
-   */
-  public abstract isConnected(): Promise<boolean>;
 }
 
 /**
- * Emits the values emitted by the source Observable until all consumers unsubscribe from the given topic. Then, it completes.
+ * Returns an Observable that mirrors the source Observable as long as there is at least one subscriber subscribed to the
+ * given topic. When the subscription count of the given topic drops to zero, the returned Observable completes. If there
+ * is no topic subscription present at the time when subscribing to the Observable, then it completes immediately.
+ *
+ * This operator is similar to the RxJS {@link takeUntil} operator, but accepts a topic instead of a notifier Observable.
  *
  * @category Messaging
  */
@@ -253,55 +148,15 @@ export function takeUntilUnsubscribe<T>(topic: string, /* @internal */ messageCl
 }
 
 /**
- * Maps each message to its body.
- *
- * @category Messaging
- */
-export function mapToBody<T>(): OperatorFunction<TopicMessage<T> | IntentMessage<T>, T> {
-  return map(message => message.body);
-}
-
-/**
- * Returns an Observable that mirrors the source Observable, unless receiving a message with
- * a status code other than {@link ResponseStatusCodes.OK}. Then, the stream will end with an
- * error and source Observable will be unsubscribed.
- *
- * @category Messaging
- */
-export function throwOnErrorStatus<BODY>(): MonoTypeOperatorFunction<TopicMessage<BODY>> {
-  return mergeMap((message: TopicMessage<BODY>): Observable<TopicMessage<BODY>> => {
-    const status = message.headers.get(MessageHeaders.Status) || ResponseStatusCodes.ERROR;
-    if (status === ResponseStatusCodes.OK) {
-      return of(message);
-    }
-
-    if (message.body) {
-      return throwError(`[${status}] ${message.body}`);
-    }
-
-    switch (status) {
-      case ResponseStatusCodes.BAD_REQUEST: {
-        return throwError(`${status}: The receiver could not understand the request due to invalid syntax.`);
-      }
-      case ResponseStatusCodes.NOT_FOUND: {
-        return throwError(`${status}: The receiver could not find the requested resource.`);
-      }
-      case ResponseStatusCodes.ERROR: {
-        return throwError(`${status}: The receiver encountered an internal error.`);
-      }
-      default: {
-        return throwError(`${status}: Request error.`);
-      }
-    }
-  });
-}
-
-/**
  * Control how to publish the message.
  *
  * @category Messaging
  */
-export interface PublishOptions extends MessageOptions {
+export interface PublishOptions {
+  /**
+   * Sets headers to pass additional information with a message.
+   */
+  headers?: Map<string, any>;
   /**
    * Instructs the broker to store this message as a retained message for the topic. With the retained flag set to `true`,
    * a client receives this message immediately upon subscription. The broker stores only one retained message per topic.
@@ -311,11 +166,11 @@ export interface PublishOptions extends MessageOptions {
 }
 
 /**
- * Control how to publish a message.
+ * Control how to publish a message in request-response communication.
  *
  * @category Messaging
  */
-export interface MessageOptions {
+export interface RequestOptions {
   /**
    * Sets headers to pass additional information with a message.
    */
@@ -323,64 +178,58 @@ export interface MessageOptions {
 }
 
 /**
- * Allows filtering intents.
- *
  * @ignore
  */
-export interface IntentSelector {
-  /**
-   * If specified, filters intents of the given type.
-   */
-  type?: string;
-  /**
-   * If specified, filters intents matching the given qualifier. You can use the asterisk wildcard (`*`)
-   * or optional wildcard character (`?`) to match multiple intents.
-   */
-  qualifier?: Qualifier;
-}
+export class ɵMessageClient implements MessageClient { // tslint:disable-line:class-name
 
-/**
- * Message client that does nothing.
- *
- * Use this message client in tests to not connect to the platform host.
- *
- * @category Messaging
- */
-export class NullMessageClient implements MessageClient {
-
-  public constructor() {
-    console.log('[NullMessageClient] Using \'NullMessageClient\' for messaging. Messages cannot be sent or received.');
+  constructor(private readonly _brokerGateway: BrokerGateway) {
   }
 
   public publish<T = any>(topic: string, message?: T, options?: PublishOptions): Promise<void> {
-    return Promise.resolve();
+    assertTopic(topic, {allowWildcardSegments: false});
+    const headers = new Map(options && options.headers);
+    const topicMessage: TopicMessage = {topic, retain: Defined.orElse(options && options.retain, false), headers: new Map(headers)};
+    setBodyIfDefined(topicMessage, message);
+    return this._brokerGateway.postMessage(MessagingChannel.Topic, topicMessage);
   }
 
-  public request$<T>(topic: string, request?: any, options?: MessageOptions): Observable<TopicMessage<T>> {
-    return NEVER;
+  public request$<T>(topic: string, request?: any, options?: RequestOptions): Observable<TopicMessage<T>> {
+    assertTopic(topic, {allowWildcardSegments: false});
+    // IMPORTANT:
+    // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
+    // to the returned Observable, each subscription must have its individual message instance and headers map.
+    // In addition, the headers are copied to prevent modifications before the effective subscription.
+    const headers = new Map(options && options.headers);
+    return defer(() => {
+      const topicMessage: TopicMessage = {topic, retain: false, headers: new Map(headers)};
+      setBodyIfDefined(topicMessage, request);
+      return this._brokerGateway.requestReply$(MessagingChannel.Topic, topicMessage);
+    });
   }
 
-  public onMessage$<T>(topic: string): Observable<TopicMessage<T>> {
-    return NEVER;
-  }
-
-  public issueIntent<T = any>(intent: Intent, body?: T, options?: MessageOptions): Promise<void> {
-    return Promise.resolve();
-  }
-
-  public requestByIntent$<T>(intent: Intent, body?: any, options?: MessageOptions): Observable<TopicMessage<T>> {
-    return NEVER;
-  }
-
-  public onIntent$<T>(selector?: Intent): Observable<IntentMessage<T>> {
-    return NEVER;
+  public observe$<T>(topic: string): Observable<TopicMessage<T>> {
+    assertTopic(topic, {allowWildcardSegments: true});
+    return this._brokerGateway.subscribeToTopic<T>(topic);
   }
 
   public subscriberCount$(topic: string): Observable<number> {
-    return NEVER;
+    assertTopic(topic, {allowWildcardSegments: false});
+    return this.request$<number>(PlatformTopics.RequestSubscriberCount, topic).pipe(mapToBody());
+  }
+}
+
+function assertTopic(topic: string, options: { allowWildcardSegments: boolean }): void {
+  if (topic === undefined || topic === null || topic.length === 0) {
+    throw Error('[IllegalTopicError] Topic must not be `null`, `undefined` or empty');
   }
 
-  public isConnected(): Promise<boolean> {
-    return Promise.resolve(false);
+  if (!options.allowWildcardSegments && TopicMatcher.containsWildcardSegments(topic)) {
+    throw Error(`[IllegalTopicError] Topic not allowed to contain wildcard segments. [topic='${topic}']`);
+  }
+}
+
+function setBodyIfDefined<T>(message: TopicMessage<T> | IntentMessage<T>, body?: T): void {
+  if (body !== undefined) {
+    message.body = body;
   }
 }

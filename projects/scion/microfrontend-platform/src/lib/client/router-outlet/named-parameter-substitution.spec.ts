@@ -13,12 +13,12 @@ import { MicrofrontendPlatform } from '../../microfrontend-platform';
 import { take } from 'rxjs/operators';
 import { PlatformMessageClient } from '../../host/platform-message-client';
 import { RouterOutlets } from './router-outlet.element';
-import { mapToBody } from '../messaging/message-client';
 import { OutletRouter } from './outlet-router';
 import { NavigationOptions } from './metadata';
 import { ApplicationConfig } from '../../host/platform-config';
 import { serveManifest } from '../../spec.util.spec';
 import { UUID } from '@scion/toolkit/uuid';
+import { mapToBody } from '../../messaging.model';
 
 describe('OutletRouter', () => {
 
@@ -158,7 +158,7 @@ describe('OutletRouter', () => {
       // Navigate to the given URL
       await Beans.get(OutletRouter).navigate(url, {...navigationOptions, outlet});
       // Lookup the navigated URL
-      return Beans.get(PlatformMessageClient).onMessage$(RouterOutlets.urlTopic(outlet)).pipe(take(1), mapToBody<string>()).toPromise();
+      return Beans.get(PlatformMessageClient).observe$(RouterOutlets.urlTopic(outlet)).pipe(take(1), mapToBody<string>()).toPromise();
     }
   });
 });

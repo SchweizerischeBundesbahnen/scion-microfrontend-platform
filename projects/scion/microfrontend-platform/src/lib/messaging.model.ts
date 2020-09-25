@@ -8,6 +8,8 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { Capability, Qualifier } from './platform.model';
+import { MonoTypeOperatorFunction, Observable, of, OperatorFunction, throwError } from 'rxjs';
+import { map, mergeMap } from 'rxjs/operators';
 
 /**
  * Represents a message with headers to transport additional information with a message.
@@ -201,3 +203,47 @@ export enum ResponseStatusCodes {
   ERROR = 500,
 }
 
+/**
+ * Returns an Observable that mirrors the source Observable, unless receiving a message with
+ * a status code other than {@link ResponseStatusCodes.OK}. Then, the stream will end with an
+ * error and source Observable will be unsubscribed.
+ *
+ * @category Messaging
+ */
+export function throwOnErrorStatus<BODY>(): MonoTypeOperatorFunction<TopicMessage<BODY>> {
+  return mergeMap((message: TopicMessage<BODY>): Observable<TopicMessage<BODY>> => {
+    const status = message.headers.get(MessageHeaders.Status) || ResponseStatusCodes.ERROR;
+    if (status === ResponseStatusCodes.OK) {
+      return of(message);
+    }
+
+    if (message.body) {
+      return throwError(`[${status}] ${message.body}`);
+    }
+
+    switch (status) {
+      case ResponseStatusCodes.BAD_REQUEST: {
+        return throwError(`${status}: The receiver could not understand the request due to invalid syntax.`);
+      }
+      case ResponseStatusCodes.NOT_FOUND: {
+        return throwError(`${status}: The receiver could not find the requested resource.`);
+      }
+      case ResponseStatusCodes.ERROR: {
+        return throwError(`${status}: The receiver encountered an internal error.`);
+      }
+      default: {
+        return throwError(`${status}: Request error.`);
+      }
+    }
+  });
+}
+
+
+/**
+ * Maps each message to its body.
+ *
+ * @category Messaging
+ */
+export function mapToBody<T>(): OperatorFunction<TopicMessage<T> | IntentMessage<T>, T> {
+  return map(message => message.body);
+}

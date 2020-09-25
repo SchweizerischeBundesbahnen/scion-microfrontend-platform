@@ -1,11 +1,11 @@
-import { BeanDecorator, Beans, Intent, IntentMessage, MessageClient, MessageOptions, MicrofrontendPlatform, PlatformState, PlatformStates, PublishOptions, TopicMessage } from '@scion/microfrontend-platform';
+import { BeanDecorator, Beans, Intent, IntentClient, IntentMessage, IntentOptions, MessageClient, MicrofrontendPlatform, PlatformState, PlatformStates, PublishOptions, RequestOptions, TopicMessage } from '@scion/microfrontend-platform';
 import { Injectable, NgZone } from '@angular/core';
 import { MonoTypeOperatorFunction, Observable, Observer, TeardownLogic } from 'rxjs';
 import { HttpPlatformConfigLoader } from './start-platform-via-initializer.snippets';
 
-// tag::decorator[]
+// tag::message-client-decorator[]
 /**
- * Decorates {@link MessageClient} for use with Angular, i.e. pipe its Observables to emit inside the Angular zone.
+ * Synchronizes Observable emissions of the MessageClient with the Angular zone.
  */
 export class AngularZoneMessageClientDecorator implements BeanDecorator<MessageClient> {
 
@@ -17,37 +17,51 @@ export class AngularZoneMessageClientDecorator implements BeanDecorator<MessageC
         return messageClient.publish(topic, message, options);
       }
 
-      public request$<T>(topic: string, request?: any, options?: MessageOptions): Observable<TopicMessage<T>> {
+      public request$<T>(topic: string, request?: any, options?: RequestOptions): Observable<TopicMessage<T>> {
         return messageClient.request$<T>(topic, request, options).pipe(emitInsideAngular(zone)); // <3>
       }
 
-      public onMessage$<T>(topic: string): Observable<TopicMessage<T>> {
-        return messageClient.onMessage$<T>(topic).pipe(emitInsideAngular(zone)); // <3>
-      }
-
-      public issueIntent<T = any>(intent: Intent, body?: T, options?: MessageOptions): Promise<void> {
-        return messageClient.issueIntent(intent, body, options);
-      }
-
-      public requestByIntent$<T>(intent: Intent, body?: any, options?: MessageOptions): Observable<TopicMessage<T>> {
-        return messageClient.requestByIntent$<T>(intent, body, options).pipe(emitInsideAngular(zone)); // <3>
-      }
-
-      public onIntent$<T>(selector?: Intent): Observable<IntentMessage<T>> {
-        return messageClient.onIntent$<T>(selector).pipe(emitInsideAngular(zone)); // <3>
+      public observe$<T>(topic: string): Observable<TopicMessage<T>> {
+        return messageClient.observe$<T>(topic).pipe(emitInsideAngular(zone)); // <3>
       }
 
       public subscriberCount$(topic: string): Observable<number> {
         return messageClient.subscriberCount$(topic).pipe(emitInsideAngular(zone)); // <3>
       }
+    };
+  }
+}
 
-      public isConnected(): Promise<boolean> {
-        return zone.run(() => messageClient.isConnected());
+// end::message-client-decorator[]
+
+// tag::intent-client-decorator[]
+/**
+ * Synchronizes Observable emissions of the IntentClient with the Angular zone.
+ */
+export class AngularZoneIntentClientDecorator implements BeanDecorator<IntentClient> {
+
+  public decorate(intentClient: IntentClient): IntentClient {
+    const zone = Beans.get(NgZone); // <1>
+    return new class implements IntentClient { // <2>
+
+      public publish<T = any>(intent: Intent, body?: T, options?: IntentOptions): Promise<void> {
+        return intentClient.publish(intent, body, options);
+      }
+
+      public request$<T>(intent: Intent, body?: any, options?: IntentOptions): Observable<TopicMessage<T>> {
+        return intentClient.request$<T>(intent, body, options).pipe(emitInsideAngular(zone)); // <3>
+      }
+
+      public observe$<T>(selector?: Intent): Observable<IntentMessage<T>> {
+        return intentClient.observe$<T>(selector).pipe(emitInsideAngular(zone)); // <3>
       }
     };
   }
 }
 
+// end::intent-client-decorator[]
+
+// tag::emit-inside-angular[]
 /**
  * Returns an Observable that mirrors the source Observable, but continues the operator chain inside
  * the Angular zone. The subscription to the source Observable is done outside of the Angular zone.
@@ -70,7 +84,7 @@ function emitInsideAngular<T>(zone: NgZone): MonoTypeOperatorFunction<T> {
   };
 }
 
-// end::decorator[]
+// end::emit-inside-angular[]
 
 // tag::register-decorator[]
 @Injectable({providedIn: 'root'})
@@ -84,6 +98,7 @@ export class PlatformInitializer {
     Beans.get(PlatformState).whenState(PlatformStates.Starting).then(() => {
       Beans.register(NgZone, {useValue: this.ngZone}); // <1>
       Beans.registerDecorator(MessageClient, {useClass: AngularZoneMessageClientDecorator}); // <2>
+      Beans.registerDecorator(IntentClient, {useClass: AngularZoneIntentClientDecorator}); // <3>
     });
 
     // Start the platform.

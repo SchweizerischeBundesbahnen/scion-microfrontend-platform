@@ -13,10 +13,10 @@ import { runSafe } from '../../safe-runner';
 import { distinctUntilChanged, map, pairwise, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { RouterOutletUrlAssigner } from './router-outlet-url-assigner';
 import { Beans } from '../../bean-manager';
-import { mapToBody, MessageClient } from '../messaging/message-client';
+import { MessageClient } from '../messaging/message-client';
 import { Defined } from '@scion/toolkit/util';
 import { UUID } from '@scion/toolkit/uuid';
-import { TopicMessage } from '../../messaging.model';
+import { mapToBody, TopicMessage } from '../../messaging.model';
 import { Keystroke } from '../keyboard-event/keystroke';
 import { PreferredSize } from '../preferred-size/preferred-size';
 import { Navigation, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER } from './metadata';
@@ -376,7 +376,7 @@ export class SciRouterOutletElement extends HTMLElement {
   }
 
   private installPreferredSizeListener(): void {
-    Beans.get(MessageClient).onMessage$<PreferredSize>(RouterOutlets.preferredSizeTopic(this._uid))
+    Beans.get(MessageClient).observe$<PreferredSize>(RouterOutlets.preferredSizeTopic(this._uid))
       .pipe(
         takeUntil(this._disconnect$),
         mapToBody(),
@@ -392,7 +392,7 @@ export class SciRouterOutletElement extends HTMLElement {
   }
 
   private installKeyboardEventDispatcher(): void {
-    Beans.get(MessageClient).onMessage$<KeyboardEventInit>(RouterOutlets.keyboardEventTopic(this._uid, ':eventType'))
+    Beans.get(MessageClient).observe$<KeyboardEventInit>(RouterOutlets.keyboardEventTopic(this._uid, ':eventType'))
       .pipe(takeUntil(this._disconnect$))
       .subscribe((event: TopicMessage<KeyboardEventInit>) => {
         const type = event.params.get('eventType');
@@ -602,7 +602,7 @@ export const KEYSTROKE_CONTEXT_NAME_PREFIX = 'keystroke:';
  */
 function outletNavigate$(outlet: string): Observable<Navigation> {
   const outletNavigationTopic = RouterOutlets.urlTopic(outlet);
-  return Beans.get(MessageClient).onMessage$<string>(outletNavigationTopic)
+  return Beans.get(MessageClient).observe$<string>(outletNavigationTopic)
     .pipe(map((navigateMessage: TopicMessage<string>): Navigation => {
       return {
         url: navigateMessage.body || 'about:blank',

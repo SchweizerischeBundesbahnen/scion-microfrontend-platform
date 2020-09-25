@@ -14,7 +14,7 @@ import { Subject } from 'rxjs';
   // tag::subscribe[]
   const topic: string = 'myhome/livingroom/temperature'; // <1>
 
-  Beans.get(MessageClient).onMessage$(topic).subscribe((message: TopicMessage) => {
+  Beans.get(MessageClient).observe$(topic).subscribe((message: TopicMessage) => {
     console.log(message.body); // <2>
   });
   // end::subscribe[]
@@ -24,7 +24,7 @@ import { Subject } from 'rxjs';
   // tag::subscribe-with-wildcard-segments[]
   const topic: string = 'myhome/:room/temperature'; // <1>
 
-  Beans.get(MessageClient).onMessage$(topic).subscribe((message: TopicMessage) => {
+  Beans.get(MessageClient).observe$(topic).subscribe((message: TopicMessage) => {
     console.log(message.params); // <2>
   });
   // end::subscribe-with-wildcard-segments[]
@@ -53,7 +53,7 @@ import { Subject } from 'rxjs';
   // tag::receive-message-with-headers[]
   const topic: string = 'myhome/livingroom/temperature';
 
-  Beans.get(MessageClient).onMessage$(topic).subscribe((message: TopicMessage) => {
+  Beans.get(MessageClient).observe$(topic).subscribe((message: TopicMessage) => {
     console.log(message.headers); // <1>
   });
   // end::receive-message-with-headers[]
@@ -75,7 +75,7 @@ import { Subject } from 'rxjs';
   // tag::reply[]
   const topic: string = 'myhome/livingroom/temperature';
 
-  Beans.get(MessageClient).onMessage$(topic).subscribe((request: TopicMessage) => {
+  Beans.get(MessageClient).observe$(topic).subscribe((request: TopicMessage) => {
     const replyTo = request.headers.get(MessageHeaders.ReplyTo); // <1>
     sensor$
       .pipe(takeUntilUnsubscribe(replyTo)) // <3>

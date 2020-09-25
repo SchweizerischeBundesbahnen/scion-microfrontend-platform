@@ -75,7 +75,7 @@ export class RouterOutletPagePO {
   public async isEmpty(): Promise<boolean> {
     await this._switchToIframeFn();
     const isEmpty = await this._pageFinder.$('div.e2e-empty').isPresent();
-    const isEmptyCssClassPresent =  await isCssClassPresent(this._pageFinder.$('sci-router-outlet'), 'sci-empty');
+    const isEmptyCssClassPresent = await isCssClassPresent(this._pageFinder.$('sci-router-outlet'), 'sci-empty');
 
     if (isEmpty !== isEmptyCssClassPresent) {
       throw Error(`[IllegalStateError] Expected CSS class 'sci-empty' on 'sci-router-outlet' HTML element to by in sync with the empty property on the 'SciRouterOutletElement' DOM element [emptyProperty=${isEmpty}, cssClassPresent=${isEmptyCssClassPresent}]`);

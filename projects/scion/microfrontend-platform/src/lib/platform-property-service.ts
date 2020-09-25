@@ -9,11 +9,12 @@
  */
 
 import { Beans, PreDestroy } from './bean-manager';
-import { mapToBody, MessageClient } from './client/messaging/message-client';
+import { MessageClient } from './client/messaging/message-client';
 import { PlatformTopics } from './ɵmessaging.model';
 import { map, take, takeUntil } from 'rxjs/operators';
 import { Maps } from '@scion/toolkit/util';
 import { Subject } from 'rxjs';
+import { mapToBody } from './messaging.model';
 
 /**
  * Allows looking up properties defined on the platform host.
@@ -27,7 +28,7 @@ export class PlatformPropertyService implements PreDestroy {
   private _whenPropertiesLoaded: Promise<void>;
 
   constructor() {
-    this._whenPropertiesLoaded = Beans.get(MessageClient).onMessage$(PlatformTopics.PlatformProperties)
+    this._whenPropertiesLoaded = Beans.get(MessageClient).observe$(PlatformTopics.PlatformProperties)
       .pipe(
         mapToBody(),
         map(properties => Maps.coerce(properties)),

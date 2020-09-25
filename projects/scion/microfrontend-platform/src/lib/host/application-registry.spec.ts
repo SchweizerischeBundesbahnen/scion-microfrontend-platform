@@ -12,8 +12,9 @@ import { Beans } from '../bean-manager';
 import { MicrofrontendPlatform } from '../microfrontend-platform';
 import { ManifestRegistry } from './manifest-registry/manifest-registry';
 import { PlatformMessageClient } from './platform-message-client';
-import { NullMessageClient } from '../client/messaging/message-client';
+import { ɵMessageClient } from '../client/messaging/message-client';
 import { ɵManifestRegistry } from './manifest-registry/ɵmanifest-registry';
+import { NullBrokerGateway } from '../client/messaging/broker-gateway';
 
 describe('ApplicationRegistry', () => {
 
@@ -24,7 +25,7 @@ describe('ApplicationRegistry', () => {
     await MicrofrontendPlatform.startPlatform(() => {
       Beans.register(ApplicationRegistry);
       Beans.register(ManifestRegistry, {useClass: ɵManifestRegistry, eager: true});
-      Beans.register(PlatformMessageClient, {useClass: NullMessageClient});
+      Beans.register(PlatformMessageClient, {useFactory: () => new ɵMessageClient(new NullBrokerGateway())});
     });
     registry = Beans.get(ApplicationRegistry);
   });

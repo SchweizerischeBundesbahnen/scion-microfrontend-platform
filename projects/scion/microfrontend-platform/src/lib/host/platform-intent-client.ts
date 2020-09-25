@@ -7,6 +7,12 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
+import { IntentClient } from '../client/messaging/intent-client';
 
-export { MessageClient, PublishOptions, RequestOptions, takeUntilUnsubscribe } from './message-client';
-export { IntentClient, IntentOptions, IntentSelector } from './intent-client';
+/**
+ * Allows interacting with the Intention API on behalf of the platform app {@link PLATFORM_SYMBOLIC_NAME}.
+ *
+ * @category Platform
+ */
+export abstract class PlatformIntentClient extends IntentClient {
+}

@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { Component, OnDestroy } from '@angular/core';
-import { Beans, IntentMessage, MessageClient, MessageHeaders, Qualifier, TopicMessage } from '@scion/microfrontend-platform';
+import { Beans, IntentClient, IntentMessage, MessageClient, MessageHeaders, Qualifier, TopicMessage } from '@scion/microfrontend-platform';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
 import { distinctUntilChanged, finalize, startWith, takeUntil } from 'rxjs/operators';
@@ -39,6 +39,7 @@ export class ReceiveMessageComponent implements OnDestroy {
 
   private _destroy$ = new Subject<void>();
   private _messageClient: MessageClient;
+  private _intentClient: IntentClient;
   private _subscription: Subscription;
 
   public form: FormGroup;
@@ -49,6 +50,7 @@ export class ReceiveMessageComponent implements OnDestroy {
 
   constructor(private _formBuilder: FormBuilder) {
     this._messageClient = Beans.get(MessageClient);
+    this._intentClient = Beans.get(IntentClient);
 
     this.form = this._formBuilder.group({
       [FLAVOR]: new FormControl(MessagingFlavor.Topic, Validators.required),
@@ -83,7 +85,7 @@ export class ReceiveMessageComponent implements OnDestroy {
     this.form.disable();
     this.subscribeError = null;
     try {
-      this._subscription = this._messageClient.onMessage$(this.form.get(DESTINATION).get(TOPIC).value)
+      this._subscription = this._messageClient.observe$(this.form.get(DESTINATION).get(TOPIC).value)
         .pipe(finalize(() => this.form.enable()))
         .subscribe(
           message => this.messages.push(message),
@@ -103,7 +105,7 @@ export class ReceiveMessageComponent implements OnDestroy {
     this.form.disable();
     this.subscribeError = null;
     try {
-      this._subscription = this._messageClient.onIntent$({type, qualifier})
+      this._subscription = this._intentClient.observe$({type, qualifier})
         .pipe(finalize(() => this.form.enable()))
         .subscribe(
           message => this.messages.push(message),
