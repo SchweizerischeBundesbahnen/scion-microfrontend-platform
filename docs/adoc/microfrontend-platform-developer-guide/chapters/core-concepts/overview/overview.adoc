@@ -14,7 +14,7 @@ For illustration purposes, we use a simple webshop in this chapter to explain th
 ****
 
 [discrete]
-=== Microfronted
+=== Microfrontend
 
 ====
 include::{terminologydir}/microfrontend.adoc[]
