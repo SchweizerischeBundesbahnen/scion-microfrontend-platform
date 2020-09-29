@@ -113,7 +113,7 @@ It is absolutely essential for an application instance to start the platform onl
 include::start-platform-via-resolver.snippets.ts[tags=resolver-registration]
 ----
 <1> Installs the resolver on a component-less, empty-path route, which is parent to the microfrontend routes.
-<2> Registers microfronted routes as child routes.
+<2> Registers microfrontend routes as child routes.
 
 [[chapter:angular-integration-guide:activate-custom-elements-schema]]
 [discrete]
