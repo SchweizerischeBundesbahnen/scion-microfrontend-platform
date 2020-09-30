@@ -1,3 +1,45 @@
+# [1.0.0-beta.6](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.5...1.0.0-beta.6) (2020-09-30)
+
+
+### Bug Fixes
+
+* **platform:** substitute falsy values in named parameters of URL ([96c84db](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/96c84db683a8949176c59caa03d414850a0cea05)), closes [#24](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/24)
+
+
+### Features
+
+* **platform:** allow registering beans under a symbol ([98bf890](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/98bf8902762c720a36ae6b481558e488e04bad58)), closes [#28](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/28)
+* **platform:** separate message and intent communication APIs ([7610eb0](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/7610eb00b4750447ad85b00e3acd470cf1950998))
+
+
+### BREAKING CHANGES
+
+* **platform:** Use `MessageClient` for topic-based messaging, and `IntentClient` for intent-based messaging
+
+Note: The messaging protocol between host and client HAS NOT CHANGED. You can therefore independently upgrade host and clients to the new version.
+
+#### Breaking changes in MessageClient
+Moved or renamed the following methods:
+- _MessageClient#onMessage$_ -> _MessageClient.observe$_
+- _MessageClient#issueIntent_ -> _IntentClient.publish_
+- _MessageClient#requestByIntent$_ -> _IntentClient.request$_
+- _MessageClient#onIntent$_ -> _IntentClient.observe$_
+- _MessageClient#isConnected_ -> _MicrofrontendPlatform.isConnectedToHost_
+
+Renamed options object of the following methods:
+- _MessageClient#request$_: _MessageOptions_ -> _RequestOptions_
+- _IntentClient#publish_: _MessageOptions_ -> _IntentOptions_
+- _IntentClient#request$_: _MessageOptions_ -> _IntentOptions_
+
+#### Breaking change for decorating MessageClient and IntentClient bean
+For Angular developers, see [Preparing the MessageClient and IntentClient for use with Angular](https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular) how to decorate the `MessageClient` and `IntentClient` for making Observables to emit inside the Angular zone.
+
+#### Breaking change for disabling messaging in tests
+Messaging can now be deactivated via options object when starting the platform. Previously you had to register a `NullMessageClient` bean.
+```MicrofrontendPlatform.connectToHost({messaging: {enabled: false}}```
+
+
+
 # [1.0.0-beta.5](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.4...1.0.0-beta.5) (2020-07-17)
 
 
