@@ -36,17 +36,17 @@
     "microfrontend-platform:adoc:copy:images": "cp -r ./docs/adoc/microfrontend-platform-developer-guide/images dist/microfrontend-platform-developer-guide",
     "microfrontend-platform:adoc:copy:favicon": "cp ./resources/branding/favicon.ico dist/microfrontend-platform-developer-guide",
 
-    "microfrontend-platform-testing-app:ngserve": "run-p microfrontend-platform-testing-app:ngserve:*",
+    "microfrontend-platform-testing-app:ngserve": "run-p microfrontend-platform-testing-app:ngserve:* microfrontend-platform-devtools:ngserve",
     "microfrontend-platform-testing-app:ngserve:4201": "ng serve microfrontend-platform-testing-app --port 4201",
     "microfrontend-platform-testing-app:ngserve:4202": "ng serve microfrontend-platform-testing-app --port 4202",
     "microfrontend-platform-testing-app:ngserve:4203": "ng serve microfrontend-platform-testing-app --port 4203",
     "microfrontend-platform-testing-app:ngserve:4204": "ng serve microfrontend-platform-testing-app --port 4204",
 
     "microfrontend-platform-testing-app:serve": "run-p microfrontend-platform-testing-app:serve:*",
-    "microfrontend-platform-testing-app:serve:4201": "cd dist/microfrontend-platform-testing-app-localhost && http-server --cors --silent --port 4201",
-    "microfrontend-platform-testing-app:serve:4202": "cd dist/microfrontend-platform-testing-app-localhost && http-server --cors --silent --port 4202",
-    "microfrontend-platform-testing-app:serve:4203": "cd dist/microfrontend-platform-testing-app-localhost && http-server --cors --silent --port 4203",
-    "microfrontend-platform-testing-app:serve:4204": "cd dist/microfrontend-platform-testing-app-localhost && http-server --cors --silent --port 4204",
+    "microfrontend-platform-testing-app:serve:4201": "cd dist/microfrontend-platform-testing-app-ci && http-server --cors --silent --port 4201",
+    "microfrontend-platform-testing-app:serve:4202": "cd dist/microfrontend-platform-testing-app-ci && http-server --cors --silent --port 4202",
+    "microfrontend-platform-testing-app:serve:4203": "cd dist/microfrontend-platform-testing-app-ci && http-server --cors --silent --port 4203",
+    "microfrontend-platform-testing-app:serve:4204": "cd dist/microfrontend-platform-testing-app-ci && http-server --cors --silent --port 4204",
 
     "microfrontend-platform-testing-app:await:4201": "wait-on http-get://localhost:4201",
     "microfrontend-platform-testing-app:await:4202": "wait-on http-get://localhost:4202",
@@ -55,7 +55,11 @@
 
     "microfrontend-platform-testing-app:lint": "ng lint microfrontend-platform-testing-app",
     "microfrontend-platform-testing-app-vercel:build": "ng build microfrontend-platform-testing-app --configuration=production-vercel",
-    "microfrontend-platform-testing-app-localhost:build": "ng build microfrontend-platform-testing-app --configuration=production-localhost",
+    "microfrontend-platform-testing-app-ci:build": "ng build microfrontend-platform-testing-app --configuration=production-ci",
+
+    "microfrontend-platform-devtools:ngserve": "ng serve microfrontend-platform-devtools --port 5200",
+    "microfrontend-platform-devtools:lint": "ng lint microfrontend-platform-devtools",
+    "microfrontend-platform-devtools-vercel:build": "ng build microfrontend-platform-devtools --configuration=production-vercel",
 
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s && markdown-include docs/site/changelog/changelog.template.json"
   },
@@ -70,8 +74,8 @@
     "@angular/platform-browser": "11.0.2",
     "@angular/platform-browser-dynamic": "11.0.2",
     "@angular/router": "11.0.2",
-    "@scion/toolkit": "11.0.0-beta.2",
-    "@scion/toolkit.internal": "11.0.0-beta.2",
+    "@scion/toolkit": "11.0.0-beta.4",
+    "@scion/toolkit.internal": "11.0.0-beta.4",
     "js-sha256": "0.9.0",
     "rxjs": "6.6.3",
     "tslib": "2.0.3",

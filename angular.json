@@ -122,7 +122,13 @@
               "buildOptimizer": true,
               "outputPath": "dist/microfrontend-platform-testing-app-vercel"
             },
-            "production-localhost": {
+            "production-ci": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/microfrontend-platform-testing-app/src/environments/environment.ts",
+                  "with": "apps/microfrontend-platform-testing-app/src/environments/environment.ci.ts"
+                }
+              ],
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
@@ -130,7 +136,7 @@
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
-              "outputPath": "dist/microfrontend-platform-testing-app-localhost"
+              "outputPath": "dist/microfrontend-platform-testing-app-ci"
             }
           }
         },
@@ -138,11 +144,6 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "browserTarget": "microfrontend-platform-testing-app:build"
-          },
-          "configurations": {
-            "production-localhost": {
-              "browserTarget": "microfrontend-platform-testing-app:build:production-localhost"
-            }
           }
         },
         "lint": {
@@ -150,6 +151,87 @@
           "options": {
             "tsConfig": [
               "apps/microfrontend-platform-testing-app/tsconfig.app.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      },
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      }
+    },
+    "microfrontend-platform-devtools": {
+      "projectType": "application",
+      "root": "apps/microfrontend-platform-devtools",
+      "sourceRoot": "apps/microfrontend-platform-devtools/src",
+      "prefix": "devtools",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/microfrontend-platform-devtools",
+            "index": "apps/microfrontend-platform-devtools/src/index.html",
+            "main": "apps/microfrontend-platform-devtools/src/main.ts",
+            "polyfills": "apps/microfrontend-platform-devtools/src/polyfills.ts",
+            "tsConfig": "apps/microfrontend-platform-devtools/tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              "apps/microfrontend-platform-devtools/src/assets",
+              {
+                "glob": "favicon.ico",
+                "input": "resources/branding",
+                "output": "/"
+              },
+              {
+                "glob": "scion-microfrontend-platform-logo.svg",
+                "input": "resources/branding",
+                "output": "/assets"
+              }
+            ],
+            "styles": [
+              "apps/microfrontend-platform-devtools/src/styles.scss"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "node_modules/@scion/toolkit.internal/widgets"
+              ]
+            },
+            "scripts": []
+          },
+          "configurations": {
+            "production-vercel": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/microfrontend-platform-devtools/src/environments/environment.ts",
+                  "with": "apps/microfrontend-platform-devtools/src/environments/environment.vercel.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "outputPath": "dist/microfrontend-platform-devtools-vercel"
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "microfrontend-platform-devtools:build"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "apps/microfrontend-platform-devtools/tsconfig.app.json"
             ],
             "exclude": [
               "**/node_modules/**"

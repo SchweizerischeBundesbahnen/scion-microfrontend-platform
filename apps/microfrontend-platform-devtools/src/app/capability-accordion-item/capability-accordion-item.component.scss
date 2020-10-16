@@ -1,0 +1,41 @@
+@use 'sci-toolkit-styles' as sci-toolkit-styles;
+
+:host {
+  display: grid;
+  justify-content: space-between;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto;
+  grid-column-gap: 1em;
+  user-select: none;
+
+  > div.qualifier, > div.actions {
+    display: flex;
+    align-items: center;
+    color: var(--sci-color-accent);
+
+    &.qualifier {
+      > span {
+        margin-right: .5em;
+      }
+    }
+
+    &.actions {
+      > span:not(:first-of-type) {
+        margin-left: .25em;
+      }
+
+      > span.app-symbolic-name {
+        @include sci-toolkit-styles.chip(var(--sci-color-accent), null, var(--sci-color-accent));
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        margin: 0;
+
+        > span.material-icons {
+          margin-left: .25em;
+          font-size: 1.5em;
+        }
+      }
+    }
+  }
+}

@@ -53,7 +53,7 @@ export abstract class IntentClient {
    * to the sending micro application. The intent must be exact, thus not contain wildcards. Optionally, you can pass transfer data
    * along with the intent, or set message headers. Transfer data and headers must be serializable with the Structured Clone Algorithm.
    *
-   * To publish the intent, this micro application must declare an intention intention in its manifest; otherwise, the intent is rejected.
+   * To publish the intent, this micro application must declare an intention in its manifest; otherwise, the intent is rejected.
    * A micro application is implicitly qualified to interact with capabilities that it provides; thus, it must not declare an intention.
    *
    * @param  intent - Describes the intent. The qualifier, if any, must be exact, thus not contain wildcards.
@@ -71,7 +71,7 @@ export abstract class IntentClient {
    * Optionally, you can pass transfer data along with the intent, or set message headers. Transfer data and headers must be serializable
    * with the Structured Clone Algorithm.
    *
-   * To publish the intent, this micro application must declare an intention intention in its manifest; otherwise, the intent is rejected.
+   * To publish the intent, this micro application must declare an intention in its manifest; otherwise, the intent is rejected.
    * A micro application is implicitly qualified to interact with capabilities that it provides; thus, it must not declare an intention.
    *
    * @param  intent - Describes the intent. The qualifier, if any, must be exact, thus not contain wildcards.

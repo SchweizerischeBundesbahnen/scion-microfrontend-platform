@@ -1,0 +1,41 @@
+<sci-filter-field (filter)="onFilterChange($event)" placeholder="You can filter capabilities by type and qualifier. Enter one or more search terms separated by space."></sci-filter-field>
+<sci-accordion>
+  <ng-container *ngFor="let app of applications; trackBy: trackByApplicationFn">
+    <ng-template sciAccordionItem [panel]="panel" [key]="app.symbolicName">
+      <header (click)="onAccordionItemClick()">
+        <strong class="app-name">{{app.name}}</strong>
+        <span class="material-icons" (click)="onOpenAppClick($event, app.symbolicName)" title="Navigate to details of {{app.name}}.">exit_to_app</span>
+      </header>
+    </ng-template>
+
+    <ng-template #panel>
+      <section class="panel">
+        <section class="capability-list">
+          <devtools-qualifier-chip-list *ngFor="let capability of capabilities(app); trackBy: trackByCapabilityFn" [class.active]="capability === selectedCapability"
+                                        [type]="capability.type" [qualifier]="capability.qualifier" [size]="'small'" (click)="onClick(capability)">
+          </devtools-qualifier-chip-list>
+        </section>
+        <section *ngIf="selectedCapability" class="capability-details">
+          <section class="description">
+            <span *ngIf="selectedCapability.description; else noDescriptionTemplate">{{selectedCapability.description}}</span>
+          </section>
+
+          <section class="properties">
+            <ng-container *ngIf="selectedCapability.properties; else noPropertiesTemplate">
+              <header>Properties:</header>
+              <sci-property [properties]="selectedCapability.properties"></sci-property>
+            </ng-container>
+          </section>
+        </section>
+
+        <ng-template #noDescriptionTemplate>
+          <span class="placeholder">No description available.</span>
+        </ng-template>
+
+        <ng-template #noPropertiesTemplate>
+          <span class="placeholder">No properties set.</span>
+        </ng-template>
+      </section>
+    </ng-template>
+  </ng-container>
+</sci-accordion>

@@ -18,7 +18,7 @@
  */
 export interface ApplicationManifest {
   /**
-   * The name of the application, e.g. displayed in the Developer Tools.
+   * The name of the application, e.g. displayed in the DevTools.
    */
   name: string;
   /**

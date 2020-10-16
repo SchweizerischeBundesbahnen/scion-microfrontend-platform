@@ -15,5 +15,6 @@ include::compatibility/compatibility.adoc[]
 include::transpilation-level/transpilation-level.adoc[]
 include::explore-platform/explore-platform.adoc[]
 include::angular-integration-guide/angular-integration-guide.adoc[]
+include::dev-tools/dev-tools.adoc[]
 :leveloffset: -1
 

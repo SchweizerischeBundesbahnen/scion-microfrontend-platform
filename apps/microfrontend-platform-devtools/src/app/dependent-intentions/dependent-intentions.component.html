@@ -1,0 +1,16 @@
+<sci-filter-field (filter)="onFilterChange($event)" placeholder="You can filter intentions by type and qualifier. Enter one or more search terms separated by space."></sci-filter-field>
+<sci-accordion>
+  <ng-container *ngFor="let app of applications; trackBy: trackByApplicationFn">
+    <ng-template sciAccordionItem [panel]="panel" [key]="app.symbolicName">
+      <header>
+        <strong>{{app.name}}</strong>
+        <span class="material-icons" (click)="onOpenAppClick($event, app.symbolicName)" title="Navigate to details of {{app.name}}.">exit_to_app</span>
+      </header>
+    </ng-template>
+    <ng-template #panel>
+      <devtools-qualifier-chip-list *ngFor="let intention of intentions(app); trackBy: trackByIntentionFn"
+                                    [type]="intention.type" [qualifier]="intention.qualifier" [size]="'small'">
+      </devtools-qualifier-chip-list>
+    </ng-template>
+  </ng-container>
+</sci-accordion>

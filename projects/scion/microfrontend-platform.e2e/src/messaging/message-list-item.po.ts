@@ -27,6 +27,9 @@ export class MessageListItemPO {
 
   public async getParams(): Promise<Map<string, string>> {
     await this._switchToIframeFn();
+    if (!await this._contentFinder.$('sci-property.e2e-params').isPresent()) {
+      return new Map<string, string>();
+    }
     return new SciPropertyPO(this._contentFinder.$('sci-property.e2e-params')).readAsMap();
   }
 

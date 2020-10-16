@@ -7,7 +7,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-
 import { isEqualQualifier, matchesIntentQualifier, matchesWildcardQualifier } from './qualifier-tester';
 import { Qualifier } from './platform.model';
 

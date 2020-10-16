@@ -1,0 +1,101 @@
+@use 'sci-toolkit-styles' as sci-toolkit-styles;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+
+  > section.properties {
+    flex: none;
+    display: grid;
+    grid-template-columns: minmax(50px, 60px) auto;
+    grid-column-gap: 1em;
+    grid-row-gap: .5em;
+    grid-auto-rows: min-content;
+    margin-bottom: 1.5em;
+
+    > label {
+      grid-column: 1/2;
+    }
+
+    > span, > a {
+      grid-column: 2/3;
+    }
+  }
+
+  > sci-tabbar {
+    flex: auto;
+
+    section.capabilities, section.intentions {
+      display: flex;
+      flex-direction: column;
+
+      > sci-filter-field {
+        margin-bottom: .2em;
+      }
+
+      > sci-accordion {
+        flex: auto;
+      }
+    }
+
+    sci-sashbox.dependencies {
+      section {
+        display: flex;
+        flex-direction: column;
+
+        > header {
+          margin-top: 0;
+          margin-bottom: .5em;
+          color: var(--sci-color-P800);
+          font-weight: bold;
+        }
+
+        > span.description {
+          font-size: smaller;
+          margin-bottom: 1em;
+          color: var(--sci-color-P700);
+        }
+
+        > devtools-required-capabilities, > devtools-dependent-intentions {
+          flex: auto;
+        }
+      }
+    }
+
+    section.platform-flags {
+      > section {
+        display: grid;
+        grid-template-columns: auto min-content;
+        grid-column-gap: 1.5em;
+        margin-bottom: 1em;
+
+        > header {
+          grid-column: 1 / 2;
+          grid-row: 1 / 2;
+          margin: 0;
+          color: var(--sci-color-P800);
+          font-weight: bold;
+        }
+
+        > span.description {
+          grid-column: 1 / 2;
+          grid-row: 2 / 3;
+          font-size: smaller;
+          color: var(--sci-color-P700);
+          margin-top: .25em;
+        }
+
+        > span.chip {
+          grid-column: 2 / 3;
+          grid-row: 1 / 3;
+          font-weight: bold;
+          @include sci-toolkit-styles.chip(var(--sci-color-P900), var(--sci-color-P100), var(--sci-color-P700));
+          margin: auto;
+          min-width: 100px;
+          text-align: center;
+        }
+      }
+    }
+  }
+}

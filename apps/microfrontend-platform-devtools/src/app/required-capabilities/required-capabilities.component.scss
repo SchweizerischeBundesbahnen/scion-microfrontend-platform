@@ -1,0 +1,67 @@
+:host {
+  display: flex;
+  flex-direction: column;
+
+  > sci-filter-field {
+    margin-bottom: .5em;
+  }
+
+  > sci-accordion {
+    flex: auto;
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--sci-color-A900);
+    }
+
+    section.panel {
+      display: flex;
+
+      > section.capability-list {
+        display: flex;
+        flex-direction: column;
+
+        > devtools-qualifier-chip-list {
+          cursor: pointer;
+
+          &:not(:last-child) {
+            margin-bottom: 0.5em;
+          }
+        }
+      }
+
+      > section.capability-details {
+        flex: auto;
+        margin-left: .5em;
+        padding-left: .5em;
+        min-width: 180px;
+
+        > section {
+          border: 1px solid var(--sci-color-P500);
+          border-radius: 5px;
+          padding: 1em;
+          background-color: #FFFFFF;
+          font-size: 12px;
+
+          > header {
+            font-size: 1.1em;
+            margin-top: 0;
+            margin-bottom: 1em;
+            font-weight: bold;
+            color: black
+          }
+
+          &.properties {
+            margin-top: .5em;
+          }
+        }
+      }
+
+      span.placeholder {
+        font-style: italic;
+      }
+    }
+  }
+}

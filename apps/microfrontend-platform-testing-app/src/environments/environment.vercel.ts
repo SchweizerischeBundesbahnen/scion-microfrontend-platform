@@ -9,7 +9,18 @@
  */
 
 import { version } from 'package.json';
+import { ApplicationConfig } from '@scion/microfrontend-platform';
 
+const devtools: ApplicationConfig = {
+  symbolicName: 'devtools',
+  manifestUrl: `https://scion-microfrontend-platform-devtools-v${version.replace(/\./g, '-')}.now.sh/assets/manifest.json`,
+  intentionCheckDisabled: true,
+  scopeCheckDisabled: true,
+};
+
+/**
+ * Environment used when packaging the app for Vercel.
+ */
 export const environment = {
   production: true,
   apps: {
@@ -30,4 +41,5 @@ export const environment = {
       url: `https://scion-microfrontend-platform-testing-app4-v${version.replace(/\./g, '-')}.now.sh`,
     },
   },
+  devtools,
 };

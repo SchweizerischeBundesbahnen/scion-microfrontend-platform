@@ -11,4 +11,4 @@
 /**
  * Entry point for all public APIs of this package.
  */
-export { ManifestObjectFilter } from './manifest-object-store';
+export { ManifestObject, ManifestObjectFilter } from './manifest-object-store';

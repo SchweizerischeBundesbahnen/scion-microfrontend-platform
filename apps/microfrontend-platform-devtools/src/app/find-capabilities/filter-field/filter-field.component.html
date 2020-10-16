@@ -1,0 +1,25 @@
+<header>
+  <header>{{title}}</header>
+  <button [class.active]="logicalOperator === OR" (click)="onLogicalOperatorClick(OR)" type="button">OR</button>
+  <button [class.active]="logicalOperator === AND" (click)="onLogicalOperatorClick(AND)" type="button">AND</button>
+</header>
+<div class="filter" [class]="type" *ngIf="showFilter; else showFilterButton" cdkMonitorSubtreeFocus (cdkFocusChange)="onFocusChange($event)">
+  <input type="text" [formControl]="keyFC" (keydown.enter)="onAddFilterClick()" *ngIf="isTypeKeyValue()" placeholder="Key" #key>
+  <input type="text" [formControl]="valueFC" (keydown.enter)="onAddFilterClick()" [placeholder]="placeholder" [attr.list]="autocompleteListId" #value>
+  <button type="button" (click)="onAddFilterClick()" [disabled]="isAddButtonDisabled()">Add</button>
+  <datalist [attr.id]="autocompleteListId">
+    <option *ngFor="let autocompleteValue of autocompleteValues" [value]="autocompleteValue"></option>
+  </datalist>
+</div>
+<ng-template #showFilterButton>
+  <div class="show-filter">
+    <button class="material-icons" type="button" (click)="onNewFilterClick()">add</button>
+  </div>
+</ng-template>
+<ul class="chips">
+  <li *ngFor="let filter of filters" (click)="onRemoveFilterClick(filter)" title="Click to remove">
+    <span class="key">{{filter.key}}</span>
+    <span class="separator" *ngIf="filter.key && filter.value">&nbsp;:&nbsp;</span>
+    <span class="value">{{filter.value}}</span>
+  </li>
+</ul>

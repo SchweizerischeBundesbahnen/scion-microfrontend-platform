@@ -8,8 +8,20 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
+import { ApplicationConfig } from '@scion/microfrontend-platform';
+
+const devtools: ApplicationConfig = {
+  symbolicName: 'devtools',
+  manifestUrl: 'http://localhost:5200/assets/manifest.json',
+  intentionCheckDisabled: true,
+  scopeCheckDisabled: true,
+};
+
+/**
+ * Environment used when starting the app locally.
+ */
 export const environment = {
-  production: true,
+  production: false,
   apps: {
     app_1: {
       symbolicName: 'app-1',
@@ -28,6 +40,7 @@ export const environment = {
       url: 'http://localhost:4204',
     },
   },
+  devtools,
 };
 
 /*

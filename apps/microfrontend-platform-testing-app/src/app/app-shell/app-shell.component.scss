@@ -14,7 +14,7 @@
     flex: none;
     display: grid;
     margin-bottom: 1.5em;
-    grid-template-columns: auto repeat(2, max-content);
+    grid-template-columns: auto repeat(3, max-content);
     align-items: start;
     column-gap: .25em;
 
@@ -40,18 +40,34 @@
       font-weight: bold;
       cursor: pointer;
     }
-  }
 
-  > sci-viewport {
-    flex: auto;
+    > .chip.devtools {
+      @include sci-toolkit-styles.chip(var(--sci-color-accent), null, var(--sci-color-accent));
+      padding: .1em 1em;
+      font-size: 1rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
 
-    router-outlet {
-      position: absolute; // out of the document flow
+      > button.toggle {
+        color: var(--sci-color-primary);
+
+        &.enabled {
+          color: var(--sci-color-accent);
+        }
+      }
     }
   }
 
-  > app-console-panel {
-    flex: none;
+  > sci-sashbox {
+    flex: auto;
+
+    sci-viewport {
+      router-outlet {
+        position: absolute; // out of the document flow
+      }
+    }
   }
 
   &:not(.top-window) img.banner {
