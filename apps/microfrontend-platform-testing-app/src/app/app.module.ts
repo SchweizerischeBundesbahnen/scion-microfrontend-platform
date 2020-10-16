@@ -42,6 +42,7 @@ import { A11yModule } from '@angular/cdk/a11y';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { SciAccordionModule, SciCheckboxModule, SciFormFieldModule, SciListModule, SciParamsEnterModule, SciPropertyModule, SciQualifierChipListModule } from '@scion/toolkit.internal/widgets';
 import { AppShellComponent } from './app-shell/app-shell.component';
+import { DevToolsComponent } from './devtools/devtools.component';
 
 @NgModule({
   declarations: [
@@ -68,6 +69,7 @@ import { AppShellComponent } from './app-shell/app-shell.component';
     ScrollableMicrofrontendComponent,
     PreferredSizeComponent,
     PlatformPropertiesComponent,
+    DevToolsComponent,
   ],
   imports: [
     CommonModule,

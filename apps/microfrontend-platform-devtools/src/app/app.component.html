@@ -1,0 +1,32 @@
+<sci-sashbox *ngIf="isRunningInMicrofrontendPlatform(); else usageMessage">
+  <ng-template sciSash *ngIf="showPrimaryOutlet" size="1">
+    <section>
+      <header class="primary" (click)="onOpenMenuClick()">
+        <span class="menu material-icons" (click)="onOpenMenuClick()">menu</span>
+        <span class="title">{{primaryTitle$ | async}}</span>
+        <span class="collapse material-icons" *ngIf="showPrimaryOutlet && showDetailsOutlet" (click)="onCollapsePrimaryClick()">keyboard_arrow_left</span>
+      </header>
+      <router-outlet></router-outlet>
+    </section>
+  </ng-template>
+
+  <ng-template sciSash *ngIf="showDetailsOutlet" size="2">
+    <section>
+      <header>
+        <span *ngIf="!showPrimaryOutlet" class="menu material-icons" (click)="onOpenMenuClick()">menu</span>
+        <span class="expand material-icons" *ngIf="!showPrimaryOutlet && showDetailsOutlet" (click)="onExpandPrimaryClick()">keyboard_arrow_right</span>
+        <span class="title" (dblclick)="onDetailsDblClick()">{{detailsTitle$ | async}}</span>
+      </header>
+      <router-outlet name="details"></router-outlet>
+    </section>
+  </ng-template>
+</sci-sashbox>
+
+<devtools-app-menu *ngIf="menuOpen" (close)="onMenuClose()"></devtools-app-menu>
+
+<ng-template #usageMessage>
+  <section class="usage-message">
+    <header>Welcome to SCION Microfrontend Platform DevTools</header>
+    Embed SCION DevTools as microfrontend in your application to inspect micro applications and their dependencies.
+  </section>
+</ng-template>

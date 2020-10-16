@@ -1,0 +1,75 @@
+@use 'sci-toolkit-styles' as sci-toolkit-styles;
+
+:host {
+  display: flex;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  router-outlet {
+    position: absolute; // take router outlet out of the document flow
+  }
+
+  > sci-sashbox {
+    flex: auto;
+    --sci-sashbox-gap: 0;
+
+    section {
+      display: grid;
+      grid-template-rows: max-content 1fr;
+
+      > header {
+        display: flex;
+        align-items: center;
+        background-color: var(--sci-color-P100);
+        height: 2.5em;
+        user-select: none;
+
+        &.primary {
+          cursor: pointer;
+        }
+
+        > span {
+          font-weight: bold;
+          white-space: nowrap;
+          color: var(--sci-color-accent);
+
+          &.title {
+            font-size: 1.1em;
+            flex: auto;
+            padding: .5em;
+            margin-left: .5em;
+          }
+
+          &.material-icons {
+            flex: none;
+            cursor: pointer;
+            padding: .25em;
+            font-size: 1.75em;
+
+            &.menu {
+              padding-left: .5em;
+              font-weight: normal;
+            }
+
+            &:hover {
+              color: var(--sci-color-A800);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  > section.usage-message {
+    padding: 1em;
+
+    > header {
+      margin: .5em 0;
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+  }
+}

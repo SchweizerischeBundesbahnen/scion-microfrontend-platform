@@ -7,6 +7,11 @@
 
 On this page you will find the latest news about the development of the SCION Microfrontend Platform.
 
+- **2020-12: Developer Tools**\
+We released the DevTools! With the DevTools, you can inspect integrated micro applications, browse available capabilities, analyze dependencies between micro applications, and more.
+\
+For more information, see https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:dev-tools.
+
 - **2020-07: esm5 and fesm5 format is no longer distributed in @scion/microfrontend-platform’s NPM package**\
 Since version `1.0.0-beta.5` we no longer include the distributions for `esm5` and `fesm5` in the `@scion/microfrontend-platform`’s NPM package. Only the formats for `esm2015`, `fesm2015`, and UMD are distributed. Consequently, the module field in package.json now points to the `fesm2015` distribution.\
 \

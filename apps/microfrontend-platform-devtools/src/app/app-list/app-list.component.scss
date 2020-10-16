@@ -1,0 +1,25 @@
+:host {
+  display: flex;
+
+  > sci-list {
+    padding: 1em;
+    flex: auto;
+
+    devtools-app-list-item {
+      outline: none;
+      padding-left: 10px;
+
+      &.active {
+        padding-left: 7px;
+        border-left: 3px solid var(--sci-color-accent);
+      }
+    }
+
+    span.action {
+      outline: none;
+      margin-top: 2em;
+      color: var(--sci-color-A800);
+      cursor: pointer;
+    }
+  }
+}

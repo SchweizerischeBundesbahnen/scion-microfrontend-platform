@@ -44,8 +44,8 @@ Follow the following instructions to get the host application running.
    <summary><strong>Registration of the micro applications</strong></summary>
    <br>
 
-In this section, we will register the `host`, `products` and `shopping cart` as micro applications and start the platform host. Registered micro applications can interact with the platform and other micro applications.
-   
+In this section, we will register the `host`, `products`, `shopping cart` and `devtools` as micro applications and start the platform host. Registered micro applications can interact with the platform and other micro applications.
+
 1. Open the TypeScript file `host-controller.ts`.
 1. Configure the micro applications by adding the following content before the constructor:
    ```ts
@@ -55,8 +55,9 @@ In this section, we will register the `host`, `products` and `shopping cart` as 
      {symbolicName: 'host-app', manifestUrl: '/manifest.json'},
      {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
      {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
+     {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.now.sh/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
    ];
-   ```  
+   ```
    For each micro application, we provide an application config with the application's symbolic name and the URL to its manifest. Symbolic names must be unique and are used by the micro applications to connect to the platform host. The manifest is a JSON file that contains information about a micro application.
 1. Next, start the platform and register the micro applications by adding the following content to the `init` method, as follows:
    ```ts
@@ -75,7 +76,7 @@ In this section, we will register the `host`, `products` and `shopping cart` as 
    <summary><strong>Embed microfrontends</strong></summary>
    <br>
 
-In this section, we will embed the `products` and `shopping cart` microfrontends.
+In this section, we will embed the `products`, `shopping cart` and `devtools` microfrontends.
    
 1. Open the HTML template `index.html`.
 1. Add a button to the HTML template to show the shopping cart, as follows:
@@ -84,12 +85,13 @@ In this section, we will embed the `products` and `shopping cart` microfrontends
      <button class="shopping-cart">Shopping Cart</button>
    </nav>
    ```
-1. Add two router outlets to the HTML template, as follows:
+1. Add three router outlets to the HTML template, as follows:
    ```html
    <sci-router-outlet></sci-router-outlet>
    <sci-router-outlet name="SHOPPING-CART"></sci-router-outlet>
+   <sci-router-outlet name="DEV-TOOLS"></sci-router-outlet>
    ```
-   In the first router outlet, we will show the `products` microfrontend. It has no name, so it defaults to the primary router outlet. In the second router outlet, we will show the `shopping cart` microfrontend.
+   In the first router outlet, we will show the `products` microfrontend. It has no name, so it defaults to the primary router outlet. In the second router outlet, we will show the `shopping cart` microfrontend. And in the third router outlet, we will show the `devtools` microfrontend.
    
    > A router outlet is a placeholder that the platform dynamically fills based on the current router state. Using the router, you can instruct an outlet to embed a microfrontend. By giving an outlet a name, you can reference it as the routing target. If not naming an outlet, its name defaults to `primary`. The concept of the router outlet is inspired by the Angular routing mechanism. For more information, refer to the [Developer Guide][link-developer-guide#routing].
 1. Open the TypeScript file `host-controller.ts`.
@@ -129,7 +131,24 @@ In this section, we will embed the `products` and `shopping cart` microfrontends
    Unlike to embedding the `products` microfrontend, we publish a message to show the `shopping cart` microfrontend. As of now, nothing would happen when the user clicks on that button, because we did not register a message listener yet. It is important to understand that the platform transports that message to all micro applications. Later, when implementing the `shopping cart` micro application, we will subscribe to such messages and navigate accordingly. Of course, we could also use the `OutletRouter` directly. For illustrative purposes, however, we use an alternative approach, which further has the advantage that we do not have to know the URL of the microfrontend to embed it. Instead, we let the providing micro application perform the routing, keeping the microfrontend URL an implementation detail of the micro application that provides the microfrontend.
    
    > Note: It would be even better to use the Intention API for showing a microfrontend, which, however, would go beyond the scope of this Getting Started Guide. For more information, refer to the [Developer Guide][link-developer-guide#routing-in-the-activator].
+1. Finally, we want to route the devtools router outlet to display the `devtools` microfrontend, as follows:
 
+   ```ts
+        import { OutletRouter } from '@scion/microfrontend-platform';   
+        import { Beans } from '@scion/toolkit/bean-manager';
+   
+        public async init(): Promise<void> {
+          // Start the platform
+          await MicrofrontendPlatform.startHost(this.platformConfig, {symbolicName: 'host-app'});
+ 
+          // Display the `products` microfrontend in the primary router outlet
+          Beans.get(OutletRouter).navigate('http://localhost:4201/products.html');
+
+   [+]    // Display the devtools microfrontend in the devtools router outlet
+   [+]    Beans.get(OutletRouter).navigate('https://scion-microfrontend-platform-devtools.now.sh', {outlet: 'DEV-TOOLS'});
+        }
+   ```
+   > Lines to be added are preceded by the [+] mark.
 </details>
 
 <details>
@@ -175,8 +194,8 @@ To learn more about the manifest, refer to the [Developer Guide][link-developer-
 We did it! Run `npm run start` to serve the applications.
 
 If you open the page http://localhost:4200, you will not see much yet. That's because we first have to implement the micro applications for `products` and `shopping cart`. If you open the console panel of your browser, you will see that the platform tries to load the manifests for the `products` and `shopping cart` micro applications, which leads to an error because not yet available.
- 
-You may wonder why you can see the `products` microfrontend. To embed a microfrontend, you do not need to register it as a micro application. You only need to register an app as a micro application if the app wants to interact with the platform.
+
+What you can see though is the `devtools` microfrontend.
 </details>
 
 <details>
@@ -202,6 +221,7 @@ We have added two router outlets to the HTML template of the host application fo
     </nav>
     <sci-router-outlet></sci-router-outlet>
     <sci-router-outlet name="SHOPPING-CART"></sci-router-outlet>
+    <sci-router-outlet name="DEV-TOOLS"></sci-router-outlet>
   </body>
 </html>
 ```
@@ -221,6 +241,7 @@ class HostController {
     {symbolicName: 'host-app', manifestUrl: '/manifest.json'},
     {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
     {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
+    {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.now.sh/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
   ];
 
   constructor() {
@@ -233,6 +254,9 @@ class HostController {
 
     // Display the products microfrontend in the primary router outlet
     Beans.get(OutletRouter).navigate('http://localhost:4201/products.html');
+
+    // Display the devtools microfrontend in the devtools router outlet
+    Beans.get(OutletRouter).navigate('https://scion-microfrontend-platform-devtools.now.sh', {outlet: 'DEV-TOOLS'});
   }
 
   private onToggleShoppingCart(): void {

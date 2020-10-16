@@ -1,0 +1,33 @@
+<sci-viewport @openCloseMenu>
+  <nav>
+    <ul>
+      <li [routerLink]="['/apps']" routerLinkActive="active" (click)="onMenuItemClick()">
+        <span class="material-icons">apps</span>
+        <section>
+          <header>Micro Applications</header>
+          <span class="description">Shows registered micro applications.</span>
+        </section>
+      </li>
+      <li [routerLink]="['/find-capabilities', {outlets: {details: ['filter-results']}}]" routerLinkActive="active" (click)="onMenuItemClick()">
+        <span class="material-icons">extension</span>
+        <section>
+          <header>Capabilities</header>
+          <span class="description">Lists capabilities of registered micro applications.</span>
+        </section>
+      </li>
+    </ul>
+
+    <section class="about">
+      <img src="assets/scion-microfrontend-platform-logo.svg" alt="SCION Microfrontend Platform" class="logo">
+
+      <ul>
+        <li><a href="https://scion-microfrontend-platform-developer-guide.now.sh/" target="_blank" rel="noopener noreferrer">Developer Guide</a></li>
+        <li><a href="https://scion-microfrontend-platform-api.now.sh/" target="_blank" rel="noopener noreferrer">API Documentation</a></li>
+        <li><a href="https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues" target="_blank" rel="noopener noreferrer">Report an Issue</a></li>
+        <li><a href="https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/blob/master/docs/site/getting-started/getting-started.md" target="_blank" rel="noopener noreferrer">Getting Started</a></li>
+        <li><a href="https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform" target="_blank" rel="noopener noreferrer">Visit us on GitHub</a></li>
+      </ul>
+    </section>
+  </nav>
+</sci-viewport>
+<div class="backdrop" (click)="onBackdropClick()"></div>

@@ -1,0 +1,21 @@
+<section class="description" *ngIf="capability.description">
+  {{capability.description}}
+</section>
+
+<section class="properties" *ngIf="capability.properties">
+  <header>Properties:</header>
+  <sci-property [properties]="capability.properties"></sci-property>
+</section>
+
+<section class="required-by">
+  <header>Required by:</header>
+  <ul>
+    <li *ngFor="let application of applications$ | async">
+      <a class="app-name"
+         [routerLink]="['/apps', {outlets: {details: [application.symbolicName]}}]"
+         [class.self]="application.symbolicName === capability.metadata.appSymbolicName">
+        {{application.name}}
+      </a>
+    </li>
+  </ul>
+</section>

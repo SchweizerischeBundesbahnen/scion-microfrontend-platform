@@ -1,0 +1,14 @@
+<sci-list (filter)="onAppFilter($event)" filterPosition="top">
+  <ng-container *ngFor="let application of applications$ | async; trackBy: trackByFn">
+    <ng-template sciListItem [key]="application.symbolicName" [actions]="action">
+      <devtools-app-list-item [application]="application"
+                              [routerLink]="[{outlets: {details: [application.symbolicName]}}]"
+                              routerLinkActive="active">
+      </devtools-app-list-item>
+    </ng-template>
+
+    <ng-template #action>
+      <span class="material-icons action" [routerLink]="[{outlets: {details: [application.symbolicName]}}]">keyboard_arrow_right</span>
+    </ng-template>
+  </ng-container>
+</sci-list>

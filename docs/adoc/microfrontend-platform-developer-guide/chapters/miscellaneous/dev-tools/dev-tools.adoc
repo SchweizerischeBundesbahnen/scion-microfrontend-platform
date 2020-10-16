@@ -1,0 +1,32 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:dev-tools]]
+== DevTools
+The DevTools allow you to inspect integrated micro applications, browse available capabilities, analyze dependencies between micro applications, and more.
+They are implemented as a microfrontend that you can integrate analogous to other microfrontends. We publish the DevTools on Vercel for free use.
+With each release of the SCION Microfrontend Platform, we also publish a new version of the DevTools.
+We strongly recommend integrating the DevTools via the versioned URL to be compatible with your platform version.
+
+You can register the DevTools micro application as follows:
+
+[source,typescript]
+----
+include::dev-tools.snippets.ts[tags=dev-tools:register-dev-tools]
+----
+<1> Replace `<version>` with the version of the DevTools compatible with your platform version, e.g. `v1-2-3`.
+<2> Allow the DevTools to read all available capabilities.
+
+Then, create a router outlet for the DevTools, as following:
+
+[source,html]
+----
+include::dev-tools.snippets.ts[tags=dev-tools:dev-tools-outlet]
+----
+
+Finally, load the DevTools into the router outlet created above, as following:
+[source,typescript]
+----
+include::dev-tools.snippets.ts[tags=dev-tools:dev-tools-navigation]
+----
+

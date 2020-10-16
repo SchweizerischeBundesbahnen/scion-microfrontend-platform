@@ -1,0 +1,4 @@
+<devtools-qualifier-chip-list [type]="intention.type" [qualifier]="intention.qualifier"></devtools-qualifier-chip-list>
+<div class="hints">
+  <span class="no-provider-found" *ngIf="nullProvider$ | async" title="No application provides a matching capability.">NO PROVIDER FOUND</span>
+</div>

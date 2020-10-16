@@ -1,0 +1,19 @@
+@use 'sci-toolkit-styles' as sci-toolkit-styles;
+
+:host {
+  display: flex;
+
+  > sci-viewport {
+    flex: auto;
+
+    section {
+      display: flex;
+      flex-direction: column;
+      padding: 1em;
+
+      > devtools-filter-field:not(:first-child) {
+        margin-top: 1em;
+      }
+    }
+  }
+}

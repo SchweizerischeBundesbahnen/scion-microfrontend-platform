@@ -35,7 +35,7 @@
       > button.toggle {
         grid-column: 2/3;
         grid-row: 1/3;
-        color: var(--sci-color-primary  );
+        color: var(--sci-color-primary);
 
         &.enabled {
           color: var(--sci-color-accent);

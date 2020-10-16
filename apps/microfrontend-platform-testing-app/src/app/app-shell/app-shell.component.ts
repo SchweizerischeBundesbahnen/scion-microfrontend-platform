@@ -8,13 +8,14 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { Component, ElementRef, HostBinding, OnDestroy } from '@angular/core';
-import { fromEvent, merge, Subject } from 'rxjs';
+import { asapScheduler, fromEvent, merge, Subject } from 'rxjs';
 import { ConsoleService } from '../console/console.service';
-import { ContextService, FocusMonitor, MicroApplicationConfig, OUTLET_CONTEXT, OutletContext } from '@scion/microfrontend-platform';
+import { ContextService, FocusMonitor, IS_PLATFORM_HOST, MicroApplicationConfig, OUTLET_CONTEXT, OutletContext } from '@scion/microfrontend-platform';
 import { filter, switchMapTo, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { Defined } from '@scion/toolkit/util';
 import { Beans } from '@scion/toolkit/bean-manager';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-shell',
@@ -28,7 +29,11 @@ export class AppShellComponent implements OnDestroy {
   public appSymbolicName: string;
   public pageTitle: string;
   public isFocusWithin: boolean;
-  public isConsoleVisible = false;
+  public isConsoleOpened = false;
+  public isDevToolsOpened = false;
+
+  @HostBinding('class.top-window')
+  public isPlatformHost = Beans.get<boolean>(IS_PLATFORM_HOST);
 
   constructor(host: ElementRef<HTMLElement>, private _consoleService: ConsoleService) {
     this.appSymbolicName = Beans.get(MicroApplicationConfig).symbolicName;
@@ -73,19 +78,39 @@ export class AppShellComponent implements OnDestroy {
       });
   }
 
+  /**
+   * asapScheduler is used in order to avoid 'ExpressionChangedAfterItHasBeenCheckedError'.
+   *
+   * For some reason, if the router-outlet is placed inside a container with some structural directive,
+   * the change detection gets somewhat messed up, resulting in the mentioned error.
+   *
+   * Example 1:
+   * <ng-container *ngIf="...">
+   *   <router-outlet #outlet=outlet (activate)="onRouteActivate(outlet.activatedRoute)"></router-outlet>
+   * </ng-container>
+   *
+   * Example 2:
+   * <ng-container *ngTemplateOutlet="template"></ng-container>
+   * <ng-template #template>
+   *   <router-outlet #outlet=outlet (activate)="onRouteActivate(outlet.activatedRoute)"></router-outlet>
+   * </ng-template>
+   */
   public onRouteActivate(route: ActivatedRoute): void {
     const isPageTitleVisible = Defined.orElse(route.snapshot.data['pageTitleVisible'], true);
-    this.pageTitle = isPageTitleVisible ? route.snapshot.data['pageTitle'] : null;
+    asapScheduler.schedule(() => this.pageTitle = isPageTitleVisible ? route.snapshot.data['pageTitle'] : null);
     this._routeActivate$.next();
   }
 
   public onConsoleToggle(): void {
-    this.isConsoleVisible = !this.isConsoleVisible;
+    this.isConsoleOpened = !this.isConsoleOpened;
   }
 
-  @HostBinding('class.top-window')
-  public get isTopWindow(): boolean {
-    return window.top === window;
+  public isDevtoolsEnabled(): boolean {
+    return this.isPlatformHost && environment.devtools !== null;
+  }
+
+  public onDevToolsToggle(): void {
+    this.isDevToolsOpened = !this.isDevToolsOpened;
   }
 
   public ngOnDestroy(): void {

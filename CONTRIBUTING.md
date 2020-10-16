@@ -231,6 +231,7 @@ We have the following microfrontend-platform related projects:
 - https://vercel.com/scion/scion-microfrontend-platform-developer-guide
 - https://vercel.com/scion/scion-microfrontend-platform-getting-started-app
 - https://vercel.com/scion/scion-microfrontend-platform-testing-app
+- https://vercel.com/scion/scion-microfrontend-platform-devtools
 
 </details>
 
@@ -285,6 +286,9 @@ This chapter describes the tasks to publish a new release to NPM.
       - https://scion-microfrontend-platform-testing-app2-vX-X-X.now.sh.
       - https://scion-microfrontend-platform-testing-app3-vX-X-X.now.sh.
       - https://scion-microfrontend-platform-testing-app4-vX-X-X.now.sh.
+   - **DevTools** are deployed to:
+      - https://scion-microfrontend-platform-devtools.now.sh.
+      - https://scion-microfrontend-platform-devtools-vX-X-X.now.sh.
    - **API Documentation (TypeDoc)** is deployed to: 
       - https://scion-microfrontend-platform-api.now.sh.
       - https://scion-microfrontend-platform-api-vX-X-X.now.sh.
