@@ -7,7 +7,6 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Beans } from '../../bean-manager';
 import { MessageClient } from '../messaging/message-client';
 import { OUTLET_CONTEXT, OutletContext, PRIMARY_OUTLET, RouterOutlets } from './router-outlet.element';
 import { ContextService } from '../context/context-service';
@@ -16,6 +15,7 @@ import { Urls } from '../../url.util';
 import { RelativePathResolver } from './relative-path-resolver';
 import { Defined, Maps } from '@scion/toolkit/util';
 import { NavigationOptions, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER } from './metadata';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 /**
  * Allows navigating to a site in a {@link SciRouterOutletElement `<sci-router-outlet>`} element.

@@ -34,6 +34,24 @@
     //    "paths": {
     //      "@scion/microfrontend-platform": [
     //        "projects/scion/microfrontend-platform/src/public_api"
+    //      ],
+    //      "@scion/toolkit/operators": [
+    //        "../scion-toolkit/projects/scion/toolkit/operators/src/public_api"
+    //      ],
+    //      "@scion/toolkit/observable": [
+    //        "../scion-toolkit/projects/scion/toolkit/observable/src/public_api"
+    //      ],
+    //      "@scion/toolkit/sashbox": [
+    //        "../scion-toolkit/projects/scion/toolkit/sashbox/src/public_api"
+    //      ],
+    //      "@scion/toolkit/uuid": [
+    //        "../scion-toolkit/projects/scion/toolkit/uuid/src/public_api"
+    //      ],
+    //      "@scion/toolkit/util": [
+    //        "../scion-toolkit/projects/scion/toolkit/util/src/public_api"
+    //      ],
+    //      "@scion/toolkit/bean-manager": [
+    //        "../scion-toolkit/projects/scion/toolkit/bean-manager/src/public_api"
     //      ]
     //    }
   },

@@ -14,9 +14,9 @@ import { filterByChannel, filterByHeader, filterByOrigin, filterByTopic, filterB
 import { UUID } from '@scion/toolkit/uuid';
 import { IntentMessage, Message, MessageHeaders, TopicMessage } from '../../messaging.model';
 import { GatewayInfoResponse, getGatewayJavaScript } from './broker-gateway-script';
-import { Beans, PreDestroy } from '../../bean-manager';
 import { Logger, NULL_LOGGER } from '../../logger';
 import { Dictionaries } from '@scion/toolkit/util';
+import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.

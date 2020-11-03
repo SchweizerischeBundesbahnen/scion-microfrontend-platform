@@ -9,7 +9,6 @@
  */
 
 import { EMPTY, Observable } from 'rxjs';
-import { Beans } from '../../bean-manager';
 import { MessageClient } from '../messaging/message-client';
 import { Application, Capability, Intention } from '../../platform.model';
 import { mergeMapTo, take } from 'rxjs/operators';
@@ -17,6 +16,7 @@ import { PlatformTopics } from '../../ɵmessaging.model';
 import { ManifestRegistryTopics } from '../../host/manifest-registry/ɵmanifest-registry';
 import { ManifestObjectFilter } from '../../host/manifest-registry/manifest-object-store';
 import { mapToBody, throwOnErrorStatus } from '../../messaging.model';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 /**
  * Allows looking up capabilities available to the current app and managing the capabilities it provides.

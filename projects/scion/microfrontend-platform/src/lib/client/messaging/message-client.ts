@@ -10,11 +10,11 @@
 import { defer, MonoTypeOperatorFunction, Observable } from 'rxjs';
 import { IntentMessage, mapToBody, TopicMessage } from '../../messaging.model';
 import { first, takeUntil } from 'rxjs/operators';
-import { AbstractType, Beans, Type } from '../../bean-manager';
 import { BrokerGateway } from './broker-gateway';
 import { Defined } from '@scion/toolkit/util';
 import { MessagingChannel, PlatformTopics } from '../../ɵmessaging.model';
 import { TopicMatcher } from '../../topic-matcher.util';
+import { AbstractType, Beans, Type } from '@scion/toolkit/bean-manager';
 
 /**
  * Message client for sending and receiving messages between microfrontends across origins.
@@ -40,9 +40,6 @@ import { TopicMatcher } from '../../topic-matcher.util';
  * inbox is created for the sender to receive replies. If there is no consumer subscribed on the topic, the platform throws an error.
  *
  * @see {@link TopicMessage}
- * @see {@link IntentMessage}
- * @see {@link Intent}
- * @see {@link MessageHeaders}
  * @see {@link takeUntilUnsubscribe}
  *
  * @category Messaging

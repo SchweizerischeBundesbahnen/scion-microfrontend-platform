@@ -1,5 +1,6 @@
-import { Beans, MessageClient, MessageHeaders, takeUntilUnsubscribe, TopicMessage } from '@scion/microfrontend-platform';
+import { MessageClient, MessageHeaders, takeUntilUnsubscribe, TopicMessage } from '@scion/microfrontend-platform';
 import { Subject } from 'rxjs';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 {
   // tag::publish[]

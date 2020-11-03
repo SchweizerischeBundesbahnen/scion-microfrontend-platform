@@ -8,9 +8,10 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { BeanDecorator, Beans, Intent, IntentClient, IntentMessage, IntentOptions, MessageClient, PublishOptions, RequestOptions, TopicMessage } from '@scion/microfrontend-platform';
+import { Intent, IntentClient, IntentMessage, IntentOptions, MessageClient, PublishOptions, RequestOptions, TopicMessage } from '@scion/microfrontend-platform';
 import { MonoTypeOperatorFunction, Observable, Observer, TeardownLogic } from 'rxjs';
 import { NgZone } from '@angular/core';
+import { BeanDecorator, Beans } from '@scion/toolkit/bean-manager';
 
 /**
  * Proxies invocations to the {@link MessageClient}, making Observables to emit inside the Angular zone.

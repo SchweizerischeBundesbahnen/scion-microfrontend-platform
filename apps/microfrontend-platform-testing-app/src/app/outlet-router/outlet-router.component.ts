@@ -9,8 +9,9 @@
  */
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { Beans, NavigationOptions, OutletRouter } from '@scion/microfrontend-platform';
+import { NavigationOptions, OutletRouter } from '@scion/microfrontend-platform';
 import { SciParamsEnterComponent } from '@scion/toolkit.internal/widgets';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 export const OUTLET = 'outlet';
 export const URL = 'url';

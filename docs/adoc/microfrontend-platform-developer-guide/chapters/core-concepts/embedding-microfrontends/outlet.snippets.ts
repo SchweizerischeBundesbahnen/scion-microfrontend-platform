@@ -1,12 +1,14 @@
-import { Beans, ContextService, MessageClient, OutletRouter, PreferredSizeService, SciRouterOutletElement } from '@scion/microfrontend-platform';
+import { ContextService, MessageClient, OutletRouter, PreferredSizeService, SciRouterOutletElement } from '@scion/microfrontend-platform';
 import { UUID } from '@scion/toolkit/uuid';
+import { Beans } from '@scion/toolkit/bean-manager';
+// tslint:disable:no-unused-expression
 
 {
   `
   // tag::router-outlet[]
   <sci-router-outlet name="aside"></sci-router-outlet>
   // end::router-outlet[]
-`
+`;
 }
 
 {
@@ -21,7 +23,7 @@ import { UUID } from '@scion/toolkit/uuid';
   <sci-router-outlet keystrokes="keydown.escape,keydown.control.alt.enter,keydown.control.space">
   </sci-router-outlet>
   // end::router-outlet:keystrokes-html-template[]
-  `
+  `;
 }
 
 {
@@ -53,7 +55,7 @@ import { UUID } from '@scion/toolkit/uuid';
   // tag::router-outlet:page-scrolling-disabled[]
   <sci-router-outlet scrollable="false"></sci-router-outlet>
   // end::router-outlet:page-scrolling-disabled[]
-  `
+  `;
 }
 
 {
@@ -61,7 +63,7 @@ import { UUID } from '@scion/toolkit/uuid';
   // tag::router-outlet:listen-to-activate-event-in-template[]
   <sci-router-outlet onactivate="onActivate()"></sci-router-outlet>
   // end::router-outlet:listen-to-activate-event-in-template[]
-  `
+  `;
 }
 
 {
@@ -91,7 +93,7 @@ import { UUID } from '@scion/toolkit/uuid';
     // tag::router-outlet:observe-context-value[]
     const highlightingTopic = await Beans.get(ContextService).lookup<string>('highlighting-topic'); // <1>
 
-    /** Method invoked when data of the microfrontend changes. **/
+    /** Method invoked when data of the microfrontend changes. */
     function onMicrofrontendDataChange(): void {
       Beans.get(MessageClient).publish(highlightingTopic); // <2>
     }

@@ -7,7 +7,6 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Beans } from '../../bean-manager';
 import { PlatformMessageClient } from '../../host/platform-message-client';
 import { first, publishReplay, timeoutWith } from 'rxjs/operators';
 import { ConnectableObservable, Observable, Subject, throwError } from 'rxjs';
@@ -24,6 +23,7 @@ import { Defined, Objects } from '@scion/toolkit/util';
 import { ClientRegistry } from '../../host/message-broker/client.registry';
 import { MessageEnvelope } from '../../ɵmessaging.model';
 import { PlatformIntentClient } from '../../host/platform-intent-client';
+import { Beans } from '@scion/toolkit/bean-manager';
 import Spy = jasmine.Spy;
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;

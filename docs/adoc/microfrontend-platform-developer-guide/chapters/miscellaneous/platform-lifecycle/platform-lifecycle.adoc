@@ -1,0 +1,36 @@
+:basedir: ../../..
+include::{basedir}/_common.adoc[]
+
+[[chapter:platform-lifecycle]]
+== Platform Lifecycle
+The lifecycle of the SCION Microfrontend Platform is controlled by the class `MicrofrontendPlatform`, providing methods to start and stop the platform. During its lifecycle, it traverses different lifecycle states, as defined in the enumeration `PlatformState`.
+
+Starting:: Indicates that the platform is about to start.
+Started:: Indicates that the platform started.
+Stopping:: Indicates that the platform is about to stop.
+Stopped:: Indicates that the platform is not yet started.
+
+During startup, i.e., during the transition from the `Starting` to the `Started` state, the platform cycles through different runlevels for running initializers, enabling the controlled initialization of platform services. A runlevel is represented by a number greater than or equal to 0. Initializers can specify a runlevel in which to execute. Initializers bound to lower runlevels execute before initializers of higher runlevels. Initializers of the same runlevel may execute in parallel. The platform enters the state `Started` after all initializers have completed.
+
+The platform defines the runlevels `0`, `1`, and `2`, as follows:
+
+Runlevel 0:: In runlevel 0, the platform fetches manifests of registered micro applications.
+Runlevel 1:: In runlevel 1, the platform constructs eager beans.
+Runlevel 2:: From runlevel 2 and above, messaging is enabled. This is the default runlevel at which initializers execute if not specifying any runlevel.
+
+To hook into the platform's startup process, you can register an initializer and bind it to a runlevel. You are not limited to the runlevels `0` to `2`. For example, to run an initializer after all other initializers have completed, register the initializer in runlevel `3` or higher.
+
+The following code snippet illustrates how to register an initializer in runlevel 3:
+
+[source,typescript]
+----
+include::platform-lifecycle.snippets.ts[tags=platform-lifecycle:registerInitializer]
+----
+
+The following code snippet registers a listener to get notified when the platform enters `Started` state:
+
+[source,typescript]
+----
+include::platform-lifecycle.snippets.ts[tags=platform-lifecycle:when-state-started]
+----
+

@@ -8,10 +8,10 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { fromEvent, Subject } from 'rxjs';
-import { Beans, PreDestroy } from '../../bean-manager';
 import { takeUntil } from 'rxjs/operators';
 import { MessageClient } from '../messaging/message-client';
 import { PlatformTopics } from '../../ɵmessaging.model';
+import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 
 /**
  * Sends a 'focusin' event to the topic {@link PlatformTopics.FocusIn} when this document gains focus.

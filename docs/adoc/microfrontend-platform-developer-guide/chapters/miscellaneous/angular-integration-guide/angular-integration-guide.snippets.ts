@@ -1,6 +1,7 @@
-import { Beans, ContextService, IntentClient, ManifestService, MessageClient, OutletRouter } from '@scion/microfrontend-platform';
+import { ContextService, IntentClient, ManifestService, MessageClient, OutletRouter } from '@scion/microfrontend-platform';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 // tag::provide-platform-beans-for-dependency-injection[]
 @NgModule({

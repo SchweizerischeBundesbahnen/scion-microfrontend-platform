@@ -9,8 +9,9 @@
  */
 
 import { Pipe, PipeTransform } from '@angular/core';
-import { Beans, MessageClient } from '@scion/microfrontend-platform';
+import { MessageClient } from '@scion/microfrontend-platform';
 import { Observable, of } from 'rxjs';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 /**
  * Observes the number of subscribers on a topic.

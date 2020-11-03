@@ -1,6 +1,8 @@
 import { Inject, Injectable, InjectionToken, Injector, NgModule, Optional } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { Beans, PlatformState, PlatformStates } from '@scion/microfrontend-platform';
+import { MicrofrontendPlatform, PlatformState } from '@scion/microfrontend-platform';
+
+// tslint:disable:no-unused-expression
 
 `
 // tag::activator-capability[]
@@ -59,7 +61,7 @@ export class ActivatorModule {
 
   // tag::activator-module-using-resolver[]
   constructor(injector: Injector) {
-    Beans.get(PlatformState).whenState(PlatformStates.Started).then(() => { // <1>
+    MicrofrontendPlatform.whenState(PlatformState.Started).then(() => { // <1>
       injector.get(ACTIVATOR, []); // <2>
     });
   }

@@ -40,11 +40,9 @@ import { matchesIntentQualifier } from '../../qualifier-tester';
  * Sometimes it is useful to initiate a request-response communication to wait for a response. Unlike with fire-and-forget intents, a temporary
  * inbox is created for the intent issuer to receive replies.
  *
- * @see {@link TopicMessage}
  * @see {@link IntentMessage}
  * @see {@link Intent}
  * @see {@link MessageHeaders}
- * @see {@link takeUntilUnsubscribe}
  *
  * @category Messaging
  */

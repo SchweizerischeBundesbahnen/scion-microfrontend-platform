@@ -10,11 +10,11 @@
 import { concat, EMPTY, NEVER, Observable, Observer, of, Subject, TeardownLogic } from 'rxjs';
 import { filter, map, mergeMapTo, startWith, switchMapTo, take, takeUntil } from 'rxjs/operators';
 import { UUID } from '@scion/toolkit/uuid';
-import { Beans, PreDestroy } from '../../bean-manager';
 import { MessageClient } from '../messaging/message-client';
 import { mapToBody, MessageHeaders, ResponseStatusCodes } from '../../messaging.model';
 import { Contexts } from './context.model';
 import { IS_PLATFORM_HOST } from '../../platform.model';
+import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 
 /**
  * Allows looking up contextual data set on a {@link SciRouterOutletElement `<sci-router-outlet>`} at any parent level.

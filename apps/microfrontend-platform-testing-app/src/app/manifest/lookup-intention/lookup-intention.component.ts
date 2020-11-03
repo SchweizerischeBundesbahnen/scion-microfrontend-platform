@@ -9,10 +9,11 @@
  */
 import { Component } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { Beans, Intention, ManifestObjectFilter, ManifestService } from '@scion/microfrontend-platform';
+import { Intention, ManifestObjectFilter, ManifestService } from '@scion/microfrontend-platform';
 import { SciParamsEnterComponent } from '@scion/toolkit.internal/widgets';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 const ID = 'id';
 const TYPE = 'type';

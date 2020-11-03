@@ -1,8 +1,9 @@
-import { Beans, Handler, IntentInterceptor, IntentMessage, MessageInterceptor, MicrofrontendPlatform, PlatformConfig, PlatformConfigLoader, PlatformState, PlatformStates, TopicMatcher, TopicMessage } from '@scion/microfrontend-platform';
+import { Handler, IntentInterceptor, IntentMessage, MessageInterceptor, MicrofrontendPlatform, PlatformConfig, PlatformConfigLoader, PlatformState, TopicMatcher, TopicMessage } from '@scion/microfrontend-platform';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 {
   // tag::message-logger-interceptor[]
-  /** Message Interceptor **/
+  /** Message Interceptor */
   class MessageLoggerInterceptor implements MessageInterceptor {
 
     public intercept(message: TopicMessage, next: Handler<TopicMessage>): void {
@@ -13,7 +14,7 @@ import { Beans, Handler, IntentInterceptor, IntentMessage, MessageInterceptor, M
     }
   }
 
-  /** Intent Interceptor **/
+  /** Intent Interceptor */
   class IntentLoggerInterceptor implements IntentInterceptor {
 
     public intercept(intent: IntentMessage<any>, next: Handler<IntentMessage>): void {
@@ -33,7 +34,7 @@ import { Beans, Handler, IntentInterceptor, IntentMessage, MessageInterceptor, M
   }
 
   // tag::message-logger-interceptor-registration[]
-  Beans.get(PlatformState).whenState(PlatformStates.Starting).then(() => {
+  MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
     Beans.register(MessageInterceptor, {useClass: MessageLoggerInterceptor, multi: true}); // <1>
     Beans.register(IntentInterceptor, {useClass: IntentLoggerInterceptor, multi: true}); // <2>
   });
@@ -95,7 +96,7 @@ import { Beans, Handler, IntentInterceptor, IntentMessage, MessageInterceptor, M
     useFactory: (): MessageInterceptor => {
       const productTopic = 'products/:id'; // <1>
       const productJsonSchema = import('./product.schema.json'); // <2>
-      return new MessageValidatorInterceptor(productTopic, productJsonSchema) // <3>
+      return new MessageValidatorInterceptor(productTopic, productJsonSchema); // <3>
     },
     multi: true,
   });

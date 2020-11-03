@@ -10,13 +10,13 @@
 import { Client, ClientRegistry } from './client.registry';
 import { Application } from '../../platform.model';
 import { MicrofrontendPlatform } from '../../microfrontend-platform';
-import { Beans } from '../../bean-manager';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 describe('ClientRegistry', () => {
 
   beforeEach(async () => {
     await MicrofrontendPlatform.destroy();
-    await MicrofrontendPlatform.startPlatform((): void => Beans.register(ClientRegistry));
+    await MicrofrontendPlatform.startPlatform((): void => void (Beans.register(ClientRegistry)));
   });
 
   afterEach(async () => {

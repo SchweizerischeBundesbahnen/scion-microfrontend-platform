@@ -6,9 +6,10 @@ include::{basedir}/_common.adoc[]
 This part of the developer guide contains additional information that may be helpful when working with the SCION Microfrontend Platform.
 
 :leveloffset: +1
-include::bean-manager/bean-manager.adoc[]
+include::platform-lifecycle/platform-lifecycle.adoc[]
 include::focus-monitor/focus-monitor.adoc[]
 include::routing-in-micro-applications/routing-in-micro-applications.adoc[]
+include::bean-manager/bean-manager.adoc[]
 include::versioning/versioning.adoc[]
 include::compatibility/compatibility.adoc[]
 include::transpilation-level/transpilation-level.adoc[]

@@ -10,13 +10,14 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { AngularZoneIntentClientDecorator, AngularZoneMessageClientDecorator } from './angular-zone-messaging-decorators';
-import { ApplicationConfig, Beans, Handler, IntentClient, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatform, PlatformState, PlatformStates, TopicMessage } from '@scion/microfrontend-platform';
+import { ApplicationConfig, Handler, IntentClient, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatform, PlatformState, TopicMessage } from '@scion/microfrontend-platform';
 import { environment } from '../environments/environment';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { ConsoleService } from './console/console.service';
 import { TestingAppTopics } from './testing-app.topics';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 /**
  * Initializes the SCION Microfrontend Platform.
@@ -44,7 +45,7 @@ export class PlatformInitializer implements OnDestroy {
 
   private async startHostPlatform(): Promise<void> {
     // Make the platform to run with Angular
-    Beans.get(PlatformState).whenState(PlatformStates.Starting).then(() => {
+    MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
       Beans.register(NgZone, {useValue: this._zone});
       Beans.registerDecorator(MessageClient, {useClass: AngularZoneMessageClientDecorator});
       Beans.registerDecorator(IntentClient, {useClass: AngularZoneIntentClientDecorator});
@@ -87,7 +88,7 @@ export class PlatformInitializer implements OnDestroy {
 
   private startClientPlatform(): Promise<void> {
     // Make the platform to run with Angular
-    Beans.get(PlatformState).whenState(PlatformStates.Starting).then(() => {
+    MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
       Beans.register(NgZone, {useValue: this._zone});
       Beans.registerDecorator(MessageClient, {useClass: AngularZoneMessageClientDecorator});
       Beans.registerDecorator(IntentClient, {useClass: AngularZoneIntentClientDecorator});

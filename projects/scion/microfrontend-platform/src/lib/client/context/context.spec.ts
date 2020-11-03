@@ -8,9 +8,9 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Beans } from '../../bean-manager';
 import { MicrofrontendPlatform } from '../../microfrontend-platform';
 import { ContextService } from './context-service';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 describe('Context', () => {
 

@@ -8,13 +8,13 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Beans } from '../../bean-manager';
 import { RelativePathResolver } from './relative-path-resolver';
 import { MicrofrontendPlatform } from '../../microfrontend-platform';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 describe('RelativePathResolver', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.startPlatform((): void => Beans.register(RelativePathResolver)));
+  beforeEach(async () => await MicrofrontendPlatform.startPlatform((): void => void (Beans.register(RelativePathResolver))));
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
   describe('hash-based routing', () => {

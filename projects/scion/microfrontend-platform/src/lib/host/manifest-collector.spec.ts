@@ -8,12 +8,12 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Beans } from '../bean-manager';
 import { HttpClient } from './http-client';
 import { MicrofrontendPlatform } from '../microfrontend-platform';
 import { ApplicationManifest } from '../platform.model';
 import { ApplicationRegistry } from './application-registry';
 import { Logger } from '../logger';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 describe('ManifestCollector', () => {
 

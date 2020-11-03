@@ -1,7 +1,10 @@
-import { BeanDecorator, Beans, Intent, IntentClient, IntentMessage, IntentOptions, MessageClient, MicrofrontendPlatform, PlatformState, PlatformStates, PublishOptions, RequestOptions, TopicMessage } from '@scion/microfrontend-platform';
+import { Intent, IntentClient, IntentMessage, IntentOptions, MessageClient, MicrofrontendPlatform, PlatformState, PublishOptions, RequestOptions, TopicMessage } from '@scion/microfrontend-platform';
 import { Injectable, NgZone } from '@angular/core';
 import { MonoTypeOperatorFunction, Observable, Observer, TeardownLogic } from 'rxjs';
 import { HttpPlatformConfigLoader } from './start-platform-via-initializer.snippets';
+import { BeanDecorator, Beans } from '@scion/toolkit/bean-manager';
+
+// tslint:disable:new-parens
 
 // tag::message-client-decorator[]
 /**
@@ -95,7 +98,7 @@ export class PlatformInitializer {
 
   public init(): Promise<void> {
     // Decorate the message client for use with Angular.
-    Beans.get(PlatformState).whenState(PlatformStates.Starting).then(() => {
+    MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
       Beans.register(NgZone, {useValue: this.ngZone}); // <1>
       Beans.registerDecorator(MessageClient, {useClass: AngularZoneMessageClientDecorator}); // <2>
       Beans.registerDecorator(IntentClient, {useClass: AngularZoneIntentClientDecorator}); // <3>
