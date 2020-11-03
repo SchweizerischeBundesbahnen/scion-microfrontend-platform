@@ -12,10 +12,8 @@ import { IntentClient, ɵIntentClient } from './client/messaging/intent-client';
 import { PlatformIntentClient } from './host/platform-intent-client';
 import { ManifestRegistry } from './host/manifest-registry/manifest-registry';
 import { ApplicationRegistry } from './host/application-registry';
-import { AbstractType, BeanInstanceConstructInstructions, Beans, InstanceConstructInstructions, Type } from './bean-manager';
-import { PlatformState, PlatformStates } from './platform-state';
 import { PlatformConfigLoader } from './host/platform-config-loader';
-import { from } from 'rxjs';
+import { BehaviorSubject, from, Observable } from 'rxjs';
 import { MicroApplicationConfig } from './client/micro-application-config';
 import { ApplicationConfig, PlatformConfig } from './host/platform-config';
 import { PlatformPropertyService } from './platform-property-service';
@@ -28,7 +26,7 @@ import { Defined } from '@scion/toolkit/util';
 import { HostPlatformState } from './client/host-platform-state';
 import { MessageBroker } from './host/message-broker/message-broker';
 import { PlatformTopics } from './ɵmessaging.model';
-import { takeUntil } from 'rxjs/operators';
+import { filter, take, takeUntil } from 'rxjs/operators';
 import { OutletRouter } from './client/router-outlet/outlet-router';
 import { SciRouterOutletElement } from './client/router-outlet/router-outlet.element';
 import { FocusInEventDispatcher } from './client/focus/focus-in-event-dispatcher';
@@ -48,8 +46,9 @@ import { ManifestService } from './client/manifest-registry/manifest-service';
 import { ɵManifestRegistry } from './host/manifest-registry/ɵmanifest-registry';
 import { PlatformManifestService } from './client/manifest-registry/platform-manifest-service';
 import { ApplicationActivator } from './host/activator/application-activator';
-import { RUNLEVEL_0, RUNLEVEL_1, RUNLEVEL_2 } from './microfrontend-platform-runlevels';
 import { BrokerGateway, NullBrokerGateway, ɵBrokerGateway } from './client/messaging/broker-gateway';
+import { PlatformState, Runlevel } from './platform-state';
+import { AbstractType, BeanInstanceConstructInstructions, Beans, Type } from '@scion/toolkit/bean-manager';
 
 window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {once: true});
 
@@ -92,21 +91,21 @@ window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {
  * tools to best support you in implementing such an architecture.
  *
  * @see {@link MessageClient}
+ * @see {@link IntentClient}
  * @see {@link SciRouterOutletElement}
  * @see {@link OutletRouter}
  * @see {@link ContextService}
  * @see {@link PreferredSizeService}
  * @see {@link ManifestService}
  * @see {@link FocusMonitor}
- * @see {@link Intention}
- * @see {@link Capability}
  * @see {@link Activator}
- * @see {@link Beans}
  *
  * @category Platform
  */
 // @dynamic `ng-packagr` does not support lamdas in statics if `strictMetaDataEmit` is enabled. `ng-packagr` is used to build this library. See https://github.com/ng-packagr/ng-packagr/issues/696#issuecomment-373487183.
 export class MicrofrontendPlatform {
+
+  private static _state$ = new BehaviorSubject<PlatformState>(PlatformState.Stopped);
 
   /**
    * Starts the platform in the host application.
@@ -123,6 +122,14 @@ export class MicrofrontendPlatform {
    * Note: If the host app wants to interact with either the platform or the micro applications, the host app also has to register itself as a micro application. The host app has
    * no extra privileges compared to other micro applications.
    *
+   * #### Platform Startup
+   * During startup, the platform cycles through different {@link Runlevel runlevels} for running initializers, enabling the controlled initialization of platform services. Initializers can specify a
+   * runlevel in which to execute. The platform enters the state {@link PlatformState.Started} after all initializers have completed.
+   *
+   * - In runlevel 0, the platform fetches manifests of registered micro applications.
+   * - In runlevel 1, the platform constructs eager beans.
+   * - From runlevel 2 and above, messaging is enabled. This is the default runlevel at which initializers execute if not specifying any runlevel.
+   *
    * @param  platformConfig - Platform config declaring the micro applications allowed to interact with the platform. You can pass the configuration statically, or load it
    *                          asynchronously using a config loader, e.g., for loading the config over the network.
    * @param  hostAppConfig - Config of the micro application running in the host application; only required if interacting with the platform in the host application.
@@ -131,11 +138,11 @@ export class MicrofrontendPlatform {
   public static startHost(platformConfig: ApplicationConfig[] | PlatformConfig | Type<PlatformConfigLoader>, hostAppConfig?: MicroApplicationConfig): Promise<void> {
     return MicrofrontendPlatform.startPlatform(() => {
         // Construct the message broker in runlevel 0 to buffer connect requests of micro applications.
-        Beans.registerInitializer({useFunction: async () => void (Beans.get(MessageBroker)), runlevel: RUNLEVEL_0});
+        Beans.registerInitializer({useFunction: async () => void (Beans.get(MessageBroker)), runlevel: Runlevel.Zero});
         // Fetch manifests in runlevel 0.
-        Beans.registerInitializer({useClass: ManifestCollector, runlevel: RUNLEVEL_0});
+        Beans.registerInitializer({useClass: ManifestCollector, runlevel: Runlevel.Zero});
         // Start application activators in runlevel 2.
-        Beans.registerInitializer({useClass: ApplicationActivator, runlevel: RUNLEVEL_2});
+        Beans.registerInitializer({useClass: ApplicationActivator, runlevel: Runlevel.Two});
         Beans.registerInitializer(() => SciRouterOutletElement.define());
 
         Beans.register(IS_PLATFORM_HOST, {useValue: true});
@@ -145,8 +152,8 @@ export class MicrofrontendPlatform {
         Beans.register(PlatformPropertyService, {eager: true});
         Beans.registerIfAbsent(HttpClient);
         Beans.register(PlatformConfigLoader, createConfigLoaderBeanDescriptor(platformConfig));
-        Beans.register(ManifestRegistry, {useClass: ɵManifestRegistry, eager: true, destroyPhase: PlatformStates.Stopped});
-        Beans.register(ApplicationRegistry, {eager: true, destroyPhase: PlatformStates.Stopped});
+        Beans.register(ManifestRegistry, {useClass: ɵManifestRegistry, eager: true});
+        Beans.register(ApplicationRegistry, {eager: true});
         Beans.register(HostPlatformState);
         Beans.register(ContextService);
         Beans.register(FocusTracker, {eager: true});
@@ -154,7 +161,7 @@ export class MicrofrontendPlatform {
         Beans.register(MouseMoveEventDispatcher, {eager: true});
         Beans.register(MouseUpEventDispatcher, {eager: true});
         Beans.register(PlatformManifestService);
-        Beans.register(MessageBroker, {destroyPhase: PlatformStates.Stopped});
+        Beans.register(MessageBroker, {destroyOrder: Number.MAX_VALUE});
         Beans.registerIfAbsent(OutletRouter);
         Beans.registerIfAbsent(RelativePathResolver);
         Beans.registerIfAbsent(RouterOutletUrlAssigner);
@@ -180,8 +187,8 @@ export class MicrofrontendPlatform {
         }
 
         // Notify micro application instances about host platform state changes.
-        Beans.get(PlatformState).state$
-          .pipe(takeUntil(from(Beans.get(PlatformState).whenState(PlatformStates.Stopping))))
+        MicrofrontendPlatform.state$
+          .pipe(takeUntil(from(MicrofrontendPlatform.whenState(PlatformState.Stopping))))
           .subscribe(state => {
             Beans.get(PlatformMessageClient).publish(PlatformTopics.HostPlatformState, state, {retain: true});
           });
@@ -203,6 +210,14 @@ export class MicrofrontendPlatform {
    * Note: To establish the connection, the micro application needs to be registered in the host application and embedded as a direct or indirect
    * child window of the host application window.
    *
+   * #### Platform Startup
+   * During startup, the platform cycles through different {@link Runlevel runlevels} for running initializers, enabling the controlled initialization of platform services. Initializers can specify a
+   * runlevel in which to execute. The platform enters the state {@link PlatformState.Started} after all initializers have completed.
+   *
+   * - In runlevel 0, the platform fetches manifests of registered micro applications.
+   * - In runlevel 1, the platform constructs eager beans.
+   * - From runlevel 2 and above, messaging is enabled. This is the default runlevel at which initializers execute if not specifying any runlevel.
+   *
    * @param  config - Identity of the micro application to connect.
    * @return A Promise that resolves when the platform started successfully, or that rejects if the startup fails.
    */
@@ -214,7 +229,7 @@ export class MicrofrontendPlatform {
             if (await MicrofrontendPlatform.isConnectedToHost()) {
               await Beans.get(PlatformPropertyService).whenPropertiesLoaded;
             }
-          }, runlevel: RUNLEVEL_2,
+          }, runlevel: Runlevel.Two,
         });
         Beans.registerInitializer(() => SciRouterOutletElement.define());
 
@@ -246,7 +261,7 @@ export class MicrofrontendPlatform {
    * Checks if this micro application is connected to the platform host.
    */
   public static async isConnectedToHost(): Promise<boolean> {
-    if (Beans.get(PlatformState).state === PlatformStates.Stopped) {
+    if (MicrofrontendPlatform.state === PlatformState.Stopped) {
       return false;
     }
     const brokerGateway = Beans.opt(BrokerGateway);
@@ -262,31 +277,67 @@ export class MicrofrontendPlatform {
    * @return a Promise that resolves once the platformed stopped.
    */
   public static async destroy(): Promise<void> {
-    await Beans.get(PlatformState).enterState(PlatformStates.Stopping);
-    await Beans.get(PlatformState).enterState(PlatformStates.Stopped);
+    await MicrofrontendPlatform.enterState(PlatformState.Stopping);
     Beans.destroy();
+    await MicrofrontendPlatform.enterState(PlatformState.Stopped);
   }
 
   /** @internal */
   public static async startPlatform(startupFn?: () => void): Promise<void> {
-    await Beans.get(PlatformState).enterState(PlatformStates.Starting);
+    await MicrofrontendPlatform.enterState(PlatformState.Starting);
     try {
       startupFn && startupFn();
 
-      // Construct eager beans in runlevel 1.
-      Beans.registerInitializer({useFunction: async () => Beans.constructEagerBeans(), runlevel: RUNLEVEL_1});
-
-      return Beans.runInitializers()
-        .then(() => Beans.get(PlatformState).enterState(PlatformStates.Started))
-        .catch(async error => {
-          await Beans.destroy();
-          return Promise.reject(`[PlatformStartupError] Microfrontend platform failed to start: ${error}`);
-        });
+      await Beans.start({eagerBeanConstructRunlevel: Runlevel.One, initializerDefaultRunlevel: Runlevel.Two});
+      await MicrofrontendPlatform.enterState(PlatformState.Started);
     }
     catch (error) {
-      await Beans.destroy();
+      Beans.destroy();
       return Promise.reject(`[PlatformStartupError] Microfrontend platform failed to start: ${error}`);
     }
+  }
+
+  /**
+   * @return the current platform state.
+   */
+  public static get state(): PlatformState {
+    return this._state$.getValue();
+  }
+
+  /**
+   * Allows to wait for the platform to enter the specified {@link PlatformState}.
+   * If already in that state, the Promise resolves instantly.
+   *
+   * @param  state - the state to wait for.
+   * @return A Promise that resolves when the platform enters the given state.
+   *         If already in that state, the Promise resolves instantly.
+   */
+  public static async whenState(state: PlatformState): Promise<void> {
+    return this._state$
+      .pipe(filter(it => it === state), take(1))
+      .toPromise()
+      .then(() => Promise.resolve());
+  }
+
+  /**
+   * Observable that, when subscribed, emits the current platform lifecycle state.
+   * It never completes and emits continuously when the platform enters
+   * another state.
+   */
+  public static get state$(): Observable<PlatformState> {
+    return this._state$;
+  }
+
+  private static async enterState(newState: PlatformState): Promise<void> {
+    const currentState = (this.state === PlatformState.Stopped) ? -1 : this.state;
+    if (currentState >= newState) {
+      throw Error(`[PlatformStateError] Failed to enter platform state [prevState=${PlatformState[this.state]}, newState=${PlatformState[newState]}].`);
+    }
+
+    this._state$.next(newState);
+
+    // Let microtasks waiting for entering that state to resolve first.
+    await this.whenState(newState);
   }
 }
 
@@ -294,7 +345,7 @@ export class MicrofrontendPlatform {
  * Creates a {@link PlatformConfigLoader} from the given config.
  * @ignore
  */
-function createConfigLoaderBeanDescriptor(config: ApplicationConfig[] | PlatformConfig | Type<PlatformConfigLoader>): InstanceConstructInstructions {
+function createConfigLoaderBeanDescriptor(config: ApplicationConfig[] | PlatformConfig | Type<PlatformConfigLoader>): BeanInstanceConstructInstructions {
   if (typeof config === 'function') {
     return {useClass: config}; // {PlatformConfigLoader} class
   }
@@ -318,7 +369,7 @@ function provideBrokerGateway(clientAppName: string, config?: { enabled?: boolea
       return new ɵBrokerGateway(clientAppName, {discoveryTimeout, deliveryTimeout});
     },
     eager: true,
-    destroyPhase: PlatformStates.Stopped,
+    destroyOrder: Number.MAX_VALUE,
   };
 }
 
@@ -330,7 +381,7 @@ function provideMessageClient(brokerGatewayType: AbstractType<BrokerGateway> | s
       return new ɵMessageClient(brokerGateway);
     },
     eager: true,
-    destroyPhase: PlatformStates.Stopped,
+    destroyOrder: Number.MAX_VALUE,
   };
 }
 
@@ -342,7 +393,7 @@ function provideIntentClient(brokerGatewayType: AbstractType<BrokerGateway> | sy
       return new ɵIntentClient(brokerGateway);
     },
     eager: true,
-    destroyPhase: PlatformStates.Stopped,
+    destroyOrder: Number.MAX_VALUE,
   };
 }
 

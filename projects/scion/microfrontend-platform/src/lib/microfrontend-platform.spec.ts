@@ -8,14 +8,14 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { AbstractType, BeanInfo, Beans, Type } from './bean-manager';
 import { MicrofrontendPlatform } from './microfrontend-platform';
 import { MessageClient } from './client/messaging/message-client';
-import { PlatformState, PlatformStates } from './platform-state';
 import { ApplicationConfig } from './host/platform-config';
 import { HostPlatformState } from './client/host-platform-state';
-import { serveManifest, waitFor } from './spec.util.spec';
+import { expectToBeRejectedWithError, serveManifest, waitFor } from './spec.util.spec';
 import { PlatformMessageClient } from './host/platform-message-client';
+import { PlatformState } from './platform-state';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 describe('MicrofrontendPlatform', () => {
 
@@ -40,7 +40,7 @@ describe('MicrofrontendPlatform', () => {
 
   it('should enter state \'started\' when started', async () => {
     await expectAsync(MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}})).toBeResolved();
-    expect(Beans.get(PlatformState).state).toEqual(PlatformStates.Started);
+    expect(MicrofrontendPlatform.state).toEqual(PlatformState.Started);
   });
 
   it('should reject starting the client platform multiple times', async () => {
@@ -75,20 +75,17 @@ describe('MicrofrontendPlatform', () => {
     await expectAsync(Beans.get(HostPlatformState).whenStarted()).toBeResolved();
   });
 
-  it('should register the `MessageClient` as alias for `PlatformMessageClient` when starting the host platform without app', async () => {
+  it('should register the `MessageClient` as alias for `PlatformMessageClient` when starting the host platform anonymously', async () => {
     await MicrofrontendPlatform.startHost([]);
 
-    expect(getBeanInfo(MessageClient)).toEqual(jasmine.objectContaining({useExisting: PlatformMessageClient}));
     expect(Beans.get(MessageClient)).toBe(Beans.get(PlatformMessageClient));
   });
 
-  it('should not register the `MessageClient` as alias for `PlatformMessageClient` when starting the host platform with an app', async () => {
+  it('should not register the `MessageClient` as alias for `PlatformMessageClient` when starting the host platform in the name of an app', async () => {
     const manifestUrl = serveManifest({name: 'Host Application'});
     const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
     await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250, deliveryTimeout: 250}});
 
-    expect(getBeanInfo(MessageClient)).toEqual(jasmine.objectContaining({eager: true, destroyPhase: PlatformStates.Stopped}));
-    expect(getBeanInfo(PlatformMessageClient)).toEqual(jasmine.objectContaining({eager: true, destroyPhase: PlatformStates.Stopped}));
     expect(Beans.get(MessageClient)).not.toBe(Beans.get(PlatformMessageClient));
   });
 
@@ -108,125 +105,26 @@ describe('MicrofrontendPlatform', () => {
     expect(constructed).toBeTruthy();
   });
 
-  it('should not construct lazy beans at platform startup', async () => {
-    let constructed = false;
-
-    class Bean {
-      constructor() {
-        constructed = true;
-      }
-    }
-
-    await MicrofrontendPlatform.startPlatform(() => {
-      Beans.register(Bean, {eager: false});
-    });
-
-    expect(constructed).toBeFalse();
-  });
-
-  it('should construct eager beans in the order as registered', async () => {
-    const beanConstructionOrder: Type<any>[] = [];
-
-    class Bean1 {
-      constructor() {
-        beanConstructionOrder.push(Bean1);
-      }
-    }
-
-    class Bean2 {
-      constructor() {
-        beanConstructionOrder.push(Bean2);
-      }
-    }
-
-    class Bean3 {
-      constructor() {
-        beanConstructionOrder.push(Bean3);
-      }
-    }
-
-    await MicrofrontendPlatform.startPlatform(() => {
-      Beans.register(Bean1, {eager: true});
-      Beans.register(Bean2, {eager: true});
-      Beans.register(Bean3, {eager: true});
-    });
-
-    expect(beanConstructionOrder).toEqual([Bean1, Bean2, Bean3]);
-  });
-
   it('should construct eager beans in runlevel 1', async () => {
-    let constructed = false;
+    const log: string[] = [];
 
     class Bean {
       constructor() {
-        constructed = true;
+        log.push('constructing eager bean');
       }
     }
 
-    const log: string[] = [];
-    Beans.registerInitializer({useFunction: () => void (log.push(`initializer-runlevel-0 [eagerBeanConstructed=${constructed}]`)), runlevel: 0});
-    Beans.registerInitializer({useFunction: () => void (log.push(`initializer-runlevel-2 [eagerBeanConstructed=${constructed}]`)), runlevel: 2});
+    Beans.registerInitializer({useFunction: () => void (log.push('executing initializer [runlevel=0]')), runlevel: 0});
+    Beans.registerInitializer({useFunction: () => void (log.push('executing initializer [runlevel=2]')), runlevel: 2});
 
     await MicrofrontendPlatform.startPlatform(() => {
       Beans.register(Bean, {eager: true});
     });
 
-    expect(constructed).toBeTrue();
     expect(log).toEqual([
-      'initializer-runlevel-0 [eagerBeanConstructed=false]',
-      'initializer-runlevel-2 [eagerBeanConstructed=true]',
-    ]);
-  });
-
-  it('should not construct eager beans when initializers of runlevel 0 reject (eager beans are constructed in runlevel 1)', async () => {
-    let constructed = false;
-
-    class Bean {
-      constructor() {
-        constructed = true;
-      }
-    }
-
-    Beans.registerInitializer({useFunction: () => Promise.reject(), runlevel: 0});
-
-    try {
-      await MicrofrontendPlatform.startPlatform(() => {
-        Beans.register(Bean, {eager: true});
-      });
-    }
-    catch {
-      // noop
-    }
-
-    expect(constructed).toBeFalse();
-  });
-
-  it('should run initializers when starting the platform', async () => {
-    const log: string[] = [];
-
-    Beans.registerInitializer({
-      useFunction: async () => void (log.push('initializer runlevel 0')),
-      runlevel: 0,
-    });
-    Beans.registerInitializer({
-      useFunction: async () => void (log.push('initializer runlevel 1')),
-      runlevel: 1,
-    });
-    Beans.registerInitializer({
-      useFunction: async () => void (log.push('initializer runlevel 2')),
-      runlevel: 2,
-    });
-    Beans.registerInitializer({
-      useFunction: async () => void (log.push('initializer (no runlevel specified)')),
-    });
-
-    await MicrofrontendPlatform.startPlatform();
-
-    await expect(log).toEqual([
-      'initializer runlevel 0',
-      'initializer runlevel 1',
-      'initializer runlevel 2',
-      'initializer (no runlevel specified)',
+      'executing initializer [runlevel=0]',
+      'constructing eager bean',
+      'executing initializer [runlevel=2]',
     ]);
   });
 
@@ -329,15 +227,29 @@ describe('MicrofrontendPlatform', () => {
     jasmine.clock().tick(1000);
     await drainMicrotaskQueue(100);
     await expect(log).toEqual(['initializer 2s', 'initializer 5s', 'initializer 6s', 'initializer 8s', 'initializer 1s [runlevel 5]']);
+
+    // assert the platform to be started
     await expect(started).toBeTrue();
 
     jasmine.clock().uninstall();
   });
-});
 
-function getBeanInfo<T>(symbol: Type<T | any> | AbstractType<T | any>): BeanInfo<T> {
-  return Array.from(Beans.getBeanInfo<T>(symbol) || new Set<BeanInfo<T>>())[0];
-}
+  it('should resolve the \'start\' Promise when all initializers resolve', async () => {
+    Beans.registerInitializer(() => Promise.resolve());
+    Beans.registerInitializer(() => Promise.resolve());
+    Beans.registerInitializer(() => Promise.resolve());
+
+    await expectAsync(MicrofrontendPlatform.startPlatform()).toBeResolved();
+  });
+
+  it('should reject the \'start\' Promise when an initializer rejects', async () => {
+    Beans.registerInitializer(() => Promise.resolve());
+    Beans.registerInitializer(() => Promise.reject());
+    Beans.registerInitializer(() => Promise.resolve());
+
+    await expectToBeRejectedWithError(MicrofrontendPlatform.startPlatform(), /PlatformStartupError/);
+  });
+});
 
 /**
  * Waits until all microtasks currently in the microtask queue completed. When this method returns,

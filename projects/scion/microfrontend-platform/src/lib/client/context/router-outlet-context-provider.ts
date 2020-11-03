@@ -14,10 +14,10 @@ import { MessageEnvelope, MessagingChannel, MessagingTransport } from '../../ɵm
 import { TopicMatcher } from '../../topic-matcher.util';
 import { MessageHeaders, ResponseStatusCodes, TopicMessage } from '../../messaging.model';
 import { MessageClient, takeUntilUnsubscribe } from '../messaging/message-client';
-import { Beans } from '../../bean-manager';
 import { Contexts } from './context.model';
 import { runSafe } from '../../safe-runner';
 import { IS_PLATFORM_HOST } from '../../platform.model';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 /**
  * Provides a context to the {@link SciRouterOutletElement} allowing the outlet to associate values with that context.

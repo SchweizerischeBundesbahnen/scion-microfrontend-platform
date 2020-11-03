@@ -13,7 +13,6 @@ import { sha256 } from 'js-sha256';
 import { Defined } from '@scion/toolkit/util';
 import { ManifestObjectFilter, ManifestObjectStore } from './manifest-object-store';
 import { defer, merge, of, Subject } from 'rxjs';
-import { Beans, PreDestroy } from '../../bean-manager';
 import { distinctUntilChanged, expand, mergeMapTo, take, takeUntil } from 'rxjs/operators';
 import { PlatformMessageClient } from '../platform-message-client';
 import { Intent, MessageHeaders, ResponseStatusCodes, TopicMessage } from '../../messaging.model';
@@ -23,6 +22,7 @@ import { runSafe } from '../../safe-runner';
 import { filterArray } from '@scion/toolkit/operators';
 import { ManifestRegistry } from './manifest-registry';
 import { matchesIntentQualifier, matchesWildcardQualifier } from '../../qualifier-tester';
+import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tslint:disable-line:class-name
 

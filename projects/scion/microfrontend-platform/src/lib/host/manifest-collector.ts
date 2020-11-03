@@ -8,7 +8,6 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Beans, Initializer } from '../bean-manager';
 import { PlatformConfigLoader } from './platform-config-loader';
 import { Defined } from '@scion/toolkit/util';
 import { ApplicationConfig, PlatformConfig, PlatformFlags } from './platform-config';
@@ -18,7 +17,8 @@ import { Logger } from '../logger';
 import { HostPlatformAppProvider } from './host-platform-app-provider';
 import { PlatformMessageClient } from '../host/platform-message-client';
 import { PlatformTopics } from '../ɵmessaging.model';
-import { RUNLEVEL_2 } from '../microfrontend-platform-runlevels';
+import { Beans, Initializer } from '@scion/toolkit/bean-manager';
+import { Runlevel } from '../platform-state';
 
 /**
  * Collects manifests of registered applications.
@@ -40,7 +40,7 @@ export class ManifestCollector implements Initializer {
     await Promise.all(this.fetchAndRegisterManifests(appConfigs));
 
     // Wait until messaging is enabled to avoid running into a publish timeout.
-    Beans.whenRunlevel(RUNLEVEL_2).then(() => {
+    Beans.whenRunlevel(Runlevel.Two).then(() => {
       Beans.get(PlatformMessageClient).publish(PlatformTopics.PlatformProperties, platformConfig.properties || {}, {retain: true});
       Beans.get(PlatformMessageClient).publish(PlatformTopics.Applications, Beans.get(ApplicationRegistry).getApplications(), {retain: true});
     });

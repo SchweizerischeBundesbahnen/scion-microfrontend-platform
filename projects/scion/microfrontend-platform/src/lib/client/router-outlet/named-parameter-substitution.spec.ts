@@ -8,7 +8,6 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Beans } from '../../bean-manager';
 import { MicrofrontendPlatform } from '../../microfrontend-platform';
 import { take } from 'rxjs/operators';
 import { PlatformMessageClient } from '../../host/platform-message-client';
@@ -19,6 +18,7 @@ import { ApplicationConfig } from '../../host/platform-config';
 import { serveManifest } from '../../spec.util.spec';
 import { UUID } from '@scion/toolkit/uuid';
 import { mapToBody } from '../../messaging.model';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 describe('OutletRouter', () => {
 
@@ -143,10 +143,10 @@ describe('OutletRouter', () => {
       it('should substitute falsy params', async () => {
         const url = navigate(`${basePath}a?orderId=:orderId&flag=:flag&object=:object&undefined=:undefined`, {
           params: new Map()
-          .set('orderId', 0)
-          .set('flag', false)
-          .set('object', null)
-          .set('undefined', undefined),
+            .set('orderId', 0)
+            .set('flag', false)
+            .set('object', null)
+            .set('undefined', undefined),
           relativeTo: options.relativeTo,
         });
         await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}a?orderId=0&flag=false&object=null&undefined=undefined`);

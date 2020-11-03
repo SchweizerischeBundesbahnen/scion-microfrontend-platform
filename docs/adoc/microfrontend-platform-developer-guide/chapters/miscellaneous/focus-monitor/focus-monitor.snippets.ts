@@ -1,5 +1,6 @@
-import { Beans, FocusMonitor } from '@scion/microfrontend-platform';
+import { FocusMonitor } from '@scion/microfrontend-platform';
 import { filter } from 'rxjs/operators';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 {
   // tag::focus-monitor[]

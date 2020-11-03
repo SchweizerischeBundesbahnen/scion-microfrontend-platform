@@ -9,9 +9,10 @@
  */
 import { Component } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Beans, Capability, ManifestObjectFilter, ManifestService, MicroApplicationConfig } from '@scion/microfrontend-platform';
+import { Capability, ManifestObjectFilter, ManifestService, MicroApplicationConfig } from '@scion/microfrontend-platform';
 import { SciParamsEnterComponent } from '@scion/toolkit.internal/widgets';
 import { Observable } from 'rxjs';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 const TYPE = 'type';
 const QUALIFIER = 'qualifier';

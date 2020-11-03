@@ -8,7 +8,6 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { fromEvent, merge, noop, Subject } from 'rxjs';
-import { Beans, PreDestroy } from '../../bean-manager';
 import { filter, take, takeUntil } from 'rxjs/operators';
 import { MessageClient } from '../messaging/message-client';
 import { ContextService } from '../context/context-service';
@@ -16,6 +15,7 @@ import { KEYSTROKE_CONTEXT_NAME_PREFIX, OUTLET_CONTEXT, OutletContext, RouterOut
 import { Keystroke } from './keystroke';
 import { Maps } from '@scion/toolkit/util';
 import { runSafe } from '../../safe-runner';
+import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 
 /**
  * Propagates keyboard events for keystrokes registered in the current context or any parent contexts.

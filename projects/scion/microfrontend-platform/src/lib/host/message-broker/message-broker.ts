@@ -11,7 +11,6 @@ import { EMPTY, fromEvent, MonoTypeOperatorFunction, Observable, of, OperatorFun
 import { catchError, filter, mergeMap, share, takeUntil } from 'rxjs/operators';
 import { IntentMessage, Message, MessageHeaders, TopicMessage } from '../../messaging.model';
 import { ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand } from '../../ɵmessaging.model';
-import { Beans, PreDestroy } from '../../bean-manager';
 import { ApplicationRegistry } from '../application-registry';
 import { ManifestRegistry } from '../manifest-registry/manifest-registry';
 import { Maps } from '@scion/toolkit/util';
@@ -26,7 +25,8 @@ import { TopicMatcher } from '../../topic-matcher.util';
 import { bufferUntil } from '../../operators';
 import { chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain } from './message-interception';
 import { Capability } from '../../platform.model';
-import { RUNLEVEL_1, RUNLEVEL_2 } from '../../microfrontend-platform-runlevels';
+import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
+import { Runlevel } from '../../platform-state';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -65,7 +65,7 @@ export class MessageBroker implements PreDestroy {
     this._clientRequests$ = fromEvent<MessageEvent>(window, 'message')
       .pipe(
         filterMessage(MessagingTransport.ClientToBroker),
-        bufferUntil(Beans.whenRunlevel(RUNLEVEL_2)),
+        bufferUntil(Beans.whenRunlevel(Runlevel.Two)),
         checkOriginTrusted(this._clientRegistry, {transport: MessagingTransport.BrokerToClient}),
         catchErrorAndRetry(),
         share(),
@@ -93,7 +93,7 @@ export class MessageBroker implements PreDestroy {
     fromEvent<MessageEvent>(window, 'message')
       .pipe(
         filterByTransportAndTopic(MessagingTransport.GatewayToBroker, PlatformTopics.ClientConnect),
-        bufferUntil(Beans.whenRunlevel(RUNLEVEL_1)),
+        bufferUntil(Beans.whenRunlevel(Runlevel.One)),
         catchErrorAndRetry(),
         takeUntil(this._destroy$),
       )
@@ -158,7 +158,7 @@ export class MessageBroker implements PreDestroy {
     fromEvent<MessageEvent>(window, 'message')
       .pipe(
         filterByTransportAndTopic(MessagingTransport.GatewayToBroker, PlatformTopics.ClientDisconnect),
-        bufferUntil(Beans.whenRunlevel(RUNLEVEL_1)),
+        bufferUntil(Beans.whenRunlevel(Runlevel.One)),
         checkOriginTrusted<TopicMessage<void>>(this._clientRegistry, {transport: MessagingTransport.BrokerToGateway}),
         catchErrorAndRetry(),
         takeUntil(this._destroy$),

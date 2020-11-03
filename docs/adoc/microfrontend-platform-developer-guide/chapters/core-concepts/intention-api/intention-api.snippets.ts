@@ -1,5 +1,7 @@
-import { Beans, IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatform } from '@scion/microfrontend-platform';
+import { IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatform } from '@scion/microfrontend-platform';
+import { Beans } from '@scion/toolkit/bean-manager';
 
+// tslint:disable:no-unused-expression
 `
 // tag::manifest[]
 {
@@ -137,7 +139,7 @@ import { Beans, IntentClient, IntentMessage, IntentSelector, ManifestObjectFilte
       description: 'Informs the user about planned system maintenance',
       private: false,
       properties: {
-        service: "Payment",
+        service: 'Payment',
         message: `Due to planned system maintenance, paying by credit card on this Sunday, 29 August,
                   between 22:00 and 23:00 CET is not possible. Thank you for your understanding.`,
       },
@@ -162,7 +164,7 @@ import { Beans, IntentClient, IntentMessage, IntentSelector, ManifestObjectFilte
     // Show each notification to the user.
     notifications.forEach(notification => {
       const notificationElement = notificationList.appendChild(document.createElement('li'));
-      notificationElement.innerText = `${notification.properties.service}: 
+      notificationElement.innerText = `${notification.properties.service}:
                                        ${notification.properties.message}`; // <2>
     });
   });

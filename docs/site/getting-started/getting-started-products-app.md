@@ -134,7 +134,8 @@ In this section, we will render products in an unordered list.
    As you may have noticed, we have added an 'Add to cart' button to each product. We further registered a click event handler that calls the `onAddToCart` method when the user clicks on that button.
    Next, we add the missing method to the controller, as follows:
    ```ts
-   import { Beans, MessageClient } from '@scion/microfrontend-platform';
+   import { MessageClient } from '@scion/microfrontend-platform';
+   import { Beans } from '@scion/toolkit/bean-manager';
    
    private onAddToCart(product: Product): void {
      Beans.get(MessageClient).publish('shopping-cart/add-product', product);
@@ -183,7 +184,8 @@ In this chapter, we have implemented the `products` micro application to display
    <summary>The <code>products-controller.ts</code> looks as following:</summary>
 
 ```ts
-import { Beans, MessageClient, MicrofrontendPlatform } from '@scion/microfrontend-platform';
+import { MessageClient, MicrofrontendPlatform } from '@scion/microfrontend-platform';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 class ProductsController {
 

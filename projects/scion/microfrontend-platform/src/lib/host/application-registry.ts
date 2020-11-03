@@ -9,11 +9,11 @@
  */
 
 import { Application, ApplicationManifest } from '../platform.model';
-import { Beans } from '../bean-manager';
 import { Defined } from '@scion/toolkit/util';
 import { Urls } from '../url.util';
 import { ApplicationConfig } from './platform-config';
 import { ManifestRegistry } from './manifest-registry/manifest-registry';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 /**
  * Registry with all registered applications.

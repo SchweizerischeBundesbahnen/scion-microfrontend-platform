@@ -1,6 +1,7 @@
 import { APP_INITIALIZER, Injectable, NgModule } from '@angular/core';
-import { Beans, MicrofrontendPlatform, PlatformConfig, PlatformConfigLoader, PlatformState, PlatformStates } from '@scion/microfrontend-platform';
+import { MicrofrontendPlatform, PlatformConfig, PlatformConfigLoader, PlatformState } from '@scion/microfrontend-platform';
 import { HttpClient } from '@angular/common/http';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 // tag::host-app:initializer[]
 @Injectable({providedIn: 'root'})
@@ -11,7 +12,7 @@ export class PlatformInitializer {
 
   public init(): Promise<void> {
     // Initialize the platform to run with Angular.
-    Beans.get(PlatformState).whenState(PlatformStates.Starting).then(() => {
+    MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
       Beans.register(HttpClient, {useValue: this.httpClient}); // <2>
     });
 

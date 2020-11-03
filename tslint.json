@@ -182,6 +182,7 @@
       true,
       "LF"
     ],
+    "no-unnecessary-initializer": false,
     "typedef": [
       true,
       "call-signature",

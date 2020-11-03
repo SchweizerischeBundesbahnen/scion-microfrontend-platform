@@ -8,9 +8,10 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Beans, ContextService } from '@scion/microfrontend-platform';
+import { ContextService } from '@scion/microfrontend-platform';
 import { Observable, OperatorFunction } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 @Component({
   selector: 'app-context',

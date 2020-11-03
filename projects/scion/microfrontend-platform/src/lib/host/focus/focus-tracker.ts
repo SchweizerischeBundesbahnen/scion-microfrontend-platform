@@ -8,7 +8,6 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { PlatformMessageClient } from '../platform-message-client';
-import { Beans, PreDestroy } from '../../bean-manager';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
 import { takeUntilUnsubscribe } from '../../client/messaging/message-client';
@@ -16,6 +15,7 @@ import { MessageHeaders, TopicMessage } from '../../messaging.model';
 import { runSafe } from '../../safe-runner';
 import { PlatformTopics } from '../../ɵmessaging.model';
 import { Client, ClientRegistry } from '../message-broker/client.registry';
+import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 
 /**
  * Tracks the focus across microfrontends and answers {@link PlatformTopics.IsFocusWithin} requests.

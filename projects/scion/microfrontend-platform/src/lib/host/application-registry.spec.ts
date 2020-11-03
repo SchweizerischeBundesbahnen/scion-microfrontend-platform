@@ -8,13 +8,13 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { ApplicationRegistry } from './application-registry';
-import { Beans } from '../bean-manager';
 import { MicrofrontendPlatform } from '../microfrontend-platform';
 import { ManifestRegistry } from './manifest-registry/manifest-registry';
 import { PlatformMessageClient } from './platform-message-client';
 import { ɵMessageClient } from '../client/messaging/message-client';
 import { ɵManifestRegistry } from './manifest-registry/ɵmanifest-registry';
 import { NullBrokerGateway } from '../client/messaging/broker-gateway';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 describe('ApplicationRegistry', () => {
 

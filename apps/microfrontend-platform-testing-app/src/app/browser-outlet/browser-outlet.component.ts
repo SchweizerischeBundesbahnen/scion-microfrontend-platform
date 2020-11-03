@@ -10,13 +10,14 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, Injector, Input, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Application, Beans, ManifestService, OutletRouter, SciRouterOutletElement } from '@scion/microfrontend-platform';
+import { Application, ManifestService, OutletRouter, SciRouterOutletElement } from '@scion/microfrontend-platform';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Overlay } from '@angular/cdk/overlay';
 import { RouterOutletContextComponent } from '../router-outlet-context/router-outlet-context.component';
 import { RouterOutletSettingsComponent } from '../router-outlet-settings/router-outlet-settings.component';
 import { ActivatedRoute } from '@angular/router';
 import { ConsoleService } from '../console/console.service';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 export const URL = 'url';
 

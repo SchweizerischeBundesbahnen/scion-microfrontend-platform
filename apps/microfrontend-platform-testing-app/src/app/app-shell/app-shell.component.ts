@@ -10,10 +10,11 @@
 import { Component, ElementRef, HostBinding, OnDestroy } from '@angular/core';
 import { fromEvent, merge, Subject } from 'rxjs';
 import { ConsoleService } from '../console/console.service';
-import { Beans, ContextService, FocusMonitor, MicroApplicationConfig, OUTLET_CONTEXT, OutletContext } from '@scion/microfrontend-platform';
+import { ContextService, FocusMonitor, MicroApplicationConfig, OUTLET_CONTEXT, OutletContext } from '@scion/microfrontend-platform';
 import { filter, switchMapTo, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { Defined } from '@scion/toolkit/util';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 @Component({
   selector: 'app-shell',

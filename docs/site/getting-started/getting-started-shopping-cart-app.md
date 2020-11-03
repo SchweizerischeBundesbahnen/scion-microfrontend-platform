@@ -251,7 +251,8 @@ In this section, we will listen for messages published to the topic `shopping-ca
 1. Open the TypeScript file `activator.ts`.
 1. Subscribe to messages published to the topic `shopping-cart/add-product`, as follows:
    ```ts
-       import { Beans, MessageClient } from '@scion/microfrontend-platform';
+       import { MessageClient } from '@scion/microfrontend-platform';
+       import { Beans } from '@scion/toolkit/bean-manager';
        import { Product, ShoppingCartService } from './shopping-cart-service';
            
        public async init(): Promise<void> {
@@ -410,7 +411,8 @@ new ShoppingCartController().init();
    <summary>The <code>activator.ts</code> looks as following:</summary>
 
 ```ts
-import { Beans, MessageClient, MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';
+import { MessageClient, MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';
+import { Beans } from '@scion/toolkit/bean-manager';
 import { Product, ShoppingCartService } from './shopping-cart-service';
 
 class Activator {

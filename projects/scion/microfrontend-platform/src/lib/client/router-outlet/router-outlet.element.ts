@@ -12,7 +12,6 @@ import { RouterOutletContextProvider } from '../context/router-outlet-context-pr
 import { runSafe } from '../../safe-runner';
 import { distinctUntilChanged, map, pairwise, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { RouterOutletUrlAssigner } from './router-outlet-url-assigner';
-import { Beans } from '../../bean-manager';
 import { MessageClient } from '../messaging/message-client';
 import { Defined } from '@scion/toolkit/util';
 import { UUID } from '@scion/toolkit/uuid';
@@ -20,6 +19,7 @@ import { mapToBody, TopicMessage } from '../../messaging.model';
 import { Keystroke } from '../keyboard-event/keystroke';
 import { PreferredSize } from '../preferred-size/preferred-size';
 import { Navigation, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER } from './metadata';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 /** @ignore */
 const ELEMENT_NAME = 'sci-router-outlet';

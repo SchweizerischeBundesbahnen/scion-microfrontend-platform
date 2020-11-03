@@ -1,4 +1,5 @@
-import { ACTIVATION_CONTEXT, ActivationContext, Beans, Capability, ContextService, Intent, IntentClient, IntentMessage, IntentSelector, ManifestService, MessageClient, OutletRouter } from '@scion/microfrontend-platform';
+import { ACTIVATION_CONTEXT, ActivationContext, Capability, ContextService, Intent, IntentClient, IntentMessage, IntentSelector, ManifestService, MessageClient, OutletRouter } from '@scion/microfrontend-platform';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 `
 // tag::register-activator[]
@@ -39,7 +40,7 @@ import { ACTIVATION_CONTEXT, ActivationContext, Beans, Capability, ContextServic
     const ctx: ActivationContext = await Beans.get(ContextService).lookup(ACTIVATION_CONTEXT);
 
     // Reads properties declared on the activator capability.
-    const properties = ctx.activator.properties
+    const properties = ctx.activator.properties;
     // end::activation-context[]
   }
 }
@@ -84,7 +85,7 @@ import { ACTIVATION_CONTEXT, ActivationContext, Beans, Capability, ContextServic
       description: 'Informs the user about planned system maintenance',
       private: false,
       properties: {
-        service: "Payment",
+        service: 'Payment',
         message: `Due to planned system maintenance, paying by credit card on this Sunday, 29 August,
                   between 22:00 and 23:00 CET is not possible. Thank you for your understanding.`,
       },

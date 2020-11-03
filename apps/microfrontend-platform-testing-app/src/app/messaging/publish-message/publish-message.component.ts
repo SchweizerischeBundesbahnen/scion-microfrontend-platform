@@ -8,11 +8,12 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { Component, OnDestroy } from '@angular/core';
-import { Beans, IntentClient, MessageClient, Qualifier, TopicMessage } from '@scion/microfrontend-platform';
+import { IntentClient, MessageClient, Qualifier, TopicMessage } from '@scion/microfrontend-platform';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
 import { distinctUntilChanged, finalize, startWith, takeUntil } from 'rxjs/operators';
 import { SciParamsEnterComponent } from '@scion/toolkit.internal/widgets';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 export const FLAVOR = 'flavor';
 export const DESTINATION = 'destination';

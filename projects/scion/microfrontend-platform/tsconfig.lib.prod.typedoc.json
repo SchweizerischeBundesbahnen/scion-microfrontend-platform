@@ -13,6 +13,7 @@
     "toc": [
       "MicrofrontendPlatform",
       "MessageClient",
+      "IntentClient",
       "OutletRouter",
       "SciRouterOutletElement",
       "ManifestService",
@@ -25,9 +26,6 @@
       "PlatformConfigLoader",
       "PlatformPropertyService",
       "Beans",
-      "Intention",
-      "Intent",
-      "Capability",
       "Activator",
       "ApplicationManifest",
       "ApplicationConfig",

@@ -1,4 +1,5 @@
-import { Beans, MicrofrontendPlatform, PlatformConfig, PlatformConfigLoader, PlatformPropertyService } from '@scion/microfrontend-platform';
+import { MicrofrontendPlatform, PlatformConfig, PlatformConfigLoader, PlatformPropertyService } from '@scion/microfrontend-platform';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 {
   // tag::provide-app-array[]
@@ -66,7 +67,7 @@ import { Beans, MicrofrontendPlatform, PlatformConfig, PlatformConfigLoader, Pla
         if (!response.ok) {
           throw Error(`Failed to fetch application config [status=${response.status}]`);
         }
-        return response.json()
+        return response.json();
       });
     }
   }

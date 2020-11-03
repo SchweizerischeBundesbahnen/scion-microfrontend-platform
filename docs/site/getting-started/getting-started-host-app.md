@@ -96,7 +96,8 @@ In this section, we will embed the `products` and `shopping cart` microfrontends
 1. Now, we want to route the primary router outlet to display the `products` microfrontend, as follows:
 
    ```ts
-        import { Beans, OutletRouter } from '@scion/microfrontend-platform';   
+        import { OutletRouter } from '@scion/microfrontend-platform';   
+        import { Beans } from '@scion/toolkit/bean-manager';
    
         public async init(): Promise<void> {
           // Start the platform
@@ -211,7 +212,8 @@ We have added two router outlets to the HTML template of the host application fo
    <summary>The <code>host-controller.ts</code> looks as following:</summary>
 
 ```ts
-import { ApplicationConfig, Beans, MessageClient, MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';
+import { ApplicationConfig, MessageClient, MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 class HostController {
 

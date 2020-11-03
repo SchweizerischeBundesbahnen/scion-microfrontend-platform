@@ -7,7 +7,6 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Beans, Initializer } from '../../bean-manager';
 import { Activator, PlatformCapabilityTypes } from '../../platform.model';
 import { PlatformManifestService } from '../../client/manifest-registry/platform-manifest-service';
 import { filter, mergeMapTo, take } from 'rxjs/operators';
@@ -19,8 +18,10 @@ import { UUID } from '@scion/toolkit/uuid';
 import { Logger } from '../../logger';
 import { PlatformMessageClient } from '../platform-message-client';
 import { MessageHeaders } from '../../messaging.model';
-import { PlatformState, PlatformStates } from '../../platform-state';
 import { EMPTY } from 'rxjs';
+import { MicrofrontendPlatform } from '../../microfrontend-platform';
+import { PlatformState } from '../../platform-state';
+import { Beans, Initializer } from '@scion/toolkit/bean-manager';
 
 /**
  * Activates micro applications which provide an activator capability.
@@ -116,7 +117,7 @@ export class ApplicationActivator implements Initializer {
     // Add the router outlet to the DOM
     document.body.appendChild(routerOutlet);
     // Unmount the router outlet on platform shutdown
-    Beans.get(PlatformState).whenState(PlatformStates.Stopped).then(() => document.body.removeChild(routerOutlet));
+    MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => document.body.removeChild(routerOutlet));
   }
 }
 

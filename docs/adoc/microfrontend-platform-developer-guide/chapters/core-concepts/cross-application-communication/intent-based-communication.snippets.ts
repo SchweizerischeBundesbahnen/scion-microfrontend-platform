@@ -1,5 +1,6 @@
-import { Beans, Intent, IntentClient, IntentMessage, IntentSelector, MessageClient, MessageHeaders, OutletRouter, PRIMARY_OUTLET, takeUntilUnsubscribe } from '@scion/microfrontend-platform';
+import { Intent, IntentClient, IntentMessage, IntentSelector, MessageClient, MessageHeaders, OutletRouter, PRIMARY_OUTLET, takeUntilUnsubscribe } from '@scion/microfrontend-platform';
 import { Subject } from 'rxjs';
+import { Beans } from '@scion/toolkit/bean-manager';
 
 `
 // tag::intention-declaration[]
