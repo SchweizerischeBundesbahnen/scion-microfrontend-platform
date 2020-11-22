@@ -19,6 +19,7 @@
         "statements"
       ]
     },
+    "new-parens": false,
     "member-access": true,
     "no-string-literal": false,
     "no-unused-expression": [
@@ -79,7 +80,7 @@
     "no-var-requires": false,
     "object-literal-key-quotes": [
       true,
-      "as-needed"
+      "consistent"
     ],
     "quotemark": [
       true,
@@ -178,11 +179,11 @@
     "template-no-negated-async": true,
     "use-lifecycle-interface": true,
     "use-pipe-transform-interface": true,
+    "no-unnecessary-initializer": false,
     "linebreak-style": [
       true,
       "LF"
     ],
-    "no-unnecessary-initializer": false,
     "typedef": [
       true,
       "call-signature",

@@ -455,10 +455,10 @@ describe('TopicSubscriptionRegistry', () => {
     });
   });
 
-  function expectSubscriptionCount(topic: string): { toBe: (expected: any) => Promise<void> } {
+  function expectSubscriptionCount(topic: string): { toBe: (expected: number) => Promise<void> } {
     return {
-      toBe: (expected: any): Promise<void> => {
-        return expectAsync(subscriptionRegistry.subscriptionCount$(topic).pipe(take(1)).toPromise()).withContext(`topic: ${topic}`).toBeResolvedTo(expected);
+      toBe: async (expected: any): Promise<void> => {
+        await expect(await subscriptionRegistry.subscriptionCount$(topic).pipe(take(1)).toPromise()).withContext(`topic: ${topic}`).toBe(expected);
       },
     };
   }

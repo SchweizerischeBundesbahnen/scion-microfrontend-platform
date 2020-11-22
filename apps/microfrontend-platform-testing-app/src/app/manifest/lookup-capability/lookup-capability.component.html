@@ -6,7 +6,7 @@
     <input [formControlName]="TYPE" class="e2e-type">
   </sci-form-field>
   <sci-form-field label="Qualifier">
-    <sci-params-enter [paramsFormArray]="form.get(QUALIFIER)" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
+    <sci-params-enter [paramsFormArray]="$any(form.get(QUALIFIER))" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
   </sci-form-field>
   <sci-form-field label="NilQualifier if empty">
     <sci-checkbox [formControlName]="NILQUALIFIER_IF_EMPTY" class="e2e-nilqualifier-if-empty"></sci-checkbox>

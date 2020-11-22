@@ -17,7 +17,7 @@ import { Logger } from '../../logger';
 import { ManifestRegistry } from '../../host/manifest-registry/manifest-registry';
 import { ApplicationConfig } from '../../host/platform-config';
 import { PLATFORM_SYMBOLIC_NAME } from '../../host/platform.constants';
-import { expectEmissions, expectMap, expectToBeRejectedWithError, ObserveCaptor, serveManifest, waitForCondition } from '../../spec.util.spec';
+import { expectEmissions, expectToBeRejectedWithError, ObserveCaptor, serveManifest, waitForCondition } from '../../spec.util.spec';
 import { MicrofrontendPlatform } from '../../microfrontend-platform';
 import { Defined, Objects } from '@scion/toolkit/util';
 import { ClientRegistry } from '../../host/message-broker/client.registry';
@@ -131,7 +131,7 @@ describe('Messaging', () => {
 
     await Beans.get(PlatformMessageClient).publish('some-topic', undefined, {headers: new Map().set('header1', 'value').set('header2', 42)});
     await headerCaptor.waitUntilEmitCount(1);
-    await expectMap(headerCaptor.getLastValue()).toContain(new Map().set('header1', 'value').set('header2', 42));
+    await expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('header1', 'value').set('header2', 42)));
   });
 
   it('should allow passing headers when issuing an intent', async () => {
@@ -144,7 +144,7 @@ describe('Messaging', () => {
 
     await Beans.get(IntentClient).publish({type: 'some-capability'}, undefined, {headers: new Map().set('header1', 'value').set('header2', 42)});
     await headerCaptor.waitUntilEmitCount(1);
-    await expectMap(headerCaptor.getLastValue()).toContain(new Map().set('header1', 'value').set('header2', 42));
+    await expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('header1', 'value').set('header2', 42)));
   });
 
   it('should return an empty headers dictionary if no headers are set', async () => {
@@ -155,7 +155,7 @@ describe('Messaging', () => {
 
     await Beans.get(PlatformMessageClient).publish('some-topic', 'payload');
     await headerCaptor.waitUntilEmitCount(1);
-    await expectMap(headerCaptor.getLastValue()).toContain(new Map());
+    await expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map()));
   });
 
   it('should allow passing headers when sending a request', async () => {
@@ -169,7 +169,7 @@ describe('Messaging', () => {
     const replyHeaderCaptor = new ObserveCaptor(headersExtractFn);
     await Beans.get(PlatformMessageClient).request$('some-topic', undefined, {headers: new Map().set('request-header', 'ping')}).subscribe(replyHeaderCaptor);
     await replyHeaderCaptor.waitUntilEmitCount(1);
-    await expectMap(replyHeaderCaptor.getLastValue()).toContain(new Map().set('reply-header', 'PING'));
+    await expect(replyHeaderCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('reply-header', 'PING')));
   });
 
   it('should allow passing headers when sending an intent request', async () => {
@@ -185,7 +185,7 @@ describe('Messaging', () => {
     const replyHeaderCaptor = new ObserveCaptor(headersExtractFn);
     await Beans.get(IntentClient).request$({type: 'some-capability'}, undefined, {headers: new Map().set('request-header', 'ping')}).subscribe(replyHeaderCaptor);
     await replyHeaderCaptor.waitUntilEmitCount(1);
-    await expectMap(replyHeaderCaptor.getLastValue()).toContain(new Map().set('reply-header', 'PING'));
+    await expect(replyHeaderCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('reply-header', 'PING')));
   });
 
   it('should transport a topic message to both, the platform client and the host client, respectively', async () => {
@@ -275,7 +275,7 @@ describe('Messaging', () => {
     finally {
       badClient.dispose();
     }
-    expect(true).toBeTruthy();
+    expect(true).toBeTrue();
   });
 
   it('should reject a client connect attempt if the client\'s origin is different to the registered app origin', async () => {
@@ -938,23 +938,15 @@ function mountBadClientAndConnect(badClientConfig: { symbolicName: string }): { 
 }
 
 /**
- * Expects the message to equal the expected message with its headers to contain at minimum the given map entries.
- *
- * Jasmine 3.5 provides 'mapContaining' matcher; when updated, this custom matcher can be removed.
+ * Expects the message to equal the expected message with its headers to contain at minimum the given map entries (because the platform adds platform-specific headers as well).
  */
 function expectMessage(actual: TopicMessage): { toMatch: (expected: TopicMessage) => void } {
   return {
     toMatch: (expected: TopicMessage): void => {
-      // Transform the 'headers' map to an array with tuples of map entries to allow using 'jasmine.objectContaining' matcher.
-      const actualWithHeaderMapAsArray = {
-        ...actual,
-        headers: [...actual.headers],
-      };
-      const expectedWithMapsAsArray = {
+      expect(actual).toEqual(jasmine.objectContaining({
         ...expected,
-        headers: jasmine.arrayContaining([...expected.headers]),
-      };
-      expect(actualWithHeaderMapAsArray).toEqual(jasmine.objectContaining(expectedWithMapsAsArray) as any);
+        headers: jasmine.mapContaining(expected.headers),
+      }));
     },
   };
 }

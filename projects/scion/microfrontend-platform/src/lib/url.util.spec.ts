@@ -15,28 +15,28 @@ describe('Urls', () => {
   describe('Urls.isAbsoluteUrl', () => {
 
     it('should evaluate to `true` if given an absolute URL (http)', () => {
-      expect(Urls.isAbsoluteUrl('http://localhost:4200')).toBeTruthy();
-      expect(Urls.isAbsoluteUrl('http://localhost:4200/#/')).toBeTruthy();
-      expect(Urls.isAbsoluteUrl('http://localhost:4200/a/b/c')).toBeTruthy();
-      expect(Urls.isAbsoluteUrl('http://localhost:4200/#/a/b/c')).toBeTruthy();
+      expect(Urls.isAbsoluteUrl('http://localhost:4200')).toBeTrue();
+      expect(Urls.isAbsoluteUrl('http://localhost:4200/#/')).toBeTrue();
+      expect(Urls.isAbsoluteUrl('http://localhost:4200/a/b/c')).toBeTrue();
+      expect(Urls.isAbsoluteUrl('http://localhost:4200/#/a/b/c')).toBeTrue();
     });
 
     it('should evaluate to `true` if given an absolute URL (https)', () => {
-      expect(Urls.isAbsoluteUrl('https://localhost:4200')).toBeTruthy();
-      expect(Urls.isAbsoluteUrl('https://localhost:4200/#/')).toBeTruthy();
-      expect(Urls.isAbsoluteUrl('https://localhost:4200/a/b/c')).toBeTruthy();
-      expect(Urls.isAbsoluteUrl('https://localhost:4200/#/a/b/c')).toBeTruthy();
+      expect(Urls.isAbsoluteUrl('https://localhost:4200')).toBeTrue();
+      expect(Urls.isAbsoluteUrl('https://localhost:4200/#/')).toBeTrue();
+      expect(Urls.isAbsoluteUrl('https://localhost:4200/a/b/c')).toBeTrue();
+      expect(Urls.isAbsoluteUrl('https://localhost:4200/#/a/b/c')).toBeTrue();
     });
 
     it('should evaluate to `false` if given a relative URL', () => {
-      expect(Urls.isAbsoluteUrl('../a/b/c')).toBeFalsy();
-      expect(Urls.isAbsoluteUrl('./a/b/c')).toBeFalsy();
-      expect(Urls.isAbsoluteUrl('/a/b/c')).toBeFalsy();
-      expect(Urls.isAbsoluteUrl('a/b/c')).toBeFalsy();
+      expect(Urls.isAbsoluteUrl('../a/b/c')).toBeFalse();
+      expect(Urls.isAbsoluteUrl('./a/b/c')).toBeFalse();
+      expect(Urls.isAbsoluteUrl('/a/b/c')).toBeFalse();
+      expect(Urls.isAbsoluteUrl('a/b/c')).toBeFalse();
     });
 
     it('should evaluate to `true` if given the \'about:blank\' URL', () => {
-      expect(Urls.isAbsoluteUrl('about:blank')).toBeTruthy();
+      expect(Urls.isAbsoluteUrl('about:blank')).toBeTrue();
     });
   });
 });

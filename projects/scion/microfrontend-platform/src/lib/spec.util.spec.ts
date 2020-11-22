@@ -17,7 +17,14 @@ import { Arrays } from '@scion/toolkit/util';
  * Expects the given function to be rejected.
  *
  * Jasmine 3.5 provides 'expectAsync' expectation with the 'toBeRejectedWithError' matcher.
- * But, it does not support to test against a regular expression.
+ * But, it does not support to test against a regular expression if the error is not of type 'Error'.
+ *
+ * The following expectation works:
+ *   await expectAsync(Promise.reject(new Error("[SomeError] was thrown."))).toBeRejectedWithError(/SomeError/);
+ *
+ * Whereas rejecting by providing only a string value doesn't:
+ *   await expectAsync(Promise.reject("[SomeError] was thrown.")).toBeRejectedWithError(/SomeError/);
+ *
  * @see https://jasmine.github.io/api/3.5/async-matchers.html
  */
 export function expectToBeRejectedWithError(promise: Promise<any>, expected?: RegExp): Promise<void> {
@@ -38,31 +45,9 @@ export function expectToBeRejectedWithError(promise: Promise<any>, expected?: Re
         fail(`Expected promise to be rejected with a reason matching '${expected.source}', but was '${reason}'.`);
       }
       else {
-        expect(true).toBeTruthy();
+        expect(true).toBeTrue();
       }
     });
-}
-
-/**
- * Expects the resolved map to contain at least the given map entries.
- *
- * Jasmine 3.5 provides 'mapContaining' matcher.
- */
-export function expectMap(actual: Promise<Map<any, any>> | Map<any, any>): ToContainMatcher & { not: ToContainMatcher } {
-  return {
-    toContain: async (expected: Map<any, any>): Promise<void> => {
-      const expectedTuples = [...expected];
-      const actualTuples = [...await actual];
-      await expect(actualTuples).toEqual(jasmine.arrayContaining(expectedTuples));
-    },
-    not: {
-      toContain: async (expected: Map<any, any>): Promise<void> => {
-        const expectedTuples = [...expected];
-        const actualTuples = [...await actual];
-        await expect(actualTuples).not.toEqual(jasmine.arrayContaining(expectedTuples));
-      },
-    },
-  };
 }
 
 export interface ToContainMatcher {

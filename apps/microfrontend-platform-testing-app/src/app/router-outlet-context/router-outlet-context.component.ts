@@ -12,7 +12,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SciRouterOutletElement } from '@scion/microfrontend-platform';
 import { ConnectedPosition, Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
 import { CdkTrapFocus, FocusTrap } from '@angular/cdk/a11y';
-import { ComponentPortal, PortalInjector } from '@angular/cdk/portal';
+import { ComponentPortal } from '@angular/cdk/portal';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
@@ -100,11 +100,13 @@ export class RouterOutletContextComponent implements OnInit, OnDestroy {
     });
 
     const overlayRef = overlay.create(overlayConfig);
-    const injectionTokens = new WeakMap()
-      .set(OverlayRef, overlayRef)
-      .set(SciRouterOutletElement, routerOutlet);
-
-    const portal = new ComponentPortal(RouterOutletContextComponent, null, new PortalInjector(injector, injectionTokens));
+    const portal = new ComponentPortal(RouterOutletContextComponent, null, Injector.create({
+      parent: injector,
+      providers: [
+        {provide: OverlayRef, useValue: overlayRef},
+        {provide: SciRouterOutletElement, useValue: routerOutlet},
+      ],
+    }));
     overlayRef.attach(portal);
   }
 }

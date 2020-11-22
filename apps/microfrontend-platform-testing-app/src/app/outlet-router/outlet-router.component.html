@@ -6,7 +6,7 @@
     <input [formControlName]="URL" class="e2e-url">
   </sci-form-field>
   <sci-form-field label="Params">
-    <sci-params-enter [paramsFormArray]="form.get(PARAMS)" [addable]="true" [removable]="true" class="e2e-params"></sci-params-enter>
+    <sci-params-enter [paramsFormArray]="$any(form.get(PARAMS))" [addable]="true" [removable]="true" class="e2e-params"></sci-params-enter>
   </sci-form-field>
   <sci-form-field label="Push state" title="Pushes a state to the browser's session history stack, allowing the user to use the back button to navigate back.">
     <sci-checkbox [formControlName]="PUSH_SESSION_HISTORY_STATE" class="e2e-push-state"></sci-checkbox>
