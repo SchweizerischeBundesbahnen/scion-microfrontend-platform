@@ -12,13 +12,13 @@ import { TopicMatcher } from './topic-matcher.util';
 describe('TopicMatcher', () => {
 
   it('should detect wildcard segments in the topic', () => {
-    expect(TopicMatcher.containsWildcardSegments('myhome/livingroom/temperature')).toBeFalsy();
-    expect(TopicMatcher.containsWildcardSegments('myhome/livingroom/:measurement')).toBeTruthy();
-    expect(TopicMatcher.containsWildcardSegments('myhome/kitchen/:measurement')).toBeTruthy();
-    expect(TopicMatcher.containsWildcardSegments('myhome/:room/temperature')).toBeTruthy();
-    expect(TopicMatcher.containsWildcardSegments('myhome/:room/:measurement')).toBeTruthy();
-    expect(TopicMatcher.containsWildcardSegments(':building/kitchen/:measurement')).toBeTruthy();
-    expect(TopicMatcher.containsWildcardSegments('myhome/:/temperature')).toBeFalsy();
+    expect(TopicMatcher.containsWildcardSegments('myhome/livingroom/temperature')).toBeFalse();
+    expect(TopicMatcher.containsWildcardSegments('myhome/livingroom/:measurement')).toBeTrue();
+    expect(TopicMatcher.containsWildcardSegments('myhome/kitchen/:measurement')).toBeTrue();
+    expect(TopicMatcher.containsWildcardSegments('myhome/:room/temperature')).toBeTrue();
+    expect(TopicMatcher.containsWildcardSegments('myhome/:room/:measurement')).toBeTrue();
+    expect(TopicMatcher.containsWildcardSegments(':building/kitchen/:measurement')).toBeTrue();
+    expect(TopicMatcher.containsWildcardSegments('myhome/:/temperature')).toBeFalse();
   });
 
   it('should throw if the subscription topic is `null`, `undefined` or empty', () => {
@@ -43,73 +43,73 @@ describe('TopicMatcher', () => {
 
     it('should not match the subscription \'myhome/livingroom\'', () => {
       const match = new TopicMatcher('myhome/livingroom').match(publishTopic);
-      expect(match.matches).toBeFalsy();
+      expect(match.matches).toBeFalse();
       expect(match.params).toBeUndefined();
     });
 
     it('should not match the subscription \'myhome/temperature/livingroom\'', () => {
       const match = new TopicMatcher('myhome/temperature/livingroom').match(publishTopic);
-      expect(match.matches).toBeFalsy();
+      expect(match.matches).toBeFalse();
       expect(match.params).toBeUndefined();
     });
 
     it('should not match the subscription \'myhome/livingroom/temperature/celsius\'', () => {
       const match = new TopicMatcher('myhome/livingroom/temperature/celsius').match(publishTopic);
-      expect(match.matches).toBeFalsy();
+      expect(match.matches).toBeFalse();
       expect(match.params).toBeUndefined();
     });
 
     it('should match the subscription \'myhome/livingroom/temperature\'', () => {
       const match = new TopicMatcher('myhome/livingroom/temperature').match(publishTopic);
-      expect(match.matches).toBeTruthy();
+      expect(match.matches).toBeTrue();
       expect(match.params).toEqual(new Map());
     });
 
     it('should match the subscription \'myhome/livingroom/:measurement\'', () => {
       const match = new TopicMatcher('myhome/livingroom/:measurement').match(publishTopic);
-      expect(match.matches).toBeTruthy();
+      expect(match.matches).toBeTrue();
       expect(match.params).toEqual(new Map().set('measurement', 'temperature'));
     });
 
     it('should not match the subscription \'myhome/kitchen/:measurement\'', () => {
       const match = new TopicMatcher('myhome/kitchen/:measurement').match(publishTopic);
-      expect(match.matches).toBeFalsy();
+      expect(match.matches).toBeFalse();
       expect(match.params).toBeUndefined();
     });
 
     it('should match the subscription \'myhome/:room/temperature\'', () => {
       const match = new TopicMatcher('myhome/:room/temperature').match(publishTopic);
-      expect(match.matches).toBeTruthy();
+      expect(match.matches).toBeTrue();
       expect(match.params).toEqual(new Map().set('room', 'livingroom'));
     });
 
     it('should match the subscription \'myhome/:room/:measurement\'', () => {
       const match = new TopicMatcher('myhome/:room/:measurement').match(publishTopic);
-      expect(match.matches).toBeTruthy();
+      expect(match.matches).toBeTrue();
       expect(match.params).toEqual(new Map().set('room', 'livingroom').set('measurement', 'temperature'));
     });
 
     it('should not match the subscription \':building/kitchen/:measurement\'', () => {
       const match = new TopicMatcher(':building/kitchen/:measurement').match(publishTopic);
-      expect(match.matches).toBeFalsy();
+      expect(match.matches).toBeFalse();
       expect(match.params).toBeUndefined();
     });
 
     it('should match the subscription \':building/livingroom/:measurement\'', () => {
       const match = new TopicMatcher(':building/livingroom/:measurement').match(publishTopic);
-      expect(match.matches).toBeTruthy();
+      expect(match.matches).toBeTrue();
       expect(match.params).toEqual(new Map().set('building', 'myhome').set('measurement', 'temperature'));
     });
 
     it('should not match the subscription \'myhome/bedroom/temperature\'', () => {
       const match = new TopicMatcher('myhome/bedroom/temperature').match(publishTopic);
-      expect(match.matches).toBeFalsy();
+      expect(match.matches).toBeFalse();
       expect(match.params).toBeUndefined();
     });
 
     it('should not match the subscription \'myhome/:/temperature\'', () => {
       const match = new TopicMatcher('myhome/:/temperature').match(publishTopic);
-      expect(match.matches).toBeFalsy();
+      expect(match.matches).toBeFalse();
       expect(match.params).toBeUndefined();
     });
   });

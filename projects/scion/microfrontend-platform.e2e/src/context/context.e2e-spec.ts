@@ -22,8 +22,8 @@ describe('Context', () => {
   it('should be a noop when looking up a context value outside of an outlet context', async () => {
     await browser.get(`/#/${ContextPagePO.pageUrl}`);
     const contextPagePO = new ContextPagePO((): Promise<void> => browser.switchTo().defaultContent() as Promise<void>);
-    await expect(contextPagePO.getContext()).toEqual(new Map());
-    await expect(browserErrors()).toEqual([]);
+    await expect(await contextPagePO.getContext()).toEqual(new Map());
+    await expect(await browserErrors()).toEqual([]);
   });
 
   it('should allow setting a context value', async () => {

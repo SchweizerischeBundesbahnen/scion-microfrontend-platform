@@ -28,8 +28,8 @@ describe('Context', () => {
       .subscribe(value => next = value, () => error = true, () => complete = true);
 
     expect(next).toBeNull();
-    expect(error).toBeFalsy();
-    expect(complete).toBeFalsy();
+    expect(error).toBeFalse();
+    expect(complete).toBeFalse();
   });
 
   it('should not complete the Observable when looking up the names of context values from inside the host app (no context)', async () => {
@@ -43,7 +43,7 @@ describe('Context', () => {
       .subscribe(value => next = value, () => error = true, () => complete = true);
 
     expect(next).toEqual(new Set());
-    expect(error).toBeFalsy();
-    expect(complete).toBeFalsy();
+    expect(error).toBeFalse();
+    expect(complete).toBeFalse();
   });
 });

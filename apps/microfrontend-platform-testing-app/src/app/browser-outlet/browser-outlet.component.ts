@@ -93,12 +93,12 @@ export class BrowserOutletComponent {
     });
   }
 
-  public onActivate(event: CustomEvent): void {
-    this._consoleService.log('sci-router-outlet:onactivate', event.detail);
+  public onActivate(event: Event): void {
+    this._consoleService.log('sci-router-outlet:onactivate', (event as CustomEvent).detail);
   }
 
-  public onDeactivate(event: CustomEvent): void {
-    this._consoleService.log('sci-router-outlet:ondeactivate', event.detail);
+  public onDeactivate(event: Event): void {
+    this._consoleService.log('sci-router-outlet:ondeactivate', (event as CustomEvent).detail);
   }
 
   private readAppEntryPoints(): Observable<AppEndpoint[]> {

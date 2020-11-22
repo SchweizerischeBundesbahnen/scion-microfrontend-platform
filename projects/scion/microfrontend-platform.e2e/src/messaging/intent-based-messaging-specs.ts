@@ -77,7 +77,7 @@ export namespace IntendBasedMessagingSpecs {
       receiver_app3: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_3},
     });
 
-    const managerOutlet = await pagePOs.get<BrowserOutletPO>('managerOutlet');
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // do not register intention, an application can always issue intents to its private capabilities
 
@@ -102,10 +102,10 @@ export namespace IntendBasedMessagingSpecs {
 
     // assert intent to be received
     const intent = await receiverPO_app3.getFirstMessageOrElseReject();
-    await expect(intent.getIntentType()).toEqual('testing');
-    await expect(intent.getBody()).toEqual('some payload');
-    await expect(intent.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(intent.getReplyTo()).toBeUndefined();
+    await expect(await intent.getIntentType()).toEqual('testing');
+    await expect(await intent.getBody()).toEqual('some payload');
+    await expect(await intent.getIntentQualifier()).toEqual({key: 'value'});
+    await expect(await intent.getReplyTo()).toBeUndefined();
   }
 
   /**
@@ -120,7 +120,7 @@ export namespace IntendBasedMessagingSpecs {
       receiver_app4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
     });
 
-    const managerOutlet = await pagePOs.get<BrowserOutletPO>('managerOutlet');
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // register the intention
     const intentionManagerPO_app3 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3});
@@ -147,7 +147,7 @@ export namespace IntendBasedMessagingSpecs {
     await expect(publisherPO_app3.getPublishError()).toContain('[NullProviderError]');
 
     // assert intent not to be received
-    await expect(receiverPO_app4.getMessages()).toEqual([]);
+    await expect(await receiverPO_app4.getMessages()).toEqual([]);
   }
 
   /**
@@ -162,7 +162,7 @@ export namespace IntendBasedMessagingSpecs {
       receiver_app3: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_3},
     });
 
-    const managerOutlet = await pagePOs.get<BrowserOutletPO>('managerOutlet');
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // do not register intention, an application can always issue intents to its public capabilities
 
@@ -187,10 +187,10 @@ export namespace IntendBasedMessagingSpecs {
 
     // assert intent to be received
     const intent = await receiverPO.getFirstMessageOrElseReject();
-    await expect(intent.getIntentType()).toEqual('testing');
-    await expect(intent.getBody()).toEqual('some payload');
-    await expect(intent.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(intent.getReplyTo()).toBeUndefined();
+    await expect(await intent.getIntentType()).toEqual('testing');
+    await expect(await intent.getBody()).toEqual('some payload');
+    await expect(await intent.getIntentQualifier()).toEqual({key: 'value'});
+    await expect(await intent.getReplyTo()).toBeUndefined();
   }
 
   /**
@@ -205,7 +205,7 @@ export namespace IntendBasedMessagingSpecs {
       receiver_app4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
     });
 
-    const managerOutlet = await pagePOs.get<BrowserOutletPO>('managerOutlet');
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // register the intention
     const intentionManagerPO_app3 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3});
@@ -232,10 +232,10 @@ export namespace IntendBasedMessagingSpecs {
 
     // assert intent to be received
     const intent = await receiverPO_app4.getFirstMessageOrElseReject();
-    await expect(intent.getIntentType()).toEqual('testing');
-    await expect(intent.getBody()).toEqual('some payload');
-    await expect(intent.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(intent.getReplyTo()).toBeUndefined();
+    await expect(await intent.getIntentType()).toEqual('testing');
+    await expect(await intent.getBody()).toEqual('some payload');
+    await expect(await intent.getIntentQualifier()).toEqual({key: 'value'});
+    await expect(await intent.getReplyTo()).toBeUndefined();
   }
 
   /**
@@ -252,7 +252,7 @@ export namespace IntendBasedMessagingSpecs {
       receiver_app3_2: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_3},
     });
 
-    const managerOutlet = await pagePOs.get<BrowserOutletPO>('managerOutlet');
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // register the intention
     const intentionManagerPO_app2 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_2});
@@ -295,24 +295,24 @@ export namespace IntendBasedMessagingSpecs {
 
     // assert intent to be received by app-2
     const intent_app2 = await receiverPO_app2.getFirstMessageOrElseReject();
-    await expect(intent_app2.getIntentType()).toEqual('testing');
-    await expect(intent_app2.getBody()).toEqual('some payload');
-    await expect(intent_app2.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(intent_app2.getReplyTo()).toBeUndefined();
+    await expect(await intent_app2.getIntentType()).toEqual('testing');
+    await expect(await intent_app2.getBody()).toEqual('some payload');
+    await expect(await intent_app2.getIntentQualifier()).toEqual({key: 'value'});
+    await expect(await intent_app2.getReplyTo()).toBeUndefined();
 
     // assert intent to be received by app-3_1
     const intent_app3_1 = await receiverPO_app3_1.getFirstMessageOrElseReject();
-    await expect(intent_app3_1.getIntentType()).toEqual('testing');
-    await expect(intent_app3_1.getBody()).toEqual('some payload');
-    await expect(intent_app3_1.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(intent_app3_1.getReplyTo()).toBeUndefined();
+    await expect(await intent_app3_1.getIntentType()).toEqual('testing');
+    await expect(await intent_app3_1.getBody()).toEqual('some payload');
+    await expect(await intent_app3_1.getIntentQualifier()).toEqual({key: 'value'});
+    await expect(await intent_app3_1.getReplyTo()).toBeUndefined();
 
     // assert intent to be received by app-3_2
     const intent_app3_2 = await receiverPO_app3_2.getFirstMessageOrElseReject();
-    await expect(intent_app3_2.getIntentType()).toEqual('testing');
-    await expect(intent_app3_2.getBody()).toEqual('some payload');
-    await expect(intent_app3_2.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(intent_app3_2.getReplyTo()).toBeUndefined();
+    await expect(await intent_app3_2.getIntentType()).toEqual('testing');
+    await expect(await intent_app3_2.getBody()).toEqual('some payload');
+    await expect(await intent_app3_2.getIntentQualifier()).toEqual({key: 'value'});
+    await expect(await intent_app3_2.getReplyTo()).toBeUndefined();
   }
 
   /**
@@ -327,7 +327,7 @@ export namespace IntendBasedMessagingSpecs {
       receiver_app4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
     });
 
-    const managerOutlet = await pagePOs.get<BrowserOutletPO>('managerOutlet');
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // register the intention
     const intentionManagerPO_app3 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3});
@@ -351,26 +351,26 @@ export namespace IntendBasedMessagingSpecs {
     // assert receiving the first intent
     await publisherPO_app3.clickPublish();
     const intent1 = await receiverPO_app4.getFirstMessageOrElseReject();
-    await expect(intent1.getIntentType()).toEqual('testing');
-    await expect(intent1.getIntentQualifier()).toEqual({key: 'value'});
+    await expect(await intent1.getIntentType()).toEqual('testing');
+    await expect(await intent1.getIntentQualifier()).toEqual({key: 'value'});
     await receiverPO_app4.clickClearMessages();
-    await expect(receiverPO_app4.getMessages()).toEqual([]);
+    await expect(await receiverPO_app4.getMessages()).toEqual([]);
 
     // assert receiving the second intent
     await publisherPO_app3.clickPublish();
     const intent2 = await receiverPO_app4.getFirstMessageOrElseReject();
-    await expect(intent2.getIntentType()).toEqual('testing');
-    await expect(intent2.getIntentQualifier()).toEqual({key: 'value'});
+    await expect(await intent2.getIntentType()).toEqual('testing');
+    await expect(await intent2.getIntentQualifier()).toEqual({key: 'value'});
     await receiverPO_app4.clickClearMessages();
-    await expect(receiverPO_app4.getMessages()).toEqual([]);
+    await expect(await receiverPO_app4.getMessages()).toEqual([]);
 
     // assert receiving the second intent
     await publisherPO_app3.clickPublish();
     const intent3 = await receiverPO_app4.getFirstMessageOrElseReject();
-    await expect(intent3.getIntentType()).toEqual('testing');
-    await expect(intent3.getIntentQualifier()).toEqual({key: 'value'});
+    await expect(await intent3.getIntentType()).toEqual('testing');
+    await expect(await intent3.getIntentQualifier()).toEqual({key: 'value'});
     await receiverPO_app4.clickClearMessages();
-    await expect(receiverPO_app4.getMessages()).toEqual([]);
+    await expect(await receiverPO_app4.getMessages()).toEqual([]);
   }
 
   /**
@@ -385,7 +385,7 @@ export namespace IntendBasedMessagingSpecs {
       receiver_app4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
     });
 
-    const managerOutlet = await pagePOs.get<BrowserOutletPO>('managerOutlet');
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // register the intention
     const intentionManagerPO_app3 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3});
@@ -410,22 +410,22 @@ export namespace IntendBasedMessagingSpecs {
 
     // assert receiving the intent
     const intent = await receiverPO_app4.getFirstMessageOrElseReject();
-    await expect(intent.getIntentType()).toEqual('testing');
-    await expect(intent.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(intent.getReplyTo()).not.toBeUndefined();
+    await expect(await intent.getIntentType()).toEqual('testing');
+    await expect(await intent.getIntentQualifier()).toEqual({key: 'value'});
+    await expect(await intent.getReplyTo()).not.toBeUndefined();
 
     // send the first reply
     await intent.clickReply();
     const reply1 = await publisherPO_app3.getFirstReplyOrElseReject();
-    await expect(reply1.getReplyTo()).toBeUndefined();
-    await expect(reply1.getBody()).toEqual('this is a reply');
+    await expect(await reply1.getReplyTo()).toBeUndefined();
+    await expect(await reply1.getBody()).toEqual('this is a reply');
     await publisherPO_app3.clickClearReplies();
 
     // send the second reply
     await intent.clickReply();
     const reply2 = await publisherPO_app3.getFirstReplyOrElseReject();
-    await expect(reply2.getReplyTo()).toBeUndefined();
-    await expect(reply2.getBody()).toEqual('this is a reply');
+    await expect(await reply2.getReplyTo()).toBeUndefined();
+    await expect(await reply2.getBody()).toEqual('this is a reply');
     await publisherPO_app3.clickClearReplies();
   }
 
@@ -444,7 +444,7 @@ export namespace IntendBasedMessagingSpecs {
       receiver_app4_4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
     });
 
-    const managerOutlet = await pagePOs.get<BrowserOutletPO>('managerOutlet');
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // register the intention
     const intentionManagerPO_app3 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3});
@@ -504,7 +504,7 @@ export namespace IntendBasedMessagingSpecs {
       receiver_app4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
     });
 
-    const managerOutlet = await pagePOs.get<BrowserOutletPO>('managerOutlet');
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // register the intention
     const intentionManagerPO_app1 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1});
@@ -536,8 +536,8 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO_app1.clickPublish();
 
     // assert receiving the intent
-    await expect((await receiverPO_app3.getFirstMessageOrElseReject()).getIntentQualifier()).toEqual({key1: 'value1', key2: 'value2'});
-    await expect((await receiverPO_app4.getFirstMessageOrElseReject()).getIntentQualifier()).toEqual({key1: 'value1', key2: 'value2'});
+    await expect(await (await receiverPO_app3.getFirstMessageOrElseReject()).getIntentQualifier()).toEqual({'key1': 'value1', 'key2': 'value2'});
+    await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentQualifier()).toEqual({'key1': 'value1', 'key2': 'value2'});
 
     await receiverPO_app3.clickClearMessages();
     await receiverPO_app4.clickClearMessages();
@@ -549,7 +549,7 @@ export namespace IntendBasedMessagingSpecs {
 
     // assert receiving the intent
     await expectToBeRejectedWithError(receiverPO_app3.getFirstMessageOrElseReject(), /[TimeoutError]/);
-    await expect((await receiverPO_app4.getFirstMessageOrElseReject()).getIntentQualifier()).toEqual({key1: 'value1'});
+    await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentQualifier()).toEqual({'key1': 'value1'});
     await receiverPO_app3.clickClearMessages();
     await receiverPO_app4.clickClearMessages();
   }
@@ -565,14 +565,14 @@ export namespace IntendBasedMessagingSpecs {
       receiver: ReceiveMessagePagePO,
     });
 
-    const capabilityManagerPO = await pagePOs.get<RegisterCapabilityPagePO>('capabilityManager');
+    const capabilityManagerPO = pagePOs.get<RegisterCapabilityPagePO>('capabilityManager');
     await capabilityManagerPO.registerCapability({type: 'testing', qualifier: {q1: 'v1', q2: 'v2'}, private: true});
 
-    const receiverPO = await pagePOs.get<ReceiveMessagePagePO>('receiver');
+    const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
     await receiverPO.selectFlavor(MessagingFlavor.Intent);
     await receiverPO.clickSubscribe();
 
-    const publisherPO = await pagePOs.get<PublishMessagePagePO>('publisher');
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
     await publisherPO.selectFlavor(MessagingFlavor.Intent);
     await publisherPO.enterIntent('testing', {q1: 'v1', q2: 'v2'});
     await publisherPO.enterHeaders(new Map().set('header1', 'value').set('header2', '42'));
@@ -597,15 +597,15 @@ export namespace IntendBasedMessagingSpecs {
       receiver: ReceiveMessagePagePO,
     }, {queryParams: new Map().set('intercept-intent:uppercase', 'uppercase')});
 
-    const capabilityRegisterPO = await pagePOs.get<RegisterCapabilityPagePO>('registrator');
+    const capabilityRegisterPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
     await capabilityRegisterPO.registerCapability({type: 'uppercase', qualifier: {}, private: true});
 
-    const receiverPO = await pagePOs.get<ReceiveMessagePagePO>('receiver');
+    const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
     await receiverPO.selectFlavor(MessagingFlavor.Intent);
     await receiverPO.enterIntentSelector('uppercase');
     await receiverPO.clickSubscribe();
 
-    const publisherPO = await pagePOs.get<PublishMessagePagePO>('publisher');
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
     await publisherPO.selectFlavor(MessagingFlavor.Intent);
     await publisherPO.enterIntent('uppercase');
     await publisherPO.enterMessage('payload');
@@ -630,22 +630,22 @@ export namespace IntendBasedMessagingSpecs {
       receiver: ReceiveMessagePagePO,
     }, {queryParams: new Map().set('intercept-intent:reject', 'reject')});
 
-    const capabilityRegisterPO = await pagePOs.get<RegisterCapabilityPagePO>('registrator');
+    const capabilityRegisterPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
     await capabilityRegisterPO.registerCapability({type: 'reject', qualifier: {}, private: true});
 
-    const receiverPO = await pagePOs.get<ReceiveMessagePagePO>('receiver');
+    const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
     await receiverPO.selectFlavor(MessagingFlavor.Intent);
     await receiverPO.enterIntentSelector('reject');
     await receiverPO.clickSubscribe();
 
-    const publisherPO = await pagePOs.get<PublishMessagePagePO>('publisher');
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
     await publisherPO.selectFlavor(MessagingFlavor.Intent);
     await publisherPO.enterIntent('reject');
     await publisherPO.enterMessage('payload');
     await publisherPO.clickPublish();
 
-    await expect(publisherPO.getPublishError()).toEqual('Intent rejected by interceptor');
-    await expect(receiverPO.getMessages()).toEqual([]);
+    await expect(await publisherPO.getPublishError()).toEqual('Intent rejected by interceptor');
+    await expect(await receiverPO.getMessages()).toEqual([]);
   }
 
   /**
@@ -660,21 +660,21 @@ export namespace IntendBasedMessagingSpecs {
       receiver: ReceiveMessagePagePO,
     }, {queryParams: new Map().set('intercept-intent:swallow', 'swallow')});
 
-    const capabilityRegisterPO = await pagePOs.get<RegisterCapabilityPagePO>('registrator');
+    const capabilityRegisterPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
     await capabilityRegisterPO.registerCapability({type: 'swallow', qualifier: {}, private: true});
 
-    const receiverPO = await pagePOs.get<ReceiveMessagePagePO>('receiver');
+    const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
     await receiverPO.selectFlavor(MessagingFlavor.Intent);
     await receiverPO.enterIntentSelector('swallow');
     await receiverPO.clickSubscribe();
 
-    const publisherPO = await pagePOs.get<PublishMessagePagePO>('publisher');
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
     await publisherPO.selectFlavor(MessagingFlavor.Intent);
     await publisherPO.enterIntent('swallow');
     await publisherPO.enterMessage('payload');
     await publisherPO.clickPublish();
 
-    await expect(receiverPO.getMessages()).toEqual([]);
+    await expect(await receiverPO.getMessages()).toEqual([]);
   }
 
   /**
@@ -691,7 +691,7 @@ export namespace IntendBasedMessagingSpecs {
       receiver2_app3: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_3},
     });
 
-    const managerOutlet = await pagePOs.get<BrowserOutletPO>('managerOutlet');
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // Register intention for app-1
     const intentionManager_app1 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1});
@@ -706,22 +706,22 @@ export namespace IntendBasedMessagingSpecs {
     const capabilityId_app3 = await capabilityManager_app3.registerCapability({type: 'testing', qualifier: {key: 'value'}, private: false});
 
     // Receive intents in app-2 (client-1)
-    const receiver1_app2 = await pagePOs.get<ReceiveMessagePagePO>('receiver1_app2');
+    const receiver1_app2 = pagePOs.get<ReceiveMessagePagePO>('receiver1_app2');
     await receiver1_app2.selectFlavor(MessagingFlavor.Intent);
     await receiver1_app2.clickSubscribe();
 
     // Receive intents in app-2 (client-2)
-    const receiver2_app2 = await pagePOs.get<ReceiveMessagePagePO>('receiver2_app2');
+    const receiver2_app2 = pagePOs.get<ReceiveMessagePagePO>('receiver2_app2');
     await receiver2_app2.selectFlavor(MessagingFlavor.Intent);
     await receiver2_app2.clickSubscribe();
 
     // Receive intents in app-3 (client-1)
-    const receiver1_app3 = await pagePOs.get<ReceiveMessagePagePO>('receiver1_app3');
+    const receiver1_app3 = pagePOs.get<ReceiveMessagePagePO>('receiver1_app3');
     await receiver1_app3.selectFlavor(MessagingFlavor.Intent);
     await receiver1_app3.clickSubscribe();
 
     // Receive intents in app-3 (client-2)
-    const receiver2_app3 = await pagePOs.get<ReceiveMessagePagePO>('receiver2_app3');
+    const receiver2_app3 = pagePOs.get<ReceiveMessagePagePO>('receiver2_app3');
     await receiver2_app3.selectFlavor(MessagingFlavor.Intent);
     await receiver2_app3.clickSubscribe();
 
@@ -770,13 +770,13 @@ export namespace IntendBasedMessagingSpecs {
     return {
       toEqual: async (expected: IntentMessage & { capabilityId?: string }): Promise<void> => {
         const actualMessage = await actual;
-        await expect(actualMessage.getIntentType()).toEqual(expected.intent.type);
-        await expect(actualMessage.getIntentQualifier()).toEqual(expected.intent.qualifier);
+        await expect(await actualMessage.getIntentType()).toEqual(expected.intent.type);
+        await expect(await actualMessage.getIntentQualifier()).toEqual(expected.intent.qualifier);
         if (expected.body !== undefined) {
           await expect(actualMessage.getBody()).toEqual(expected.body);
         }
         if (expected.capabilityId !== undefined) {
-          await expect(actualMessage.getCapabilityId()).toEqual(expected.capabilityId);
+          await expect(await actualMessage.getCapabilityId()).toEqual(expected.capabilityId);
         }
         // Jasmine 3.5 provides 'mapContaining' matcher; when updated, this custom matcher can be removed.
         await expect([...await actualMessage.getHeaders()]).toEqual(jasmine.arrayContaining([...expected.headers]));

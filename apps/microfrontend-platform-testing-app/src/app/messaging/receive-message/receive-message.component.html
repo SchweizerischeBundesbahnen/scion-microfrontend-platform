@@ -6,6 +6,22 @@
     </select>
   </sci-form-field>
   <ng-container *ngIf="isTopicMessaging(); then topic_template else intent_template"></ng-container>
+
+  <ng-template #topic_template>
+    <sci-form-field label="Topic *" [formGroupName]="DESTINATION">
+      <input [formControlName]="TOPIC" class="e2e-topic">
+    </sci-form-field>
+  </ng-template>
+
+  <ng-template #intent_template>
+    <sci-form-field label="Intent type" [formGroupName]="DESTINATION">
+      <input [formControlName]="TYPE" class="e2e-intent-type">
+    </sci-form-field>
+
+    <sci-form-field label="Intent qualifier">
+      <sci-params-enter [paramsFormArray]="$any(form.get(DESTINATION).get(QUALIFIER))" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-params-enter>
+    </sci-form-field>
+  </ng-template>
 </form>
 
 <button (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="e2e-subscribe">Subscribe</button>
@@ -32,19 +48,3 @@
   </sci-list>
   <button class="e2e-clear-messages" (click)="onClear()">Clear</button>
 </ng-container>
-
-<ng-template #topic_template>
-  <sci-form-field label="Topic *">
-    <input [formControl]="form.get(DESTINATION).get(TOPIC)" class="e2e-topic">
-  </sci-form-field>
-</ng-template>
-
-<ng-template #intent_template>
-  <sci-form-field label="Intent type">
-    <input [formControl]="form.get(DESTINATION).get(TYPE)" class="e2e-intent-type">
-  </sci-form-field>
-
-  <sci-form-field label="Intent qualifier">
-    <sci-params-enter [paramsFormArray]="form.get(DESTINATION).get(QUALIFIER)" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-params-enter>
-  </sci-form-field>
-</ng-template>

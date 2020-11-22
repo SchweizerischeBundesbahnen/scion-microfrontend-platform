@@ -13,7 +13,7 @@
   </sci-form-field>
 
   <sci-form-field label="Headers">
-    <sci-params-enter [paramsFormArray]="form.get(HEADERS)" [addable]="true" [removable]="true" class="e2e-headers"></sci-params-enter>
+    <sci-params-enter [paramsFormArray]="$any(form.get(HEADERS))" [addable]="true" [removable]="true" class="e2e-headers"></sci-params-enter>
   </sci-form-field>
 
   <sci-form-field label="Request-Reply">
@@ -23,6 +23,26 @@
   <sci-form-field label="Retain" *ngIf="isTopicFlavor() && !isRequestReply()">
     <sci-checkbox [formControlName]="RETAIN" class="e2e-retain"></sci-checkbox>
   </sci-form-field>
+
+  <ng-template #topic_template>
+    <sci-form-field label="Topic *" [formGroupName]="DESTINATION">
+      <input [formControlName]="TOPIC" class="e2e-topic">
+      <div class="subscriber-badge">
+        <span class="e2e-topic-subscriber-count count">{{form.get(DESTINATION).get(TOPIC).value | appTopicSubscriberCount$ | async}}</span>
+        Subscribers
+      </div>
+    </sci-form-field>
+  </ng-template>
+
+  <ng-template #intent_template>
+    <sci-form-field label="Intent type *" [formGroupName]="DESTINATION">
+      <input [formControlName]="TYPE" class="e2e-intent-type">
+    </sci-form-field>
+
+    <sci-form-field label="Intent qualifier">
+      <sci-params-enter [paramsFormArray]="$any(form.get(DESTINATION).get(QUALIFIER))" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-params-enter>
+    </sci-form-field>
+  </ng-template>
 </form>
 
 <button type="button" (click)="onPublish()" *ngIf="!publishing" [disabled]="form.invalid" class="e2e-publish">{{isTopicFlavor() ? 'Publish message' : 'Issue intent'}}</button>
@@ -40,23 +60,3 @@
   </sci-list>
   <button type="button" class="e2e-clear-replies" (click)="onClear()">Clear</button>
 </ng-container>
-
-<ng-template #topic_template>
-  <sci-form-field label="Topic *">
-    <input [formControl]="form.get(DESTINATION).get(TOPIC)" class="e2e-topic">
-    <div class="subscriber-badge">
-      <span class="e2e-topic-subscriber-count count">{{form.get(DESTINATION).get(TOPIC).value | appTopicSubscriberCount$ | async}}</span>
-      Subscribers
-    </div>
-  </sci-form-field>
-</ng-template>
-
-<ng-template #intent_template>
-  <sci-form-field label="Intent type *">
-    <input [formControl]="form.get(DESTINATION).get(TYPE)" class="e2e-intent-type">
-  </sci-form-field>
-
-  <sci-form-field label="Intent qualifier">
-    <sci-params-enter [paramsFormArray]="form.get(DESTINATION).get(QUALIFIER)" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-params-enter>
-  </sci-form-field>
-</ng-template>

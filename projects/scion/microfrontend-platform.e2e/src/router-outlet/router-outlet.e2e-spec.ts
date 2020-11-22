@@ -85,8 +85,8 @@ describe('RouterOutlet', () => {
 
     // Verify that the app instance id has not changed, meaning the app did not reload
     await microfrontendPO.waitUntilLocation(microfrontend_2_app1_pageUrl);
-    await expect(microfrontendPO.getAppInstanceId()).toEqual(app1InstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
+    await expect(await microfrontendPO.getAppInstanceId()).toEqual(app1InstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
 
     // Navigate back to the microfrontend-1 page of the same app (app-1)
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -95,8 +95,8 @@ describe('RouterOutlet', () => {
 
     // Verify that the app instance id has not changed, meaning the app did not reload
     await microfrontendPO.waitUntilLocation(microfrontend_1_app1_pageUrl);
-    await expect(microfrontendPO.getAppInstanceId()).toEqual(app1InstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
+    await expect(await microfrontendPO.getAppInstanceId()).toEqual(app1InstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
 
     // Navigate to the microfrontend-1 page of another app (app-2)
     const microfrontend_1_app2_pageUrl = await getPageUrl({origin: TestingAppOrigins.APP_2, path: Microfrontend1PagePO.pageUrl});
@@ -106,8 +106,8 @@ describe('RouterOutlet', () => {
 
     // Verify that the app instance id did change because loaded another app
     await microfrontendPO.waitUntilLocation(microfrontend_1_app2_pageUrl);
-    await expect(microfrontendPO.getAppInstanceId()).not.toEqual(app1InstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
+    await expect(await microfrontendPO.getAppInstanceId()).not.toEqual(app1InstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
 
     // Navigate back to the microfrontend-1 page of the previous app (app-1)
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -116,8 +116,8 @@ describe('RouterOutlet', () => {
 
     // Verify that the app instance id did change because loaded another app
     await microfrontendPO.waitUntilLocation(microfrontend_1_app1_pageUrl);
-    await expect(microfrontendPO.getAppInstanceId()).not.toEqual(app1InstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
+    await expect(await microfrontendPO.getAppInstanceId()).not.toEqual(app1InstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
   });
 
   it('should not reload the app when navigating within the app in the same outlet [pushState=enabled]', async () => {
@@ -157,8 +157,8 @@ describe('RouterOutlet', () => {
 
     // Verify that the app instance id has not changed, meaning the app did not reload
     await microfrontendPO.waitUntilLocation(microfrontend_2_app1_pageUrl);
-    await expect(microfrontendPO.getAppInstanceId()).toEqual(app1InstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
+    await expect(await microfrontendPO.getAppInstanceId()).toEqual(app1InstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
 
     // Navigate back to the microfrontend-1 page of the same app (app-1)
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -168,8 +168,8 @@ describe('RouterOutlet', () => {
 
     // Verify that the app instance id has not changed, meaning the app did not reload
     await microfrontendPO.waitUntilLocation(microfrontend_1_app1_pageUrl);
-    await expect(microfrontendPO.getAppInstanceId()).toEqual(app1InstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
+    await expect(await microfrontendPO.getAppInstanceId()).toEqual(app1InstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
     // Navigate to the microfrontend-1 page of another app (app-2)
     const microfrontend_1_app2_pageUrl = await getPageUrl({origin: TestingAppOrigins.APP_2, path: Microfrontend1PagePO.pageUrl});
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -179,8 +179,8 @@ describe('RouterOutlet', () => {
 
     // Verify that the app instance id did change because loaded another app
     await microfrontendPO.waitUntilLocation(microfrontend_1_app2_pageUrl);
-    await expect(microfrontendPO.getAppInstanceId()).not.toEqual(app1InstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
+    await expect(await microfrontendPO.getAppInstanceId()).not.toEqual(app1InstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
 
     // Navigate back to the microfrontend-1 page of the previous app (app-1)
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -189,8 +189,8 @@ describe('RouterOutlet', () => {
 
     // Verify that the app instance id did change because loaded another app
     await microfrontendPO.waitUntilLocation(microfrontend_1_app1_pageUrl);
-    await expect(microfrontendPO.getAppInstanceId()).not.toEqual(app1InstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
+    await expect(await microfrontendPO.getAppInstanceId()).not.toEqual(app1InstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).not.toEqual(componentInstanceId);
   });
 
   it('should not reload the app when updating URL params or the URL fragment', async () => {
@@ -217,9 +217,9 @@ describe('RouterOutlet', () => {
     const microfrontendComponentInstanceId = await microfrontendPO.getComponentInstanceId();
     const microfrontendAppInstanceId = await microfrontendPO.getAppInstanceId();
 
-    await expect(microfrontendPO.getQueryParams()).toEqual(new Map());
-    await expect(microfrontendPO.getMatrixParams()).toEqual(new Map());
-    await expect(microfrontendPO.getFragment()).toEqual('');
+    await expect(await microfrontendPO.getQueryParams()).toEqual(new Map());
+    await expect(await microfrontendPO.getMatrixParams()).toEqual(new Map());
+    await expect(await microfrontendPO.getFragment()).toEqual('');
 
     // Navigate to the same microfrontend with some query params set
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -227,11 +227,11 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify params and fragment and that the app did not reload
-    await expect(microfrontendPO.getAppInstanceId()).toEqual(microfrontendAppInstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).toEqual(microfrontendComponentInstanceId);
-    await expect(microfrontendPO.getQueryParams()).toEqual(new Map().set('param1', 'value1').set('param2', 'value2'));
-    await expect(microfrontendPO.getMatrixParams()).toEqual(new Map());
-    await expect(microfrontendPO.getFragment()).toEqual('');
+    await expect(await microfrontendPO.getAppInstanceId()).toEqual(microfrontendAppInstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).toEqual(microfrontendComponentInstanceId);
+    await expect(await microfrontendPO.getQueryParams()).toEqual(new Map().set('param1', 'value1').set('param2', 'value2'));
+    await expect(await microfrontendPO.getMatrixParams()).toEqual(new Map());
+    await expect(await microfrontendPO.getFragment()).toEqual('');
 
     // Navigate to the same microfrontend with some matrix params set
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -239,11 +239,11 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify params and fragment and that the app did not reload
-    await expect(microfrontendPO.getAppInstanceId()).toEqual(microfrontendAppInstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).toEqual(microfrontendComponentInstanceId);
-    await expect(microfrontendPO.getQueryParams()).toEqual(new Map());
-    await expect(microfrontendPO.getMatrixParams()).toEqual(new Map().set('param1', 'value1').set('param2', 'value2'));
-    await expect(microfrontendPO.getFragment()).toEqual('');
+    await expect(await microfrontendPO.getAppInstanceId()).toEqual(microfrontendAppInstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).toEqual(microfrontendComponentInstanceId);
+    await expect(await microfrontendPO.getQueryParams()).toEqual(new Map());
+    await expect(await microfrontendPO.getMatrixParams()).toEqual(new Map().set('param1', 'value1').set('param2', 'value2'));
+    await expect(await microfrontendPO.getFragment()).toEqual('');
 
     // Navigate to the same microfrontend with the fragment set
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -251,11 +251,11 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify params and fragment and that the app did not reload
-    await expect(microfrontendPO.getAppInstanceId()).toEqual(microfrontendAppInstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).toEqual(microfrontendComponentInstanceId);
-    await expect(microfrontendPO.getQueryParams()).toEqual(new Map());
-    await expect(microfrontendPO.getMatrixParams()).toEqual(new Map());
-    await expect(microfrontendPO.getFragment()).toEqual('fragment');
+    await expect(await microfrontendPO.getAppInstanceId()).toEqual(microfrontendAppInstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).toEqual(microfrontendComponentInstanceId);
+    await expect(await microfrontendPO.getQueryParams()).toEqual(new Map());
+    await expect(await microfrontendPO.getMatrixParams()).toEqual(new Map());
+    await expect(await microfrontendPO.getFragment()).toEqual('fragment');
 
     // Navigate to the same microfrontend with params and fragment set
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -263,11 +263,11 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify params and fragment and that the app did not reload
-    await expect(microfrontendPO.getAppInstanceId()).toEqual(microfrontendAppInstanceId);
-    await expect(microfrontendPO.getComponentInstanceId()).toEqual(microfrontendComponentInstanceId);
-    await expect(microfrontendPO.getQueryParams()).toEqual(new Map().set('queryParam1', 'value1').set('queryParam2', 'value2'));
-    await expect(microfrontendPO.getMatrixParams()).toEqual(new Map().set('matrixParam1', 'value1').set('matrixParam2', 'value2'));
-    await expect(microfrontendPO.getFragment()).toEqual('fragment');
+    await expect(await microfrontendPO.getAppInstanceId()).toEqual(microfrontendAppInstanceId);
+    await expect(await microfrontendPO.getComponentInstanceId()).toEqual(microfrontendComponentInstanceId);
+    await expect(await microfrontendPO.getQueryParams()).toEqual(new Map().set('queryParam1', 'value1').set('queryParam2', 'value2'));
+    await expect(await microfrontendPO.getMatrixParams()).toEqual(new Map().set('matrixParam1', 'value1').set('matrixParam2', 'value2'));
+    await expect(await microfrontendPO.getFragment()).toEqual('fragment');
   });
 
   it('should allow looking up the outlet context in a router outlet', async () => {
@@ -389,7 +389,7 @@ describe('RouterOutlet', () => {
     await routerPO.enterOutletName('microfrontend-outlet-1');
     await routerPO.enterUrl(`../${Microfrontend1PagePO.pageUrl}`);
     await routerPO.clickNavigate();
-    await expect(routerOutletPO.isEmpty()).toBe(true);
+    await expect(await routerOutletPO.isEmpty()).toBe(true);
 
     // Set the outlet name
     await routerOutletPO.enterOutletName('microfrontend-outlet-1');
@@ -397,7 +397,7 @@ describe('RouterOutlet', () => {
 
     // Verify that navigation was successful
     await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
-    await expect(routerOutletPO.isEmpty()).toBe(false);
+    await expect(await routerOutletPO.isEmpty()).toBe(false);
 
     // Change the outlet name to some name for which no previous routing has taken place
     await routerOutletPO.enterOutletName('microfrontend-outlet-2');
@@ -405,7 +405,7 @@ describe('RouterOutlet', () => {
 
     // Verify that an empty page is displayed
     await expectRouterOutletUrl(routerOutletPO).toEqual('about:blank');
-    await expect(routerOutletPO.isEmpty()).toBe(true);
+    await expect(await routerOutletPO.isEmpty()).toBe(true);
   });
 
   it('should show a blank page when clearing the outlet', async () => {
@@ -421,7 +421,7 @@ describe('RouterOutlet', () => {
     await routerOutletPO.clickApply();
 
     // Verify the page to be empty
-    await expect(routerOutletPO.isEmpty()).toBe(true);
+    await expect(await routerOutletPO.isEmpty()).toBe(true);
 
     // Navigate to the page
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -429,7 +429,7 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
     // Verify that navigation was successful
     await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
-    await expect(routerOutletPO.isEmpty()).toBe(false);
+    await expect(await routerOutletPO.isEmpty()).toBe(false);
 
     // Navigate to the `null` page
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -437,7 +437,7 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
     // Verify that an empty page is displayed
     await expectRouterOutletUrl(routerOutletPO).toEqual('about:blank');
-    await expect(routerOutletPO.isEmpty()).toBe(true);
+    await expect(await routerOutletPO.isEmpty()).toBe(true);
   });
 
   it('should show the requested page in the router outlet', async () => {
@@ -456,14 +456,14 @@ describe('RouterOutlet', () => {
     const otherRouterOutletPO = pagePOs.get<RouterOutletPagePO>('otherOutlet');
     await otherRouterOutletPO.enterOutletName('other-outlet');
     await otherRouterOutletPO.clickApply();
-    await expect(routerOutletPO.isEmpty()).toBe(true);
+    await expect(await routerOutletPO.isEmpty()).toBe(true);
 
     // Navigate to the 'microfrontend-1' page
     await routerPO.enterOutletName('microfrontend-outlet');
     await routerPO.enterUrl(`../${Microfrontend1PagePO.pageUrl}`);
     await routerPO.clickNavigate();
     // Verify that navigation was successful
-    await expect(routerOutletPO.isEmpty()).toBe(false);
+    await expect(await routerOutletPO.isEmpty()).toBe(false);
     await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
     await expectRouterOutletUrl(otherRouterOutletPO).toEqual('about:blank');
 
@@ -472,7 +472,7 @@ describe('RouterOutlet', () => {
     await routerPO.enterUrl(`../${Microfrontend2PagePO.pageUrl}`);
     await routerPO.clickNavigate();
     // Verify that navigation was successful
-    await expect(routerOutletPO.isEmpty()).toBe(false);
+    await expect(await routerOutletPO.isEmpty()).toBe(false);
     await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
     await expectRouterOutletUrl(otherRouterOutletPO).toEqual('about:blank');
   });
@@ -586,7 +586,7 @@ describe('RouterOutlet', () => {
     await browserNavigateBack();
 
     // Verify to navigate back to the initial blank page
-    await expect(browser.driver.getCurrentUrl()).toEqual('about:blank');
+    await expect(await browser.driver.getCurrentUrl()).toEqual('about:blank');
   });
 
   it('should create a browser history entry when navigating using the \'push\' location update strategy', async () => {
@@ -698,9 +698,9 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify params and fragment and that the app did not reload
-    await expect(microfrontendPO.getQueryParams()).toEqual(new Map());
-    await expect(microfrontendPO.getMatrixParams()).toEqual(new Map().set('product', 'shampoo').set('brand', 'greenline'));
-    await expect(microfrontendPO.getFragment()).toEqual('');
+    await expect(await microfrontendPO.getQueryParams()).toEqual(new Map());
+    await expect(await microfrontendPO.getMatrixParams()).toEqual(new Map().set('product', 'shampoo').set('brand', 'greenline'));
+    await expect(await microfrontendPO.getFragment()).toEqual('');
   });
 
   it('should substitute query params when navigating', async () => {
@@ -726,9 +726,9 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify params and fragment and that the app did not reload
-    await expect(microfrontendPO.getQueryParams()).toEqual(new Map().set('product', 'shampoo').set('brand', 'greenline'));
-    await expect(microfrontendPO.getMatrixParams()).toEqual(new Map());
-    await expect(microfrontendPO.getFragment()).toEqual('');
+    await expect(await microfrontendPO.getQueryParams()).toEqual(new Map().set('product', 'shampoo').set('brand', 'greenline'));
+    await expect(await microfrontendPO.getMatrixParams()).toEqual(new Map());
+    await expect(await microfrontendPO.getFragment()).toEqual('');
   });
 
   it('should substitute path params when navigating', async () => {
@@ -754,9 +754,9 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify params and fragment and that the app did not reload
-    await expect(microfrontendPO.getMatrixParams()).toEqual(new Map().set('param1', 'shampoo').set('param2', 'greenline'));
-    await expect(microfrontendPO.getQueryParams()).toEqual(new Map());
-    await expect(microfrontendPO.getFragment()).toEqual('');
+    await expect(await microfrontendPO.getMatrixParams()).toEqual(new Map().set('param1', 'shampoo').set('param2', 'greenline'));
+    await expect(await microfrontendPO.getQueryParams()).toEqual(new Map());
+    await expect(await microfrontendPO.getFragment()).toEqual('');
   });
 
   it('should substitute the fragment when navigating', async () => {
@@ -782,9 +782,9 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify params and fragment and that the app did not reload
-    await expect(microfrontendPO.getMatrixParams()).toEqual(new Map());
-    await expect(microfrontendPO.getQueryParams()).toEqual(new Map());
-    await expect(microfrontendPO.getFragment()).toEqual('shampoo');
+    await expect(await microfrontendPO.getMatrixParams()).toEqual(new Map());
+    await expect(await microfrontendPO.getQueryParams()).toEqual(new Map());
+    await expect(await microfrontendPO.getFragment()).toEqual('shampoo');
   });
 
   it('should emit outlet activate and deactivate events on navigation', async () => {
@@ -807,7 +807,7 @@ describe('RouterOutlet', () => {
     // Verify the navigation and the emitted activation events
     await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
     await routerOutletPO.consolePanelPO.open();
-    await expect(routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
+    await expect(await routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
       jasmine.objectContaining({type: 'sci-router-outlet:activate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
     ]);
 
@@ -822,7 +822,7 @@ describe('RouterOutlet', () => {
     // Verify the emitted events
     await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
     await routerOutletPO.consolePanelPO.open();
-    await expect(routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
+    await expect(await routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
       jasmine.objectContaining({type: 'sci-router-outlet:deactivate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
       jasmine.objectContaining({type: 'sci-router-outlet:activate', message: await getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
     ]);
@@ -848,7 +848,7 @@ describe('RouterOutlet', () => {
 
     // Verify the emitted events
     await routerOutletPO.consolePanelPO.open();
-    await expect(routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
+    await expect(await routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
       jasmine.objectContaining({type: 'sci-router-outlet:activate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
     ]);
   });
@@ -885,7 +885,7 @@ describe('RouterOutlet', () => {
 
     // Verify the emitted events
     await routerOutletPO.consolePanelPO.open();
-    await expect(routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
+    await expect(await routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
       jasmine.objectContaining({type: 'sci-router-outlet:activate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
       jasmine.objectContaining({type: 'sci-router-outlet:deactivate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
       jasmine.objectContaining({type: 'sci-router-outlet:activate', message: 'about:blank'} as Partial<ConsoleLog>),

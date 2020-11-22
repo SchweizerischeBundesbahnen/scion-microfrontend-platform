@@ -195,9 +195,9 @@ describe('KeyboardEvent', () => {
     await microfrontendPagePO.clickInputField();
     await sendKeys(Key.chord(Key.CONTROL, 'm'));
 
-    await expect(consoleOutlet3PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
-    await expect(consoleOutlet2PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
-    await expect(consoleOutlet1PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
+    await expect(await consoleOutlet3PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
+    await expect(await consoleOutlet2PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
+    await expect(await consoleOutlet1PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
   });
 
   it('should not receive the keyboard events for a keystroke registered in a nested microfrontend', async () => {
@@ -232,9 +232,9 @@ describe('KeyboardEvent', () => {
     await microfrontendPagePO.clickInputField();
     await sendKeys(Key.chord(Key.CONTROL, 'm'));
 
-    await expect(consoleOutlet3PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
-    await expect(consoleOutlet2PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
-    await expect(consoleOutlet1PanelPO.getLog(['keydown', 'keyup'])).toEqual([]);
+    await expect(await consoleOutlet3PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
+    await expect(await consoleOutlet2PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
+    await expect(await consoleOutlet1PanelPO.getLog(['keydown', 'keyup'])).toEqual([]);
   });
 
   it('should not receive keyboard events for not registered keystrokes', async () => {
@@ -254,7 +254,7 @@ describe('KeyboardEvent', () => {
     await sendKeys(Key.chord(Key.ALT, 'x'));
     await sendKeys(Key.chord(Key.ALT, 'v'));
 
-    await expect(consolePanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'x\', control=false, shift=false, alt=true, meta=false]'})]);
+    await expect(await consolePanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'x\', control=false, shift=false, alt=true, meta=false]'})]);
   });
 
   it('should allow registering multiple keystrokes via <sci-router-outlet> attribute', async () => {
@@ -326,5 +326,5 @@ async function testKeystrokePropagation(testdata: { keystroke: string, sendKeys:
   const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
   await microfrontendPagePO.clickInputField();
   await sendKeys(Key.chord(...testdata.sendKeys));
-  await expect(consolePanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining(testdata.expectedParentLog)]);
+  await expect(await consolePanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining(testdata.expectedParentLog)]);
 }

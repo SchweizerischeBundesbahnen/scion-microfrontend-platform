@@ -10,7 +10,7 @@
 import { Component, ElementRef, HostListener, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { PreferredSize, SciRouterOutletElement } from '@scion/microfrontend-platform';
 import { ConnectedPosition, Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
-import { ComponentPortal, PortalInjector } from '@angular/cdk/portal';
+import { ComponentPortal } from '@angular/cdk/portal';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CdkTrapFocus, FocusTrap } from '@angular/cdk/a11y';
@@ -101,11 +101,13 @@ export class RouterOutletSettingsComponent implements OnInit, OnDestroy {
     });
 
     const overlayRef = overlay.create(overlayConfig);
-    const injectionTokens = new WeakMap()
-      .set(OverlayRef, overlayRef)
-      .set(SciRouterOutletElement, routerOutlet);
-
-    const portal = new ComponentPortal(RouterOutletSettingsComponent, null, new PortalInjector(injector, injectionTokens));
+    const portal = new ComponentPortal(RouterOutletSettingsComponent, null, Injector.create({
+      parent: injector,
+      providers: [
+        {provide: OverlayRef, useValue: overlayRef},
+        {provide: SciRouterOutletElement, useValue: routerOutlet},
+      ],
+    }));
     overlayRef.attach(portal);
   }
 }

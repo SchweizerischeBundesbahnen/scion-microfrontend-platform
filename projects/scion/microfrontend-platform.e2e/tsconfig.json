@@ -1,12 +1,11 @@
 {
-  "extends": "../../../tsconfig.base.json",
+  "extends": "../../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../../out-tsc/microfrontend-platform.e2e",
     "module": "commonjs",
-    "target": "es2015",
+    "target": "es2018",
     "types": [
       "jasmine",
-      "jasminewd2",
       "node"
     ]
   }

@@ -31,7 +31,7 @@ describe('RouterOutlet', () => {
     await preferredSizePO.enterPreferredWidth('555px');
     await preferredSizePO.enterPreferredHeight('444px');
     await expect(preferredSizePO.getSize()).toEqual(objectContaining({width: originalWidth, height: originalHeight}));
-    await expect(browserErrors()).toEqual([]);
+    await expect(await browserErrors()).toEqual([]);
   });
 
   it('should allow resetting the preferred size on the outlet', async () => {

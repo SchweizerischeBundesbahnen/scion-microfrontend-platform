@@ -36,7 +36,7 @@ describe('Manifest Registry', () => {
 
       // Verify registration
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capabilityId]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capabilityId]);
     });
   });
 
@@ -59,11 +59,11 @@ describe('Manifest Registry', () => {
 
       // Unregister capability1
       await registratorPO.unregisterCapability({id: capability1Id});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability2Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability2Id]);
 
       // Unregister capability2
       await registratorPO.unregisterCapability({id: capability2Id});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
     it('should allow to unregister a capability by type', async () => {
@@ -89,7 +89,7 @@ describe('Manifest Registry', () => {
 
       // Unregister by 'type2'
       await registratorPO.unregisterCapability({type: 'type2'});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
     it('should allow to unregister a capability by qualifier', async () => {
@@ -126,11 +126,11 @@ describe('Manifest Registry', () => {
 
       // Unregister by qualifier {key: 'c'}
       await registratorPO.unregisterCapability({qualifier: {key: 'c'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability7Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability7Id]);
 
       // Unregister by qualifier {key: 'd'}
       await registratorPO.unregisterCapability({qualifier: {key: 'd'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
     it('should allow to unregister a capability by type and qualifier', async () => {
@@ -170,11 +170,11 @@ describe('Manifest Registry', () => {
 
       // Unregister by type 'type3' and qualifier {key: 'a'}
       await registratorPO.unregisterCapability({type: 'type3', qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability6Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability6Id]);
 
       // Unregister by type 'type3' and qualifier {key: 'b'}
       await registratorPO.unregisterCapability({type: 'type3', qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
     it('should not allow to unregister capabilities from other applications', async () => {
@@ -195,23 +195,23 @@ describe('Manifest Registry', () => {
       const capabilityApp3Id = await registratorApp3PO.registerCapability({type: 'type', qualifier: {key: 'value'}, private: false});
 
       await lookupApp2PO.lookup();
-      await expect(lookupApp2PO.getLookedUpCapabilityIds()).toEqual([capabilityApp2Id]);
+      await expect(await lookupApp2PO.getLookedUpCapabilityIds()).toEqual([capabilityApp2Id]);
       await lookupApp3PO.lookup();
-      await expect(lookupApp3PO.getLookedUpCapabilityIds()).toEqual([capabilityApp3Id]);
+      await expect(await lookupApp3PO.getLookedUpCapabilityIds()).toEqual([capabilityApp3Id]);
 
       // Unregister the capability in 'app-2'
       await registratorApp2PO.unregisterCapability({type: 'type', qualifier: {key: 'value'}});
       await registratorApp2PO.unregisterCapability({type: 'type', qualifier: {key: 'value'}, appSymbolicName: 'app-2'});
       await registratorApp2PO.unregisterCapability({type: 'type', qualifier: {key: 'value'}, appSymbolicName: 'app-3'});
-      await expect(lookupApp2PO.getLookedUpCapabilityIds()).toEqual([]);
-      await expect(lookupApp3PO.getLookedUpCapabilityIds()).toEqual([capabilityApp3Id]);
+      await expect(await lookupApp2PO.getLookedUpCapabilityIds()).toEqual([]);
+      await expect(await lookupApp3PO.getLookedUpCapabilityIds()).toEqual([capabilityApp3Id]);
 
       // Unregister the capability in 'app-3'
       await registratorApp3PO.unregisterCapability({type: 'type', qualifier: {key: 'value'}});
       await registratorApp3PO.unregisterCapability({type: 'type', qualifier: {key: 'value'}, appSymbolicName: 'app-2'});
       await registratorApp3PO.unregisterCapability({type: 'type', qualifier: {key: 'value'}, appSymbolicName: 'app-3'});
-      await expect(lookupApp2PO.getLookedUpCapabilityIds()).toEqual([]);
-      await expect(lookupApp3PO.getLookedUpCapabilityIds()).toEqual([]);
+      await expect(await lookupApp2PO.getLookedUpCapabilityIds()).toEqual([]);
+      await expect(await lookupApp3PO.getLookedUpCapabilityIds()).toEqual([]);
     });
   });
 
@@ -259,15 +259,15 @@ describe('Manifest Registry', () => {
 
       // Lookup capability 1
       await lookupPO.lookup({id: capability1Id});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
 
       // Lookup capability 2
       await lookupPO.lookup({id: capability2Id});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability2Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability2Id]);
 
       // Lookup capability 3
       await lookupPO.lookup({id: capability3Id});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability3Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability3Id]);
     });
 
     it('should allow to look up capabilities by type', async () => {
@@ -286,15 +286,15 @@ describe('Manifest Registry', () => {
 
       // Lookup capability 1
       await lookupPO.lookup({type: 'type1'});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
 
       // Lookup capability 2
       await lookupPO.lookup({type: 'type2'});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability2Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability2Id]);
 
       // Lookup capability 3
       await lookupPO.lookup({type: 'type3'});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability3Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability3Id]);
     });
 
     it('should allow to look up capabilities by qualifier', async () => {
@@ -313,15 +313,15 @@ describe('Manifest Registry', () => {
 
       // Lookup capability 1
       await lookupPO.lookup({qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
 
       // Lookup capability 2
       await lookupPO.lookup({qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability2Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability2Id]);
 
       // Lookup capability 3
       await lookupPO.lookup({qualifier: {key: 'c'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability3Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability3Id]);
     });
 
     it('should allow to look up capabilities by type and qualifier', async () => {
@@ -343,27 +343,27 @@ describe('Manifest Registry', () => {
 
       // Lookup capability 1
       await lookupPO.lookup({type: 'type1', qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
 
       // Lookup capability 2
       await lookupPO.lookup({type: 'type2', qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability2Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability2Id]);
 
       // Lookup capability 3
       await lookupPO.lookup({type: 'type3', qualifier: {key: 'c'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability3Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability3Id]);
 
       // Lookup capability 4
       await lookupPO.lookup({type: 'type1', qualifier: {key: 'd'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability4Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability4Id]);
 
       // Lookup capability 5
       await lookupPO.lookup({type: 'type2', qualifier: {key: 'e'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability5Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability5Id]);
 
       // Lookup capability 6
       await lookupPO.lookup({type: 'type3', qualifier: {key: 'f'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability6Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability6Id]);
     });
 
     it('should allow to look up public capabilities from other apps for which the requesting app has declared an intention', async () => {
@@ -385,10 +385,10 @@ describe('Manifest Registry', () => {
 
       // Lookup the capability from 'app-2'
       await lookupApp2PO.lookup();
-      await expect(lookupApp2PO.getLookedUpCapabilityIds()).toEqual([publicCapabilityApp1Id]);
+      await expect(await lookupApp2PO.getLookedUpCapabilityIds()).toEqual([publicCapabilityApp1Id]);
 
       await lookupApp2PO.lookup({appSymbolicName: 'app-1'});
-      await expect(lookupApp2PO.getLookedUpCapabilityIds()).toEqual([publicCapabilityApp1Id]);
+      await expect(await lookupApp2PO.getLookedUpCapabilityIds()).toEqual([publicCapabilityApp1Id]);
     });
 
     it('should not allow to look up private capabilities from other apps for which the requesting app has declared an intention', async () => {
@@ -410,7 +410,7 @@ describe('Manifest Registry', () => {
 
       // Lookup the capability from 'app-2'
       await lookupApp2PO.lookup();
-      await expect(lookupApp2PO.getLookedUpCapabilityIds()).toEqual([]);
+      await expect(await lookupApp2PO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
     it('should not allow to look up public capabilities from other apps for which the requesting app has not declared an intention', async () => {
@@ -427,7 +427,7 @@ describe('Manifest Registry', () => {
 
       // Lookup the capability from 'app-2'
       await lookupApp2PO.lookup();
-      await expect(lookupApp2PO.getLookedUpCapabilityIds()).toEqual([]);
+      await expect(await lookupApp2PO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
     it('should allow observing capabilities', async () => {
@@ -442,7 +442,7 @@ describe('Manifest Registry', () => {
 
       // Register a capability
       const capability1Id = await registratorPO.registerCapability({type: 'type1', qualifier: {key: 'a'}, private: true});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
 
       // Register a capability
       const capability2Id = await registratorPO.registerCapability({type: 'type2', qualifier: {key: 'b'}, private: true});
@@ -458,11 +458,11 @@ describe('Manifest Registry', () => {
 
       // Unregister a capability2Id
       await registratorPO.unregisterCapability({id: capability2Id});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability1Id]);
 
       // Unregister a capability1Id
       await registratorPO.unregisterCapability({id: capability1Id});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual([]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([]);
     });
   });
 
@@ -483,7 +483,7 @@ describe('Manifest Registry', () => {
 
       // Verify registration
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intentionId]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intentionId]);
     });
 
     it('should not allow to register an intention if the API to manage intentions is disabled for the requesting application', async () => {
@@ -528,11 +528,11 @@ describe('Manifest Registry', () => {
 
       // Unregister intention1Id
       await registratorPO.unregisterIntentions({id: intention1Id});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention2Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention2Id]);
 
       // Unregister intention2Id
       await registratorPO.unregisterIntentions({id: intention2Id});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
 
     it('should allow to unregister an intention by type', async () => {
@@ -558,7 +558,7 @@ describe('Manifest Registry', () => {
 
       // Unregister by 'type2'
       await registratorPO.unregisterIntentions({type: 'type2'});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
 
     it('should allow to unregister an intention by qualifier', async () => {
@@ -595,11 +595,11 @@ describe('Manifest Registry', () => {
 
       // Unregister by qualifier {key: 'c'}
       await registratorPO.unregisterIntentions({qualifier: {key: 'c'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention7Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention7Id]);
 
       // Unregister by qualifier {key: 'd'}
       await registratorPO.unregisterIntentions({qualifier: {key: 'd'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
 
     it('should allow to unregister an intention by type and qualifier', async () => {
@@ -639,11 +639,11 @@ describe('Manifest Registry', () => {
 
       // Unregister by type 'type3' and qualifier {key: 'a'}
       await registratorPO.unregisterIntentions({type: 'type3', qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention6Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention6Id]);
 
       // Unregister by type 'type3' and qualifier {key: 'b'}
       await registratorPO.unregisterIntentions({type: 'type3', qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
 
     it('should not allow to unregister intentions from other applications', async () => {
@@ -663,20 +663,20 @@ describe('Manifest Registry', () => {
       const intentionApp3Id = await registratorApp3PO.registerIntention({type: 'type', qualifier: {key: 'value'}});
 
       await lookupApp2PO.lookup();
-      await expect(lookupApp2PO.getLookedUpIntentionIds()).toEqual([intentionApp2Id, intentionApp3Id]);
+      await expect(await lookupApp2PO.getLookedUpIntentionIds()).toEqual([intentionApp2Id, intentionApp3Id]);
 
       // Unregister the intention in 'app-2'
       await registratorApp2PO.unregisterIntentions({type: 'type', qualifier: {key: 'value'}});
       await registratorApp2PO.unregisterIntentions({type: 'type', qualifier: {key: 'value'}, appSymbolicName: 'app-2'});
       await registratorApp2PO.unregisterIntentions({type: 'type', qualifier: {key: 'value'}, appSymbolicName: 'app-3'});
-      await expect(lookupApp2PO.getLookedUpIntentionIds()).toEqual([intentionApp3Id]);
+      await expect(await lookupApp2PO.getLookedUpIntentionIds()).toEqual([intentionApp3Id]);
 
       // Unregister the intention in 'app-3'
       await registratorApp3PO.unregisterIntentions({type: 'type', qualifier: {key: 'value'}});
       await registratorApp3PO.unregisterIntentions({type: 'type', qualifier: {key: 'value'}, appSymbolicName: 'app-2'});
       await registratorApp3PO.unregisterIntentions({type: 'type', qualifier: {key: 'value'}, appSymbolicName: 'app-3'});
-      await expect(lookupApp2PO.getLookedUpIntentionIds()).toEqual([]);
-      await expect(lookupApp2PO.getLookedUpIntentionIds()).toEqual([]);
+      await expect(await lookupApp2PO.getLookedUpIntentionIds()).toEqual([]);
+      await expect(await lookupApp2PO.getLookedUpIntentionIds()).toEqual([]);
     });
   });
 
@@ -724,15 +724,15 @@ describe('Manifest Registry', () => {
 
       // Lookup intention 1
       await lookupPO.lookup({id: intention1Id});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
 
       // Lookup intention 2
       await lookupPO.lookup({id: intention2Id});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention2Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention2Id]);
 
       // Lookup intention 3
       await lookupPO.lookup({id: intention3Id});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention3Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention3Id]);
     });
 
     it('should allow to look up intentions by type', async () => {
@@ -751,15 +751,15 @@ describe('Manifest Registry', () => {
 
       // Lookup intention 1
       await lookupPO.lookup({type: 'type1'});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
 
       // Lookup intention 2
       await lookupPO.lookup({type: 'type2'});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention2Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention2Id]);
 
       // Lookup intention 3
       await lookupPO.lookup({type: 'type3'});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention3Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention3Id]);
     });
 
     it('should allow to look up intentions by qualifier', async () => {
@@ -778,15 +778,15 @@ describe('Manifest Registry', () => {
 
       // Lookup intention 1
       await lookupPO.lookup({qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
 
       // Lookup intention 2
       await lookupPO.lookup({qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention2Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention2Id]);
 
       // Lookup intention 3
       await lookupPO.lookup({qualifier: {key: 'c'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention3Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention3Id]);
     });
 
     it('should allow to look up intentions by type and qualifier', async () => {
@@ -808,27 +808,27 @@ describe('Manifest Registry', () => {
 
       // Lookup intention 1
       await lookupPO.lookup({type: 'type1', qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
 
       // Lookup intention 2
       await lookupPO.lookup({type: 'type2', qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention2Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention2Id]);
 
       // Lookup intention 3
       await lookupPO.lookup({type: 'type3', qualifier: {key: 'c'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention3Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention3Id]);
 
       // Lookup intention 4
       await lookupPO.lookup({type: 'type1', qualifier: {key: 'd'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention4Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention4Id]);
 
       // Lookup intention 5
       await lookupPO.lookup({type: 'type2', qualifier: {key: 'e'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention5Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention5Id]);
 
       // Lookup intention 6
       await lookupPO.lookup({type: 'type3', qualifier: {key: 'f'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention6Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention6Id]);
     });
 
     it('should allow to look up intentions from other apps', async () => {
@@ -845,10 +845,10 @@ describe('Manifest Registry', () => {
 
       // Lookup the intention from 'app-2'
       await lookupApp2PO.lookup();
-      await expect(lookupApp2PO.getLookedUpIntentionIds()).toEqual([intentionApp1Id]);
+      await expect(await lookupApp2PO.getLookedUpIntentionIds()).toEqual([intentionApp1Id]);
 
       await lookupApp2PO.lookup({appSymbolicName: 'app-1'});
-      await expect(lookupApp2PO.getLookedUpIntentionIds()).toEqual([intentionApp1Id]);
+      await expect(await lookupApp2PO.getLookedUpIntentionIds()).toEqual([intentionApp1Id]);
     });
 
     it('should allow observing intentions', async () => {
@@ -863,7 +863,7 @@ describe('Manifest Registry', () => {
 
       // Register a intention
       const intention1Id = await registratorPO.registerIntention({type: 'type1', qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
 
       // Register a intention
       const intention2Id = await registratorPO.registerIntention({type: 'type2', qualifier: {key: 'b'}});
@@ -879,11 +879,11 @@ describe('Manifest Registry', () => {
 
       // Unregister a intention2Id
       await registratorPO.unregisterIntentions({id: intention2Id});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id]);
 
       // Unregister a intention1Id
       await registratorPO.unregisterIntentions({id: intention1Id});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual([]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
   });
 });

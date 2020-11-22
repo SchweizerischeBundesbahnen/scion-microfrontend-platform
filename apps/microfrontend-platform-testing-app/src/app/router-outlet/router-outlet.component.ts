@@ -72,12 +72,12 @@ export class RouterOutletComponent {
     });
   }
 
-  public onActivate(event: CustomEvent): void {
-    this._consoleService.log('sci-router-outlet:activate', event.detail);
+  public onActivate(event: Event): void {
+    this._consoleService.log('sci-router-outlet:activate', (event as CustomEvent).detail);
   }
 
-  public onDeactivate(event: CustomEvent): void {
-    this._consoleService.log('sci-router-outlet:deactivate', event.detail);
+  public onDeactivate(event: Event): void {
+    this._consoleService.log('sci-router-outlet:deactivate', (event as CustomEvent).detail);
   }
 
   public get empty$(): Observable<boolean> {

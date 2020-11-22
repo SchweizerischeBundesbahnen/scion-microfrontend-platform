@@ -48,8 +48,8 @@ export class TestingAppPO {
    *   right: RightPagePO,
    * });
    *
-   * const leftPagePO = await pagePOs.get<PublishMessagePagePO>('left');
-   * const mainPagePO = await pagePOs.get<PublishMessagePagePO>('main');
+   * const leftPagePO = pagePOs.get<PublishMessagePagePO>('left');
+   * const mainPagePO = pagePOs.get<PublishMessagePagePO>('main');
    * ```
    *
    * ### Page object class:

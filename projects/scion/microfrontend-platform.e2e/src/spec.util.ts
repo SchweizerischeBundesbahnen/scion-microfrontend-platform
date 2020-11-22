@@ -192,7 +192,14 @@ export async function findAsync<T>(items: T[], predicate: (item: T) => Promise<b
  * Expects the given function to be rejected.
  *
  * Jasmine 3.5 provides 'expectAsync' expectation with the 'toBeRejectedWithError' matcher.
- * But, it does not support to test against a regular expression.
+ * But, it does not support to test against a regular expression if the error is not of type 'Error'.
+ *
+ * The following expectation works:
+ *   await expectAsync(Promise.reject(new Error("[SomeError] was thrown."))).toBeRejectedWithError(/SomeError/);
+ *
+ * Whereas rejecting by providing only a string value doesn't:
+ *   await expectAsync(Promise.reject("[SomeError] was thrown.")).toBeRejectedWithError(/SomeError/);
+ *
  * @see https://jasmine.github.io/api/3.5/async-matchers.html
  */
 export function expectToBeRejectedWithError(promise: Promise<any>, expected?: RegExp): Promise<void> {
@@ -213,7 +220,7 @@ export function expectToBeRejectedWithError(promise: Promise<any>, expected?: Re
         fail(`Expected promise to be rejected with a reason matching '${expected.source}', but was '${reason}'.`);
       }
       else {
-        expect(true).toBeTruthy();
+        expect(true).toBe(true);
       }
     });
 }

@@ -102,7 +102,7 @@ describe('MicrofrontendPlatform', () => {
       Beans.register(Bean, {eager: true});
     });
 
-    expect(constructed).toBeTruthy();
+    expect(constructed).toBeTrue();
   });
 
   it('should construct eager beans in runlevel 1', async () => {
