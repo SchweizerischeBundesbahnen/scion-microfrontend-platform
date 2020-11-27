@@ -15,7 +15,7 @@ import { RouterOutlets } from './router-outlet.element';
 import { OutletRouter } from './outlet-router';
 import { NavigationOptions } from './metadata';
 import { ApplicationConfig } from '../../host/platform-config';
-import { serveManifest } from '../../spec.util.spec';
+import { expectPromise, serveManifest } from '../../spec.util.spec';
 import { UUID } from '@scion/toolkit/uuid';
 import { mapToBody } from '../../messaging.model';
 import { Beans } from '@scion/toolkit/bean-manager';
@@ -42,7 +42,7 @@ describe('OutletRouter', () => {
           params: new Map().set('id', 123),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}order/123`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order/123`);
       });
 
       it('should substitute multiple named path params (1)', async () => {
@@ -50,7 +50,7 @@ describe('OutletRouter', () => {
           params: new Map().set('orderId', 123).set('productId', 456),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}order/123/product/456`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order/123/product/456`);
       });
 
       it('should substitute multiple named path params (2)', async () => {
@@ -58,7 +58,7 @@ describe('OutletRouter', () => {
           params: new Map().set('orderId', 123).set('productId', 456),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}order/123/product/456/vendor`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order/123/product/456/vendor`);
       });
 
       it('should substitute a named query param', async () => {
@@ -66,7 +66,7 @@ describe('OutletRouter', () => {
           params: new Map().set('orderId', 123).set('productId', 456),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}order/123?product=456`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order/123?product=456`);
       });
 
       it('should substitute multiple named query params', async () => {
@@ -74,7 +74,7 @@ describe('OutletRouter', () => {
           params: new Map().set('orderId', 123).set('productId', 456).set('stock', 5),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}order/123?product=456&stock=5`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order/123?product=456&stock=5`);
       });
 
       it('should substitute multiple named query params (2)', async () => {
@@ -82,7 +82,7 @@ describe('OutletRouter', () => {
           params: new Map().set('orderId', 123).set('productId', 456).set('stock', 5),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}order/123?product=456&stock=5&vendor=true`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order/123?product=456&stock=5&vendor=true`);
       });
 
       it('should substitute a named matrix param', async () => {
@@ -90,7 +90,7 @@ describe('OutletRouter', () => {
           params: new Map().set('orderId', 123).set('productId', 456),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}order/123;product=456`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order/123;product=456`);
       });
 
       it('should substitute multiple named matrix params', async () => {
@@ -98,7 +98,7 @@ describe('OutletRouter', () => {
           params: new Map().set('orderId', 123).set('productId', 456).set('stock', 5),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}order/123;product=456;stock=5`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order/123;product=456;stock=5`);
       });
 
       it('should substitute multiple named matrix params (2)', async () => {
@@ -106,7 +106,7 @@ describe('OutletRouter', () => {
           params: new Map().set('orderId', 123).set('productId', 456).set('stock', 5),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}order/123;product=456;stock=5;vendor=true`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order/123;product=456;stock=5;vendor=true`);
       });
 
       it('should substitute a named fragment param (1)', async () => {
@@ -114,7 +114,7 @@ describe('OutletRouter', () => {
           params: new Map().set('orderId', 123).set('productId', 456).set('fragment', 'abc'),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}order/123#abc`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order/123#abc`);
       });
 
       it('should substitute a named fragment param (2)', async () => {
@@ -122,7 +122,7 @@ describe('OutletRouter', () => {
           params: new Map().set('orderId', 123).set('productId', 456).set('fragment', 'abc'),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}order/123#fragmentabc`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order/123#fragmentabc`);
       });
 
       it('should substitute named path params, named query params, named matrix params and named fragment params', async () => {
@@ -137,7 +137,7 @@ describe('OutletRouter', () => {
             .set('param7', 'PARAM7'),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}a/PARAM1/b/PARAM2;mp1=PARAM3;mp2=PARAM4;mp3=PARAM1;m4=static?qp1=PARAM5&qp2=PARAM6&qp3=static#frag_PARAM7`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a/PARAM1/b/PARAM2;mp1=PARAM3;mp2=PARAM4;mp3=PARAM1;m4=static?qp1=PARAM5&qp2=PARAM6&qp3=static#frag_PARAM7`);
       });
 
       it('should substitute falsy params', async () => {
@@ -149,7 +149,7 @@ describe('OutletRouter', () => {
             .set('undefined', undefined),
           relativeTo: options.relativeTo,
         });
-        await expectAsync(url).toBeResolvedTo(`${options.expectedBasePath}a?orderId=0&flag=false&object=null&undefined=undefined`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a?orderId=0&flag=false&object=null&undefined=undefined`);
       });
     }
 

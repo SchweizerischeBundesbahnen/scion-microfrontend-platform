@@ -13,7 +13,7 @@ import { PlatformIntentClient } from './host/platform-intent-client';
 import { ManifestRegistry } from './host/manifest-registry/manifest-registry';
 import { ApplicationRegistry } from './host/application-registry';
 import { PlatformConfigLoader } from './host/platform-config-loader';
-import { BehaviorSubject, from, Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { MicroApplicationConfig } from './client/micro-application-config';
 import { ApplicationConfig, PlatformConfig } from './host/platform-config';
 import { PlatformPropertyService } from './platform-property-service';
@@ -23,10 +23,8 @@ import { ManifestCollector } from './host/manifest-collector';
 import { PlatformMessageClient } from './host/platform-message-client';
 import { PLATFORM_SYMBOLIC_NAME } from './host/platform.constants';
 import { Defined } from '@scion/toolkit/util';
-import { HostPlatformState } from './client/host-platform-state';
 import { MessageBroker } from './host/message-broker/message-broker';
-import { PlatformTopics } from './ɵmessaging.model';
-import { filter, take, takeUntil } from 'rxjs/operators';
+import { filter, take } from 'rxjs/operators';
 import { OutletRouter } from './client/router-outlet/outlet-router';
 import { SciRouterOutletElement } from './client/router-outlet/router-outlet.element';
 import { FocusInEventDispatcher } from './client/focus/focus-in-event-dispatcher';
@@ -137,6 +135,8 @@ export class MicrofrontendPlatform {
    */
   public static startHost(platformConfig: ApplicationConfig[] | PlatformConfig | Type<PlatformConfigLoader>, hostAppConfig?: MicroApplicationConfig): Promise<void> {
     return MicrofrontendPlatform.startPlatform(() => {
+        const ɵPlatformBrokerGatewaySymbol = Symbol('INTERNAL_PLATFORM_BROKER_GATEWAY');
+
         // Construct the message broker in runlevel 0 to buffer connect requests of micro applications.
         Beans.registerInitializer({useFunction: async () => void (Beans.get(MessageBroker)), runlevel: Runlevel.Zero});
         // Fetch manifests in runlevel 0.
@@ -144,6 +144,10 @@ export class MicrofrontendPlatform {
         // Install activator microfrontends in runlevel 3, so messaging is enabled and eager beans constructed
         Beans.registerInitializer({useClass: ActivatorInstaller, runlevel: Runlevel.Three});
         Beans.registerInitializer(() => SciRouterOutletElement.define());
+
+        // Install initializer to block startup until connected to the message broker. It rejects if the maximal broker discovery timeout elapses.
+        Beans.registerInitializer({useFunction: () => Beans.get(BrokerGateway).whenConnected(), runlevel: Runlevel.One});
+        Beans.registerInitializer({useFunction: () => Beans.get<BrokerGateway>(ɵPlatformBrokerGatewaySymbol).whenConnected(), runlevel: Runlevel.One});
 
         Beans.register(IS_PLATFORM_HOST, {useValue: true});
         Beans.register(HostPlatformAppProvider);
@@ -154,7 +158,6 @@ export class MicrofrontendPlatform {
         Beans.register(PlatformConfigLoader, createConfigLoaderBeanDescriptor(platformConfig));
         Beans.register(ManifestRegistry, {useClass: ɵManifestRegistry, eager: true});
         Beans.register(ApplicationRegistry, {eager: true});
-        Beans.register(HostPlatformState);
         Beans.register(ContextService);
         Beans.register(FocusTracker, {eager: true});
         Beans.register(FocusInEventDispatcher, {eager: true});
@@ -166,7 +169,6 @@ export class MicrofrontendPlatform {
         Beans.registerIfAbsent(RelativePathResolver);
         Beans.registerIfAbsent(RouterOutletUrlAssigner);
 
-        const ɵPlatformBrokerGatewaySymbol = Symbol('INTERNAL_PLATFORM_BROKER_GATEWAY');
         Beans.register(ɵPlatformBrokerGatewaySymbol, provideBrokerGateway(PLATFORM_SYMBOLIC_NAME, hostAppConfig && hostAppConfig.messaging));
         Beans.registerIfAbsent(PlatformMessageClient, provideMessageClient(ɵPlatformBrokerGatewaySymbol));
         Beans.registerIfAbsent(PlatformIntentClient, provideIntentClient(ɵPlatformBrokerGatewaySymbol));
@@ -184,16 +186,10 @@ export class MicrofrontendPlatform {
         else {
           Beans.registerIfAbsent(MessageClient, {useExisting: PlatformMessageClient});
           Beans.registerIfAbsent(IntentClient, {useExisting: PlatformIntentClient});
+          Beans.registerIfAbsent(BrokerGateway, {useExisting: ɵPlatformBrokerGatewaySymbol});
         }
-
-        // Notify micro application instances about host platform state changes.
-        MicrofrontendPlatform.state$
-          .pipe(takeUntil(from(MicrofrontendPlatform.whenState(PlatformState.Stopping))))
-          .subscribe(state => {
-            Beans.get(PlatformMessageClient).publish(PlatformTopics.HostPlatformState, state, {retain: true});
-          });
       },
-    ).then(() => Beans.get(HostPlatformState).whenStarted()); // Wait until the host platform reported its 'started' state before signaling the platform as started.
+    );
   }
 
   /**
@@ -214,9 +210,8 @@ export class MicrofrontendPlatform {
    * During startup, the platform cycles through different {@link Runlevel runlevels} for running initializers, enabling the controlled initialization of platform services. Initializers can specify a
    * runlevel in which to execute. The platform enters the state {@link PlatformState.Started} after all initializers have completed.
    *
-   * - In runlevel 0, the platform fetches manifests of registered micro applications.
    * - In runlevel 1, the platform constructs eager beans.
-   * - From runlevel 2 and above, messaging is enabled. This is the default runlevel at which initializers execute if not specifying any runlevel.
+   * - Runlevel 2 is the default runlevel at which initializers execute if not specifying any runlevel.
    *
    * @param  config - Identity of the micro application to connect.
    * @return A Promise that resolves when the platform started successfully, or that rejects if the startup fails.
@@ -226,11 +221,15 @@ export class MicrofrontendPlatform {
         // Obtain platform properties before signaling the platform as started to allow synchronous retrieval of platform properties.
         Beans.registerInitializer({
           useFunction: async () => {
-            if (await MicrofrontendPlatform.isConnectedToHost()) {
-              await Beans.get(PlatformPropertyService).whenPropertiesLoaded;
+            if (Beans.get(BrokerGateway) instanceof NullBrokerGateway) {
+              return;
             }
+            await Beans.get(PlatformPropertyService).whenPropertiesLoaded;
           }, runlevel: Runlevel.Two,
         });
+        // Install initializer to block startup until connected to the message broker. It rejects if the maximal broker discovery timeout elapses.
+        Beans.registerInitializer({useFunction: () => Beans.get(BrokerGateway).whenConnected(), runlevel: Runlevel.One});
+
         Beans.registerInitializer(() => SciRouterOutletElement.define());
 
         Beans.register(IS_PLATFORM_HOST, {useValue: false});
@@ -241,7 +240,6 @@ export class MicrofrontendPlatform {
         Beans.registerIfAbsent(BrokerGateway, provideBrokerGateway(config.symbolicName, config.messaging));
         Beans.registerIfAbsent(MessageClient, provideMessageClient(BrokerGateway));
         Beans.registerIfAbsent(IntentClient, provideIntentClient(BrokerGateway));
-        Beans.register(HostPlatformState);
         Beans.registerIfAbsent(OutletRouter);
         Beans.registerIfAbsent(RelativePathResolver);
         Beans.registerIfAbsent(RouterOutletUrlAssigner);

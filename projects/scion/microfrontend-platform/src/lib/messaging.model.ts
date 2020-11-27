@@ -238,7 +238,6 @@ export function throwOnErrorStatus<BODY>(): MonoTypeOperatorFunction<TopicMessag
   });
 }
 
-
 /**
  * Maps each message to its body.
  *

@@ -83,10 +83,6 @@ export enum PlatformTopics {
    */
   RequestGatewayInfo = 'ɵGATEWAY_INFO',
   /**
-   * Allows observing the platform state of the host. The last state is retained on the topic.
-   */
-  HostPlatformState = 'ɵHOST_PLATFORM_STATE',
-  /**
    * When a client gains the focus it publishes a retained event to this topic.
    */
   FocusIn = 'ɵFOCUS_IN',

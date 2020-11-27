@@ -17,14 +17,13 @@ import { Logger } from '../../logger';
 import { ManifestRegistry } from '../../host/manifest-registry/manifest-registry';
 import { ApplicationConfig } from '../../host/platform-config';
 import { PLATFORM_SYMBOLIC_NAME } from '../../host/platform.constants';
-import { expectEmissions, expectToBeRejectedWithError, ObserveCaptor, serveManifest, waitForCondition } from '../../spec.util.spec';
+import { expectEmissions, expectPromise, ObserveCaptor, serveManifest, waitForCondition } from '../../spec.util.spec';
 import { MicrofrontendPlatform } from '../../microfrontend-platform';
 import { Defined, Objects } from '@scion/toolkit/util';
 import { ClientRegistry } from '../../host/message-broker/client.registry';
 import { MessageEnvelope } from '../../ɵmessaging.model';
 import { PlatformIntentClient } from '../../host/platform-intent-client';
 import { Beans } from '@scion/toolkit/bean-manager';
-import Spy = jasmine.Spy;
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
 const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<string, any> => msg.headers;
@@ -73,7 +72,7 @@ describe('Messaging', () => {
     const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl, intentionCheckDisabled: true}, {symbolicName: 'client-app', manifestUrl: clientManifestUrl}];
     await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
-    await expectAsync(Beans.get(IntentClient).publish({type: 'some-type'})).toBeResolved();
+    await expectPromise(Beans.get(IntentClient).publish({type: 'some-type'})).toResolve();
   });
 
   it('should not allow issuing an intent for which the app has not declared a respective intention, if \'intention check\' is enabled or not specified for that app', async () => {
@@ -82,7 +81,7 @@ describe('Messaging', () => {
     const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}, {symbolicName: 'client-app', manifestUrl: clientManifestUrl}];
     await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
-    await expectToBeRejectedWithError(Beans.get(IntentClient).publish({type: 'some-type'}), /NotQualifiedError/);
+    await expectPromise(Beans.get(IntentClient).publish({type: 'some-type'})).toReject(/NotQualifiedError/);
   });
 
   it('should dispatch a message to subscribers with a wildcard subscription', async () => {
@@ -296,20 +295,82 @@ describe('Messaging', () => {
     }
   });
 
-  it('should log an error if the message broker cannot be discovered', async () => {
-    const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'info', ['warn']]);
+  it('should reject startup promise if the message broker cannot be discovered', async () => {
+    const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'info', 'warn']);
     Beans.register(Logger, {useValue: loggerSpy});
-    const logCapturePromise = waitUntilInvoked(loggerSpy.error);
 
-    await MicrofrontendPlatform.connectToHost({symbolicName: 'client-app', messaging: {brokerDiscoverTimeout: 250}});
+    const startup = MicrofrontendPlatform.connectToHost({symbolicName: 'client-app', messaging: {brokerDiscoverTimeout: 250}});
+    await expectPromise(startup).toReject(/PlatformStartupError/);
 
-    await expectAsync(logCapturePromise).toBeResolved();
     expect(loggerSpy.error).toHaveBeenCalledWith('[BrokerDiscoverTimeoutError] Message broker not discovered within the 250ms timeout. Messages cannot be published or received.');
   });
 
-  it('should throw an error when publishing a message and if the message broker is not discovered', async () => {
-    await MicrofrontendPlatform.connectToHost({symbolicName: 'client-app', messaging: {brokerDiscoverTimeout: 250}});
-    await expectToBeRejectedWithError(Beans.get(MessageClient).publish('some-topic'), /BrokerDiscoverTimeoutError/);
+  it('should not error with `BrokerDiscoverTimeoutError` when starting the platform host and initializers in runlevel 0 take a long time to complete, e.g., when fetching manifests', async () => {
+    const brokerDiscoverTimeout = 250;
+    const initializerDuration = 1000;
+
+    // Register a long running initializer in runlevel 0
+    let initializerCompleted = false;
+    Beans.registerInitializer({
+      useFunction: () => new Promise<void>(resolve => setTimeout(() => {
+        initializerCompleted = true;
+        resolve();
+      }, initializerDuration)),
+      runlevel: 0,
+    });
+
+    // Mock the logger
+    const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'info', 'warn']);
+    Beans.register(Logger, {useValue: loggerSpy});
+
+    const manifestUrl = serveManifest({name: 'Host Application'});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+    const startup = MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout}});
+
+    await expectPromise(startup).toResolve();
+    expect(initializerCompleted).toBeTrue();
+    expect(loggerSpy.error).not.toHaveBeenCalled();
+  });
+
+  it('should not error with `BrokerDiscoverTimeoutError` when publishing a message in runlevel 0 and runlevel 0 takes a long time to complete (messaging only enabled in runlevel 2)', async () => {
+    const brokerDiscoverTimeout = 250;
+    const initializerDuration = 1000;
+
+    // Publish a message in runlevel 0
+    Beans.registerInitializer({
+      useFunction: () => {
+        Beans.get(MessageClient).publish('some-topic', 'payload', {retain: true});
+        return Promise.resolve();
+      },
+      runlevel: 0,
+    });
+
+    // Register a long running initializer in runlevel 0
+    Beans.registerInitializer({
+      useFunction: () => new Promise<void>(resolve => setTimeout(() => {
+        resolve();
+      }, initializerDuration)),
+      runlevel: 0,
+    });
+
+    // Mock the logger
+    const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'info', 'warn']);
+    Beans.register(Logger, {useValue: loggerSpy});
+
+    // Start the host
+    const manifestUrl = serveManifest({name: 'Host Application'});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+    const startup = MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout}});
+
+    // Expect the startup not to error
+    await expectPromise(startup).toResolve();
+    expect(loggerSpy.error).not.toHaveBeenCalled();
+
+    // Expect the message to be published
+    const messageCaptor = new ObserveCaptor(bodyExtractFn);
+    Beans.get(MessageClient).observe$('some-topic').subscribe(messageCaptor);
+    await messageCaptor.waitUntilEmitCount(1);
+    expect(messageCaptor.getLastValue()).toEqual('payload');
   });
 
   describe('Separate registries for the platform and the host client app', () => {
@@ -334,7 +395,7 @@ describe('Messaging', () => {
       expect(hostClientIntentCaptor.getLastValue()).toBeUndefined();
 
       // Verify host-app intent client not allowed to issue the intent.
-      await expectToBeRejectedWithError(Beans.get(IntentClient).publish({type: 'some-capability'}), /NotQualifiedError/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'some-capability'})).toReject(/NotQualifiedError/);
     });
 
     it('should dispatch an intent only to the host-app intent client', async () => {
@@ -357,7 +418,7 @@ describe('Messaging', () => {
       expect(hostClientIntentCaptor.getLastValue()).toBeDefined();
 
       // Verify platform intent client not allowed to issue the intent.
-      await expectToBeRejectedWithError(Beans.get(PlatformIntentClient).publish({type: 'some-host-app-capability'}), /NotQualifiedError/);
+      await expectPromise(Beans.get(PlatformIntentClient).publish({type: 'some-host-app-capability'})).toReject(/NotQualifiedError/);
     });
   });
 
@@ -376,60 +437,60 @@ describe('Messaging', () => {
 
     // publish 'message 1a'
     await Beans.get(MessageClient).publish('topic', 'message 1a', {retain: true});
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'message 1a'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'message 1a'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'message 1a'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1a'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 1a'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 1a'})).toResolve();
 
     // publish 'message 1b'
     await Beans.get(MessageClient).publish('topic', 'message 1b', {retain: true});
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'message 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'message 1b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 1b'})).toResolve();
 
     // unsubscribe observable 1
     subscription1.unsubscribe();
 
     // publish 'message 2a'
     await Beans.get(MessageClient).publish('topic', 'message 2a', {retain: true});
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'message 2a'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'message 2a'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 2a'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2a'})).toResolve();
 
     // publish 'message 2b'
     await Beans.get(MessageClient).publish('topic', 'message 2b', {retain: true});
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'message 2b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 2b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toResolve();
 
     // unsubscribe observable 3
     subscription3.unsubscribe();
 
     // publish 'message 3a'
     await Beans.get(MessageClient).publish('topic', 'message 3a', {retain: true});
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'message 3a'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 3a'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toResolve();
 
     // publish 'message 3b'
     await Beans.get(MessageClient).publish('topic', 'message 3b', {retain: true});
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'message 3b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 3b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toResolve();
 
     // unsubscribe observable 2
     subscription2.unsubscribe();
 
     // publish 'message 4a'
     await Beans.get(MessageClient).publish('topic', 'message 4a', {retain: true});
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'message 3b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 3b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toResolve();
 
     // publish 'message 4b'
     await Beans.get(MessageClient).publish('topic', 'message 4b', {retain: true});
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'message 3b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 3b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toResolve();
   });
 
   it('should allow multiple subscriptions to the same intent in the same client', async () => {
@@ -447,60 +508,60 @@ describe('Messaging', () => {
 
     // issue 'intent 1a'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 1a');
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'intent 1a'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'intent 1a'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'intent 1a'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1a'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 1a'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 1a'})).toResolve();
 
     // issue 'intent 1b'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 1b');
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'intent 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'intent 1b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 1b'})).toResolve();
 
     // unsubscribe observable 1
     subscription1.unsubscribe();
 
     // issue 'intent 2a'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 2a');
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'intent 2a'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'intent 2a'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 2a'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2a'})).toResolve();
 
     // issue 'intent 2b'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 2b');
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'intent 2b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 2b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toResolve();
 
     // unsubscribe observable 3
     subscription3.unsubscribe();
 
     // issue 'intent 3a'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 3a');
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'intent 3a'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 3a'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toResolve();
 
     // issue 'intent 3b'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 3b');
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'intent 3b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 3b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toResolve();
 
     // unsubscribe observable 2
     subscription2.unsubscribe();
 
     // issue 'intent 4a'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 4a');
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'intent 3b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 3b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toResolve();
 
     // issue 'intent 4b'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 4b');
-    await expectAsync(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver2$, {body: 'intent 3b'})).toBeResolved();
-    await expectAsync(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toBeResolved();
+    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 3b'})).toResolve();
+    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toResolve();
   });
 
   it('should warn if an intent cannot be uniquely resolved to a capability of an application', async () => {
@@ -875,6 +936,8 @@ describe('Messaging', () => {
       await MicrofrontendPlatform.startHost([]);
 
       const subscription = Beans.get(PlatformMessageClient).observe$('some-topic').subscribe();
+      await waitUntilSubscriberCount('some-topic', 1);
+
       const testee = new Subject<void>()
         .pipe(
           takeUntilUnsubscribe('some-topic', PlatformMessageClient),
@@ -885,7 +948,7 @@ describe('Messaging', () => {
       // unsubscribe from the topic
       subscription.unsubscribe();
 
-      await expectAsync(testee).toBeResolved();
+      await expectPromise(testee).toResolve();
     });
 
     it('should complete the source observable immediately when no subscriber is subscribed', async () => {
@@ -898,7 +961,7 @@ describe('Messaging', () => {
         )
         .toPromise();
 
-      await expectAsync(testee).toBeResolved();
+      await expectPromise(testee).toResolve();
     });
   });
 });
@@ -949,20 +1012,6 @@ function expectMessage(actual: TopicMessage): { toMatch: (expected: TopicMessage
       }));
     },
   };
-}
-
-/**
- * Waits until the give Jasmin spy is invoked, or throws an error if not invoked within the specified timeout.
- */
-function waitUntilInvoked(spy: Spy, options?: { timeout?: number }): Promise<never> {
-  const timeout = Defined.orElse(options && options.timeout, 1000);
-  return new Promise((resolve, reject) => { // tslint:disable-line:typedef
-    const timeoutHandle = setTimeout(() => reject('[SpecTimeoutError] Timeout elapsed.'), timeout);
-    spy.and.callFake(() => {
-      clearTimeout(timeoutHandle);
-      resolve();
-    });
-  });
 }
 
 /**

@@ -11,8 +11,7 @@
 import { MicrofrontendPlatform } from './microfrontend-platform';
 import { MessageClient } from './client/messaging/message-client';
 import { ApplicationConfig } from './host/platform-config';
-import { HostPlatformState } from './client/host-platform-state';
-import { expectToBeRejectedWithError, serveManifest, waitFor } from './spec.util.spec';
+import { expectPromise, serveManifest, waitFor } from './spec.util.spec';
 import { PlatformMessageClient } from './host/platform-message-client';
 import { PlatformState } from './platform-state';
 import { Beans } from '@scion/toolkit/bean-manager';
@@ -23,7 +22,8 @@ describe('MicrofrontendPlatform', () => {
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
   it('should report that the app is not connected to the platform host when the host platform is not found', async () => {
-    await MicrofrontendPlatform.connectToHost({symbolicName: 'client-app', messaging: {brokerDiscoverTimeout: 250}});
+    const startup = MicrofrontendPlatform.connectToHost({symbolicName: 'client-app', messaging: {brokerDiscoverTimeout: 250}});
+    await expectPromise(startup).toReject();
     await expect(await MicrofrontendPlatform.isConnectedToHost()).toBe(false);
   });
 
@@ -39,12 +39,15 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should enter state \'started\' when started', async () => {
-    await expectAsync(MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}})).toBeResolved();
+    const startup = MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}});
+
+    await expectPromise(startup).toResolve();
     expect(MicrofrontendPlatform.state).toEqual(PlatformState.Started);
   });
 
   it('should reject starting the client platform multiple times', async () => {
-    await expectAsync(MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}})).toBeResolved();
+    const startup = MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}});
+    await expectPromise(startup).toResolve();
 
     try {
       await MicrofrontendPlatform.connectToHost({symbolicName: 'A'});
@@ -56,7 +59,8 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should reject starting the host platform multiple times', async () => {
-    await expectAsync(MicrofrontendPlatform.startHost([])).toBeResolved();
+    const startup = MicrofrontendPlatform.startHost([]);
+    await expectPromise(startup).toResolve();
 
     try {
       await MicrofrontendPlatform.startHost([]);
@@ -65,14 +69,6 @@ describe('MicrofrontendPlatform', () => {
     catch (error) {
       await expect(error.message).toMatch(/\[PlatformStateError] Failed to enter platform state \[prevState=Started, newState=Starting]/);
     }
-  });
-
-  it('should allow clients to wait until the host platform started', async () => {
-    const manifestUrl = serveManifest({name: 'Host Application'});
-    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250, deliveryTimeout: 250}});
-
-    await expectAsync(Beans.get(HostPlatformState).whenStarted()).toBeResolved();
   });
 
   it('should register the `MessageClient` as alias for `PlatformMessageClient` when starting the host platform anonymously', async () => {
@@ -239,7 +235,7 @@ describe('MicrofrontendPlatform', () => {
     Beans.registerInitializer(() => Promise.resolve());
     Beans.registerInitializer(() => Promise.resolve());
 
-    await expectAsync(MicrofrontendPlatform.startPlatform()).toBeResolved();
+    await expectPromise(MicrofrontendPlatform.startPlatform()).toResolve();
   });
 
   it('should reject the \'start\' Promise when an initializer rejects', async () => {
@@ -247,7 +243,7 @@ describe('MicrofrontendPlatform', () => {
     Beans.registerInitializer(() => Promise.reject());
     Beans.registerInitializer(() => Promise.resolve());
 
-    await expectToBeRejectedWithError(MicrofrontendPlatform.startPlatform(), /PlatformStartupError/);
+    await expectPromise(MicrofrontendPlatform.startPlatform()).toReject(/PlatformStartupError/);
   });
 });
 
