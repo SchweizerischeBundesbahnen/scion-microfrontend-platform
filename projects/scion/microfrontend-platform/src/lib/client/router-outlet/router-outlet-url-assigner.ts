@@ -9,9 +9,10 @@
  */
 import { runSafe } from '../../safe-runner';
 import { Navigation } from './metadata';
+import { Urls } from '../../url.util';
 
 /** @ignore */
-const BLANK_URL = new URL('about:blank');
+const BLANK_URL = Urls.newUrl('about:blank');
 
 /**
  * Assigns a URL to the iframe of a {@link SciRouterOutletElement `<sci-router-outlet>`}.
@@ -69,8 +70,8 @@ export class RouterOutletUrlAssigner {
    * @see https://stackoverflow.com/q/36985731
    */
   protected patchUrl(currUrl: string, prevUrl?: string): string {
-    const prevURL = prevUrl && runSafe((): URL => new URL(prevUrl)) || BLANK_URL;
-    const currURL = currUrl && runSafe((): URL => new URL(currUrl)) || BLANK_URL;
+    const prevURL = prevUrl && runSafe((): URL => Urls.newUrl(prevUrl)) || BLANK_URL;
+    const currURL = currUrl && runSafe((): URL => Urls.newUrl(currUrl)) || BLANK_URL;
 
     // Do not apply the fix for top-level iframes.
     if (window === window.top) {
@@ -93,7 +94,7 @@ export class RouterOutletUrlAssigner {
     }
 
     // Add an arbitrary but fixed query param to the URL.
-    const patchedURL = new URL(currUrl);
+    const patchedURL = Urls.newUrl(currUrl);
     patchedURL.searchParams.set('_', '');
     return patchedURL.toString();
   }

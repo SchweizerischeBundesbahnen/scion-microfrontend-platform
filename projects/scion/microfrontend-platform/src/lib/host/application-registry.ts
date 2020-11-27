@@ -51,8 +51,8 @@ export class ApplicationRegistry {
       symbolicName: applicationConfig.symbolicName,
       name: manifest.name,
       baseUrl: this.computeBaseUrl(applicationConfig, manifest),
-      manifestUrl: new URL(applicationConfig.manifestUrl, Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? applicationConfig.manifestUrl : window.origin).toString(),
-      origin: new URL(this.computeBaseUrl(applicationConfig, manifest)).origin,
+      manifestUrl: Urls.newUrl(applicationConfig.manifestUrl, Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? applicationConfig.manifestUrl : window.origin).toString(),
+      origin: Urls.newUrl(this.computeBaseUrl(applicationConfig, manifest)).origin,
       scopeCheckDisabled: Defined.orElse(applicationConfig.scopeCheckDisabled, false),
       intentionCheckDisabled: Defined.orElse(applicationConfig.intentionCheckDisabled, false),
       intentionRegisterApiDisabled: Defined.orElse(applicationConfig.intentionRegisterApiDisabled, true),
@@ -96,19 +96,21 @@ export class ApplicationRegistry {
    *
    * - if base URL is specified in the manifest, that URL is used (either as an absolute URL, or relative to the origin of 'manifestUrl')
    * - if base URL is not specified in the manifest, the origin from 'manifestUrl' is used as the base URL, or the origin from the current window if the 'manifestUrl' is relative
+   * - if base URL has no trailing slash, adds a trailing slash
    */
   private computeBaseUrl(applicationConfig: ApplicationConfig, manifest: ApplicationManifest): string {
-    const manifestURL = Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? new URL(applicationConfig.manifestUrl) : new URL(applicationConfig.manifestUrl, window.origin);
+    const manifestURL = Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? Urls.newUrl(applicationConfig.manifestUrl) : Urls.newUrl(applicationConfig.manifestUrl, window.origin);
 
     if (!manifest.baseUrl) {
-      return manifestURL.origin;
+      return Urls.ensureTrailingSlash(manifestURL.origin);
     }
 
     if (Urls.isAbsoluteUrl(manifest.baseUrl)) {
-      return new URL(manifest.baseUrl).toString(); // normalize the URL
+      return Urls.ensureTrailingSlash(manifest.baseUrl);
     }
     else {
-      return new URL(manifest.baseUrl, manifestURL.origin).toString();
+      return Urls.ensureTrailingSlash(Urls.newUrl(manifest.baseUrl, manifestURL.origin).toString());
     }
   }
 }
+

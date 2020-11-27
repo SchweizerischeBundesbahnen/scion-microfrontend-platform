@@ -39,7 +39,7 @@ export enum PlatformState {
  */
 export enum Runlevel {
   /**
-   * In runlevel 0, the platform fetches manifests of registered micro applications.
+   * In runlevel 0, the platform host fetches manifests of registered micro applications.
    */
   Zero = 0,
   /**
@@ -50,4 +50,8 @@ export enum Runlevel {
    * From runlevel 2 and above, messaging is enabled. This is the default runlevel at which initializers execute if not specifying any runlevel.
    */
   Two = 2,
+  /**
+   * In runlevel 3, the platform host installs activator microfrontends.
+   */
+  Three = 3,
 }

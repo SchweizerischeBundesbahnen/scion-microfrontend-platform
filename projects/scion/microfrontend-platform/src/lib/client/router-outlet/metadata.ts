@@ -13,7 +13,7 @@ export interface NavigationOptions {
    */
   outlet?: string;
   /**
-   * Specifies the base URL to resolve a relative path. If not specified, the current window location is used to resolve a relative path.
+   * Specifies the base URL to resolve a relative url. If not specified, the current window location is used to resolve a relative path.
    */
   relativeTo?: string;
   /**

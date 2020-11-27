@@ -31,7 +31,7 @@ import { Beans, Initializer } from '@scion/toolkit/bean-manager';
  *
  * @ignore
  */
-export class ApplicationActivator implements Initializer {
+export class ActivatorInstaller implements Initializer {
 
   public async init(): Promise<void> {
     // Lookup activators.
@@ -99,12 +99,14 @@ export class ApplicationActivator implements Initializer {
    */
   private mountActivator(activator: Activator, primary: boolean): void {
     const application = Beans.get(ApplicationRegistry).getApplication(activator.metadata.appSymbolicName);
-    const activatorUrl = `${trimPath(application.baseUrl)}/${trimPath(activator.properties.path)}`;
 
     // Create the router outlet and navigate to the activator endpoint.
     const routerOutlet = document.createElement('sci-router-outlet') as SciRouterOutletElement;
     routerOutlet.name = UUID.randomUUID();
-    Beans.get(OutletRouter).navigate(activatorUrl, {outlet: routerOutlet.name}).then();
+    Beans.get(OutletRouter).navigate(activator.properties.path, {
+      outlet: routerOutlet.name,
+      relativeTo: application.baseUrl,
+    }).then();
 
     // Provide the activation context
     routerOutlet.setContextValue<ActivationContext>(ACTIVATION_CONTEXT, {primary, activator});
@@ -119,22 +121,6 @@ export class ApplicationActivator implements Initializer {
     // Unmount the router outlet on platform shutdown
     MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => document.body.removeChild(routerOutlet));
   }
-}
-
-/**
- * Removes leading and trailing slashes from the path, if any.
- *
- * @ignore
- */
-function trimPath(path: string): string {
-  let trimmedPath = path;
-  if (trimmedPath.startsWith('/')) {
-    trimmedPath = trimmedPath.substr(1);
-  }
-  if (trimmedPath.endsWith('/')) {
-    trimmedPath = trimmedPath.slice(0, -1);
-  }
-  return trimmedPath;
 }
 
 /**
