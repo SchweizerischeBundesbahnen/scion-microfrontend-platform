@@ -40,6 +40,9 @@ import { Runlevel } from '../../platform-state';
  * the client using the unique client id. In both cases, the broker checks the origin of the message to match the
  * origin of the registered application.
  *
+ * The broker processes client connect requests in runlevel 1 or higher. Message dispatching is enabled in runlevel 2.
+ * Prior requests are buffered until entering the respective runlevel.
+ *
  * @ignore
  */
 export class MessageBroker implements PreDestroy {

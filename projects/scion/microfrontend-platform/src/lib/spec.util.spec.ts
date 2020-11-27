@@ -14,44 +14,60 @@ import { take, timeoutWith } from 'rxjs/operators';
 import { Arrays } from '@scion/toolkit/util';
 
 /**
- * Expects the given function to be rejected.
+ * Expects the given Promise to either resolve or reject.
  *
- * Jasmine 3.5 provides 'expectAsync' expectation with the 'toBeRejectedWithError' matcher.
- * But, it does not support to test against a regular expression if the error is not of type 'Error'.
+ * Prefer this expectation over Jasmine `expectAsync` as we experienced unexpected behavior. The `expectAsync` expectation was added to Jasmine in version 3.5.
  *
- * The following expectation works:
- *   await expectAsync(Promise.reject(new Error("[SomeError] was thrown."))).toBeRejectedWithError(/SomeError/);
- *
- * Whereas rejecting by providing only a string value doesn't:
- *   await expectAsync(Promise.reject("[SomeError] was thrown.")).toBeRejectedWithError(/SomeError/);
+ * - Jasmine `toBeRejectedWithError` matcher does not support to test against a regular expression if the error is not of type 'Error'
+ * - Jasmine `toBeResolved` sometimes does not wait for the Promise to resolve. We did not investigate this further.
  *
  * @see https://jasmine.github.io/api/3.5/async-matchers.html
  */
-export function expectToBeRejectedWithError(promise: Promise<any>, expected?: RegExp): Promise<void> {
-  const reasonExtractorFn = (reason: any): string => {
-    if (typeof reason === 'string') {
-      return reason;
-    }
-    if (reason instanceof Error) {
-      return reason.message;
-    }
-    return reason.toString();
+export function expectPromise(actual: Promise<any>): PromiseMatcher {
+  return {
+    toResolve: async (expected?: any): Promise<void> => {
+      try {
+        const value = await actual;
+        if (expected !== undefined) {
+          expect(value).toEqual(expected);
+        }
+        else {
+          expect(true).toBeTrue();
+        }
+      }
+      catch (reason) {
+        fail(`Promise expected to be resolved but was rejected: ${reason}`);
+      }
+    },
+    toReject: async (expected?: RegExp): Promise<void> => {
+      try {
+        const value = await actual;
+        fail(`Promise expected to be rejected but was resolved: ${value}`);
+      }
+      catch (reason) {
+        const expectedErrorMessage = expected && (typeof reason === 'string' ? reason : (reason instanceof Error ? reason.message : reason.toString()));
+        if (expectedErrorMessage && !expectedErrorMessage.match(expected)) {
+          fail(`Expected promise to be rejected with a reason matching '${expected.source}', but was '${expectedErrorMessage}'.`);
+        }
+        else {
+          expect(true).toBeTrue();
+        }
+      }
+    },
   };
-
-  return promise
-    .then(() => fail('Promise expected to be rejected but was resolved.'))
-    .catch(reason => {
-      if (expected && !reasonExtractorFn(reason).match(expected)) {
-        fail(`Expected promise to be rejected with a reason matching '${expected.source}', but was '${reason}'.`);
-      }
-      else {
-        expect(true).toBeTrue();
-      }
-    });
 }
 
-export interface ToContainMatcher {
-  toContain(expected: Map<any, any>): Promise<void>;
+export interface PromiseMatcher {
+  /**
+   * Expects the Promise to resolve. If passing an expected value, also performs an equality test.
+   * You can wrap your expectation inside the `objectContaining` or `mapContaining` matcher to test for partial equality.
+   */
+  toResolve(expected?: any): Promise<void>;
+
+  /**
+   * Expects the Promise to reject. If passing a regular expression, also tests the error to match the regex.
+   */
+  toReject(expected?: RegExp): Promise<void>;
 }
 
 /***

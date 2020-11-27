@@ -17,6 +17,8 @@ import { GatewayInfoResponse, getGatewayJavaScript } from './broker-gateway-scri
 import { Logger, NULL_LOGGER } from '../../logger';
 import { Dictionaries } from '@scion/toolkit/util';
 import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
+import { IS_PLATFORM_HOST } from '../../platform.model';
+import { Runlevel } from '../../platform-state';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.
@@ -29,12 +31,27 @@ import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
  *
  * When the gateway is disposed, it sends a DISCONNECT message to the broker.
  *
+ * The gateway connects in runlevel 1 to the broker. Gateway interaction in lower runlevels is buffered and does
+ * not start the `brokerDiscoverTimeout` timeout timer.
+ *
+ * But, even if the gateway connects in runlevel 1 to the broker, the broker itself enables messaging only in runlevel 2, buffering all
+ * messages sent in lower runlevels. That said, if posting a message in runlevel 1, and if runlevel 1 takes a long time to complete,
+ * a `BrokerDiscoverTimeoutError` may be thrown. However, you only need to be aware of this in the host platform, as clients are embedded
+ * after messaging is activated.
+ *
  * @ignore
  */
 export abstract class BrokerGateway {
 
   /**
-   * Returns whether this gateway is connected to the message broker.
+   * Returns a promise that resolves after a connection to the broker could be established, or which rejects otherwise,
+   * e.g., due to an error, or because the gateway is not allowed to connect, or because the `brokerDiscoverTimeout`
+   * time has elapsed. The connect timeout timer only starts after entering runlevel 1.
+   */
+  public abstract whenConnected(): Promise<void>;
+
+  /**
+   * Returns whether this gateway is connected to the message broker. It never throws a broker discovery timeout error.
    */
   public abstract isConnected(): Promise<boolean>;
 
@@ -76,7 +93,11 @@ export class NullBrokerGateway implements BrokerGateway {
   }
 
   public isConnected(): Promise<boolean> {
-    return Promise.resolve(false);
+    return Promise.resolve(true);
+  }
+
+  public whenConnected(): Promise<void> {
+    return Promise.resolve();
   }
 
   public get message$(): Observable<MessageEnvelope> {
@@ -109,11 +130,16 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:di
   constructor(private _clientAppName: string, private _config: { discoveryTimeout: number, deliveryTimeout: number }) {
     // Get the JavaScript to discover the message broker and dispatch messages.
     const gatewayJavaScript = getGatewayJavaScript({clientAppName: this._clientAppName, clientOrigin: window.origin, discoverTimeout: this._config.discoveryTimeout});
-    // Create a hidden iframe and load the gateway script.
-    const whenGatewayWindow = this.mountIframeAndLoadScript(gatewayJavaScript);
-    // Wait until receiving info about the gateway.
-    this._whenGatewayInfo = whenGatewayWindow
-      .then(gatewayWindow => this.requestGatewayInfo(gatewayWindow))
+
+    const isPlatformHost = Beans.get(IS_PLATFORM_HOST);
+
+    // Connect this gateway to the broker.
+    // The broker processes connect requests from clients only after it entered runlevel 1. Requests initiated in lower runlevels are buffered,
+    // potentially causing a timeout error, e.g., if fetching the manifests takes a long time to complete. For that reason, if running as platform host,
+    // we initiate the connect request to the broker only once entering runlevel 1.
+    this._whenGatewayInfo = (isPlatformHost ? Beans.whenRunlevel(Runlevel.One) : Promise.resolve())
+      .then(() => this.mountIframeAndLoadScript(gatewayJavaScript)) // Create a hidden iframe and load the gateway script.
+      .then(gatewayWindow => this.requestGatewayInfo(gatewayWindow, {brokerDiscoveryTimeout: this._config.discoveryTimeout}))
       .catch(error => {
         Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(error); // Fall back using NULL_LOGGER when the platform is shutting down.
         throw error;
@@ -135,7 +161,11 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:di
   }
 
   public isConnected(): Promise<boolean> {
-    return this._whenGatewayInfo.then(() => true).catch(() => false);
+    return this.whenConnected().then(() => true).catch(() => false);
+  }
+
+  public async whenConnected(): Promise<void> {
+    await this._whenGatewayInfo;
   }
 
   public async postMessage(channel: MessagingChannel, message: Message): Promise<void> {
@@ -269,9 +299,9 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:di
    * Sends a request to the gateway to query information about the gateway and the broker.
    *
    * @return A Promise that resolves to information about the gateway and the broker, or rejects
-   *         if not receiving information within the configured timeout.
+   *         if not receiving information within the specified timeout.
    */
-  private requestGatewayInfo(gatewayWindow: Window): Promise<GatewayInfo> {
+  private requestGatewayInfo(gatewayWindow: Window, options: { brokerDiscoveryTimeout: number }): Promise<GatewayInfo> {
     const replyToTopic = UUID.randomUUID();
     const request: MessageEnvelope<TopicMessage> = {
       transport: MessagingTransport.ClientToGateway,
@@ -295,7 +325,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:di
           return response.ok ? of({clientId: response.clientId, window: gatewayWindow, brokerOrigin: response.brokerOrigin}) : throwError(response.error);
         }),
         take(1),
-        timeoutWith(new Date(Date.now() + this._config.discoveryTimeout), throwError(`[BrokerDiscoverTimeoutError] Message broker not discovered within the ${this._config.discoveryTimeout}ms timeout. Messages cannot be published or received.`)),
+        timeoutWith(new Date(Date.now() + options.brokerDiscoveryTimeout), throwError(`[BrokerDiscoverTimeoutError] Message broker not discovered within the ${options.brokerDiscoveryTimeout}ms timeout. Messages cannot be published or received.`)),
         takeUntil(this._destroy$),
       )
       .toPromise();
