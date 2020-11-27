@@ -45,7 +45,7 @@ import { KeyboardEventDispatcher } from './client/keyboard-event/keyboard-event-
 import { ManifestService } from './client/manifest-registry/manifest-service';
 import { ɵManifestRegistry } from './host/manifest-registry/ɵmanifest-registry';
 import { PlatformManifestService } from './client/manifest-registry/platform-manifest-service';
-import { ApplicationActivator } from './host/activator/application-activator';
+import { ActivatorInstaller } from './host/activator/activator-installer';
 import { BrokerGateway, NullBrokerGateway, ɵBrokerGateway } from './client/messaging/broker-gateway';
 import { PlatformState, Runlevel } from './platform-state';
 import { AbstractType, BeanInstanceConstructInstructions, Beans, Type } from '@scion/toolkit/bean-manager';
@@ -141,8 +141,8 @@ export class MicrofrontendPlatform {
         Beans.registerInitializer({useFunction: async () => void (Beans.get(MessageBroker)), runlevel: Runlevel.Zero});
         // Fetch manifests in runlevel 0.
         Beans.registerInitializer({useClass: ManifestCollector, runlevel: Runlevel.Zero});
-        // Start application activators in runlevel 2.
-        Beans.registerInitializer({useClass: ApplicationActivator, runlevel: Runlevel.Two});
+        // Install activator microfrontends in runlevel 3, so messaging is enabled and eager beans constructed
+        Beans.registerInitializer({useClass: ActivatorInstaller, runlevel: Runlevel.Three});
         Beans.registerInitializer(() => SciRouterOutletElement.define());
 
         Beans.register(IS_PLATFORM_HOST, {useValue: true});

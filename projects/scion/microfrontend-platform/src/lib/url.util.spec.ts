@@ -39,4 +39,54 @@ describe('Urls', () => {
       expect(Urls.isAbsoluteUrl('about:blank')).toBeTrue();
     });
   });
+
+  describe('Urls.ensureTrailingSlash', () => {
+
+    it('should append a trailing slash if not present', () => {
+      expect(Urls.ensureTrailingSlash('http://localhost:4200')).toEqual('http://localhost:4200/');
+    });
+
+    it('should do nothing if a trailing slash is already present', () => {
+      expect(Urls.ensureTrailingSlash('http://localhost:4200/')).toEqual('http://localhost:4200/');
+    });
+  });
+
+  describe('Urls.newUrl', () => {
+
+    it('should behave like `new URL(url)`', () => {
+      expect(Urls.newUrl('http://localhost:4200').toString()).toEqual(new URL('http://localhost:4200').toString());
+      expect(Urls.newUrl('http://localhost:4200/').toString()).toEqual(new URL('http://localhost:4200/').toString());
+      expect(Urls.newUrl('http://localhost:4200/a/b').toString()).toEqual(new URL('http://localhost:4200/a/b').toString());
+      expect(Urls.newUrl('http://localhost:4200/a/b/').toString()).toEqual(new URL('http://localhost:4200/a/b/').toString());
+
+      expect(Urls.newUrl('http://localhost:4200/a/b/q1=v1').toString()).toEqual(new URL('http://localhost:4200/a/b/q1=v1').toString());
+      expect(Urls.newUrl('http://localhost:4200/a/b/#fragment').toString()).toEqual(new URL('http://localhost:4200/a/b/#fragment').toString());
+      expect(Urls.newUrl('http://localhost:4200/a/b/q1=v1&q2=v2#fragment').toString()).toEqual(new URL('http://localhost:4200/a/b/q1=v1&q2=v2#fragment').toString());
+
+      expect(Urls.newUrl('x/y', 'http://localhost:4200/a/b/').toString()).toEqual(new URL('x/y', 'http://localhost:4200/a/b/').toString());
+      expect(Urls.newUrl('x/y/q1=v1', 'http://localhost:4200/a/b/').toString()).toEqual(new URL('x/y/q1=v1', 'http://localhost:4200/a/b/').toString());
+      expect(Urls.newUrl('x/y/#fragment', 'http://localhost:4200/a/b/').toString()).toEqual(new URL('x/y/#fragment', 'http://localhost:4200/a/b/').toString());
+      expect(Urls.newUrl('x/y/q1=v1&q2=v2#fragment', 'http://localhost:4200/a/b/').toString()).toEqual(new URL('x/y/q1=v1&q2=v2#fragment', 'http://localhost:4200/a/b/').toString());
+
+      expect(Urls.newUrl('x/y/../z', 'http://localhost:4200/a/b/').toString()).toEqual(new URL('x/y/../z', 'http://localhost:4200/a/b/').toString());
+
+    });
+
+    it('should correctly construct urls with a base that have no leading slash (unlike when using `new URL(url, base)`)', () => {
+      expect(Urls.newUrl('x/y', 'http://localhost:4200/a/b').toString()).toEqual('http://localhost:4200/a/b/x/y');
+      expect(new URL('x/y', 'http://localhost:4200/a/b').toString()).toEqual('http://localhost:4200/a/x/y');
+
+      expect(Urls.newUrl('x/y?q1=v1', 'http://localhost:4200/a/b').toString()).toEqual('http://localhost:4200/a/b/x/y?q1=v1');
+      expect(new URL('x/y?q1=v1', 'http://localhost:4200/a/b').toString()).toEqual('http://localhost:4200/a/x/y?q1=v1');
+
+      expect(Urls.newUrl('x/y?q1=v1#fragment', 'http://localhost:4200/a/b').toString()).toEqual('http://localhost:4200/a/b/x/y?q1=v1#fragment');
+      expect(new URL('x/y?q1=v1#fragment', 'http://localhost:4200/a/b').toString()).toEqual('http://localhost:4200/a/x/y?q1=v1#fragment');
+
+      expect(Urls.newUrl('x/y?q1=v1&q2=v2#fragment', 'http://localhost:4200/a/b').toString()).toEqual('http://localhost:4200/a/b/x/y?q1=v1&q2=v2#fragment');
+      expect(new URL('x/y?q1=v1&q2=v2#fragment', 'http://localhost:4200/a/b').toString()).toEqual('http://localhost:4200/a/x/y?q1=v1&q2=v2#fragment');
+
+      expect(Urls.newUrl('x/y/../z', 'http://localhost:4200/a/b').toString()).toEqual('http://localhost:4200/a/b/x/z');
+      expect(new URL('x/y/../z', 'http://localhost:4200/a/b').toString()).toEqual('http://localhost:4200/a/x/z');
+    });
+  });
 });
