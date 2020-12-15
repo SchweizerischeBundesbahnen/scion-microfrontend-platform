@@ -26,7 +26,7 @@ import { matchesIntentQualifier } from '../../qualifier-tester';
  * Like topic-based communication, intent-based communication implements the pub/sub (publish/subscribe) messaging pattern, but is,
  * in contrast, stricter when sending messages. Sending messages is also referred to as issuing intents. It requires the sending
  * application to declare an intention in its manifest. Intents can only be issued if there is at least one fulfilling capability
- * present in the system to handle the intent. The platform transports intents exclusively to micro applications that provide a
+ * present in the platform to handle the intent. The platform transports intents exclusively to micro applications that provide a
  * fulfilling capability via their manifest.
  *
  * The communication is built on top of the native `postMessage` mechanism. The host app acts as message broker.

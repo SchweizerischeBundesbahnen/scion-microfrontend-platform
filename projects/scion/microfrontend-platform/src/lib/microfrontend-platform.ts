@@ -218,15 +218,17 @@ export class MicrofrontendPlatform {
    */
   public static connectToHost(config: MicroApplicationConfig): Promise<void> {
     return MicrofrontendPlatform.startPlatform(() => {
-        // Obtain platform properties before signaling the platform as started to allow synchronous retrieval of platform properties.
+        // Obtain platform properties and applications before signaling the platform as started to allow synchronous retrieval.
         Beans.registerInitializer({
           useFunction: async () => {
             if (Beans.get(BrokerGateway) instanceof NullBrokerGateway) {
               return;
             }
             await Beans.get(PlatformPropertyService).whenPropertiesLoaded;
+            await Beans.get(ManifestService).whenApplicationsLoaded;
           }, runlevel: Runlevel.Two,
         });
+
         // Install initializer to block startup until connected to the message broker. It rejects if the maximal broker discovery timeout elapses.
         Beans.registerInitializer({useFunction: () => Beans.get(BrokerGateway).whenConnected(), runlevel: Runlevel.One});
 
