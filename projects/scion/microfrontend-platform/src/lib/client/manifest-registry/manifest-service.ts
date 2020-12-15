@@ -8,15 +8,15 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { EMPTY, Observable } from 'rxjs';
+import { EMPTY, Observable, Subject } from 'rxjs';
 import { MessageClient } from '../messaging/message-client';
 import { Application, Capability, Intention } from '../../platform.model';
-import { mergeMapTo, take } from 'rxjs/operators';
+import { mergeMapTo, take, takeUntil } from 'rxjs/operators';
 import { PlatformTopics } from '../../ɵmessaging.model';
 import { ManifestRegistryTopics } from '../../host/manifest-registry/ɵmanifest-registry';
 import { ManifestObjectFilter } from '../../host/manifest-registry/manifest-object-store';
 import { mapToBody, throwOnErrorStatus } from '../../messaging.model';
-import { Beans } from '@scion/toolkit/bean-manager';
+import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 
 /**
  * Allows looking up capabilities available to the current app and managing the capabilities it provides.
@@ -24,21 +24,40 @@ import { Beans } from '@scion/toolkit/bean-manager';
  * The app can query all capabilities which are visible to it, i.e., for which the app has declared an intention
  * and which are also publicly available. Capabilities that the app provides itself are always visible to the app.
  *
- * The app can also provide new capabilities to the system or remove self-provided ones. If the *Intention Registration API*
+ * The app can also provide new capabilities to the platform or remove self-provided ones. If the *Intention Registration API*
  * is enabled for the app, the app can also manage its intentions, which, however, is strongly discouraged. Instead, apps should
  * declare the required functionality in their manifests using wildcard intentions.
  *
  * @category Manifest
  */
-export class ManifestService {
+export class ManifestService implements PreDestroy {
+
+  private _destroy$ = new Subject<void>();
+  private _applications: Application[] = [];
+
+  /**
+   * Promise that resolves when loaded the applications from the host.
+   *
+   * @internal
+   */
+  public whenApplicationsLoaded: Promise<void>;
 
   constructor(private _messageClient: MessageClient = Beans.get(MessageClient)) {
+    this.whenApplicationsLoaded = this.loadApplications();
   }
 
   /**
-   * Allows to lookup the applications installed in the system.
+   * Applications installed in the platform.
+   */
+  public get applications(): ReadonlyArray<Application> {
+    return this._applications;
+  }
+
+  /**
+   * Allows to lookup the applications installed in the platform.
    *
-   * @return an Observable that emits the applications in the system and then completes.
+   * @return an Observable that emits the applications in the platform and then completes.
+   * @deprecated since version 1.0.0-beta.8. Use {@link applications} instead.
    */
   public lookupApplications$(): Observable<Application[]> {
     return this._messageClient.observe$<Application[]>(PlatformTopics.Applications)
@@ -175,5 +194,19 @@ export class ManifestService {
       )
       .toPromise()
       .then(() => Promise.resolve()); // resolve to `void`
+  }
+
+  private async loadApplications(): Promise<void> {
+    this._applications = await this._messageClient.observe$<Application[]>(PlatformTopics.Applications)
+      .pipe(mapToBody(), take(1), takeUntil(this._destroy$))
+      .toPromise()
+      .then(applications => applications || []);
+  }
+
+  /**
+   * @ignore
+   */
+  public preDestroy(): void {
+    this._destroy$.next();
   }
 }

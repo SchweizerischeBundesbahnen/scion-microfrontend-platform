@@ -25,21 +25,16 @@ export class PlatformPropertyService implements PreDestroy {
 
   private _destroy$ = new Subject<void>();
   private _properties = new Map<string, any>();
-  private _whenPropertiesLoaded: Promise<void>;
+
+  /**
+   * Promise that resolves when loaded the properties from the host.
+   *
+   * @internal
+   */
+  public whenPropertiesLoaded: Promise<void>;
 
   constructor() {
-    this._whenPropertiesLoaded = Beans.get(MessageClient).observe$(PlatformTopics.PlatformProperties)
-      .pipe(
-        mapToBody(),
-        map(properties => Maps.coerce(properties)),
-        take(1),
-        takeUntil(this._destroy$),
-      )
-      .toPromise()
-      .then(properties => {
-        this._properties = properties || new Map<string, any>();
-        return Promise.resolve();
-      });
+    this.whenPropertiesLoaded = this.loadProperties();
   }
 
   /**
@@ -67,15 +62,20 @@ export class PlatformPropertyService implements PreDestroy {
   /**
    * Returns the properties map.
    */
-  public properties(): Map<string, any> {
+  public properties(): ReadonlyMap<string, any> {
     return this._properties;
   }
 
-  /**
-   * Returns a Promise that resolves when loaded the properties from the host.
-   */
-  public get whenPropertiesLoaded(): Promise<void> {
-    return this._whenPropertiesLoaded;
+  private async loadProperties(): Promise<void> {
+    this._properties = await Beans.get(MessageClient).observe$(PlatformTopics.PlatformProperties)
+      .pipe(
+        mapToBody(),
+        map(properties => Maps.coerce(properties)),
+        take(1),
+        takeUntil(this._destroy$),
+      )
+      .toPromise()
+      .then(properties => properties || new Map<string, any>());
   }
 
   /**
