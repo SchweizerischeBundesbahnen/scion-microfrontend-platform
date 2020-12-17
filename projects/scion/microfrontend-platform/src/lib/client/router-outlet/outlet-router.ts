@@ -122,7 +122,7 @@ export class OutletRouter {
   }
 
   private computeNavigationUrl(url: string, options?: NavigationOptions): string {
-    if (!url) {
+    if (url === undefined || url === null) { // empty path is a valid url
       return 'about:blank';
     }
 
