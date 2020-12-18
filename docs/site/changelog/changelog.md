@@ -5,6 +5,31 @@
 
 ## Changelog
 
+# [1.0.0-beta.8](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.7...1.0.0-beta.8) (2020-12-18)
+
+
+### Bug Fixes
+
+* **platform:** allow empty path as url for outlet navigation ([8a0a70b](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/8a0a70b7fbcf432c6928bdc1478aba6685eede4f))
+* **platform:** ensure trailing slash in application base URLs ([62a7a92](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/62a7a921a80dd6f340abdafea21342bd135238b0))
+* **platform:** make platform startup more robust ([0d30b72](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/0d30b726c776dcb56afd0a34454453325a4208ea)), closes [#40](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/40) [#41](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/41)
+
+
+### Features
+
+* **devtools:** add devtools micro application ([19db8bf](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/19db8bf646b3a46667cd82a513f109c3297f5068)), closes [#4](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/4)
+* **platform:** provide a static list of installed applications in the manifest service ([b60015f](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/b60015f798a6ce8e5ed765f942536a89df922407))
+
+
+### BREAKING CHANGES
+
+* **platform:** The `HostPlatformState` bean has been removed as no longer necessary, because activator microfrontends are now installed after completing host platform startup, and because the startup Promise waits until connected to the host.
+
+To migrate: Instead of listening for the host platform to enter the 'started' state, wait for the startup Promise to resolve.
+Note: You can independently upgrade host and clients to the new version because the platform was not using the platform status at all.
+
+
+
 # [1.0.0-beta.7](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.6...1.0.0-beta.7) (2020-11-05)
 
 
