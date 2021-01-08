@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component, HostBinding, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Application, Capability } from '@scion/microfrontend-platform';
 import { DevToolsManifestService } from '../dev-tools-manifest.service';
@@ -25,14 +25,10 @@ export class CapabilityAccordionPanelComponent implements OnInit {
   @Input()
   public capability: Capability;
 
-  @HostBinding('class.has-properties')
-  public hasProperties: boolean;
-
   constructor(private _manifestService: DevToolsManifestService) {
   }
 
   public ngOnInit(): void {
-    this.hasProperties = Object.keys(this.capability.properties || {}).length > 0;
     this.applications$ = this._manifestService.capabilityConsumers$(this.capability);
   }
 }

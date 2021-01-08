@@ -958,7 +958,7 @@ describe('QualifierTester', () => {
             expect(matchesIntentQualifier(CombinedQualifier, {'entity': '?', 'type': '?', 'id': '1'})).toBeFalse();
           });
 
-          it('should match qualifier containing wildcard (*) values', () => {
+          it('should match qualifier containing wildcard (*) values (asterisks are interpreted as values, not as wildcards)', () => {
             expect(matchesIntentQualifier(CombinedQualifier, {'entity': '*', 'type': '*'})).toBeTrue();
           });
 
@@ -974,7 +974,7 @@ describe('QualifierTester', () => {
             expect(matchesIntentQualifier(CombinedQualifier, {'entity': '*', 'type': '*', 'id': '1'})).toBeFalse();
           });
 
-          it('should match qualifier containing a combination of specific values and wildcard values', () => {
+          it('should match qualifier containing a combination of specific values and wildcard values (* and ? are interpreted as values, not as wildcards)', () => {
             expect(matchesIntentQualifier(CombinedQualifier, {'entity': 'person', 'type': '*'})).toBeTrue();
             expect(matchesIntentQualifier(CombinedQualifier, {'entity': 'person', 'type': '?'})).toBeTrue();
             expect(matchesIntentQualifier(CombinedQualifier, {'entity': '*', 'type': 'user'})).toBeTrue();

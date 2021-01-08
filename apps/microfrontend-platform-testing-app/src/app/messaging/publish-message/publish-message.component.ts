@@ -20,6 +20,7 @@ export const DESTINATION = 'destination';
 export const TOPIC = 'topic';
 export const TYPE = 'type';
 export const QUALIFIER = 'qualifier';
+export const PARAMS = 'params';
 export const MESSAGE = 'message';
 export const HEADERS = 'headers';
 export const REQUEST_REPLY = 'request-reply';
@@ -41,6 +42,7 @@ export class PublishMessageComponent implements OnDestroy {
   public TOPIC = TOPIC;
   public TYPE = TYPE;
   public QUALIFIER = QUALIFIER;
+  public PARAMS = PARAMS;
   public MESSAGE = MESSAGE;
   public HEADERS = HEADERS;
   public REQUEST_REPLY = REQUEST_REPLY;
@@ -120,6 +122,7 @@ export class PublishMessageComponent implements OnDestroy {
     return this._formBuilder.group({
       [TYPE]: this._formBuilder.control('', Validators.required),
       [QUALIFIER]: this._formBuilder.array([]),
+      [PARAMS]: this._formBuilder.array([]),
     });
   }
 
@@ -165,6 +168,7 @@ export class PublishMessageComponent implements OnDestroy {
   private publishIntent(): void {
     const type: string = this.form.get(DESTINATION).get(TYPE).value;
     const qualifier: Qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(DESTINATION).get(QUALIFIER) as FormArray);
+    const params: Map<string, any> = SciParamsEnterComponent.toParamsMap(this.form.get(DESTINATION).get(PARAMS) as FormArray);
 
     const message = this.form.get(MESSAGE).value === '' ? undefined : this.form.get(MESSAGE).value;
     const requestReply = this.form.get(REQUEST_REPLY).value;
@@ -182,7 +186,7 @@ export class PublishMessageComponent implements OnDestroy {
           );
       }
       else {
-        this._intentClient.publish({type, qualifier}, message, {headers: headers})
+        this._intentClient.publish({type, qualifier, params}, message, {headers: headers})
           .catch(error => {
             this.publishError = error;
           })

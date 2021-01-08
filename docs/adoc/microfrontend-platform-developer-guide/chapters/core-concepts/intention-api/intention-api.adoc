@@ -124,6 +124,25 @@ The qualifier allows using wildcards (such as `*` or `?`) to match multiple inte
 * *Optional wildcard character (`?`):* +
 Is allowed as qualifier property value only and matches intents regardless of having or not having that property.
 
+| requiredParams
+a| `string[]`
+| no
+a|
+Specifies parameters which the intent issuer must pass along with the intent.
+
+Parameters are part of the contract between the intent publisher and the capability provider.
+
+They do not affect the intent routing, unlike the qualifier.
+
+| optionalParams
+a| `string[]`
+| no
+a|
+Specifies parameters which the intent issuer optionally can pass along with the intent.
+
+Parameters are part of the contract between the intent publisher and the capability provider.
+
+They do not affect the intent routing, unlike the qualifier.
 
 | private
 a| `boolean`

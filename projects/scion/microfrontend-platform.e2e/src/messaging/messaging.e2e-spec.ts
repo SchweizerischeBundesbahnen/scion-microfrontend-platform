@@ -155,6 +155,14 @@ describe('Messaging', () => {
       await IntendBasedMessagingSpecs.receiveIfMatchingCapabilityWildcardQualifierSpec();
     });
 
+    it('allows receiving intents for a capability which declares required and optional params', async () => {
+      await IntendBasedMessagingSpecs.receiveIfMatchingCapabilityParamsSpec();
+    });
+
+    it('rejects intent if params not matching params of capability', async () => {
+      await IntendBasedMessagingSpecs.publisherNotMatchingParamsSpec();
+    });
+
     it('allows passing headers', async () => {
       await IntendBasedMessagingSpecs.passHeadersSpec();
     });

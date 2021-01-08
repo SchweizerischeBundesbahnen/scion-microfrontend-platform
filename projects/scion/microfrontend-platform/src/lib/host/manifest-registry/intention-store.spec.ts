@@ -57,22 +57,22 @@ describe('IntentionStore', () => {
       it('should find intentions by app and qualifier', () => {
         const nullQualifierIntention: Intention = {type: 'type1', metadata: {id: 'id1', appSymbolicName: 'app'}};
         const emptyQualifierIntention: Intention = {type: 'type2', qualifier: {}, metadata: {id: 'id2', appSymbolicName: 'app'}};
-        const asterikQualifierIntention: Intention = {type: 'type3', qualifier: {entity: '*'}, metadata: {id: 'id3', appSymbolicName: 'app'}};
+        const asteriskQualifierIntention: Intention = {type: 'type3', qualifier: {entity: '*'}, metadata: {id: 'id3', appSymbolicName: 'app'}};
         const optionalQualifierIntention: Intention = {type: 'type4', qualifier: {entity: '?'}, metadata: {id: 'id4', appSymbolicName: 'app'}};
         const exactQualifierIntention: Intention = {type: 'type5', qualifier: {entity: 'test'}, metadata: {id: 'id5', appSymbolicName: 'app'}};
         store.add(nullQualifierIntention);
         store.add(emptyQualifierIntention);
-        store.add(asterikQualifierIntention);
+        store.add(asteriskQualifierIntention);
         store.add(optionalQualifierIntention);
         store.add(exactQualifierIntention);
 
-        expect(store.find({appSymbolicName: 'app', qualifier: undefined}, matchesWildcardQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, asterikQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
+        expect(store.find({appSymbolicName: 'app', qualifier: undefined}, matchesWildcardQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, asteriskQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
         expect(store.find({appSymbolicName: 'app', qualifier: null}, matchesWildcardQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, optionalQualifierIntention]);
         expect(store.find({appSymbolicName: 'app', qualifier: {}}, matchesWildcardQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, optionalQualifierIntention]);
-        expect(store.find({appSymbolicName: 'app', qualifier: {'*': '*'}}, matchesWildcardQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, asterikQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
-        expect(store.find({appSymbolicName: 'app', qualifier: {entity: '*'}}, matchesWildcardQualifier)).toEqual([asterikQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
-        expect(store.find({appSymbolicName: 'app', qualifier: {entity: '?'}}, matchesWildcardQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, asterikQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
-        expect(store.find({appSymbolicName: 'app', qualifier: {entity: 'test'}}, matchesWildcardQualifier)).toEqual([asterikQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
+        expect(store.find({appSymbolicName: 'app', qualifier: {'*': '*'}}, matchesWildcardQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, asteriskQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
+        expect(store.find({appSymbolicName: 'app', qualifier: {entity: '*'}}, matchesWildcardQualifier)).toEqual([asteriskQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
+        expect(store.find({appSymbolicName: 'app', qualifier: {entity: '?'}}, matchesWildcardQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, asteriskQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
+        expect(store.find({appSymbolicName: 'app', qualifier: {entity: 'test'}}, matchesWildcardQualifier)).toEqual([asteriskQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
       });
     });
 
@@ -112,22 +112,22 @@ describe('IntentionStore', () => {
       it('should find intentions by app and qualifier', () => {
         const nullQualifierIntention: Intention = {type: 'type1', metadata: {id: 'id1', appSymbolicName: 'app'}};
         const emptyQualifierIntention: Intention = {type: 'type2', qualifier: {}, metadata: {id: 'id2', appSymbolicName: 'app'}};
-        const asterikQualifierIntention: Intention = {type: 'type3', qualifier: {entity: '*'}, metadata: {id: 'id3', appSymbolicName: 'app'}};
+        const asteriskQualifierIntention: Intention = {type: 'type3', qualifier: {entity: '*'}, metadata: {id: 'id3', appSymbolicName: 'app'}};
         const optionalQualifierIntention: Intention = {type: 'type4', qualifier: {entity: '?'}, metadata: {id: 'id4', appSymbolicName: 'app'}};
         const exactQualifierIntention: Intention = {type: 'type5', qualifier: {entity: 'test'}, metadata: {id: 'id5', appSymbolicName: 'app'}};
         store.add(nullQualifierIntention);
         store.add(emptyQualifierIntention);
-        store.add(asterikQualifierIntention);
+        store.add(asteriskQualifierIntention);
         store.add(optionalQualifierIntention);
         store.add(exactQualifierIntention);
 
-        expect(store.find({appSymbolicName: 'app', qualifier: undefined}, matchesIntentQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, asterikQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
+        expect(store.find({appSymbolicName: 'app', qualifier: undefined}, matchesIntentQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, asteriskQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
         expect(store.find({appSymbolicName: 'app', qualifier: null}, matchesIntentQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, optionalQualifierIntention]);
         expect(store.find({appSymbolicName: 'app', qualifier: {}}, matchesIntentQualifier)).toEqual([nullQualifierIntention, emptyQualifierIntention, optionalQualifierIntention]);
         expect(store.find({appSymbolicName: 'app', qualifier: {'*': '*'}}, matchesIntentQualifier)).toEqual([]);
-        expect(store.find({appSymbolicName: 'app', qualifier: {entity: '*'}}, matchesIntentQualifier)).toEqual([asterikQualifierIntention, optionalQualifierIntention]);
-        expect(store.find({appSymbolicName: 'app', qualifier: {entity: '?'}}, matchesIntentQualifier)).toEqual([asterikQualifierIntention, optionalQualifierIntention]);
-        expect(store.find({appSymbolicName: 'app', qualifier: {entity: 'test'}}, matchesIntentQualifier)).toEqual([asterikQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
+        expect(store.find({appSymbolicName: 'app', qualifier: {entity: '*'}}, matchesIntentQualifier)).toEqual([asteriskQualifierIntention, optionalQualifierIntention]);
+        expect(store.find({appSymbolicName: 'app', qualifier: {entity: '?'}}, matchesIntentQualifier)).toEqual([asteriskQualifierIntention, optionalQualifierIntention]);
+        expect(store.find({appSymbolicName: 'app', qualifier: {entity: 'test'}}, matchesIntentQualifier)).toEqual([asteriskQualifierIntention, optionalQualifierIntention, exactQualifierIntention]);
       });
     });
   });

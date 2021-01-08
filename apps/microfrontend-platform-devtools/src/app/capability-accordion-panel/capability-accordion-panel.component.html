@@ -7,6 +7,16 @@
   <sci-property [properties]="capability.properties"></sci-property>
 </section>
 
+<section class="params" *ngIf="capability.requiredParams && capability.requiredParams.length">
+  <header>Required Params:</header>
+  {{capability.requiredParams.join(', ')}}
+</section>
+
+<section class="params" *ngIf="capability.optionalParams && capability.optionalParams.length">
+  <header>Optional Params:</header>
+  {{capability.optionalParams.join(', ')}}
+</section>
+
 <section class="required-by">
   <header>Required by:</header>
   <ul>

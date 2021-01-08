@@ -51,7 +51,7 @@ import { Beans } from '@scion/toolkit/bean-manager';
   "qualifier": {
     "entity": "product",
     "id": "*",
-  }
+  },
   "properties": {
     "path": "/products/:id",
   }

@@ -17,24 +17,30 @@
         </section>
         <section *ngIf="selectedCapability" class="capability-details">
           <section class="description">
-            <span *ngIf="selectedCapability.description; else noDescriptionTemplate">{{selectedCapability.description}}</span>
+            <span *ngIf="selectedCapability.description">{{selectedCapability.description}}</span>
+          </section>
+
+          <section class="required-params">
+            <ng-container *ngIf="selectedCapability.requiredParams && selectedCapability.requiredParams.length">
+              <header>Required Params:</header>
+              {{selectedCapability.requiredParams.join(', ')}}
+            </ng-container>
+          </section>
+
+          <section class="optional-params">
+            <ng-container *ngIf="selectedCapability.optionalParams && selectedCapability.optionalParams.length">
+              <header>Optional Params:</header>
+              {{selectedCapability.optionalParams.join(', ')}}
+            </ng-container>
           </section>
 
           <section class="properties">
-            <ng-container *ngIf="selectedCapability.properties; else noPropertiesTemplate">
+            <ng-container *ngIf="selectedCapability.properties">
               <header>Properties:</header>
               <sci-property [properties]="selectedCapability.properties"></sci-property>
             </ng-container>
           </section>
         </section>
-
-        <ng-template #noDescriptionTemplate>
-          <span class="placeholder">No description available.</span>
-        </ng-template>
-
-        <ng-template #noPropertiesTemplate>
-          <span class="placeholder">No properties set.</span>
-        </ng-template>
       </section>
     </ng-template>
   </ng-container>

@@ -1,29 +1,25 @@
 @use 'sci-toolkit-styles' as sci-toolkit-styles;
 
 :host {
-  display: grid;
-  grid-template-columns: auto auto;
-  grid-column-gap: 1em;
-  grid-row-gap: .5em;
-  grid-template-rows: auto;
+  display: flex;
 
   > section {
+    flex: auto;
     border: 1px solid var(--sci-color-P500);
     border-radius: 5px;
     padding: 1em;
     background-color: #FFFFFF;
     font-size: 12px;
 
-    &.description {
-      grid-column: 1/-1;
-      font-style: italic;
-    }
-
     > header {
       font-size: 1.1em;
       margin-top: 0;
       margin-bottom: 1em;
       font-weight: bold;
+    }
+
+    &.description {
+      font-style: italic;
     }
 
     &.required-by {
@@ -37,11 +33,9 @@
         }
       }
     }
-  }
 
-  &:not(.has-properties) {
-    > section.required-by {
-      grid-column: 1/-1;
+    &:not(:first-child) {
+      margin-left: 1em;
     }
   }
 }

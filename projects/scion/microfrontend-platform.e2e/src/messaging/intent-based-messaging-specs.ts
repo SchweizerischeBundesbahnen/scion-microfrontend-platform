@@ -42,7 +42,7 @@ export namespace IntendBasedMessagingSpecs {
   }
 
   /**
-   * Tests that an intent can only be issued if there is one application at mininmum providing a respective capability.
+   * Tests that an intent can only be issued if there is one application at minimum providing a respective capability.
    */
   export async function intentNotFulfilledSpec(): Promise<void> {
     const testingAppPO = new TestingAppPO();
@@ -552,6 +552,124 @@ export namespace IntendBasedMessagingSpecs {
     await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentQualifier()).toEqual({'key1': 'value1'});
     await receiverPO_app3.clickClearMessages();
     await receiverPO_app4.clickClearMessages();
+  }
+
+  /**
+   * Tests that intent routing for capabilities declaring params works as expected.
+   */
+  export async function receiveIfMatchingCapabilityParamsSpec(): Promise<void> {
+    const testingAppPO = new TestingAppPO();
+
+    const pagePOs = await testingAppPO.navigateTo({
+      managerOutlet: 'about:blank',
+      publisher_app1: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_1},
+      receiver_app3: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_3},
+      receiver_app4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
+    });
+
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
+
+    // register the intention
+    const intentionManagerPO_app1 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1});
+    await intentionManagerPO_app1.registerIntention({type: 'testing'});
+
+    // register the capability
+    // app-3: requiredParams: ['param']
+    // app-4: optionalParams: ['param']
+    const capabilityManagerPO_app3 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3});
+    await capabilityManagerPO_app3.registerCapability({type: 'testing', requiredParams: ['param'], private: false});
+
+    const capabilityManagerPO_app4 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_4});
+    await capabilityManagerPO_app4.registerCapability({type: 'testing', optionalParams: ['param'], private: false});
+
+    // receive the intent in app-3
+    const receiverPO_app3 = pagePOs.get<ReceiveMessagePagePO>('receiver_app3');
+    await receiverPO_app3.selectFlavor(MessagingFlavor.Intent);
+    await receiverPO_app3.clickSubscribe();
+
+    // receive the intent in app-4
+    const receiverPO_app4 = pagePOs.get<ReceiveMessagePagePO>('receiver_app4');
+    await receiverPO_app4.selectFlavor(MessagingFlavor.Intent);
+    await receiverPO_app4.clickSubscribe();
+
+    // issue the intent: {param: 'value'}
+    const publisherPO_app1 = pagePOs.get<PublishMessagePagePO>('publisher_app1');
+    await publisherPO_app1.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO_app1.enterIntent('testing', undefined, new Map<string, any>().set('param', 'value'));
+    await publisherPO_app1.clickPublish();
+
+    // assert receiving the intent
+    await expect(await (await receiverPO_app3.getFirstMessageOrElseReject()).getIntentParams()).toEqual(new Map<string, any>().set('param', 'value'));
+    await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentParams()).toEqual(new Map<string, any>().set('param', 'value'));
+
+    await receiverPO_app3.clickClearMessages();
+    await receiverPO_app4.clickClearMessages();
+
+    // issue the intent without params
+    await publisherPO_app1.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO_app1.enterIntent('testing');
+    await publisherPO_app1.clickPublish();
+
+    // assert intent not to be dispatched
+    await expect(publisherPO_app1.getPublishError()).toContain('[ParamMismatchError]');
+
+    // assert intent not to be received
+    await expect(await receiverPO_app3.getMessages()).toEqual([]);
+    await expect(await receiverPO_app4.getMessages()).toEqual([]);
+  }
+
+  /**
+   * Tests that an application cannot issue intents if params do not match the params of the capability.
+   */
+  export async function publisherNotMatchingParamsSpec(): Promise<void> {
+    const testingAppPO = new TestingAppPO();
+
+    const pagePOs = await testingAppPO.navigateTo({
+      managerOutlet: 'about:blank',
+      publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_3},
+      receiver_app4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
+    });
+
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
+
+    // register the intention
+    const intentionManagerPO_app3 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3});
+    await intentionManagerPO_app3.registerIntention({type: 'testing'});
+
+    // register the capability
+    const capabilityManagerPO_app4 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_4});
+    await capabilityManagerPO_app4.registerCapability({type: 'testing', requiredParams: ['param1'], optionalParams: ['param2'], private: false});
+
+    // receive the intent
+    const receiverPO_app4 = pagePOs.get<ReceiveMessagePagePO>('receiver_app4');
+    await receiverPO_app4.selectFlavor(MessagingFlavor.Intent);
+    await receiverPO_app4.enterIntentSelector('testing');
+    await receiverPO_app4.clickSubscribe();
+
+    // issue the intent with required param missing: {'param2': 'value'}
+    const publisherPO_app3 = pagePOs.get<PublishMessagePagePO>('publisher_app3');
+    await publisherPO_app3.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO_app3.enterIntent('testing', undefined, new Map<string, any>().set('param2', 'value'));
+    await publisherPO_app3.enterMessage('some payload');
+    await publisherPO_app3.clickPublish();
+
+    // assert intent not to be dispatched
+    await expect(publisherPO_app3.getPublishError()).toContain('[ParamMismatchError]');
+
+    // assert intent not to be received
+    await expect(await receiverPO_app4.getMessages()).toEqual([]);
+
+    // issue the intent with additional param: {'param1': 'value', 'unsupported-param': 'value'}
+    await publisherPO_app3.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO_app3.enterIntent('testing', undefined, new Map<string, any>().set('param1', 'value').set('unsupported-param', 'value'));
+    await publisherPO_app3.enterMessage('some payload');
+    await publisherPO_app3.clickPublish();
+
+    // assert intent not to be dispatched
+    await expect(publisherPO_app3.getPublishError()).toContain('[ParamMismatchError]');
+
+    // assert intent not to be received
+    await expect(await receiverPO_app4.getMessages()).toEqual([]);
   }
 
   /**

@@ -48,7 +48,7 @@ export function isEqualQualifier(qualifier1: Qualifier, qualifier2: Qualifier): 
  *
  * @param intentionQualifier - qualifier as specified in the manifest, may contain wildcards (*) as qualifier key and wildcards (* or ?)
  *        as qualifier value; if `null`, {NilQualifier} is used.
- * @param intentQualifier - the qualifier to test against the intent qualifier; must not contain wildcards, or if it does, they are interpreted
+ * @param intentQualifier - the qualifier to test against the intention qualifier; must not contain wildcards, or if it does, they are interpreted
  *        as values; if `null`, {NilQualifier} is used.
  *
  * @ignore
@@ -85,7 +85,7 @@ export function matchesIntentQualifier(intentionQualifier: Qualifier, intentQual
  *
  * @param qualifier - qualifier as specified in the manifest, may contain wildcards (*) as qualifier key and wildcards (* or ?)
  *        as qualifier value; if `null`, {NilQualifier} is used.
- * @param testee - the qualifier to test against the above qualifier; may contain wildcards (*) as qualifier key and wildcards (* or ?)
+ * @param testee - the qualifier to test against the other qualifier; may contain wildcards (*) as qualifier key and wildcards (* or ?)
  *        as qualifier value; if `null`, {NilQualifier} is used.
  *
  * @ignore

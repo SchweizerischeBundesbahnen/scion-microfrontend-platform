@@ -27,6 +27,7 @@ import { Beans } from '@scion/toolkit/bean-manager';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
 const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<string, any> => msg.headers;
+const paramsExtractFn = <T>(msg: IntentMessage<T>): Map<string, any> => msg.intent.params;
 
 /**
  * Tests most important and fundamental features of the messaging facility with a single client, the host-app, only.
@@ -962,6 +963,81 @@ describe('Messaging', () => {
         .toPromise();
 
       await expectPromise(testee).toResolve();
+    });
+  });
+
+  describe('intents with params', () => {
+
+    it('should allow issuing an intent with parameters', async () => {
+      const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-capability', requiredParams: ['param']}]});
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+      // request-reply
+      Beans.get(IntentClient).observe$<string>().subscribe(intent => {
+        const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
+        Beans.get(MessageClient).publish(replyTo, intent.intent.params.get('param'));
+      });
+      const replyCaptor = new ObserveCaptor(bodyExtractFn);
+      await Beans.get(IntentClient).request$({type: 'some-capability', params: new Map<string, any>().set('param', 'value')}, 'payload').subscribe(replyCaptor);
+      await expectEmissions(replyCaptor).toEqual(['value']);
+
+      // publish
+      const publishCaptor = new ObserveCaptor(paramsExtractFn);
+      Beans.get(IntentClient).observe$<string>().subscribe(publishCaptor);
+      await Beans.get(IntentClient).publish({type: 'some-capability', params: new Map<string, any>().set('param', 'value')}, 'payload');
+      await expectEmissions(publishCaptor).toEqual(new Map<string, any>().set('param', 'value'));
+    });
+
+    it('should allow issuing an intent without optional parameters', async () => {
+      const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-capability', optionalParams: ['param']}]});
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+      // request-reply
+      Beans.get(IntentClient).observe$<string>().subscribe(intent => {
+        const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
+        Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
+      });
+      const replyCaptor = new ObserveCaptor(bodyExtractFn);
+      await Beans.get(IntentClient).request$({type: 'some-capability'}, 'payload').subscribe(replyCaptor);
+      await expectEmissions(replyCaptor).toEqual(['PAYLOAD']);
+
+      // publish
+      const publishCaptor = new ObserveCaptor(bodyExtractFn);
+      Beans.get(IntentClient).observe$<string>().subscribe(publishCaptor);
+      await Beans.get(IntentClient).publish({type: 'some-capability'}, 'payload');
+      await expectEmissions(publishCaptor).toEqual(['payload']);
+    });
+
+    it('should reject an intent if parameters are missing', async () => {
+      const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-type', requiredParams: ['param1', 'param2']}]});
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+      // request-reply
+      const replyCaptor = new ObserveCaptor();
+      await Beans.get(IntentClient).request$({type: 'some-type', params: new Map<string, any>().set('param1', 'value1')}, 'ping').subscribe(replyCaptor);
+      await replyCaptor.waitUntilCompletedOrErrored();
+      expect(replyCaptor.getError()).toEqual('[ParamMismatchError] Params of the intent \'\{type=some-type, qualifier=undefined, params={param1=>value1}\}\' do not match the params of the capability \'\{type=some-type, qualifier=\{\}, requiredParams=["param1","param2"], optionalParams=[]\}\'.');
+
+      // publish
+      await expectPromise(Beans.get(IntentClient).publish({type: 'some-type', params: new Map<string, any>().set('param1', 'value1')}, 'ping')).toReject(/ParamMismatchError/);
+    });
+
+    it('should reject an intent if it includes non-specified parameter', async () => {
+      const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-type', requiredParams: ['param1']}]});
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+      // request-reply
+      const replyCaptor = new ObserveCaptor();
+      await Beans.get(IntentClient).request$({type: 'some-type', params: new Map<string, any>().set('param1', 'value1').set('param2', 'value2')}, 'ping').subscribe(replyCaptor);
+      await replyCaptor.waitUntilCompletedOrErrored();
+      expect(replyCaptor.getError()).toEqual('[ParamMismatchError] Params of the intent \'\{type=some-type, qualifier=undefined, params={param1=>value1,param2=>value2}\}\' do not match the params of the capability \'\{type=some-type, qualifier=\{\}, requiredParams=["param1"], optionalParams=[]\}\'.');
+
+      // publish
+      await expectPromise(Beans.get(IntentClient).publish({type: 'some-type', params: new Map<string, any>().set('param1', 'value1').set('param2', 'value2')}, 'ping')).toReject(/ParamMismatchError/);
     });
   });
 });
