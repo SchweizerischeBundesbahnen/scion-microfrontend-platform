@@ -93,7 +93,8 @@ For illustrative purposes, the code snippet below declares a _microfrontend_ cap
 include::routing.snippets.ts[tags=named-url-parameter:capability]
 ----
 <1> Requires the caller to provide the product id (`id`) in the qualifier.
-<2> Uses the product id (`:id`) as a named path segment.
+<2> Requires the caller to provide the readonly flag (`readonly`) in the params.
+<3> Uses the product id (`:id`) and the readonly flag (`:readonly`) as named path segments.
 
 When receiving an intent for the capability, you can pass the qualifier of the intent as params object to the router.
 
@@ -103,7 +104,7 @@ include::routing.snippets.ts[tags=named-url-parameter:handle-intent]
 ----
 <1> Reads the path to the microfrontend from the capability.
 <2> Passes the path to the router. The path contains the product id (`:id`) as named path segment.
-<3> Passes the qualifier of the intent as params object.
+<3> Passes the qualifier and params of the intent as params object to the router for replacing named URL segments.
 
 [[chapter:outlet-router:unloading-outlet-content]]
 [discrete]

@@ -42,6 +42,10 @@
     <sci-form-field label="Intent qualifier">
       <sci-params-enter [paramsFormArray]="$any(form.get(DESTINATION).get(QUALIFIER))" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-params-enter>
     </sci-form-field>
+
+    <sci-form-field label="Intent params">
+      <sci-params-enter [paramsFormArray]="$any(form.get(DESTINATION).get(PARAMS))" [addable]="true" [removable]="true" class="e2e-intent-params"></sci-params-enter>
+    </sci-form-field>
   </ng-template>
 </form>
 

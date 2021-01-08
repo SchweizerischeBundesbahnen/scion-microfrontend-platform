@@ -100,6 +100,8 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
     const registeredCapability: Capability = {
       ...capability,
       qualifier: Defined.orElse(capability.qualifier, NilQualifier),
+      requiredParams: Defined.orElse(capability.requiredParams, []),
+      optionalParams: Defined.orElse(capability.optionalParams, []),
       private: Defined.orElse(capability.private, true),
       metadata: {
         id: sha256(JSON.stringify({application: appSymbolicName, type: capability.type, ...capability.qualifier})).substr(0, 7), // use the first 7 digits of the capability hash as capability id

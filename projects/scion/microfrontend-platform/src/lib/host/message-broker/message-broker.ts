@@ -9,7 +9,7 @@
  */
 import { EMPTY, fromEvent, MonoTypeOperatorFunction, Observable, of, OperatorFunction, pipe, Subject } from 'rxjs';
 import { catchError, filter, mergeMap, share, takeUntil } from 'rxjs/operators';
-import { IntentMessage, Message, MessageHeaders, TopicMessage } from '../../messaging.model';
+import { Intent, IntentMessage, Message, MessageHeaders, TopicMessage } from '../../messaging.model';
 import { ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand } from '../../ɵmessaging.model';
 import { ApplicationRegistry } from '../application-registry';
 import { ManifestRegistry } from '../manifest-registry/manifest-registry';
@@ -27,6 +27,7 @@ import { chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterc
 import { Capability } from '../../platform.model';
 import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 import { Runlevel } from '../../platform-state';
+import { matchesCapabilityParams } from './params-tester';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -373,6 +374,13 @@ export class MessageBroker implements PreDestroy {
         clients.forEach(client => Maps.addSetValue(capabilitiesByClientMap, client, capability));
       });
 
+      // If the params of the intent don't match the params of the capability, send an error.
+      capabilities.forEach(capability => {
+        if (!matchesCapabilityParams(message.intent.params, {requiredCapabilityParams: capability.requiredParams, optionalCapabilityParams: capability.optionalParams})) {
+          throw Error(`[ParamMismatchError] Params of the intent '{type=${message.intent.type}, qualifier=${JSON.stringify(message.intent.qualifier)}, params={${stringifyParams(message.intent)}}}' do not match the params of the capability '{type=${capability.type}, qualifier=${JSON.stringify(capability.qualifier)}, requiredParams=${JSON.stringify(capability.requiredParams)}, optionalParams=${JSON.stringify(capability.optionalParams)}}'.`);
+        }
+      });
+
       // If request-reply communication, send an error if no replier is found to reply to the intent.
       if (capabilitiesByClientMap.size === 0 && message.headers.has(MessageHeaders.ReplyTo)) {
         throw Error(`[RequestReplyError] No client is currently running which could answer the intent '{type=${message.intent.type}, qualifier=${JSON.stringify(message.intent.qualifier)}}'.`);
@@ -573,4 +581,17 @@ function catchErrorAndRetry<T>(): MonoTypeOperatorFunction<T> {
     Beans.get(Logger).error('[UnexpectedError] An unexpected error occurred.', error);
     return caught;
   });
+}
+
+/**
+ * Stringifies the params of the given intent.
+ *
+ * @ignore
+ */
+function stringifyParams(intent: Intent): string {
+  const params = intent.params || new Map<string, any>();
+  return Array.from(params.keys())
+    .sort((key1, key2) => key1.localeCompare(key2))
+    .map(key => `${key}=>${params.get(key)}`)
+    .join(',');
 }

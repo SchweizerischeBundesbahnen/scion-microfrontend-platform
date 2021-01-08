@@ -16,6 +16,8 @@ import { Beans } from '@scion/toolkit/bean-manager';
 
 const TYPE = 'type';
 const QUALIFIER = 'qualifier';
+const REQUIRED_PARAMS = 'requiredParams';
+const OPTIONAL_PARAMS = 'optionalParams';
 const PRIVATE = 'private';
 const ID = 'id';
 const NILQUALIFIER_IF_EMPTY = 'nilQualifierIfEmpty';
@@ -30,6 +32,8 @@ export class RegisterCapabilityComponent {
 
   public readonly TYPE = TYPE;
   public readonly QUALIFIER = QUALIFIER;
+  public readonly REQUIRED_PARAMS = REQUIRED_PARAMS;
+  public readonly OPTIONAL_PARAMS = OPTIONAL_PARAMS;
   public readonly PRIVATE = PRIVATE;
   public readonly ID = ID;
   public readonly NILQUALIFIER_IF_EMPTY = NILQUALIFIER_IF_EMPTY;
@@ -49,6 +53,8 @@ export class RegisterCapabilityComponent {
     this.registerForm = fb.group({
       [TYPE]: new FormControl('', Validators.required),
       [QUALIFIER]: fb.array([]),
+      [REQUIRED_PARAMS]: new FormControl(''),
+      [OPTIONAL_PARAMS]: new FormControl(''),
       [PRIVATE]: new FormControl(false),
     });
 
@@ -66,10 +72,14 @@ export class RegisterCapabilityComponent {
   public onRegister(): void {
     this.registerResponse = undefined;
     this.registerError = undefined;
+    const requiredParams = this.registerForm.get(REQUIRED_PARAMS).value;
+    const optionalParams = this.registerForm.get(OPTIONAL_PARAMS).value;
 
     const capability: Capability = {
       type: this.registerForm.get(TYPE).value,
       qualifier: SciParamsEnterComponent.toParamsDictionary(this.registerForm.get(QUALIFIER) as FormArray),
+      requiredParams: requiredParams ? requiredParams.split(',').map(param => param.trim()) : undefined,
+      optionalParams: optionalParams ? optionalParams.split(',').map(param => param.trim()) : undefined,
       private: this.registerForm.get(PRIVATE).value,
     };
 

@@ -69,6 +69,16 @@ export interface Intent {
    * When issuing an intent, the qualifier must be exact, i.e. not contain wildcards.
    */
   qualifier?: Qualifier;
+  /**
+   * Parameters allow additional data to be passed along with the intent.
+   *
+   * They are part of the contract between the intent publisher and the capability provider. The capability provider
+   * can declare mandatory and optional parameters. No additional parameters may be included.
+   *
+   * Parameters have no effect on the intent routing, unlike the qualifier. If mandatory parameters
+   * are missing or non-specified parameters are included, the intent is rejected.
+   */
+  params?: Map<string, any>;
 }
 
 /**

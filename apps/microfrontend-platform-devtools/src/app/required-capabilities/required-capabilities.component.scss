@@ -53,14 +53,10 @@
             color: black
           }
 
-          &.properties {
+          &:not(:first-child) {
             margin-top: .5em;
           }
         }
-      }
-
-      span.placeholder {
-        font-style: italic;
       }
     }
   }

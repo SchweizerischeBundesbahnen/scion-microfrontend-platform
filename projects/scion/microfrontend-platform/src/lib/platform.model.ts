@@ -140,6 +140,18 @@ export interface Capability {
    */
   qualifier?: Qualifier;
   /**
+   * Specifies parameters which the intent issuer must pass along with the intent.
+   * Parameters are part of the contract between the intent publisher and the capability provider.
+   * They do not affect the intent routing, unlike the qualifier.
+   */
+  requiredParams?: string[];
+  /**
+   * Specifies parameters which the intent issuer optionally can pass along with the intent.
+   * Parameters are part of the contract between the intent publisher and the capability provider.
+   * They do not affect the intent routing, unlike the qualifier.
+   */
+  optionalParams?: string[];
+  /**
    * Controls if this capability is visible to other micro applications. If private, which is by default, the capability is not visible
    * to other micro applications; thus, it can only be invoked or looked up by the providing micro application.
    */

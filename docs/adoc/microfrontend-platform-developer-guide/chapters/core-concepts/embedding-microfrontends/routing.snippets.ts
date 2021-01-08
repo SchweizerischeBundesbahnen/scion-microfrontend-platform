@@ -66,9 +66,12 @@ import { Beans } from '@scion/toolkit/bean-manager';
   "qualifier": {
     "entity": "product",
     "id": "*", // <1>
-  }
+  },
+  "requiredParams": [
+    "readonly", // <2>
+  ],
   "properties": {
-    "path": "/products/:id", // <2>
+    "path": "/products/:id?readonly=:readonly", // <3>
   }
 }
 // end::named-url-parameter:capability[]
@@ -87,7 +90,7 @@ import { Beans } from '@scion/toolkit/bean-manager';
     // Instruct the router to display the microfrontend in an outlet.
     Beans.get(OutletRouter).navigate(microfrontendPath, { // <2>
       outlet: PRIMARY_OUTLET,
-      params: message.intent.qualifier, // <3>
+      params: new Map([...Object.entries(message.intent.qualifier), ...message.intent.params]), // <3>
     });
   });
 // end::named-url-parameter:handle-intent[]

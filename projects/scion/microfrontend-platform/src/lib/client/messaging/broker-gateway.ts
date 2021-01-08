@@ -153,6 +153,10 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:di
         pluckEnvelope(),
         map((envelope: MessageEnvelope) => {
           envelope.message.headers = copyMap(envelope.message.headers);
+          if (envelope.channel === MessagingChannel.Intent) {
+            const intentMessage = envelope.message as IntentMessage;
+            intentMessage.intent.params = copyMap(intentMessage.intent.params);
+          }
           return envelope;
         }),
         takeUntil(this._destroy$), // no longer emit messages when destroyed
@@ -385,7 +389,7 @@ function stringifyEnvelope(envelope: MessageEnvelope): string {
  * Creates a copy from the given `Map`.
  *
  * Data sent from one JavaScript realm to another is serialized with the structured clone algorithm.
- * Altought the algorithm supports the `Map` data type, a deserialized map object cannot be checked to be instance of `Map`.
+ * Although the algorithm supports the `Map` data type, a deserialized map object cannot be checked to be instance of `Map`.
  * This is most likely because the serialization takes place in a different realm.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm

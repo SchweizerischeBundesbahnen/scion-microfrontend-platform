@@ -60,6 +60,11 @@ export class MessageListItemPO {
     return new SciPropertyPO(this._contentFinder.$('sci-property.e2e-intent-qualifier')).readAsDictionary();
   }
 
+  public async getIntentParams(): Promise<Map<string, any>> {
+    await this._switchToIframeFn();
+    return new SciPropertyPO(this._contentFinder.$('sci-property.e2e-intent-params')).readAsMap();
+  }
+
   public async getCapabilityId(): Promise<string> {
     await this._switchToIframeFn();
     return this._contentFinder.$('span.e2e-capability-id').getText();
