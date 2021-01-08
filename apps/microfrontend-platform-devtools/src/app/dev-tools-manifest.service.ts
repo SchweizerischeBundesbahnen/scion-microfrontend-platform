@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import { Injectable } from '@angular/core';
-import { combineLatest, MonoTypeOperatorFunction, Observable, of, OperatorFunction, pipe } from 'rxjs';
+import { combineLatest, Observable, of, OperatorFunction, pipe } from 'rxjs';
 import { Application, Capability, Intention, ManifestObject, ManifestObjectFilter, ManifestService } from '@scion/microfrontend-platform';
 import { map, switchMap } from 'rxjs/operators';
 import { filterArray, mapArray, sortArray } from '@scion/toolkit/operators';
@@ -41,13 +41,17 @@ export class DevToolsManifestService {
   }
 
   public capabilityProviders$(intention: Intention): Observable<Application[]> {
+    const app = this._appsBySymbolicName.get(intention.metadata.appSymbolicName);
     const capabilityFilter = {
       type: intention.type,
       qualifier: intention.qualifier || {},
     };
 
     return this._manifestService.lookupCapabilities$(capabilityFilter)
-      .pipe(this.mapApplications());
+      .pipe(
+        filterArray(capability => !capability.private || app.scopeCheckDisabled || capability.metadata.appSymbolicName === app.symbolicName),
+        this.mapApplications(),
+      );
   }
 
   public capabilityConsumers$(capability: Capability): Observable<Application[]> {
@@ -57,13 +61,17 @@ export class DevToolsManifestService {
     };
 
     return this._manifestService.lookupIntentions$(intentionFilter)
-      .pipe(this.mapApplications());
+      .pipe(
+        filterArray(intention => !capability.private || this._appsBySymbolicName.get(intention.metadata.appSymbolicName).scopeCheckDisabled || intention.metadata.appSymbolicName === capability.metadata.appSymbolicName),
+        this.mapApplications(),
+      );
   }
 
   public observeRequiredCapabilities$(appSymbolicName: string): Observable<Map<Application, Capability[]>> {
     return this._manifestService.lookupIntentions$({appSymbolicName})
       .pipe(
         this.lookupMatchingCapabilities(),
+        filterArray(capability => !capability.private || this._appsBySymbolicName.get(appSymbolicName).scopeCheckDisabled),
         filterArray(capability => capability.metadata.appSymbolicName !== appSymbolicName),
         this.groupByApplication(),
       );
@@ -87,7 +95,7 @@ export class DevToolsManifestService {
       );
   }
 
-  private mapApplications(): OperatorFunction<ManifestObject[], Application[]> {
+  private mapApplications<T extends ManifestObject>(): OperatorFunction<T[], Application[]> {
     return pipe(
       distinctAppSymbolicNames(),
       mapArray(appSymbolicName => this._appsBySymbolicName.get(appSymbolicName)),
@@ -95,18 +103,26 @@ export class DevToolsManifestService {
     );
   }
 
-  private lookupMatchingCapabilities(): MonoTypeOperatorFunction<ManifestObject[]> {
-    return lookupMatchingManifestObjects(manifestObject => this._manifestService.lookupCapabilities$({
-      type: manifestObject.type,
-      qualifier: manifestObject.qualifier || {},
-    }));
+  private lookupMatchingCapabilities(): OperatorFunction<Intention[], Capability[]> {
+    return pipe(
+      switchMap(intentions => intentions.length ? combineLatest(intentions.map(intention => this._manifestService.lookupCapabilities$({
+        type: intention.type,
+        qualifier: intention.qualifier || {},
+      }))) : of([])),
+      distinctManifestObjects(),
+    );
   }
 
-  private lookupMatchingIntentions(): MonoTypeOperatorFunction<ManifestObject[]> {
-    return lookupMatchingManifestObjects(manifestObject => this._manifestService.lookupIntentions$({
-      type: manifestObject.type,
-      qualifier: manifestObject.qualifier || {},
-    }));
+  private lookupMatchingIntentions(): OperatorFunction<Capability[], Intention[]> {
+    return pipe(
+      switchMap(capabilities => capabilities.length ? combineLatest(capabilities.map(capability => this._manifestService.lookupIntentions$({
+        type: capability.type,
+        qualifier: capability.qualifier || {},
+      }).pipe(
+        filterArray(intention => !capability.private || this._appsBySymbolicName.get(intention.metadata.appSymbolicName).scopeCheckDisabled),
+      ))) : of([])),
+      distinctManifestObjects(),
+    );
   }
 
   private groupByApplication(): OperatorFunction<ManifestObject[], Map<Application, ManifestObject[]>> {
@@ -125,13 +141,6 @@ function distinctAppSymbolicNames(): OperatorFunction<ManifestObject[], string[]
   return pipe(
     mapArray(manifestObject => manifestObject.metadata.appSymbolicName),
     map(appSymbolicNames => [...new Set(appSymbolicNames)]),
-  );
-}
-
-function lookupMatchingManifestObjects(projectFn: (manifestObject: ManifestObject) => Observable<ManifestObject[]>): MonoTypeOperatorFunction<ManifestObject[]> {
-  return pipe(
-    switchMap(manifestObjects => manifestObjects.length ? combineLatest(manifestObjects.map(manifestObject => projectFn(manifestObject))) : of([])),
-    distinctManifestObjects(),
   );
 }
 
