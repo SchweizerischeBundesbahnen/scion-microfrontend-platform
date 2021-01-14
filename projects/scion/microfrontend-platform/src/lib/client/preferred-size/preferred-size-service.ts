@@ -57,6 +57,13 @@ export class PreferredSizeService implements PreDestroy {
    * If the element is removed from the DOM, the preferred size is reset and reporting suspended until it is attached again.
    * If a new element is set as dimension observer, then the previous one is unsubscribed.
    *
+   * *Prerequisites*
+   * - The element to be observed must behave as block-level box and not as inline-level box. So, if you want to observe an inline element,
+   *   set its display type to either `block` or `inline-block`.
+   * - If the element to be observed should not fill the remaining space and may change in size, we recommend taking it out of the document
+   *   element flow, i.e., position it absolutely without defining a width and height. Otherwise, once the element has reported a preferred
+   *   size, it could not shrink below that size.
+   *
    * @param element - The element of which the preferred size is to be observed and used as the outlet's size.
    */
   public fromDimension(element: HTMLElement | undefined): void {
