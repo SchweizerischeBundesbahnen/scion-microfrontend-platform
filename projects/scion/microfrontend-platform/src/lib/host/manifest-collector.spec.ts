@@ -14,6 +14,8 @@ import { ApplicationManifest } from '../platform.model';
 import { ApplicationRegistry } from './application-registry';
 import { Logger } from '../logger';
 import { Beans } from '@scion/toolkit/bean-manager';
+import { ManifestService } from '../client/manifest-registry/manifest-service';
+import { serveManifest } from '../spec.util.spec';
 
 describe('ManifestCollector', () => {
 
@@ -24,7 +26,6 @@ describe('ManifestCollector', () => {
     // mock {HttpClient}
     const httpClientSpy = jasmine.createSpyObj(HttpClient.name, ['fetch']);
     httpClientSpy.fetch
-      .withArgs('http://www.app-1/manifest').and.returnValue(okAnswer({body: {name: 'application-1', intentions: [], capabilities: []}, delay: 50}))
       .withArgs('http://www.app-2/manifest').and.returnValue(okAnswer({body: {name: 'application-2', intentions: [], capabilities: []}, delay: 120}))
       .withArgs('http://www.app-3/manifest').and.returnValue(okAnswer({body: {name: 'application-3', intentions: [], capabilities: []}, delay: 30}))
       .and.callFake((arg) => fetch(arg)); // fetches the manifest of 'scion-platform' host app
@@ -36,16 +37,22 @@ describe('ManifestCollector', () => {
 
     // start the platform
     await MicrofrontendPlatform.startHost([
-      {symbolicName: 'app-1', manifestUrl: 'http://www.app-1/manifest'},
+      {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'application-1'})},
       {symbolicName: 'app-2', manifestUrl: 'http://www.app-2/manifest'},
       {symbolicName: 'app-3', manifestUrl: 'http://www.app-3/manifest'},
-    ]);
+    ], {symbolicName: 'app-1'});
 
     // assert application registrations
     expect(Beans.get(ApplicationRegistry).getApplication('app-1').name).toEqual('application-1');
     expect(Beans.get(ApplicationRegistry).getApplication('app-2').name).toEqual('application-2');
     expect(Beans.get(ApplicationRegistry).getApplication('app-3').name).toEqual('application-3');
     expect(loggerSpy.error.calls.count()).toEqual(0);
+
+    expect(Beans.get(ManifestService).applications).toEqual(jasmine.arrayContaining([
+      jasmine.objectContaining({symbolicName: 'app-1'}),
+      jasmine.objectContaining({symbolicName: 'app-2'}),
+      jasmine.objectContaining({symbolicName: 'app-3'}),
+    ]));
   });
 
   it('should ignore applications which are not available', async () => {

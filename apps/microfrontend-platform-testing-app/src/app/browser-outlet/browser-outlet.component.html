@@ -6,7 +6,7 @@
   <button type="button" class="material-icons e2e-settings" #settings_button title="Settings" (click)="onSettingsClick()">more_vert</button>
 
   <datalist id="appEntryPoints">
-    <option *ngFor="let appEntryPoint of appEntryPoints$ | async" [value]="appEntryPoint.url">{{appEntryPoint.label}}</option>
+    <option *ngFor="let appEntryPoint of appEntryPoints" [value]="appEntryPoint.url">{{appEntryPoint.label}}</option>
   </datalist>
 </form>
 

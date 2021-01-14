@@ -8,9 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, Injector, Input, ViewChild } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Application, ManifestService, OutletRouter, SciRouterOutletElement } from '@scion/microfrontend-platform';
+import { ManifestService, OutletRouter, SciRouterOutletElement } from '@scion/microfrontend-platform';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Overlay } from '@angular/cdk/overlay';
 import { RouterOutletContextComponent } from '../router-outlet-context/router-outlet-context.component';
@@ -34,7 +32,7 @@ export class BrowserOutletComponent {
 
   public URL = URL;
   public form: FormGroup;
-  public appEntryPoints$: Observable<AppEndpoint[]>;
+  public appEntryPoints: AppEndpoint[];
 
   @Input()
   @HostBinding('attr.id')
@@ -58,7 +56,7 @@ export class BrowserOutletComponent {
     this.form = formBuilder.group({
       [URL]: new FormControl('', Validators.required),
     });
-    this.appEntryPoints$ = this.readAppEntryPoints();
+    this.appEntryPoints = this.readAppEntryPoints();
   }
 
   public onUrlClearClick(): void {
@@ -105,27 +103,26 @@ export class BrowserOutletComponent {
     console.debug(`[sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
   }
 
-  private readAppEntryPoints(): Observable<AppEndpoint[]> {
-    return Beans.get(ManifestService).lookupApplications$()
-      .pipe(map((applications: Application[]) => {
-          const endpoints: AppEndpoint[] = [];
-          applications.forEach(application => {
-            const origin = application.origin;
-            const symbolicName = application.symbolicName;
+  private readAppEntryPoints(): AppEndpoint[] {
+    const apps = Beans.get(ManifestService).applications;
+    return apps.reduce((endpoints, application) => {
+      const origin = application.origin;
+      const symbolicName = application.symbolicName;
 
-            this._activatedRoute.parent.routeConfig.children
-              .filter(route => !!route.data)
-              .forEach(route => {
-                const matrixParams: Map<string, any> = route.data['matrixParams'] || new Map();
-                const matrixParamsEncoded = Array.from(matrixParams.keys())
-                  .reduce((encoded, paramKey) => encoded.concat(`${paramKey}=${matrixParams.get(paramKey)}`), [])
-                  .join(';');
-                endpoints.push({url: `${origin}/#/${route.path}${matrixParamsEncoded ? `;${matrixParamsEncoded}` : ''}`, label: `${symbolicName}: ${route.data['pageTitle']}`});
-              });
-          });
-          return endpoints;
-        }),
-      );
+      return endpoints.concat(this._activatedRoute.parent.routeConfig.children
+        .filter(route => !!route.data)
+        .map(route => {
+          const matrixParams: Map<string, any> = route.data['matrixParams'] || new Map();
+          const matrixParamsEncoded = Array.from(matrixParams.keys())
+            .reduce((encoded, paramKey) => encoded.concat(`${paramKey}=${matrixParams.get(paramKey)}`), [])
+            .join(';');
+          return {
+            url: `${origin}/#/${route.path}${matrixParamsEncoded ? `;${matrixParamsEncoded}` : ''}`,
+            label: `${symbolicName}: ${route.data['pageTitle']}`,
+          };
+        }));
+
+    }, new Array<AppEndpoint>());
   }
 }
 
