@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { OutletPageObjectMap, TestingAppPO } from '../testing-app.po';
-import { browserErrors, seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
+import { consumeBrowserLog, seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
 import { OutletRouterPagePO } from '../router-outlet/outlet-router-page.po';
 import { RouterOutletPagePO } from '../router-outlet/router-outlet-page.po';
 import { PreferredSizePagePO } from './preferred-size-page.po';
@@ -31,7 +31,7 @@ describe('RouterOutlet', () => {
     await preferredSizePO.enterPreferredWidth('555px');
     await preferredSizePO.enterPreferredHeight('444px');
     await expect(preferredSizePO.getSize()).toEqual(objectContaining({width: originalWidth, height: originalHeight}));
-    await expect(await browserErrors()).toEqual([]);
+    await expect(await consumeBrowserLog()).toEqual([]);
   });
 
   it('should allow resetting the preferred size on the outlet', async () => {

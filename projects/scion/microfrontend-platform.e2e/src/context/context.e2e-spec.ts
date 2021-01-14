@@ -10,7 +10,7 @@
 import { TestingAppPO } from '../testing-app.po';
 import { ContextPagePO } from './context-page.po';
 import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
-import { browserErrors, expectMap, seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
+import { consumeBrowserLog, expectMap, seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
 import { browser } from 'protractor';
 
 describe('Context', () => {
@@ -23,7 +23,7 @@ describe('Context', () => {
     await browser.get(`/#/${ContextPagePO.pageUrl}`);
     const contextPagePO = new ContextPagePO((): Promise<void> => browser.switchTo().defaultContent() as Promise<void>);
     await expect(await contextPagePO.getContext()).toEqual(new Map());
-    await expect(await browserErrors()).toEqual([]);
+    await expect(await consumeBrowserLog()).toEqual([]);
   });
 
   it('should allow setting a context value', async () => {

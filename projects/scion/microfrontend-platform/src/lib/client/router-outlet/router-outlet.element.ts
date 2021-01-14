@@ -10,7 +10,7 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { RouterOutletContextProvider } from '../context/router-outlet-context-provider';
 import { runSafe } from '../../safe-runner';
-import { distinctUntilChanged, map, pairwise, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { distinctUntilChanged, map, pairwise, skipWhile, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { RouterOutletUrlAssigner } from './router-outlet-url-assigner';
 import { MessageClient } from '../messaging/message-client';
 import { Defined } from '@scion/toolkit/util';
@@ -161,12 +161,34 @@ const HTML_TEMPLATE = `
  * ```
  *
  * #### Router Outlet Events
- * The router outlet emits an `activate` event when a microfrontend is mounted, and a `deactivate` event when a microfrontend is unmounted.
- * The events are emitted as a custom DOM event and contain the URL of the mounted or unmounted microfrontend. You can attach an event listener
- * declaratively in the HTML template using the `onevent` handler syntax, or programmatically using the `addEventListener` method.
+ *
+ * The router outlet emits the following events as custom DOM events. You can attach an event listener declaratively in the HTML template using the `onevent`
+ * handler syntax, or programmatically using the `addEventListener` method.
+ *
+ * - `activate`
+ *   The `activate` custom DOM event is fired when a microfrontend is mounted. It contains the URL of the mounted microfrontend in its `details` property as `string`
+ *   value. The microfrontend may not be fully loaded yet.
+ * - `deactivate`
+ *   The `deactivate` custom DOM event is fired when a microfrontend is about to be unmounted. It contains the URL of the unmounted microfrontend in its `details`
+ *   property as `string` value.
+ * - `focuswithin`
+ *   The `focuswithin` custom DOM event is fired when the microfrontend loaded into the outlet, or any of its child microfrontends, has gained or lost focus.
+ *   It contains the current focus-within state in its `details` property as a `boolean` value: `true` if focus was gained, or `false` if focus was lost.
+ *   The event does not bubble up through the DOM. After gaining focus, the event is not triggered again until embedded content loses focus completely, i.e.,
+ *   when focus does not remain in the embedded content at any nesting level. This event behaves like the `:focus-within` CSS pseudo-class but operates across iframe
+ *   boundaries. For example, it can be useful when implementing overlays that close upon focus loss.
+ *
+ *   Note that SCION can only monitor microfrontends of registered micro apps that are connected to the platform.
+ *
+ * Usage:
  *
  * ```html
- * <sci-router-outlet onactivate="onActivate()"></sci-router-outlet>
+ * <sci-router-outlet onfocuswithin="onFocusWithin()"></sci-router-outlet>
+ * ````
+ *
+ * For an Angular application, it would look as follows:
+ * ```html
+ * <sci-router-outlet (focuswithin)="onFocusWithin($event)"></sci-router-outlet>
  * ````
  *
  * #### Web component
@@ -400,6 +422,22 @@ export class SciRouterOutletElement extends HTMLElement {
       });
   }
 
+  private installFocusWithinEventDispatcher(): void {
+    Beans.get(MessageClient).observe$<boolean>(RouterOutlets.focusWithinOutletTopic(this._uid))
+      .pipe(
+        mapToBody(),
+        skipWhile(focusWithin => focusWithin === false), // wait until first receiving the focus, otherwise, it would emit immediately.
+        takeUntil(this._disconnect$),
+      )
+      .subscribe((focusWithin: boolean) => {
+        this.dispatchEvent(new CustomEvent('focuswithin', {
+          detail: focusWithin,
+          bubbles: false,
+          cancelable: false,
+        }));
+      });
+  }
+
   private installHostElementDecorator(): void {
     this._empty$
       .pipe(takeUntil(this._disconnect$))
@@ -426,6 +464,7 @@ export class SciRouterOutletElement extends HTMLElement {
     this.installOutletUrlListener();
     this.installOutletContext();
     this.installPreferredSizeListener();
+    this.installFocusWithinEventDispatcher();
     this.installKeyboardEventDispatcher();
     this.installHostElementDecorator();
     this._contextProvider.onOutletMount();
@@ -571,6 +610,15 @@ export namespace RouterOutlets {
    */
   export function preferredSizeTopic(outletUid: string): string {
     return `sci-router-outlets/${outletUid}/preferred-size`;
+  }
+
+  /**
+   * Computes the topic to which the focus-within event can be published to.
+   *
+   * @internal
+   */
+  export function focusWithinOutletTopic(outletUid: string): string {
+    return `sci-router-outlets/${outletUid}/focus-within`;
   }
 }
 

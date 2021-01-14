@@ -28,6 +28,10 @@ export class FocusMonitor {
    *
    * This Observable is like the `:focus-within` CSS pseudo-class but operates across iframe boundaries.
    * For example, it can be useful when implementing overlays that close upon focus loss.
+   *
+   * Note that this Observable emits only for microfrontends that are connected to the platform as registered micro app.
+   *
+   * See also the `onfocuswithin` event triggered by `<sci-router-outlet>` when embedded content has gained or lost focus.
    */
   public readonly focusWithin$: Observable<boolean> = Beans.get(MessageClient).request$<boolean>(PlatformTopics.IsFocusWithin).pipe(mapToBody());
 }

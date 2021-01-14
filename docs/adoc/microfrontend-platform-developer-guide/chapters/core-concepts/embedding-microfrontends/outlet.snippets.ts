@@ -60,17 +60,25 @@ import { Beans } from '@scion/toolkit/bean-manager';
 
 {
   `
-  // tag::router-outlet:listen-to-activate-event-in-template[]
-  <sci-router-outlet onactivate="onActivate()"></sci-router-outlet>
-  // end::router-outlet:listen-to-activate-event-in-template[]
+  // tag::router-outlet:listen-to-event-in-template[]
+  <sci-router-outlet onfocuswithin="onFocusWithin()"></sci-router-outlet>
+  // end::router-outlet:listen-to-event-in-template[]
   `;
 }
 
 {
-  // tag::router-outlet:listen-to-activate-event[]
+  `
+  // tag::router-outlet:listen-to-event-in-template-angular[]
+  <sci-router-outlet (focuswithin)="onFocusWithin($event)"></sci-router-outlet>
+  // end::router-outlet:listen-to-event-in-template-angular[]
+  `;
+}
+
+{
+  // tag::router-outlet:listen-to-event-programmatically[]
   const outlet: SciRouterOutletElement = document.querySelector('sci-router-outlet');
-  outlet.addEventListener('activate', (event: CustomEvent) => console.log(event.detail));
-  // end::router-outlet:listen-to-activate-event[]
+  outlet.addEventListener('focuswithin', (event: CustomEvent) => console.log(`focuswithin: ${event.detail}`));
+  // end::router-outlet:listen-to-event-programmatically[]
 }
 
 {

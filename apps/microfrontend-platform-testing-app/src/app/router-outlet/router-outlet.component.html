@@ -8,6 +8,7 @@
 <sci-router-outlet #router_outlet
                    [name]="outletName"
                    (activate)="onActivate($event)"
-                   (deactivate)="onDeactivate($event)">
+                   (deactivate)="onDeactivate($event)"
+                   (focuswithin)="onFocusWithin($event)">
 </sci-router-outlet>
 <div class="empty-note e2e-empty" *ngIf="empty$ | async">Router Outlet is empty</div>
