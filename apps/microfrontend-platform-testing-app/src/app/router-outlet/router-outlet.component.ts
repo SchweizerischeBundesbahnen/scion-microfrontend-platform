@@ -80,6 +80,10 @@ export class RouterOutletComponent {
     this._consoleService.log('sci-router-outlet:deactivate', (event as CustomEvent).detail);
   }
 
+  public onFocusWithin(event: Event): void {
+    console.debug(`[sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
+  }
+
   public get empty$(): Observable<boolean> {
     return this._routerOutlet ? this._routerOutlet.nativeElement.empty$ : NEVER;
   }

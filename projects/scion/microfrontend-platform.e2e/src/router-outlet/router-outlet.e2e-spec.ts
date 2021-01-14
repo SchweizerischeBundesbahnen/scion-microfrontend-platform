@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { browserNavigateBack, expectMap, seleniumWebDriverClickFix, SeleniumWebDriverClickFix, waitUntilLocation } from '../spec.util';
+import { browserNavigateBack, consumeBrowserLog, expectMap, seleniumWebDriverClickFix, SeleniumWebDriverClickFix, waitUntilLocation } from '../spec.util';
 import { TestingAppOrigins, TestingAppPO } from '../testing-app.po';
 import { browser } from 'protractor';
 import { OutletRouterPagePO } from './outlet-router-page.po';
@@ -17,12 +17,15 @@ import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
 import { Microfrontend1PagePO } from '../microfrontend/microfrontend-1-page.po';
 import { Microfrontend2PagePO } from '../microfrontend/microfrontend-2-page.po';
 import { ConsoleLog } from '../console/console-panel.po';
+import { logging } from 'protractor';
+import Level = logging.Level;
 
 describe('RouterOutlet', () => {
 
   let fix: SeleniumWebDriverClickFix;
   beforeAll(() => fix = seleniumWebDriverClickFix().install());
   afterAll(() => fix.uninstall());
+  beforeEach(() => consumeBrowserLog());
 
   it('should allow navigating within the outlet (self navigation)', async () => {
     const testingAppPO = new TestingAppPO();
@@ -987,6 +990,175 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
     // Verify that the nested <sci-router-outlet> is displayed
     await expectRouterOutletUrl(routerOutletL4PO).toEqual(getPageUrl({path: RouterOutletPagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+  });
+
+  it(`should emit the 'focuswithin' event [This test only works if the browser window keeps the focus while executing the test, i.e. the browser window is the active window or the test runs headless.]`, async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      root: {
+        outlet1: {
+          testee1: Microfrontend1PagePO,
+          testee2: Microfrontend1PagePO,
+        },
+        outlet2: {
+          testee3: Microfrontend1PagePO,
+          testee4: Microfrontend1PagePO,
+        },
+      },
+    });
+
+    const rootBrowserOutletPO = pagePOs.get<BrowserOutletPO>('root');
+
+    const outlet1PO = pagePOs.get<BrowserOutletPO>('outlet1');
+    const testee1 = pagePOs.get<Microfrontend1PagePO>('testee1');
+    const testee2 = pagePOs.get<Microfrontend1PagePO>('testee2');
+
+    const outlet2PO = pagePOs.get<BrowserOutletPO>('outlet2');
+    const testee3 = pagePOs.get<Microfrontend1PagePO>('testee3');
+    const testee4 = pagePOs.get<Microfrontend1PagePO>('testee4');
+
+    // Focus the root document in order to have no microfrontend focused
+    await rootBrowserOutletPO.clickUrl();
+
+    await browser.sleep(500); // waits until console log is written
+    await consumeBrowserLog();
+
+    await testee1.clickInputField();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=true]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=true]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=true]`,
+    ]));
+
+    await testee2.clickInputField();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=false]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=true]`,
+    ]));
+
+    await testee3.clickInputField();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=false]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=true]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=false]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=true]`,
+    ]));
+
+    await testee4.clickInputField();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=false]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=testee4, focuswithin=true]`,
+    ]));
+
+    await outlet2PO.clickUrl();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=false]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=testee4, focuswithin=false]`,
+    ]));
+
+    await outlet1PO.clickUrl();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual([]);
+
+    await rootBrowserOutletPO.clickUrl();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual([
+      `[sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=false]`,
+    ]);
+  });
+
+  it(`should not emit the 'focuswithin' event while the focus remains within the outlet's microfrontend or any of its child microfrontends [This test only works if the browser window keeps the focus while executing the test, i.e. the browser window is the active window or the test runs headless.]`, async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      root: {
+        outlet1: {
+          outlet2: {
+            testee1: Microfrontend1PagePO,
+            testee2: Microfrontend1PagePO,
+            testee3: Microfrontend1PagePO,
+          },
+        },
+      },
+    });
+
+    const rootBrowserOutletPO = pagePOs.get<BrowserOutletPO>('root');
+
+    const outlet1PO = pagePOs.get<BrowserOutletPO>('outlet1');
+    const outlet2PO = pagePOs.get<BrowserOutletPO>('outlet2');
+    const testee1 = pagePOs.get<Microfrontend1PagePO>('testee1');
+    const testee2 = pagePOs.get<Microfrontend1PagePO>('testee2');
+    const testee3 = pagePOs.get<Microfrontend1PagePO>('testee3');
+
+    // Focus the root document in order to have no microfrontend focused
+    await rootBrowserOutletPO.clickUrl();
+
+    await browser.sleep(500); // waits until console log is written
+    await consumeBrowserLog();
+
+    await testee1.clickInputField();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=true]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=true]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=true]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=true]`,
+    ]));
+
+    await testee2.clickInputField();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=false]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=true]`,
+    ]));
+
+    await testee3.clickInputField();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=false]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=true]`,
+    ]));
+
+    await outlet2PO.clickUrl();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=false]`,
+      `[sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=false]`,
+    ]));
+
+    await outlet1PO.clickUrl();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=false]`,
+    ]));
+
+    await rootBrowserOutletPO.clickUrl();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual([
+      `[sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=false]`,
+    ]);
+  });
+
+  it(`should wait emitting the'focuswithin' event until first receiving the focus [This test only works if the browser window keeps the focus while executing the test, i.e. the browser window is the active window or the test runs headless.]`, async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      testee: Microfrontend1PagePO,
+    });
+
+    const testeePO = pagePOs.get<Microfrontend1PagePO>('testee');
+
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual([]);
+
+    await testeePO.clickInputField();
+    await browser.sleep(500); // waits until console debug log is written
+    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[sci-router-outlet:onfocuswithin] [outlet=testee, focuswithin=true]`,
+    ]));
   });
 });
 

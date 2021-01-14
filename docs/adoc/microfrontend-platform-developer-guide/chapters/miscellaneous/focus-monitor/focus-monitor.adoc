@@ -1,8 +1,15 @@
 :basedir: ../../..
 include::{basedir}/_common.adoc[]
 
-[[chapter:focus-monitor]]
-== Focus Monitor
+[[chapter:monitoring-focus]]
+== Focus
+
+By design of iframe isolation, DOM events, including `focusin` and `focusout`, do not bubble across iframe boundaries. SCION helps overcome this iframe restriction and monitors microfrontends for focus gain or loss, allowing to implement use cases where an overlay should close upon focus loss.
+
+NOTE: Note that SCION can only monitor the focus of microfrontends that are connected to the platform.
+
+[[chapter:focus:focus-monitor]]
+=== Focus Monitor
 The focus monitor allows observing if the current microfrontend has received focus or contains embedded web content that has received focus. It behaves like the `:focus-within` CSS pseudo-class but operates across iframe boundaries. For example, it can be useful when implementing overlays that close upon focus loss.
 
 [source,typescript]
@@ -10,4 +17,22 @@ The focus monitor allows observing if the current microfrontend has received foc
 include::focus-monitor.snippets.ts[tags=focus-monitor]
 ----
 The Observable emits when the current microfrontend or any of its child microfrontends has gained or lost focus. The Observable does not emit while the focus remains within this microfrontend or any of its child microfrontends. Upon subscription, the Observable emits the current focus-within state, and then continuously emits when it changes. It never completes.
+
+[[chapter:focus:onfocuswithin-event]]
+=== Focus DOM Event
+
+The router outlet `<sci-router-outlet>` fires a `focuswithin` custom DOM event when the microfrontend loaded into the outlet, or any of its child microfrontends, has gained or lost focus. It contains the current focus-within state in its `details` property as a `boolean` value: `true` if focus was gained, or `false` if focus was lost.
+
+[source,html]
+----
+include::focus-monitor.snippets.ts[tags=onfocuswithin-event]
+----
+
+For an Angular application, it would look as follows:
+[source,html]
+----
+include::focus-monitor.snippets.ts[tags=onfocuswithin-event-angular]
+----
+
+The event does not bubble up through the DOM. After gaining focus, the event is not triggered again until embedded content loses focus completely, i.e., when focus does not remain in the embedded content at any nesting level. This event behaves like the `:focus-within` CSS pseudo-class but operates across iframe boundaries. For example, it can be useful when implementing overlays that close upon focus loss.
 

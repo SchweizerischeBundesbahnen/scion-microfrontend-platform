@@ -58,7 +58,7 @@ The following figure shows a microfrontend that embeds another microfrontend.
 [.text-center]
 image::nested-router-outlets.svg[]
 
-TIP: If using the <<chapter:intention-api, Intention API>>, you do not need to know the URL of the microfrontend you want to embed. Simply issue an intent for showing the microfrontend, pass the outlet name along with the intent, and let the microfrontend embedding itself. See chapter <<chapter:intent-based-messaging:issue-intent>> for an example.
+TIP: If using the <<chapter:intention-api, Intention API>>, you do not need to know the URL of the microfrontend you want to embed. Simply issue an intent for showing the microfrontend, pass the outlet name along with the intent, and let the microfrontend embedding itself. See chapter <<chapter:intent-based-messaging:issuing-an-intent>> for an example.
 
 [[chapter:router-outlet:outlet-size]]
 [discrete]
@@ -126,20 +126,40 @@ include::outlet.snippets.ts[tags=router-outlet:keystrokes-typescript]
 [[chapter:router-outlet:router-outlet-events]]
 [discrete]
 === Router Outlet Events
-The router outlet emits an activate event when a microfrontend is mounted, and a deactivate event when a microfrontend is unmounted.
+The router outlet emits the following events as custom DOM events. You can attach an event listener declaratively in the HTML template using the `onevent` handler syntax, or programmatically using the `addEventListener` method.
 
-The events are emitted as a custom DOM event and contain the URL of the mounted or unmounted microfrontend. You can attach an event listener declaratively in the HTML template using the `onevent` handler syntax, or programmatically using the `addEventListener` method.
+activate::
+The `activate` custom DOM event is fired when a microfrontend is mounted. It contains the URL of the mounted microfrontend in its `details` property as `string` value. The microfrontend may not be fully loaded yet.
+
+deactivate::
+The `deactivate` custom DOM event is fired when a microfrontend is about to be unmounted. It contains the URL of the unmounted microfrontend in its `details` property as `string` value.
+
+focuswithin::
+The `focuswithin` custom DOM event is fired when the microfrontend loaded into the outlet, or any of its child microfrontends, has gained or lost focus. It contains the current focus-within state in its `details` property as a `boolean` value: `true` if focus was gained, or `false` if focus was lost.
++
+The event does not bubble up through the DOM. After gaining focus, the event is not triggered again until the embedded content loses focus completely, i.e., when focus does not remain in the embedded content at any nesting level. This event behaves like the `:focus-within` CSS pseudo-class but operates across iframe boundaries. For example, it can be useful when implementing overlays that close upon focus loss.
+
+NOTE: Note that SCION can only monitor the focus of microfrontends that are connected to the platform.
+
+[discrete]
+=== Examples for subscribing to router-outlet events
 
 The following example attaches an event listener in the HTML template.
 [source,html]
 ----
-include::outlet.snippets.ts[tags=router-outlet:listen-to-activate-event-in-template]
+include::outlet.snippets.ts[tags=router-outlet:listen-to-event-in-template]
+----
+
+For an Angular application, it would look as follows:
+[source,html]
+----
+include::outlet.snippets.ts[tags=router-outlet:listen-to-event-in-template-angular]
 ----
 
 The example below adds an event listener programmatically.
 [source,typescript]
 ----
-include::outlet.snippets.ts[tags=router-outlet:listen-to-activate-event]
+include::outlet.snippets.ts[tags=router-outlet:listen-to-event-programmatically]
 ----
 
 [[chapter:router-outlet:outlet-context]]

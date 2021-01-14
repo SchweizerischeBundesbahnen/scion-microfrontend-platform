@@ -152,7 +152,7 @@ include::intention-api.snippets.ts[tags=intent-handling]
 
 IMPORTANT: Regardless of the intent selector, an application only receives intents for which it provides a fulfilling capability.
 
-For more information about handling an intent, see the chapter <<chapter:intent-based-messaging:handle-intent>> in <<chapter:intent-based-messaging>>.
+For more information about handling an intent, see the chapter <<chapter:intent-based-messaging:handling-intents>> in <<chapter:intent-based-messaging>>.
 
 [[chapter:intention-api:intention]]
 [discrete]
@@ -213,7 +213,7 @@ The following code snippet shows an example of how to issue an intent.
 include::intention-api.snippets.ts[tags=issue-intent]
 ----
 
-For more information about issuing an intent, see the chapter <<chapter:intent-based-messaging:issue-intent>> in <<chapter:intent-based-messaging>>.
+For more information about issuing an intent, see the chapter <<chapter:intent-based-messaging:issuing-an-intent>> in <<chapter:intent-based-messaging>>.
 
 [[chapter:intention-api:capability-lookup]]
 [discrete]
@@ -239,7 +239,7 @@ include::intention-api.snippets.ts[tags=capability-lookup-toolbar-items]
 <1> Looks up `toolbar-item` capabilities for the main application toolbar.
 <2> Issues an intent when the user clicks a toolbar item. For the intent, we use the type and qualifier of the capability. The micro application providing the capability does then handle the intent.
 
-NOTE: To see how to handle intents in the capability providing micro application, see the chapter <<chapter:intent-based-messaging:handle-intent>> in <<chapter:intent-based-messaging>>.
+NOTE: To see how to handle intents in the capability providing micro application, see the chapter <<chapter:intent-based-messaging:handling-intents>> in <<chapter:intent-based-messaging>>.
 
 By passing a `ManifestObjectFilter` to the `lookupCapabilities$` method, you can control which capabilities to observe. Specified filter criteria are "AND"ed together. If not passing a filter, all capabilities visible to the requesting micro application are observed. When subscribing to the Observable, it emits the requested capabilities. The Observable never completes and emits continuously when satisfying capabilities are registered or unregistered.
 

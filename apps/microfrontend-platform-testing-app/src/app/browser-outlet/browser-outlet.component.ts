@@ -101,6 +101,10 @@ export class BrowserOutletComponent {
     this._consoleService.log('sci-router-outlet:ondeactivate', (event as CustomEvent).detail);
   }
 
+  public onFocusWithin(event: Event): void {
+    console.debug(`[sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
+  }
+
   private readAppEntryPoints(): Observable<AppEndpoint[]> {
     return Beans.get(ManifestService).lookupApplications$()
       .pipe(map((applications: Application[]) => {

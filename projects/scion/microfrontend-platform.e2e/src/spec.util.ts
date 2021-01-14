@@ -9,7 +9,6 @@
  */
 import { $, browser, ElementFinder, Key, logging, protractor, WebElement } from 'protractor';
 import { SciListItemPO } from '@scion/toolkit.internal/widgets.po';
-import Entry = logging.Entry;
 import Level = logging.Level;
 
 /**
@@ -259,12 +258,18 @@ export function getInputValue(elementFinder: ElementFinder): Promise<any> {
 }
 
 /**
- * Reads the errors from the browser console.
+ * Reads the log from the browser console.
  * Note that log buffers are reset after this call.
+ *
+ * By default browser allows recording only WARNING and SEVERE level messages. In order to be able asserting any level,
+ * you need to change the loggingPrefs.browser capabilities in `protractor.conf.js`.
  */
-export async function browserErrors(): Promise<Entry[]> {
-  const logs = await browser.manage().logs().get('browser');
-  return logs.filter(log => log.level === Level.SEVERE);
+export async function consumeBrowserLog(severity: Level = Level.SEVERE, filter?: RegExp): Promise<string[]> {
+  return (await browser.manage().logs().get('browser'))
+    .filter(log => log.level === severity)
+    .map(log => log.message)
+    .map(message => message.match(/"(.+)"/)[1]) // log message is contained in double quotes
+    .filter(log => filter ? log.match(filter) : true);
 }
 
 /**
