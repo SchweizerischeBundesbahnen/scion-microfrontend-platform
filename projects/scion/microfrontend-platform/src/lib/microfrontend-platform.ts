@@ -112,7 +112,7 @@ export class MicrofrontendPlatform {
    * app which the user loads into his browser and provides the main application shell, defining areas to embed microfrontends.
    *
    * The platform host loads the manifests of all registered micro applications and starts platform services such as the message broker for client-side messaging. It further may
-   * wait for activators to signal ready. Typically, the platform is started during bootstrapping the application. In Angular, for example, the platform should be started in an
+   * wait for activators to signal ready. Typically, the platform is started during bootstrapping the application. In Angular, for example, the platform can be started in an
    * app initializer.
    *
    * You can pass the configuration statically, or load it asynchronously using a config loader, e.g., for loading the config over the network.
@@ -127,6 +127,7 @@ export class MicrofrontendPlatform {
    * - In runlevel 0, the platform fetches manifests of registered micro applications.
    * - In runlevel 1, the platform constructs eager beans.
    * - From runlevel 2 and above, messaging is enabled. This is the default runlevel at which initializers execute if not specifying any runlevel.
+   * - In runlevel 3, the platform installs activator microfrontends.
    *
    * @param  platformConfig - Platform config declaring the micro applications allowed to interact with the platform. You can pass the configuration statically, or load it
    *                          asynchronously using a config loader, e.g., for loading the config over the network.
@@ -148,6 +149,16 @@ export class MicrofrontendPlatform {
         // Install initializer to block startup until connected to the message broker. It rejects if the maximal broker discovery timeout elapses.
         Beans.registerInitializer({useFunction: () => Beans.get(BrokerGateway).whenConnected(), runlevel: Runlevel.One});
         Beans.registerInitializer({useFunction: () => Beans.get<BrokerGateway>(ɵPlatformBrokerGatewaySymbol).whenConnected(), runlevel: Runlevel.One});
+        // Obtain platform properties and applications before signaling the platform as started to allow synchronous retrieval.
+        Beans.registerInitializer({
+          useFunction: async () => {
+            if (Beans.get(BrokerGateway) instanceof NullBrokerGateway) {
+              return;
+            }
+            await Beans.get(PlatformPropertyService).whenPropertiesLoaded;
+            await Beans.opt(ManifestService)?.whenApplicationsLoaded; // bean is not installed when starting the host platform anonymously
+          }, runlevel: Runlevel.Two,
+        });
 
         Beans.register(IS_PLATFORM_HOST, {useValue: true});
         Beans.register(HostPlatformAppProvider);
@@ -201,7 +212,7 @@ export class MicrofrontendPlatform {
    *
    * When connected to the platform, the micro application can interact with the platform and other micro applications. Typically, the
    * micro application connects to the platform host during bootstrapping, that is, before displaying content to the user.In Angular, for
-   * example, this should be done in an app initializer.
+   * example, this can be done in an app initializer.
    *
    * Note: To establish the connection, the micro application needs to be registered in the host application and embedded as a direct or indirect
    * child window of the host application window.

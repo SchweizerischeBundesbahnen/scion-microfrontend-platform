@@ -15,6 +15,7 @@ import { expectPromise, serveManifest, waitFor } from './spec.util.spec';
 import { PlatformMessageClient } from './host/platform-message-client';
 import { PlatformState } from './platform-state';
 import { Beans } from '@scion/toolkit/bean-manager';
+import { PlatformPropertyService } from './platform-property-service';
 
 describe('MicrofrontendPlatform', () => {
 
@@ -244,6 +245,25 @@ describe('MicrofrontendPlatform', () => {
     Beans.registerInitializer(() => Promise.resolve());
 
     await expectPromise(MicrofrontendPlatform.startPlatform()).toReject(/PlatformStartupError/);
+  });
+
+  it('should allow looking up platform properties from the host', async () => {
+    await MicrofrontendPlatform.startHost({
+      apps: [
+        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'application-1'})},
+      ],
+      properties: {
+        'prop1': 'PROP1',
+        'prop2': 'PROP2',
+        'prop3': 'PROP3',
+      },
+    }, {symbolicName: 'app-1'});
+
+    expect(Beans.get(PlatformPropertyService).properties()).toEqual(new Map()
+      .set('prop1', 'PROP1')
+      .set('prop2', 'PROP2')
+      .set('prop3', 'PROP3'),
+    );
   });
 });
 
