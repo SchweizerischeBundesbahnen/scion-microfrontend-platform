@@ -98,26 +98,10 @@ const HTML_TEMPLATE = `
  * ```
  *
  * #### Outlet size
- * The router outlet can adapt its size to the preferred size of its embedded content. The preferred size is set by the microfrontend
- * embedded in the router outlet. Setting the outlet size requires the embedded microfrontend to be a registered micro application.
+ * The router outlet can adapt its size to the preferred size of its embedded content. The preferred size is set by the microfrontend embedded
+ * in the router outlet, which, therefore, requires the embedded microfrontend to be connected to the platform.
  *
- * Embedded content can report its preferred size using the {@link PreferredSizeService}, causing the outlet to change its size,
- * as following:
- *
- * ```ts
- * Beans.get(PreferredSizeService).setPreferredSize({width: '100%', minHeight: '400px'});
- * ```
- *
- * The platform provides a convenience API to bind a DOM element via {@link PreferredSizeService.fromDimension} to automatically report
- * its content size as preferred size to the outlet. The element to be observed must behave as a `block-level` box and not as an `inline-level`
- * box. So, if you want to observe an inline element, you have to override its display type to either `block` or `inline-block`.
- *
- * ```ts
- * const mainElement = document.querySelector('main');
- *
- * // Bind the element to automatically report its size.
- * Beans.get(PreferredSizeService).fromDimension(mainElement);
- * ```
+ * Embedded content can report its preferred size using the {@link PreferredSizeService}, causing the outlet to adapt its size.
  *
  * #### Keystroke Bubbling
  * The router outlet allows the registration of keystrokes, instructing embedded content at any nesting level to propagate corresponding keyboard events
