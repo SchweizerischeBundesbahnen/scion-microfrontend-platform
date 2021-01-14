@@ -211,7 +211,7 @@ export class SciRouterOutletElement extends HTMLElement {
   constructor() {
     super();
     this._outletName$ = new BehaviorSubject<string>(PRIMARY_OUTLET);
-    this._shadowRoot = this.attachShadow({mode: 'closed'});
+    this._shadowRoot = this.attachShadow({mode: 'open'});
     this._shadowRoot.innerHTML = HTML_TEMPLATE.trim();
     this._iframe = this._shadowRoot.querySelector('iframe');
     this._contextProvider = new RouterOutletContextProvider(this._iframe);

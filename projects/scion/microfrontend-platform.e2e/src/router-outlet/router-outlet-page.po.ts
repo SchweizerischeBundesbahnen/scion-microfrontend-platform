@@ -91,7 +91,7 @@ export class RouterOutletPagePO {
     await this._switchToIframeFn();
 
     // Get the iframe from the custom element (inside shadow DOM)
-    const iframe = await browser.executeScript('return arguments[0].iframe', this._pageFinder.$('sci-router-outlet').getWebElement()) as WebElement;
+    const iframe = await browser.executeScript<WebElement>('return arguments[0].iframe', this._pageFinder.$('sci-router-outlet').getWebElement());
 
     // Activate this iframe's WebDriver execution context.
     await switchToIframe(iframe);
