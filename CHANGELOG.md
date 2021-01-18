@@ -1,3 +1,20 @@
+# [1.0.0-beta.9](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.8...1.0.0-beta.9) (2021-01-18)
+
+
+### Bug Fixes
+
+* **devtools:** perform scope check when computing dependencies between micro applications ([5e43bc3](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/5e43bc3a44c8e7b2056e2d10fa18cbd146c0d895))
+* **platform:** resolve host startup promise only once applications and properties are available ([f4067c2](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/f4067c26755f62ccf8daff1abbcb55f34413f5ae))
+
+
+### Features
+
+* **platform:** allow monitoring `sci-router-outlet` whether embedded content has gained or lost focus ([14fb178](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/14fb17884cc9da4dca481894f3d64f8785f512cc))
+* **platform:** allow passing params in an intent ([b82b343](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/b82b34390269992c20ae48d0dc258febbe02c352)), closes [#44](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/44)
+* **platform:** open shadow DOM of the router outlet ([cb10c32](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/cb10c32dab7d7e5a4e3d67ba99efb708650020f0))
+
+
+
 # [1.0.0-beta.8](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.7...1.0.0-beta.8) (2020-12-18)
 
 
