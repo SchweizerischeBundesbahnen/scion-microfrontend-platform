@@ -4,7 +4,7 @@
 | --- | --- | --- | --- | --- |
 
 ## [SCION Microfrontend Platform][menu-home] > Getting Started
-This Getting Started Guide introduces you to the essentials of the SCION Microfrontend Platform by developing a simple webshop. The webshop consists of a products page and a shopping cart, both implemented as a microfrontend. The microfrontends are provided by two different micro applications.
+This Getting Started Guide introduces you to the essentials of the SCION Microfrontend Platform by developing a simple webshop. The webshop consists of a products page and a shopping cart, which are implemented as independent microfrontends.
 
 <p align="center">
   <a href="https://scion-microfrontend-platform-getting-started.now.sh"><img src="webshop.svg" alt="Getting Started Webshop"></a>

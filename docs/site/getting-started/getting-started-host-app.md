@@ -70,6 +70,20 @@ In this section, we will register the `host`, `products`, `shopping cart` and `d
    > Lines to be added are preceded by the [+] mark.
    
    The second argument is the symbolic name of the micro application starting the platform host. It is optional. If specified, we can interact with the platform and other micro applications, e.g., publish messages or navigate in router outlets.
+1. Provide the manifest JSON file that we referenced in the first step.
+    Create the file `manifest.json` in the `src` folder, as follows:
+    ```json
+    {
+      "name": "Host App"
+    }
+    ```
+
+    The manifest must declare at least the human-readable name of the application. The name has no meaning to the platform, but is used, for example, by the DevTools to list the micro applications.
+
+    To learn more about the manifest, refer to the [Developer Guide][link-developer-guide#manifest].
+
+    > This step requires to serve the application anew. 
+
 </details>
 
 <details>
@@ -167,35 +181,17 @@ sci-router-outlet[name="SHOPPING-CART"].sci-empty {
 </details>
 
 <details>
-   <summary><strong>Provide a manifest file</strong></summary>
-   <br>
-   
-In this step, we finally provide the manifest JSON file that we referenced in the first step. If not providing a manifest file, we could not connect to the platform.
-
-Create the file `manifest.json` in the `src` folder, as follows:
-```json
-{
-  "name": "Host App"
-}
-```
-
-The manifest must declare at least the human-readable name of the application. The name has no meaning to the platform, but is used, for example, by the DevTools to list the micro applications.
-
-To learn more about the manifest, refer to the [Developer Guide][link-developer-guide#manifest].
-
-> This step requires to serve the application anew. 
-
-</details>
-
-<details>
    <summary><strong>Open the app in the browser</strong></summary>
    <br>
 
 We did it! Run `npm run start` to serve the applications.
 
-If you open the page http://localhost:4200, you will not see much yet. That's because we first have to implement the micro applications for `products` and `shopping cart`. If you open the console panel of your browser, you will see that the platform tries to load the manifests for the `products` and `shopping cart` micro applications, which leads to an error because not yet available.
+When you open the page http://localhost:4200, you see:
+- the header "Products" provided by the otherwise still empty `products` microfrontend 
+- the button we prepared for toggling the shopping cart sidebar
+- the `devtools` microfrontend
 
-What you can see though is the `devtools` microfrontend.
+This is not yet much. That is because we first have to implement the micro applications for `products` and `shopping cart`. If you open the console panel of your browser, you will notice that the platform tries to load the manifests for the `products` and `shopping cart` micro applications, which leads to an error because they are not yet available.
 </details>
 
 <details>
