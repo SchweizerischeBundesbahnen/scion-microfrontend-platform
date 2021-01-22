@@ -211,7 +211,7 @@ export class MicrofrontendPlatform {
    * connecting to the platform on behalf of other micro applications.
    *
    * When connected to the platform, the micro application can interact with the platform and other micro applications. Typically, the
-   * micro application connects to the platform host during bootstrapping, that is, before displaying content to the user.In Angular, for
+   * micro application connects to the platform host during bootstrapping, that is, before displaying content to the user. In Angular, for
    * example, this can be done in an app initializer.
    *
    * Note: To establish the connection, the micro application needs to be registered in the host application and embedded as a direct or indirect

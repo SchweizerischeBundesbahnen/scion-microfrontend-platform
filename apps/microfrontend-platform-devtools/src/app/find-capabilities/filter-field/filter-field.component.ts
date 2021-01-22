@@ -71,7 +71,7 @@ export class FilterFieldComponent implements OnInit {
 
   private _filters = new Set<KeyValuePair>();
 
-  constructor(private _cdRef: ChangeDetectorRef, private _ngZone: NgZone) {
+  constructor(private _cdRef: ChangeDetectorRef, private _zone: NgZone) {
   }
 
   @HostListener('keydown.escape')
@@ -83,7 +83,7 @@ export class FilterFieldComponent implements OnInit {
     if (origin === null) {
       this.showFilter = false;
       // Workaround for the fact that (cdkFocusChange) emits outside NgZone.
-      this._ngZone.run(() => this._cdRef.markForCheck());
+      this._zone.run(() => this._cdRef.markForCheck());
     }
   }
 

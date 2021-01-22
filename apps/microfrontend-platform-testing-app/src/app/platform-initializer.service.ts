@@ -9,7 +9,6 @@
  */
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
-import { AngularZoneIntentClientDecorator, AngularZoneMessageClientDecorator } from './angular-zone-messaging-decorators';
 import { ApplicationConfig, Handler, IntentClient, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatform, PlatformState, TopicMessage } from '@scion/microfrontend-platform';
 import { environment } from '../environments/environment';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
@@ -18,6 +17,7 @@ import { TestingAppTopics } from './testing-app.topics';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { Beans } from '@scion/toolkit/bean-manager';
+import { NgZoneIntentClientDecorator, NgZoneMessageClientDecorator } from './ng-zone-decorators';
 
 /**
  * Initializes the SCION Microfrontend Platform.
@@ -30,7 +30,8 @@ export class PlatformInitializer implements OnDestroy {
   private readonly _queryParams: Map<string, string>;
   private readonly _destroy$ = new Subject<void>();
 
-  constructor(private _zone: NgZone, locationStrategy: LocationStrategy, private _consoleService: ConsoleService) {
+  constructor(private _zone: NgZone, locationStrategy: LocationStrategy, private _consoleService: ConsoleService,
+              private _messageClientDecorator: NgZoneMessageClientDecorator, private _intentClientDecorator: NgZoneIntentClientDecorator) {
     this._queryParams = this.getQueryParams(locationStrategy);
   }
 
@@ -46,9 +47,8 @@ export class PlatformInitializer implements OnDestroy {
   private async startHostPlatform(): Promise<void> {
     // Make the platform to run with Angular
     MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
-      Beans.register(NgZone, {useValue: this._zone});
-      Beans.registerDecorator(MessageClient, {useClass: AngularZoneMessageClientDecorator});
-      Beans.registerDecorator(IntentClient, {useClass: AngularZoneIntentClientDecorator});
+      Beans.registerDecorator(MessageClient, {useValue: this._messageClientDecorator});
+      Beans.registerDecorator(IntentClient, {useValue: this._intentClientDecorator});
     });
 
     // Read the config from the query params
@@ -74,11 +74,14 @@ export class PlatformInitializer implements OnDestroy {
     }
 
     // Run the microfrontend platform as host app
-    await MicrofrontendPlatform.startHost({
-      apps: apps,
-      properties: Array.from(this._queryParams.keys()).reduce((dictionary, key) => ({...dictionary, [key]: this._queryParams.get(key)}), {}),
-      platformFlags: {activatorApiDisabled: activatorApiDisabled},
-    }, {symbolicName: determineAppSymbolicName()});
+    await this._zone.runOutsideAngular(() => {
+        return MicrofrontendPlatform.startHost({
+          apps: apps,
+          properties: Array.from(this._queryParams.keys()).reduce((dictionary, key) => ({...dictionary, [key]: this._queryParams.get(key)}), {}),
+          platformFlags: {activatorApiDisabled: activatorApiDisabled},
+        }, {symbolicName: determineAppSymbolicName()});
+      },
+    );
 
     // When starting the app with activators, send a ping request to the activators to test their readiness. (activator.e2e-spec.ts).
     if (manifestClassifier === '-activator') {
@@ -93,13 +96,12 @@ export class PlatformInitializer implements OnDestroy {
   private startClientPlatform(): Promise<void> {
     // Make the platform to run with Angular
     MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
-      Beans.register(NgZone, {useValue: this._zone});
-      Beans.registerDecorator(MessageClient, {useClass: AngularZoneMessageClientDecorator});
-      Beans.registerDecorator(IntentClient, {useClass: AngularZoneIntentClientDecorator});
+      Beans.registerDecorator(MessageClient, {useValue: this._messageClientDecorator});
+      Beans.registerDecorator(IntentClient, {useValue: this._intentClientDecorator});
     });
 
     // Run the microfrontend platform as client app
-    return MicrofrontendPlatform.connectToHost({symbolicName: determineAppSymbolicName()});
+    return this._zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost({symbolicName: determineAppSymbolicName()}));
   }
 
   private installMessageInterceptors(): void {

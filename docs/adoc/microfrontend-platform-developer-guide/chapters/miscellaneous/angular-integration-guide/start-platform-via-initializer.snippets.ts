@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, Injectable, NgModule } from '@angular/core';
+import { APP_INITIALIZER, Injectable, NgModule, NgZone } from '@angular/core';
 import { MicrofrontendPlatform, PlatformConfig, PlatformConfigLoader, PlatformState } from '@scion/microfrontend-platform';
 import { HttpClient } from '@angular/common/http';
 import { Beans } from '@scion/toolkit/bean-manager';
@@ -7,17 +7,17 @@ import { Beans } from '@scion/toolkit/bean-manager';
 @Injectable({providedIn: 'root'})
 export class PlatformInitializer {
 
-  constructor(private httpClient: HttpClient) { // <1>
+  constructor(private _httpClient: HttpClient, private _zone: NgZone) { // <1>
   }
 
   public init(): Promise<void> {
     // Initialize the platform to run with Angular.
     MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
-      Beans.register(HttpClient, {useValue: this.httpClient}); // <2>
+      Beans.register(HttpClient, {useValue: this._httpClient}); // <2>
     });
 
     // Start the platform in host-mode.
-    return MicrofrontendPlatform.startHost(HttpPlatformConfigLoader); // <3>
+    return this._zone.runOutsideAngular(() => MicrofrontendPlatform.startHost(HttpPlatformConfigLoader)); // <3>
   }
 }
 
@@ -58,6 +58,7 @@ export function providePlatformInitializerFn(initializer: PlatformInitializer): 
       provide: APP_INITIALIZER,
       useFactory: provideMicroAppPlatformInitializerFn,
       multi: true,
+      deps: [NgZone],
     },
   ],
   // ... other metadata omitted
@@ -65,7 +66,7 @@ export function providePlatformInitializerFn(initializer: PlatformInitializer): 
 export class MicroAppModule {
 }
 
-export function provideMicroAppPlatformInitializerFn(): () => Promise<void> {
-  return () => MicrofrontendPlatform.connectToHost({symbolicName: 'product-catalog-app'}); // <1>
+export function provideMicroAppPlatformInitializerFn(zone: NgZone): () => Promise<void> {
+  return () => zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost({symbolicName: 'product-catalog-app'})); // <1>
 }
 // end::micro-app:initializer[]
