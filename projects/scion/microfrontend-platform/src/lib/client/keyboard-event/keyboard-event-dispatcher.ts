@@ -30,10 +30,28 @@ export class KeyboardEventDispatcher implements PreDestroy {
   private _destroy$ = new Subject<void>();
   private _keystrokesChange$ = new Subject<void>();
   private _whenOutletIdentity: Promise<string>;
+  private _keyboardEvents$ = new Subject<KeyboardEvent>();
 
   constructor() {
     this._whenOutletIdentity = this.lookupOutletIdentity();
+    this.installKeyboardEventListener();
     this.installKeystrokeListener();
+  }
+
+  /**
+   * Installs a listener for keyboard events.
+   *
+   * IMPORTANT:
+   * Always subscribe to DOM events during event dispatcher construction. Event dispatchers are eagerly created on platform startup.
+   * Frameworks like Angular usually connect to the platform outside their change detection zone in order to avoid triggering change detection for unrelated DOM events.
+   */
+  private installKeyboardEventListener(): void {
+    merge(fromEvent<KeyboardEvent>(document, 'keydown'), fromEvent<KeyboardEvent>(document, 'keyup'))
+      .pipe(
+        filter(event => event.bubbles && !!event.key),
+        takeUntil(this._destroy$),
+      )
+      .subscribe(event => this._keyboardEvents$.next(event));
   }
 
   private installKeystrokeListener(): void {
@@ -60,9 +78,9 @@ export class KeyboardEventDispatcher implements PreDestroy {
    * to the topic {@link RouterOutlets.keyboardEventTopic}.
    */
   private installKeyboardEventDispatcher(eventType: string, keystrokes: Set<string>): void {
-    fromEvent<KeyboardEvent>(document, eventType)
+    this._keyboardEvents$
       .pipe(
-        filter(event => event.bubbles && !!event.key),
+        filter(event => event.type === eventType),
         filter(event => keystrokes.has(Keystroke.fromEvent(event).parts)),
         takeUntil(merge(this._keystrokesChange$, this._destroy$)),
       )

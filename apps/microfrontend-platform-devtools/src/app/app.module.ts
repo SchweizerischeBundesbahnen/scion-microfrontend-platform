@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import { BrowserModule } from '@angular/platform-browser';
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule, NgZone } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent, isRunningStandalone } from './app.component';
@@ -79,21 +79,19 @@ import { A11yModule } from '@angular/cdk/a11y';
       provide: APP_INITIALIZER,
       useFactory: providePlatformInitializerFn,
       multi: true,
-      deps: [NgZoneMessageClientDecorator, NgZoneIntentClientDecorator],
+      deps: [NgZoneMessageClientDecorator, NgZoneIntentClientDecorator, NgZone],
     },
     {provide: MessageClient, useFactory: () => Beans.get(MessageClient)},
     {provide: IntentClient, useFactory: () => Beans.get(IntentClient)},
     {provide: OutletRouter, useFactory: () => Beans.get(OutletRouter)},
     {provide: ManifestService, useFactory: () => Beans.get(ManifestService)},
-    NgZoneMessageClientDecorator,
-    NgZoneIntentClientDecorator,
   ],
   bootstrap: [AppComponent],
 })
 export class AppModule {
 }
 
-export function providePlatformInitializerFn(ngZoneMessageClientDecorator: NgZoneMessageClientDecorator, ngZoneIntentClientDecorator: NgZoneIntentClientDecorator): () => Promise<void> {
+export function providePlatformInitializerFn(ngZoneMessageClientDecorator: NgZoneMessageClientDecorator, ngZoneIntentClientDecorator: NgZoneIntentClientDecorator, zone: NgZone): () => Promise<void> {
   return (): Promise<void> => {
     if (isRunningStandalone()) {
       return Promise.resolve();
@@ -106,6 +104,6 @@ export function providePlatformInitializerFn(ngZoneMessageClientDecorator: NgZon
     });
 
     // Run the microfrontend platform as client app
-    return MicrofrontendPlatform.connectToHost({symbolicName: 'devtools'});
+    return zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost({symbolicName: 'devtools'}));
   };
 }

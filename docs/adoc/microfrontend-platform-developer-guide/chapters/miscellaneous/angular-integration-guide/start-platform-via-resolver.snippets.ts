@@ -1,4 +1,4 @@
-import { Injectable, NgModule } from '@angular/core';
+import { Injectable, NgModule, NgZone } from '@angular/core';
 import { MicrofrontendPlatform } from '@scion/microfrontend-platform';
 import { ActivatedRouteSnapshot, Resolve, RouterModule, RouterStateSnapshot, Routes } from '@angular/router';
 
@@ -6,8 +6,11 @@ import { ActivatedRouteSnapshot, Resolve, RouterModule, RouterStateSnapshot, Rou
 @Injectable({providedIn: 'root'})
 export class PlatformInitializer implements Resolve<void> {
 
+  constructor(private _zone: NgZone) {
+  }
+
   public resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<void> {
-    return MicrofrontendPlatform.connectToHost({symbolicName: 'product-catalog-app'}) // <1>
+    return this._zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost({symbolicName: 'product-catalog-app'})); // <1>
   }
 }
 

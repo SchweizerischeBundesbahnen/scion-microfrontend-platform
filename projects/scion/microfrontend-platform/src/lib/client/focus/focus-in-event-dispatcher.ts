@@ -32,6 +32,13 @@ export class FocusInEventDispatcher implements PreDestroy {
     this.reportFocusWithinEventToParentOutlet();
   }
 
+  /**
+   * Installs a listener for `focusin` events.
+   *
+   * IMPORTANT:
+   * Always subscribe to DOM events during event dispatcher construction. Event dispatchers are eagerly created on platform startup.
+   * Frameworks like Angular usually connect to the platform outside their change detection zone in order to avoid triggering change detection for unrelated DOM events.
+   */
   private dispatchDocumentFocusInEvent(): void {
     fromEvent<FocusEvent>(window, 'focusin')
       .pipe(takeUntil(this._destroy$))

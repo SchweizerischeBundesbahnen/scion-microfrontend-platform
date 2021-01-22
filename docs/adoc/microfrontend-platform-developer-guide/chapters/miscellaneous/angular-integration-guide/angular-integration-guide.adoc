@@ -64,9 +64,9 @@ Next, we implement the `PlatformInitializer` to start the platform.
 ----
 include::start-platform-via-initializer.snippets.ts[tags=host-app:initializer]
 ----
-<1> Injects the Angular `HttpClient`.
+<1> Injects the Angular `HttpClient` and `NgZone`.
 <2> Registers the Angular `HttpClient` as bean in the bean manager, allowing the `HttpPlatformConfigLoader` to load the platform config over the network.
-<3> Starts the platform host.
+<3> Starts the platform host. It's important to start the platform outside Angular's zone in order to avoid triggering change detection for unrelated DOM events.
 
 And finally, in the code snippet below, the `HttpPlatformConfigLoader` to load the platform config over the network.
 [source,typescript]
@@ -83,7 +83,7 @@ As for the host application, a micro application can also start the platform via
 ----
 include::start-platform-via-initializer.snippets.ts[tags=micro-app:initializer]
 ----
-<1> Starts the platform in the name of the `product-catalog-app` micro application.
+<1> Starts the platform in the name of the `product-catalog-app` micro application. It's important to start the platform outside Angular's zone in order to avoid triggering change detection for unrelated DOM events.
 
 [[chapter:angular-integration-guide:starting-platform-in-route-resolver]]
 [discrete]
@@ -104,7 +104,7 @@ For a micro application, the resolver implementation could look similar to the f
 ----
 include::start-platform-via-resolver.snippets.ts[tags=resolver]
 ----
-<1> Starts the platform in the `resolve` method, returning a Promise that resolves when the platform started.
+<1> Starts the platform in the `resolve` method, returning a Promise that resolves when the platform started. It's important to start the platform outside Angular's zone in order to avoid triggering change detection for unrelated DOM events.
 
 It is absolutely essential for an application instance to start the platform only once. Therefore, it is recommended to install the resolver in a parent route common to all microfrontend routes. When loading a microfrontend for the first time, Angular will wait activating the child route until the platform finished starting. When navigating to another microfrontend of the micro application, the resolver would not resolve anew.
 
@@ -221,7 +221,7 @@ include::lazy-loaded-modules.snippets.ts[tags=microfrontend-1-module]
 
 Messages and intents are published and received via a separate browsing context, preventing Angular (or more precisely zone.js) from triggering a change detection cycle, causing the UI not to update as expected. Therefore, we recommend to decorate the `MessageClient` and `IntentClient` with a bean decorator and pipe its Observables to emit inside the Angular zone.
 
-TIP: Decorators allow intercepting bean method invocations. For more information about decorators, refer to chapter <<chapter:bean-manager:decorating-beans>>.
+TIP: Decorators allow intercepting bean method invocations. For more information about decorators, refer to the link:https://github.com/SchweizerischeBundesbahnen/scion-toolkit/blob/master/docs/site/tools/bean-manager.md[documentation of the bean manager, window=\"_blank\"].
 
 **MessageClient decorator example:**
 
@@ -229,7 +229,7 @@ TIP: Decorators allow intercepting bean method invocations. For more information
 ----
 include::angular-zone-message-client-decorator.snippets.ts[tags=message-client-decorator]
 ----
-<1> Obtains the `NgZone` from the bean manager to synchronize Observable emissions with Angular.
+<1> Obtains the `NgZone` from Angular's DI framework to synchronize Observable emissions with Angular.
 <2> Creates an anonymous class for the `MessageClient`, delegating invocations to the actual message client, but piping Observables to emit inside the Angular zone.
 <3> Mirrors the source Observable, but continues the operator chain inside the Angular zone.
 
@@ -239,7 +239,7 @@ include::angular-zone-message-client-decorator.snippets.ts[tags=message-client-d
 ----
 include::angular-zone-message-client-decorator.snippets.ts[tags=intent-client-decorator]
 ----
-<1> Obtains the `NgZone` from the bean manager to synchronize Observable emissions with Angular.
+<1> Obtains the `NgZone` from Angular's DI framework to synchronize Observable emissions with Angular.
 <2> Creates an anonymous class for the `IntentClient`, delegating invocations to the actual intent client, but piping Observables to emit inside the Angular zone.
 <3> Mirrors the source Observable, but continues the operator chain inside the Angular zone.
 
@@ -260,7 +260,6 @@ The decorators for the `MessageClient` and `IntentClient` can be registered as f
 ----
 include::angular-zone-message-client-decorator.snippets.ts[tags=register-decorator]
 ----
-<1> Registers `NgZone` in the bean manager, so it can be looked up in decorators.
-<2> Registers `AngularZoneMessageClientDecorator` for decorating the `MessageClient` bean.
-<3> Registers `AngularZoneIntentClientDecorator` for decorating the `IntentClient` bean.
+<1> Registers `NgZoneMessageClientDecorator` for decorating the `MessageClient` bean.
+<2> Registers `NgZoneIntentClientDecorator` for decorating the `IntentClient` bean.
 
