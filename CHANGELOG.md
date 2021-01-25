@@ -1,3 +1,12 @@
+# [1.0.0-beta.10](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.9...1.0.0-beta.10) (2021-01-25)
+
+
+### Bug Fixes
+
+* start platform outside angular zone in testing app and devtools ([f017422](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/f0174224cb2ce00e9c73f2c460df185ad4282bb7)), closes [#53](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/53)
+
+
+
 # [1.0.0-beta.9](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.8...1.0.0-beta.9) (2021-01-18)
 
 
