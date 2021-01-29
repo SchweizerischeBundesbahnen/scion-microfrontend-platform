@@ -12,6 +12,33 @@ import { UUID } from '@scion/toolkit/uuid';
 import { MessageHeaders, TopicMessage } from '../../messaging.model';
 
 /**
+ * Context lookup options header to control if values should be collected.
+ *
+ * @ignore
+ */
+export const CONTEXT_LOOKUP_OPTIONS = 'ɵCONTEXT_LOOKUP_OPTIONS';
+
+/**
+ * Instructs how to look up context values.
+ *
+ * @category Context
+ */
+export interface ContextLookupOptions {
+  /**
+   * Controls whether to collect the most specific context value or to collect all values in the context
+   * hierarchy that are associated with a context name. Defaults to `false` if not specified.
+   *
+   * If `true`, collects all values in the context hierarchy that are associated with the context name.
+   * Collected values are returned as an array in context-descending order, i.e., values of parent contexts
+   * come after values of child contexts.
+   *
+   * If `false`, the most specific context value is returned, i.e., the value of the closest context
+   * that has a value associated with that name.
+   */
+  collect?: boolean;
+}
+
+/**
  * Provides the API to lookup context related information.
  *
  * @ignore
@@ -44,16 +71,21 @@ export namespace Contexts {
    *
    * @param name - The name of the value to lookup.
    * @param replyTo - The 'replyTo' topic where to send the reply.
+   * @param options - Options to control context lookup.
+   * @param values - The collected values passed to the parent context during a context lookup.
+   *                 Used to collect all values associated with the context name in the context hierarchy.
    */
-  export function newContextValueLookupRequest(name: string, replyTo: string): MessageEnvelope<TopicMessage<void>> {
+  export function newContextValueLookupRequest(name: string, replyTo: string, options?: ContextLookupOptions, values?: any[]): MessageEnvelope<TopicMessage<any[]>> {
     return {
       transport: MessagingTransport.EmbeddedOutletContentToOutlet,
       channel: MessagingChannel.Topic,
       message: {
         topic: contextValueLookupTopic(name),
+        body: values || [],
         headers: new Map()
           .set(MessageHeaders.MessageId, UUID.randomUUID())
-          .set(MessageHeaders.ReplyTo, replyTo),
+          .set(MessageHeaders.ReplyTo, replyTo)
+          .set(CONTEXT_LOOKUP_OPTIONS, options),
       },
     };
   }

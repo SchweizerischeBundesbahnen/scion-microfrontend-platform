@@ -32,11 +32,19 @@ export class RouterOutletContextPO {
     await this._contextOverlayFinder.$('header.e2e-header button.e2e-close').click();
   }
 
-  public async addContextValue(key: string, value: string): Promise<void> {
+  public async addContextValue(key: string, value: string | undefined | null): Promise<void> {
     await this._switchToIframeFn();
     const addEntrySectionFinder = this._contextOverlayFinder.$('section.e2e-new-context-entry');
     await enterText(key, addEntrySectionFinder.$('input.e2e-name'));
-    await enterText(value, addEntrySectionFinder.$('input.e2e-value'));
+    if (value === undefined) {
+      await enterText('<undefined>', addEntrySectionFinder.$('input.e2e-value'));
+    }
+    else if (value === null) {
+      await enterText('<null>', addEntrySectionFinder.$('input.e2e-value'));
+    }
+    else {
+      await enterText(value, addEntrySectionFinder.$('input.e2e-value'));
+    }
     await addEntrySectionFinder.$('button.e2e-add').click();
   }
 

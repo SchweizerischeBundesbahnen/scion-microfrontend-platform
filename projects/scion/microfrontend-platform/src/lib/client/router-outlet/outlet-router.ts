@@ -10,7 +10,6 @@
 import { MessageClient } from '../messaging/message-client';
 import { OUTLET_CONTEXT, OutletContext, PRIMARY_OUTLET, RouterOutlets } from './router-outlet.element';
 import { ContextService } from '../context/context-service';
-import { take } from 'rxjs/operators';
 import { Urls } from '../../url.util';
 import { RelativePathResolver } from './relative-path-resolver';
 import { Defined, Maps } from '@scion/toolkit/util';
@@ -146,7 +145,7 @@ export class OutletRouter {
     }
 
     // If no outlet is specified, navigate in the current outlet, if any.
-    const outletContext = await Beans.get(ContextService).observe$<OutletContext>(OUTLET_CONTEXT).pipe(take(1)).toPromise();
+    const outletContext = await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
     if (outletContext) {
       return outletContext.name;
     }

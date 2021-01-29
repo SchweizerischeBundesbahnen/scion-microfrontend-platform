@@ -18,7 +18,6 @@ import { Subject } from 'rxjs';
 
 export const NAME = 'name';
 export const VALUE = 'value';
-
 const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top'};
 
 @Component({
@@ -47,7 +46,7 @@ export class RouterOutletContextComponent implements OnInit, OnDestroy {
               private _overlay: OverlayRef) {
     this.form = new FormGroup({
       [NAME]: formBuilder.control('', Validators.required),
-      [VALUE]: formBuilder.control('', Validators.required),
+      [VALUE]: formBuilder.control(''),
     }, {updateOn: 'change'});
 
     this._overlay.backdropClick()
@@ -67,9 +66,21 @@ export class RouterOutletContextComponent implements OnInit, OnDestroy {
   }
 
   public onAddClick(): void {
-    this.routerOutlet.setContextValue(this.form.get(NAME).value, this.form.get(VALUE).value);
+    this.routerOutlet.setContextValue(this.form.get(NAME).value, this.parseContextValueFromUI());
     this.form.reset();
     this._focusTrap.focusFirstTabbableElement();
+  }
+
+  private parseContextValueFromUI(): string | null | undefined {
+    const value = this.form.get(VALUE).value;
+    switch (value) {
+      case '<undefined>':
+        return undefined;
+      case '<null>':
+        return null;
+      default:
+        return value;
+    }
   }
 
   public onRemoveClick(name: string): void {

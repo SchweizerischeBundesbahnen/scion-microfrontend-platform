@@ -22,7 +22,7 @@ import { RouterOutletSettingsComponent } from './router-outlet-settings/router-o
 import { RouterOutletContextComponent } from './router-outlet-context/router-outlet-context.component';
 import { ConsolePanelComponent } from './console/console-panel.component';
 import { OutletRouterComponent } from './outlet-router/outlet-router.component';
-import { ContextComponent } from './context/context.component';
+import { ContextComponent } from './outlet-context/context/context.component';
 import { ContextEntryComponent } from './context-entry/context-entry.component';
 import { PublishMessageComponent } from './messaging/publish-message/publish-message.component';
 import { ReceiveMessageComponent } from './messaging/receive-message/receive-message.component';
@@ -43,6 +43,7 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { SciAccordionModule, SciCheckboxModule, SciFormFieldModule, SciListModule, SciParamsEnterModule, SciPropertyModule, SciQualifierChipListModule } from '@scion/toolkit.internal/widgets';
 import { AppShellComponent } from './app-shell/app-shell.component';
 import { DevToolsComponent } from './devtools/devtools.component';
+import { LookupContextValueComponent } from './outlet-context/lookup-context-value/lookup-context-value.component';
 
 @NgModule({
   declarations: [
@@ -57,6 +58,7 @@ import { DevToolsComponent } from './devtools/devtools.component';
     OutletRouterComponent,
     ContextComponent,
     ContextEntryComponent,
+    LookupContextValueComponent,
     PublishMessageComponent,
     ReceiveMessageComponent,
     MessageListItemComponent,

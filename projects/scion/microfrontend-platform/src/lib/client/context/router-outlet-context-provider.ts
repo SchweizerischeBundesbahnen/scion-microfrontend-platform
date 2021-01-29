@@ -14,7 +14,7 @@ import { MessageEnvelope, MessagingChannel, MessagingTransport } from '../../ɵm
 import { TopicMatcher } from '../../topic-matcher.util';
 import { MessageHeaders, ResponseStatusCodes, TopicMessage } from '../../messaging.model';
 import { MessageClient, takeUntilUnsubscribe } from '../messaging/message-client';
-import { Contexts } from './context.model';
+import { CONTEXT_LOOKUP_OPTIONS, Contexts } from './context.model';
 import { runSafe } from '../../safe-runner';
 import { IS_PLATFORM_HOST } from '../../platform.model';
 import { Beans } from '@scion/toolkit/bean-manager';
@@ -31,7 +31,7 @@ import { Beans } from '@scion/toolkit/bean-manager';
  */
 export class RouterOutletContextProvider {
 
-  private _embeddedOutletContentRequest$: Observable<MessageEnvelope<TopicMessage>>;
+  private _embeddedOutletContentRequest$: Observable<MessageEnvelope<TopicMessage<any[]>>>;
 
   private _entries$ = new BehaviorSubject<Map<string, any>>(new Map());
   private _entryChange$ = new Subject<Contexts.ContextTreeChangeEvent>();
@@ -111,23 +111,43 @@ export class RouterOutletContextProvider {
   private installContextValueLookupListener(): void {
     this._embeddedOutletContentRequest$
       .pipe(
-        filterByTopic<void>(Contexts.contextValueLookupTopic(':name')),
+        filterByTopic(Contexts.contextValueLookupTopic(':name')),
         takeUntil(this._outletDisconnect$),
       )
-      .subscribe((lookupRequest: TopicMessage<void>) => runSafe(() => {
+      .subscribe((lookupRequest: TopicMessage<any[]>) => runSafe(() => {
         const name = new TopicMatcher(Contexts.contextValueLookupTopic(':name')).match(lookupRequest.topic).params.get('name');
         const replyTo = lookupRequest.headers.get(MessageHeaders.ReplyTo);
+        const options = lookupRequest.headers.get(CONTEXT_LOOKUP_OPTIONS);
         const entries = this._entries$.getValue();
-        if (entries.has(name)) {
-          Beans.get(MessageClient).publish(replyTo, entries.get(name), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
-        }
-        else if (Beans.get(IS_PLATFORM_HOST)) {
-          // No context value found; the root of the context tree has been reached; reply with `NOT_FOUND` status code.
-          Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.NOT_FOUND)});
+
+        if (options?.collect) {
+          const collectedValues = lookupRequest.body;
+          if (entries.has(name) && entries.get(name) !== undefined) {
+            collectedValues.push(entries.get(name));
+          }
+
+          if (Beans.get(IS_PLATFORM_HOST)) {
+            // Reply with the collected context values.
+            Beans.get(MessageClient).publish(replyTo, collectedValues, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+          }
+          else {
+            // Pass on the lookup request to the parent context.
+            window.parent.postMessage(Contexts.newContextValueLookupRequest(name, replyTo, options, collectedValues), '*');
+          }
         }
         else {
-          // Pass on the lookup request to the parent context.
-          window.parent.postMessage(Contexts.newContextValueLookupRequest(name, replyTo), '*');
+          if (entries.has(name)) {
+            // Reply with the found context value.
+            Beans.get(MessageClient).publish(replyTo, entries.get(name), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+          }
+          else if (Beans.get(IS_PLATFORM_HOST)) {
+            // No context value found; the root of the context tree has been reached; reply with `NOT_FOUND` status code.
+            Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.NOT_FOUND)});
+          }
+          else {
+            // Pass on the lookup request to the parent context.
+            window.parent.postMessage(Contexts.newContextValueLookupRequest(name, replyTo, options), '*');
+          }
         }
       }));
   }

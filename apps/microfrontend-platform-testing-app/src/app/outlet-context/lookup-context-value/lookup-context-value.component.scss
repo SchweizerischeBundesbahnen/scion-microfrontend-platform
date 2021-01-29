@@ -1,0 +1,43 @@
+:host {
+  display: flex;
+  flex-direction: column;
+
+  > form {
+    flex: none;
+    display: grid;
+    grid-auto-rows: max-content;
+    row-gap: .5em;
+  }
+
+  > sci-sashbox.context-value {
+    flex: auto;
+    margin-top: 2em;
+
+    section.context-value {
+      display: grid;
+      grid-template-rows: max-content 1fr;
+      row-gap: 1em;
+
+      > header {
+        font-weight: bold;
+      }
+
+      > output {
+        border: 1px solid var(--sci-color-P400);
+        border-radius: 3px;
+        white-space: pre;
+        font-family: monospace;
+        padding: 1em;
+      }
+    }
+  }
+
+  > output.subscribe-error {
+    flex: none;
+    margin-top: 2em;
+    border: 1px solid var(--sci-color-warn);
+    background-color: var(--sci-color-W100);
+    border-radius: 3px;
+    padding: 1em;
+  }
+}
