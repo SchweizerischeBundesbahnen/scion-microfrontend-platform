@@ -13,7 +13,7 @@ import { BrowserOutletsComponent } from './browser-outlets/browser-outlets.compo
 import { ReceiveMessageComponent } from './messaging/receive-message/receive-message.component';
 import { RegisterCapabilityComponent } from './manifest/register-capability/register-capability.component';
 import { RegisterIntentionComponent } from './manifest/register-intention/register-intention.component';
-import { ContextComponent } from './context/context.component';
+import { ContextComponent } from './outlet-context/context/context.component';
 import { OutletRouterComponent } from './outlet-router/outlet-router.component';
 import { PublishMessageComponent } from './messaging/publish-message/publish-message.component';
 import { RouterOutletComponent } from './router-outlet/router-outlet.component';
@@ -24,6 +24,7 @@ import { PlatformPropertiesComponent } from './platform-properties/platform-prop
 import { LookupCapabilityComponent } from './manifest/lookup-capability/lookup-capability.component';
 import { LookupIntentionComponent } from './manifest/lookup-intention/lookup-intention.component';
 import { AppShellComponent } from './app-shell/app-shell.component';
+import { LookupContextValueComponent } from './outlet-context/lookup-context-value/lookup-context-value.component';
 
 const routes: Routes = [
   {path: 'activator', loadChildren: (): any => import('./activator.module').then(m => m.ActivatorModule)},
@@ -42,6 +43,7 @@ const routes: Routes = [
       {path: 'lookup-intention', component: LookupIntentionComponent, data: {pageTitle: 'Allows looking up intentions'}},
       {path: 'register-intention', component: RegisterIntentionComponent, data: {pageTitle: 'Allows managing intentions'}},
       {path: 'context', component: ContextComponent, data: {pageTitle: 'Allows showing the context at this level in the context tree'}},
+      {path: 'lookup-context-value', component: LookupContextValueComponent, data: {pageTitle: 'Allows looking up a context value'}},
       {path: 'microfrontend-1', component: MicrofrontendComponent, data: {pageTitle: 'Displays the \'microfrontend-1\' page'}},
       {path: 'microfrontend-2', component: MicrofrontendComponent, data: {pageTitle: 'Displays the \'microfrontend-2\' page'}},
       {path: 'microfrontend-2/:param1/:param2', component: MicrofrontendComponent},

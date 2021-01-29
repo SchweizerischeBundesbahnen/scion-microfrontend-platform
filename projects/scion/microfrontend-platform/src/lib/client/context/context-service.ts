@@ -12,7 +12,7 @@ import { filter, map, mergeMapTo, startWith, switchMapTo, take, takeUntil } from
 import { UUID } from '@scion/toolkit/uuid';
 import { MessageClient } from '../messaging/message-client';
 import { mapToBody, MessageHeaders, ResponseStatusCodes } from '../../messaging.model';
-import { Contexts } from './context.model';
+import { ContextLookupOptions, Contexts } from './context.model';
 import { IS_PLATFORM_HOST } from '../../platform.model';
 import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 
@@ -49,43 +49,91 @@ export class ContextService implements PreDestroy {
   /**
    * Observes the context value associated with the given name.
    *
-   * When the name is not found in a context, the lookup is retried on the parent context, repeating until either a value is found
-   * or the root of the context tree has been reached.
+   * The Observable emits the most specific value, i.e., the value of the closest context that has a value associated with that name.
+   * To collect all values in the context hierarchy associated with that name, set {@link ContextLookupOptions#collect} to `true`.
+   *
+   * If not finding a value associated with the given name in the current context, the lookup is retried on the parent context, repeating
+   * until either a value is found or the root of the context tree has been reached. If not finding a value in any context, the Observable
+   * emits `null`.
    *
    * @param  name - The name of the context value to observe.
-   * @return An Observable that emits the context value associated with the given name.
-   *         Upon subscription, the tree of contexts is looked up for a value registered under the given name.
-   *         If not found, the Observable emits `null`. The Observable never completes. It emits every time
-   *         a value for the specified name is set or removed, and this at all levels of the context tree.
+   * @param  options - Instructs how to look up the context value.
+   * @return An Observable that emits the value associated with the given name, or `null` if not finding a value.
+   *         Upon subscription, the Observable emits the currently associated value, and then continuously when it changes, at any level
+   *         in the context tree. It never completes.
    */
-  public observe$<T>(name: string): Observable<T | null> {
+  public observe$<T>(name: string, options?: ContextLookupOptions & { collect: false }): Observable<T | null>;
+  /**
+   * Observes the context values associated with the given name.
+   *
+   * The Observable emits all associated values in the context tree as array in context-descending order,
+   * i.e., more specific context values precede others, in other words, values of child contexts precede values of parent contexts.
+   * If not finding a value in any context, the Observable emits an empty array.
+   *
+   * To only obtain the most specific value, i.e., the value of the closest context that has a value associated with that name,
+   * set {@link ContextLookupOptions#collect} to `false`.
+   *
+   * @param  name - The name of the context values to observe.
+   * @param  options - Instructs how to look up context values.
+   * @return An Observable that emits the values associated with the given name, or an empty array if not finding a value.
+   *         Upon subscription, the Observable emits currently associated values, and then continuously when they change.
+   *         It never completes. Collected values are emitted as array in context-descending order, i.e., more specific
+   *         context values precede others, in other words, values of child contexts precede values of parent contexts.
+   */
+  public observe$<T>(name: string, options: ContextLookupOptions & { collect: true }): Observable<T[]>;
+
+  public observe$<T>(name: string, options?: ContextLookupOptions): Observable<T | null> | Observable<T[]> {
     if (Beans.get(IS_PLATFORM_HOST)) {
-      return concat(of(null), NEVER);
+      return concat(of(options?.collect ? [] : null), NEVER);
     }
 
     return this._contextTreeChange$
       .pipe(
         filter(event => event.name === name),
         startWith(undefined as void),
-        switchMapTo(this.lookupContextValue$<T>(name)),
+        switchMapTo(this.lookupContextValue$<T>(name, options)),
       );
   }
 
   /**
    * Looks up the context value associated with the given name.
    *
-   * When the name is not found in a context, the lookup is retried on the parent context, repeating until either a value is found
-   * or the root of the context tree has been reached.
+   * The Promise resolves to the most specific value, i.e., the value of the closest context that has a value associated with that name.
+   * To collect all values in the context hierarchy associated with that name, set {@link ContextLookupOptions#collect} to `true`.
    *
-   * @param name - The name of the context value to observe.
-   * @return A Promise that resolves to the context value associated with the given name. It resolves to `null` if not found.
+   * If not finding a value associated with the given name in the current context, the lookup is retried on the parent context, repeating
+   * until either a value is found or the root of the context tree has been reached. If not finding a value in any context, the returned
+   * Promise resolves to `null`.
+   *
+   * @param  name - The name of the context value to look up.
+   * @param  options - Instructs how to look up the context value.
+   * @return A Promise that resolves to the value associated with the given name, or `null` if not finding a value.
    */
-  public lookup<T>(name: string): Promise<T | null> {
-    return this.observe$<T>(name).pipe(take(1)).toPromise();
+  public lookup<T>(name: string, options?: ContextLookupOptions & { collect: false }): Promise<T | null>;
+  /**
+   * Looks up context values associated with the given name.
+   *
+   * The Promise resolves to all associated values in the context tree as array in context-descending order,
+   * i.e., more specific context values precede others, in other words, values of child contexts precede values of parent contexts.
+   * If not finding a value in any context, the Promise resolves to an empty array.
+   *
+   * To only obtain the most specific value, i.e., the value of the closest context that has a value associated with that name,
+   * set {@link ContextLookupOptions#collect} to `false`.
+   *
+   * @param  name - The name of the context values to look up.
+   * @param  options - Instructs how to look up context values.
+   * @return A Promise that resolves to the values associated with the given name, or an empty array if not finding a value.
+   *         Collected values are sorted in context-descending order, i.e., more specific context values precede others, in
+   *         other words, values of child contexts precede values of parent contexts.
+   */
+  public lookup<T>(name: string, options: ContextLookupOptions & { collect: true }): Promise<T[]>;
+
+  public lookup<T>(name: string, options?: ContextLookupOptions): Promise<T | null> | Promise<T[]> {
+    return this.observe$<T>(name, options as any).pipe(take(1)).toPromise();
   }
 
   /**
-   * Checks if a context value associated with the given name.
+   * Checks if a context value is associated with the given name at any level in the context tree.
    *
    * @param name - The name of the context value to check if present.
    * @return A Promise that resolves to `true` if a context value is associated with the given name, or that resolves to `false` otherwise.
@@ -117,14 +165,15 @@ export class ContextService implements PreDestroy {
    * Looks up the context tree for a value associated with the given name.
    *
    * @param  name - The name of the value to return.
+   * @param  options - Options to control context lookup.
    * @return An Observable that emits the context value associated with the given key and then completes.
    *         When the requested value is not found in a context, the Observable emits `null` and then completes.
    */
-  private lookupContextValue$<T>(name: string): Observable<T | null> {
+  private lookupContextValue$<T>(name: string, options?: ContextLookupOptions): Observable<T | null> | Observable<T[]> {
     return new Observable((observer: Observer<T>): TeardownLogic => {
       const replyTo = UUID.randomUUID();
       const unsubscribe$ = new Subject<void>();
-      const contextValueLookupRequest = Contexts.newContextValueLookupRequest(name, replyTo);
+      const contextValueLookupRequest = Contexts.newContextValueLookupRequest(name, replyTo, options);
 
       // Wait until the reply is received.
       Beans.get(MessageClient).observe$<T>(replyTo)
