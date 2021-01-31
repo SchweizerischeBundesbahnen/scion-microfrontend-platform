@@ -27,7 +27,7 @@ import { chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterc
 import { Capability } from '../../platform.model';
 import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 import { Runlevel } from '../../platform-state';
-import { matchesCapabilityParams } from './params-tester';
+import { matchesCapabilityParams, ParamsMatcherResult } from './params-tester';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -376,8 +376,9 @@ export class MessageBroker implements PreDestroy {
 
       // If the params of the intent don't match the params of the capability, send an error.
       capabilities.forEach(capability => {
-        if (!matchesCapabilityParams(message.intent.params, {requiredCapabilityParams: capability.requiredParams, optionalCapabilityParams: capability.optionalParams})) {
-          throw Error(`[ParamMismatchError] Params of the intent '{type=${message.intent.type}, qualifier=${JSON.stringify(message.intent.qualifier)}, params={${stringifyParams(message.intent)}}}' do not match the params of the capability '{type=${capability.type}, qualifier=${JSON.stringify(capability.qualifier)}, requiredParams=${JSON.stringify(capability.requiredParams)}, optionalParams=${JSON.stringify(capability.optionalParams)}}'.`);
+        const matchResult = matchesCapabilityParams(message.intent.params, {requiredCapabilityParams: capability.requiredParams, optionalCapabilityParams: capability.optionalParams});
+        if (!matchResult.matches) {
+          throw Error(`[ParamMismatchError] ${constructParamsMismatchErrorMessage(matchResult, message.intent)}`);
         }
       });
 
@@ -583,15 +584,7 @@ function catchErrorAndRetry<T>(): MonoTypeOperatorFunction<T> {
   });
 }
 
-/**
- * Stringifies the params of the given intent.
- *
- * @ignore
- */
-function stringifyParams(intent: Intent): string {
-  const params = intent.params || new Map<string, any>();
-  return Array.from(params.keys())
-    .sort((key1, key2) => key1.localeCompare(key2))
-    .map(key => `${key}=>${params.get(key)}`)
-    .join(',');
+function constructParamsMismatchErrorMessage(matchResult: ParamsMatcherResult, intent: Intent): string {
+  const intentStringified = JSON.stringify(intent, (key, value) => (key === 'params') ? undefined : value);
+  return `Intent params do not match params of the resolved capability. Ensure to pass required params and not to include any additional params. [intent=${intentStringified}, missingRequiredParams=[${matchResult.missingParams}], unexpectedParams=[${matchResult.unexpectedParams}]].`;
 }

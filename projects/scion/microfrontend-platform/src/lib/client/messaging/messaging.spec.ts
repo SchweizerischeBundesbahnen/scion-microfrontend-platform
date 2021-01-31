@@ -1019,7 +1019,7 @@ describe('Messaging', () => {
       const replyCaptor = new ObserveCaptor();
       await Beans.get(IntentClient).request$({type: 'some-type', params: new Map<string, any>().set('param1', 'value1')}, 'ping').subscribe(replyCaptor);
       await replyCaptor.waitUntilCompletedOrErrored();
-      expect(replyCaptor.getError()).toEqual('[ParamMismatchError] Params of the intent \'\{type=some-type, qualifier=undefined, params={param1=>value1}\}\' do not match the params of the capability \'\{type=some-type, qualifier=\{\}, requiredParams=["param1","param2"], optionalParams=[]\}\'.');
+      expect(replyCaptor.getError()).toMatch(/\[ParamMismatchError].*missingRequiredParams=\[param2]/);
 
       // publish
       await expectPromise(Beans.get(IntentClient).publish({type: 'some-type', params: new Map<string, any>().set('param1', 'value1')}, 'ping')).toReject(/ParamMismatchError/);
@@ -1034,7 +1034,7 @@ describe('Messaging', () => {
       const replyCaptor = new ObserveCaptor();
       await Beans.get(IntentClient).request$({type: 'some-type', params: new Map<string, any>().set('param1', 'value1').set('param2', 'value2')}, 'ping').subscribe(replyCaptor);
       await replyCaptor.waitUntilCompletedOrErrored();
-      expect(replyCaptor.getError()).toEqual('[ParamMismatchError] Params of the intent \'\{type=some-type, qualifier=undefined, params={param1=>value1,param2=>value2}\}\' do not match the params of the capability \'\{type=some-type, qualifier=\{\}, requiredParams=["param1"], optionalParams=[]\}\'.');
+      expect(replyCaptor.getError()).toMatch(/\[ParamMismatchError].*unexpectedParams=\[param2]/);
 
       // publish
       await expectPromise(Beans.get(IntentClient).publish({type: 'some-type', params: new Map<string, any>().set('param1', 'value1').set('param2', 'value2')}, 'ping')).toReject(/ParamMismatchError/);
