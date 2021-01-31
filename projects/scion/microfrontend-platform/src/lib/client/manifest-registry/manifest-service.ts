@@ -120,7 +120,7 @@ export class ManifestService implements PreDestroy {
    * @return A Promise that resolves to the identity of the registered capability,
    *         or that rejects if the registration failed.
    */
-  public registerCapability(capability: Capability): Promise<string> {
+  public registerCapability<T extends Capability>(capability: T): Promise<string> {
     return this._messageClient.request$<string>(ManifestRegistryTopics.RegisterCapability, capability)
       .pipe(
         throwOnErrorStatus(),
