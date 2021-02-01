@@ -150,7 +150,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
 
         try {
           const capabilityId = this.registerCapability(capability, appSymbolicName);
-          Beans.get(PlatformMessageClient).publish(replyTo, capabilityId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+          Beans.get(PlatformMessageClient).publish(replyTo, capabilityId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
           Beans.get(PlatformMessageClient).publish(replyTo, readErrorMessage(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
@@ -168,7 +168,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
 
         try {
           this.unregisterCapabilities(appSymbolicName, capabilityFilter);
-          Beans.get(PlatformMessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+          Beans.get(PlatformMessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
           Beans.get(PlatformMessageClient).publish(replyTo, readErrorMessage(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
@@ -187,7 +187,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
         try {
           assertIntentionRegisterApiEnabled(appSymbolicName);
           const intentionId = this.registerIntention(intent, appSymbolicName);
-          Beans.get(PlatformMessageClient).publish(replyTo, intentionId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+          Beans.get(PlatformMessageClient).publish(replyTo, intentionId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
           Beans.get(PlatformMessageClient).publish(replyTo, readErrorMessage(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
@@ -206,7 +206,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
         try {
           assertIntentionRegisterApiEnabled(appSymbolicName);
           this.unregisterIntention(appSymbolicName, intentFilter);
-          Beans.get(PlatformMessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+          Beans.get(PlatformMessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
           Beans.get(PlatformMessageClient).publish(replyTo, readErrorMessage(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});

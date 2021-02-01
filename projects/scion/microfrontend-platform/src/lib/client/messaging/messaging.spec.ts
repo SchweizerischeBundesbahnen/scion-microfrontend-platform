@@ -10,7 +10,7 @@
 import { PlatformMessageClient } from '../../host/platform-message-client';
 import { first, publishReplay, timeoutWith } from 'rxjs/operators';
 import { ConnectableObservable, Observable, Subject, throwError } from 'rxjs';
-import { IntentMessage, MessageHeaders, TopicMessage } from '../../messaging.model';
+import { IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage } from '../../messaging.model';
 import { MessageClient, takeUntilUnsubscribe } from './message-client';
 import { IntentClient } from './intent-client';
 import { Logger } from '../../logger';
@@ -211,7 +211,7 @@ describe('Messaging', () => {
     await expectEmissions(clientMessageCaptor).toEqual(['A', 'B']);
   });
 
-  it('should allow receiving a reply for a request', async () => {
+  it('should allow receiving a reply for a request (by not replying with a status code)', async () => {
     await MicrofrontendPlatform.startHost([]);
 
     Beans.get(PlatformMessageClient).observe$<string>('some-topic').subscribe(msg => {
@@ -222,9 +222,92 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
+    expect(replyCaptor.hasCompleted()).toBeFalse();
+    expect(replyCaptor.hasErrored()).toBeFalse();
   });
 
-  it('should allow receiving a reply for an intent request', async () => {
+  it('should allow receiving a reply for a request (by replying with the status code 200)', async () => {
+    await MicrofrontendPlatform.startHost([]);
+
+    Beans.get(PlatformMessageClient).observe$<string>('some-topic').subscribe(msg => {
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
+      Beans.get(PlatformMessageClient).publish(replyTo, msg.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+    });
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    await expectEmissions(replyCaptor).toEqual(['PING']);
+    expect(replyCaptor.hasCompleted()).toBeFalse();
+    expect(replyCaptor.hasErrored()).toBeFalse();
+  });
+
+  it('should allow receiving multiple replies for a request', async () => {
+    await MicrofrontendPlatform.startHost([]);
+
+    Beans.get(PlatformMessageClient).observe$<string>('some-topic').subscribe(msg => {
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
+      Beans.get(PlatformMessageClient).publish(replyTo, msg.body.toUpperCase());
+      Beans.get(PlatformMessageClient).publish(replyTo, msg.body.toUpperCase());
+      Beans.get(PlatformMessageClient).publish(replyTo, msg.body.toUpperCase());
+    });
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
+    expect(replyCaptor.hasCompleted()).toBeFalse();
+    expect(replyCaptor.hasErrored()).toBeFalse();
+  });
+
+  it('should complete the request when replying with the status code 250 (with the first reply)', async () => {
+    await MicrofrontendPlatform.startHost([]);
+
+    Beans.get(PlatformMessageClient).observe$<string>('some-topic').subscribe(msg => {
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
+      Beans.get(PlatformMessageClient).publish(replyTo, msg.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+    });
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    await expectEmissions(replyCaptor).toEqual(['PING']);
+    expect(replyCaptor.hasCompleted()).toBeTrue();
+    expect(replyCaptor.hasErrored()).toBeFalse();
+  });
+
+  it('should complete the request when replying with the status code 250 (after multiple replies)', async () => {
+    await MicrofrontendPlatform.startHost([]);
+
+    Beans.get(PlatformMessageClient).observe$<string>('some-topic').subscribe(msg => {
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
+      Beans.get(PlatformMessageClient).publish(replyTo, msg.body.toUpperCase());
+      Beans.get(PlatformMessageClient).publish(replyTo, msg.body.toUpperCase());
+      Beans.get(PlatformMessageClient).publish(replyTo, msg.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+    });
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
+    expect(replyCaptor.hasCompleted()).toBeTrue();
+    expect(replyCaptor.hasErrored()).toBeFalse();
+  });
+
+  it('should error the request when replying with the status code 500', async () => {
+    await MicrofrontendPlatform.startHost([]);
+
+    Beans.get(PlatformMessageClient).observe$<string>('some-topic').subscribe(msg => {
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
+      Beans.get(PlatformMessageClient).publish(replyTo, msg.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+    });
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    await replyCaptor.waitUntilCompletedOrErrored();
+    expect(replyCaptor.getValues()).toEqual([]);
+    expect(replyCaptor.hasCompleted()).toBeFalse();
+    expect(replyCaptor.hasErrored()).toBeTrue();
+    expect(replyCaptor.getError().message).toEqual('PING');
+  });
+
+  it('should allow receiving a reply for an intent request (by not replying with a status code)', async () => {
     const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-capability'}]});
     const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
     await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
@@ -237,6 +320,99 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
+    expect(replyCaptor.hasCompleted()).toBeFalse();
+    expect(replyCaptor.hasErrored()).toBeFalse();
+  });
+
+  it('should allow receiving a reply for an intent request (by replying with the status code 200)', async () => {
+    const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-capability'}]});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+    Beans.get(IntentClient).observe$<string>().subscribe(intent => {
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
+      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+    });
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    await expectEmissions(replyCaptor).toEqual(['PING']);
+    expect(replyCaptor.hasCompleted()).toBeFalse();
+    expect(replyCaptor.hasErrored()).toBeFalse();
+  });
+
+  it('should allow receiving multiple replies for an intent request', async () => {
+    const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-capability'}]});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+    Beans.get(IntentClient).observe$<string>().subscribe(intent => {
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
+      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
+    });
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
+    expect(replyCaptor.hasCompleted()).toBeFalse();
+    expect(replyCaptor.hasErrored()).toBeFalse();
+  });
+
+  it('should complete the intent request when replying with the status code 250 (with the first reply)', async () => {
+    const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-capability'}]});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+    Beans.get(IntentClient).observe$<string>().subscribe(intent => {
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
+      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+    });
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    await expectEmissions(replyCaptor).toEqual(['PING']);
+    expect(replyCaptor.hasCompleted()).toBeTrue();
+    expect(replyCaptor.hasErrored()).toBeFalse();
+  });
+
+  it('should complete the intent request when replying with the status code 250 (after multiple replies)', async () => {
+    const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-capability'}]});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+    Beans.get(IntentClient).observe$<string>().subscribe(intent => {
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
+      Beans.get(PlatformMessageClient).publish(replyTo, intent.body.toUpperCase());
+      Beans.get(PlatformMessageClient).publish(replyTo, intent.body.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+    });
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
+    expect(replyCaptor.hasCompleted()).toBeTrue();
+    expect(replyCaptor.hasErrored()).toBeFalse();
+  });
+
+  it('should error the intent request when replying with the status code 500', async () => {
+    const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-capability'}]});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+    Beans.get(IntentClient).observe$<string>().subscribe(intent => {
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
+      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+    });
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    await replyCaptor.waitUntilCompletedOrErrored();
+    expect(replyCaptor.getValues()).toEqual([]);
+    expect(replyCaptor.hasCompleted()).toBeFalse();
+    expect(replyCaptor.hasErrored()).toBeTrue();
+    expect(replyCaptor.getError().message).toEqual('PING');
   });
 
   it('should reject a \'request-response\' intent if no replier is found', async () => {
@@ -969,75 +1145,95 @@ describe('Messaging', () => {
   describe('intents with params', () => {
 
     it('should allow issuing an intent with parameters', async () => {
-      const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-capability', requiredParams: ['param']}]});
+      const manifestUrl = serveManifest({
+        name: 'Host Application', capabilities: [
+          {type: 'some-capability-1', requiredParams: ['param']},
+          {type: 'some-capability-2', requiredParams: ['param']},
+        ],
+      });
       const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
       await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
       // request-reply
-      Beans.get(IntentClient).observe$<string>().subscribe(intent => {
+      Beans.get(IntentClient).observe$<string>({type: 'some-capability-1'}).subscribe(intent => {
         const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
         Beans.get(MessageClient).publish(replyTo, intent.intent.params.get('param'));
       });
       const replyCaptor = new ObserveCaptor(bodyExtractFn);
-      await Beans.get(IntentClient).request$({type: 'some-capability', params: new Map<string, any>().set('param', 'value')}, 'payload').subscribe(replyCaptor);
+      await Beans.get(IntentClient).request$({type: 'some-capability-1', params: new Map<string, any>().set('param', 'value')}, 'payload').subscribe(replyCaptor);
       await expectEmissions(replyCaptor).toEqual(['value']);
 
       // publish
-      const publishCaptor = new ObserveCaptor(paramsExtractFn);
-      Beans.get(IntentClient).observe$<string>().subscribe(publishCaptor);
-      await Beans.get(IntentClient).publish({type: 'some-capability', params: new Map<string, any>().set('param', 'value')}, 'payload');
-      await expectEmissions(publishCaptor).toEqual(new Map<string, any>().set('param', 'value'));
+      const observeCaptor = new ObserveCaptor(paramsExtractFn);
+      Beans.get(IntentClient).observe$<string>({type: 'some-capability-2'}).subscribe(observeCaptor);
+      await Beans.get(IntentClient).publish({type: 'some-capability-2', params: new Map<string, any>().set('param', 'value')}, 'payload');
+      await expectEmissions(observeCaptor).toEqual(new Map<string, any>().set('param', 'value'));
     });
 
     it('should allow issuing an intent without optional parameters', async () => {
-      const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-capability', optionalParams: ['param']}]});
+      const manifestUrl = serveManifest({
+        name: 'Host Application', capabilities: [
+          {type: 'some-capability-1', optionalParams: ['param']},
+          {type: 'some-capability-2', optionalParams: ['param']},
+        ],
+      });
       const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
       await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
       // request-reply
-      Beans.get(IntentClient).observe$<string>().subscribe(intent => {
+      Beans.get(IntentClient).observe$<string>({type: 'some-capability-1'}).subscribe(intent => {
         const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
         Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
       });
       const replyCaptor = new ObserveCaptor(bodyExtractFn);
-      await Beans.get(IntentClient).request$({type: 'some-capability'}, 'payload').subscribe(replyCaptor);
+      await Beans.get(IntentClient).request$({type: 'some-capability-1'}, 'payload').subscribe(replyCaptor);
       await expectEmissions(replyCaptor).toEqual(['PAYLOAD']);
 
       // publish
-      const publishCaptor = new ObserveCaptor(bodyExtractFn);
-      Beans.get(IntentClient).observe$<string>().subscribe(publishCaptor);
-      await Beans.get(IntentClient).publish({type: 'some-capability'}, 'payload');
-      await expectEmissions(publishCaptor).toEqual(['payload']);
+      const observeCaptor = new ObserveCaptor(bodyExtractFn);
+      Beans.get(IntentClient).observe$<string>({type: 'some-capability-2'}).subscribe(observeCaptor);
+      await Beans.get(IntentClient).publish({type: 'some-capability-2'}, 'payload');
+      await expectEmissions(observeCaptor).toEqual(['payload']);
     });
 
     it('should reject an intent if parameters are missing', async () => {
-      const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-type', requiredParams: ['param1', 'param2']}]});
+      const manifestUrl = serveManifest({
+        name: 'Host Application', capabilities: [
+          {type: 'some-type-1', requiredParams: ['param1', 'param2']},
+          {type: 'some-type-2', requiredParams: ['param1', 'param2']},
+        ],
+      });
       const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
       await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
       // request-reply
       const replyCaptor = new ObserveCaptor();
-      await Beans.get(IntentClient).request$({type: 'some-type', params: new Map<string, any>().set('param1', 'value1')}, 'ping').subscribe(replyCaptor);
+      await Beans.get(IntentClient).request$({type: 'some-type-1', params: new Map<string, any>().set('param1', 'value1')}, 'ping').subscribe(replyCaptor);
       await replyCaptor.waitUntilCompletedOrErrored();
       expect(replyCaptor.getError()).toMatch(/\[ParamMismatchError].*missingRequiredParams=\[param2]/);
 
       // publish
-      await expectPromise(Beans.get(IntentClient).publish({type: 'some-type', params: new Map<string, any>().set('param1', 'value1')}, 'ping')).toReject(/ParamMismatchError/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'some-type-2', params: new Map<string, any>().set('param1', 'value1')}, 'ping')).toReject(/ParamMismatchError/);
     });
 
     it('should reject an intent if it includes non-specified parameter', async () => {
-      const manifestUrl = serveManifest({name: 'Host Application', capabilities: [{type: 'some-type', requiredParams: ['param1']}]});
+      const manifestUrl = serveManifest({
+        name: 'Host Application', capabilities: [
+          {type: 'some-type-1', requiredParams: ['param1']},
+          {type: 'some-type-2', requiredParams: ['param1']},
+        ],
+      });
       const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
       await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
       // request-reply
       const replyCaptor = new ObserveCaptor();
-      await Beans.get(IntentClient).request$({type: 'some-type', params: new Map<string, any>().set('param1', 'value1').set('param2', 'value2')}, 'ping').subscribe(replyCaptor);
+      await Beans.get(IntentClient).request$({type: 'some-type-1', params: new Map<string, any>().set('param1', 'value1').set('param2', 'value2')}, 'ping').subscribe(replyCaptor);
       await replyCaptor.waitUntilCompletedOrErrored();
       expect(replyCaptor.getError()).toMatch(/\[ParamMismatchError].*unexpectedParams=\[param2]/);
 
       // publish
-      await expectPromise(Beans.get(IntentClient).publish({type: 'some-type', params: new Map<string, any>().set('param1', 'value1').set('param2', 'value2')}, 'ping')).toReject(/ParamMismatchError/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'some-type-2', params: new Map<string, any>().set('param1', 'value1').set('param2', 'value2')}, 'ping')).toReject(/ParamMismatchError/);
     });
   });
 });

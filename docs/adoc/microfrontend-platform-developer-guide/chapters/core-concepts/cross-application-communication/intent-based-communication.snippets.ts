@@ -1,6 +1,7 @@
-import { Intent, IntentClient, IntentMessage, IntentSelector, MessageClient, MessageHeaders, OutletRouter, PRIMARY_OUTLET, takeUntilUnsubscribe } from '@scion/microfrontend-platform';
+import { Intent, IntentClient, IntentMessage, IntentSelector, MessageClient, MessageHeaders, OutletRouter, PRIMARY_OUTLET, ResponseStatusCodes, takeUntilUnsubscribe, TopicMessage } from '@scion/microfrontend-platform';
 import { Subject } from 'rxjs';
 import { Beans } from '@scion/toolkit/bean-manager';
+import { take } from 'rxjs/operators';
 
 `
 // tag::intention-declaration[]
@@ -129,13 +130,28 @@ import { Beans } from '@scion/toolkit/bean-manager';
     qualifier: {entity: 'user-access-token'},
   };
 
+  // Stream data as long as the requestor is subscribed to receive replies.
   Beans.get(IntentClient).observe$(selector).subscribe((request: IntentMessage) => {
     const replyTo = request.headers.get(MessageHeaders.ReplyTo); // <1>
+
     authService.userAccessToken$
       .pipe(takeUntilUnsubscribe(replyTo)) // <3>
       .subscribe(token => {
         Beans.get(MessageClient).publish(replyTo, token); // <2>
       });
+  });
+
+  // Alternatively, you can complete the requestor's Observable with the first reply.
+  Beans.get(IntentClient).observe$(selector).subscribe((request: IntentMessage) => {
+    const replyTo = request.headers.get(MessageHeaders.ReplyTo); // <1>
+    const headers = new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL); // <4>
+
+    authService.userAccessToken$
+      .pipe(take(1))
+      .subscribe(token => {
+        Beans.get(MessageClient).publish(replyTo, token, {headers});
+      });
+
   });
   // end::reply[]
 }
