@@ -1,6 +1,7 @@
-import { MessageClient, MessageHeaders, takeUntilUnsubscribe, TopicMessage } from '@scion/microfrontend-platform';
+import { MessageClient, MessageHeaders, ResponseStatusCodes, takeUntilUnsubscribe, TopicMessage } from '@scion/microfrontend-platform';
 import { Subject } from 'rxjs';
 import { Beans } from '@scion/toolkit/bean-manager';
+import { take } from 'rxjs/operators';
 
 {
   // tag::publish[]
@@ -76,13 +77,28 @@ import { Beans } from '@scion/toolkit/bean-manager';
   // tag::reply[]
   const topic: string = 'myhome/livingroom/temperature';
 
+  // Stream data as long as the requestor is subscribed to receive replies.
   Beans.get(MessageClient).observe$(topic).subscribe((request: TopicMessage) => {
     const replyTo = request.headers.get(MessageHeaders.ReplyTo); // <1>
+
     sensor$
       .pipe(takeUntilUnsubscribe(replyTo)) // <3>
       .subscribe(temperature => {
         Beans.get(MessageClient).publish(replyTo, `${temperature} °C`); // <2>
       });
+  });
+
+  // Alternatively, you can complete the requestor's Observable with the first reply.
+  Beans.get(MessageClient).observe$(topic).subscribe((request: TopicMessage) => {
+    const replyTo = request.headers.get(MessageHeaders.ReplyTo); // <1>
+    const headers = new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL); // <4>
+
+    sensor$
+      .pipe(take(1))
+      .subscribe(temperature => {
+        Beans.get(MessageClient).publish(replyTo, `${temperature} °C`, {headers});
+      });
+
   });
   // end::reply[]
 }

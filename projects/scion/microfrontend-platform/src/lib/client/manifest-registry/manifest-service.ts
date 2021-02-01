@@ -15,7 +15,7 @@ import { mergeMapTo, take, takeUntil } from 'rxjs/operators';
 import { PlatformTopics } from '../../ɵmessaging.model';
 import { ManifestRegistryTopics } from '../../host/manifest-registry/ɵmanifest-registry';
 import { ManifestObjectFilter } from '../../host/manifest-registry/manifest-object-store';
-import { mapToBody, throwOnErrorStatus } from '../../messaging.model';
+import { mapToBody } from '../../messaging.model';
 import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 
 /**
@@ -87,10 +87,7 @@ export class ManifestService implements PreDestroy {
    */
   public lookupCapabilities$<T extends Capability>(filter?: ManifestObjectFilter): Observable<T[]> {
     return this._messageClient.request$<T[]>(ManifestRegistryTopics.LookupCapabilities, filter)
-      .pipe(
-        throwOnErrorStatus(),
-        mapToBody(),
-      );
+      .pipe(mapToBody());
   }
 
   /**
@@ -108,10 +105,7 @@ export class ManifestService implements PreDestroy {
    */
   public lookupIntentions$(filter?: ManifestObjectFilter): Observable<Intention[]> {
     return this._messageClient.request$<Intention[]>(ManifestRegistryTopics.LookupIntentions, filter)
-      .pipe(
-        throwOnErrorStatus(),
-        mapToBody(),
-      );
+      .pipe(mapToBody());
   }
 
   /**
@@ -122,11 +116,7 @@ export class ManifestService implements PreDestroy {
    */
   public registerCapability<T extends Capability>(capability: T): Promise<string> {
     return this._messageClient.request$<string>(ManifestRegistryTopics.RegisterCapability, capability)
-      .pipe(
-        throwOnErrorStatus(),
-        take(1),
-        mapToBody(),
-      )
+      .pipe(mapToBody())
       .toPromise();
   }
 
@@ -145,11 +135,7 @@ export class ManifestService implements PreDestroy {
    */
   public unregisterCapabilities(filter?: ManifestObjectFilter): Promise<void> {
     return this._messageClient.request$<void>(ManifestRegistryTopics.UnregisterCapabilities, filter)
-      .pipe(
-        throwOnErrorStatus(),
-        take(1),
-        mergeMapTo(EMPTY),
-      )
+      .pipe(mergeMapTo(EMPTY))
       .toPromise()
       .then(() => Promise.resolve()); // resolve to `void`
   }
@@ -164,11 +150,7 @@ export class ManifestService implements PreDestroy {
    */
   public registerIntention(intention: Intention): Promise<string> {
     return this._messageClient.request$<string>(ManifestRegistryTopics.RegisterIntention, intention)
-      .pipe(
-        throwOnErrorStatus(),
-        take(1),
-        mapToBody(),
-      )
+      .pipe(mapToBody())
       .toPromise();
   }
 
@@ -187,11 +169,7 @@ export class ManifestService implements PreDestroy {
    */
   public unregisterIntentions(filter?: ManifestObjectFilter): Promise<void> {
     return this._messageClient.request$<void>(ManifestRegistryTopics.UnregisterIntentions, filter)
-      .pipe(
-        throwOnErrorStatus(),
-        take(1),
-        mergeMapTo(EMPTY),
-      )
+      .pipe(mergeMapTo(EMPTY))
       .toPromise()
       .then(() => Promise.resolve()); // resolve to `void`
   }

@@ -8,8 +8,8 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { Capability, Qualifier } from './platform.model';
-import { MonoTypeOperatorFunction, Observable, of, OperatorFunction, throwError } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { MonoTypeOperatorFunction, Observable, of, OperatorFunction, pipe, throwError } from 'rxjs';
+import { filter, map, mergeMap, takeWhile } from 'rxjs/operators';
 
 /**
  * Represents a message with headers to transport additional information with a message.
@@ -150,6 +150,19 @@ export enum MessageHeaders {
   Method = 'ɵMETHOD',
   /**
    * Use this header to set the response status code to indicate whether a request has been successfully completed.
+   * See {@link ResponseStatusCodes} for available status codes. Other codes are also allowed.
+   *
+   * Status codes are primarily used in request-reply communication. In request-response communication, by default,
+   * the requestor’s Observable never completes. However, the replier can include a response status code in the reply’s
+   * headers, allowing to control the lifecycle of the requestor’s Observable.
+   *
+   * For example, the status code {@link ResponseStatusCodes.TERMINAL 250} allows completing the requestor’s Observable
+   * after emitted the reply, or the status code {@link ResponseStatusCodes.ERROR 500} to error the Observable.
+   *
+   * Note that the platform evaluates status codes only in request-response communication. They are ignored when observing
+   * topics or intents in pub/sub communication but can still be used; however, they must be handled by the application,
+   * e.g., by using the {@link throwOnErrorStatus} SCION RxJS operator.
+   *
    * @see ResponseStatusCodes
    */
   Status = 'ɵSTATUS',
@@ -192,6 +205,10 @@ export enum RequestMethods {
 /**
  * Defines a set of response status codes to indicate whether a request has been successfully completed.
  *
+ * @see throwOnErrorStatus
+ * @see MessageClient.request$
+ * @see IntentClient.request$
+ *
  * @category Messaging
  */
 export enum ResponseStatusCodes {
@@ -200,52 +217,81 @@ export enum ResponseStatusCodes {
    */
   OK = 200,
   /**
+   * The request has succeeded. No further response to be expected.
+   *
+   * In request-reply communication, setting this status code will complete the requestor's Observable
+   * after emitted the reply. The reply is only emitted if not `undefined`.
+   */
+  TERMINAL = 250,
+  /**
    * The receiver could not understand the request due to invalid syntax.
+   *
+   * In request-reply communication, setting this status code will error the requestor's Observable.
    */
   BAD_REQUEST = 400,
   /**
    * The receiver could not find the requested resource.
+   *
+   * In request-reply communication, setting this status code will error the requestor's Observable.
    */
   NOT_FOUND = 404,
   /**
-   * The receiver encountered an internal error. The error is transmitted in the message body.
+   * The receiver encountered an internal error. Optionally, set the error as message payload.
+   *
+   * In request-reply communication, setting this status code will error the requestor's Observable.
    */
   ERROR = 500,
 }
 
 /**
- * Returns an Observable that mirrors the source Observable, unless receiving a message with
- * a status code other than {@link ResponseStatusCodes.OK}. Then, the stream will end with an
- * error and source Observable will be unsubscribed.
+ * Returns an Observable that mirrors the source Observable unless receiving a message with
+ * a response status code greater than or equal to 400. Then, the stream will end with an
+ * {@link RequestError error} and the source Observable unsubscribed.
+ *
+ * When receiving a message with the response status code {@link ResponseStatusCodes.TERMINAL},
+ * the Observable emits this message and completes.
+ *
+ * If a message does not include a response status code, the message is emitted as is.
+ *
+ * Note that this operator is installed in {@link MessageClient.request$} and {@link IntentClient.request$}.
  *
  * @category Messaging
  */
 export function throwOnErrorStatus<BODY>(): MonoTypeOperatorFunction<TopicMessage<BODY>> {
-  return mergeMap((message: TopicMessage<BODY>): Observable<TopicMessage<BODY>> => {
-    const status = message.headers.get(MessageHeaders.Status) || ResponseStatusCodes.ERROR;
-    if (status === ResponseStatusCodes.OK) {
-      return of(message);
-    }
+  return pipe(
+    mergeMap((message: TopicMessage<BODY>): Observable<TopicMessage<BODY>> => {
+      const status = message.headers.get(MessageHeaders.Status) ?? ResponseStatusCodes.OK;
+      if (status < 400) {
+        return of(message); // 1xx: informational responses, 2xx: successful responses, 4xx: client errors, 5xx: server errors
+      }
 
-    if (message.body) {
-      return throwError(`[${status}] ${message.body}`);
-    }
+      if (typeof message.body === 'string') {
+        return throwError(new RequestError(message.body, status, message));
+      }
 
-    switch (status) {
-      case ResponseStatusCodes.BAD_REQUEST: {
-        return throwError(`${status}: The receiver could not understand the request due to invalid syntax.`);
+      switch (status) {
+        case ResponseStatusCodes.BAD_REQUEST: {
+          return throwError(new RequestError('The receiver could not understand the request due to invalid syntax.', status, message));
+        }
+        case ResponseStatusCodes.NOT_FOUND: {
+          return throwError(new RequestError('The receiver could not find the requested resource.', status, message));
+        }
+        case ResponseStatusCodes.ERROR: {
+          return throwError(new RequestError('The receiver encountered an internal error.', status, message));
+        }
+        default: {
+          return throwError(new RequestError('Request error.', status, message));
+        }
       }
-      case ResponseStatusCodes.NOT_FOUND: {
-        return throwError(`${status}: The receiver could not find the requested resource.`);
-      }
-      case ResponseStatusCodes.ERROR: {
-        return throwError(`${status}: The receiver encountered an internal error.`);
-      }
-      default: {
-        return throwError(`${status}: Request error.`);
-      }
-    }
-  });
+    }),
+    takeWhile((message: TopicMessage<BODY>) => {
+      return message.headers.get(MessageHeaders.Status) !== ResponseStatusCodes.TERMINAL;
+    }, true),
+    filter((message: TopicMessage<BODY>) => {
+      const isTerminalMessage = message.headers.get(MessageHeaders.Status) === ResponseStatusCodes.TERMINAL;
+      return (!isTerminalMessage || message.body !== undefined);
+    }),
+  );
 }
 
 /**
@@ -255,4 +301,17 @@ export function throwOnErrorStatus<BODY>(): MonoTypeOperatorFunction<TopicMessag
  */
 export function mapToBody<T>(): OperatorFunction<TopicMessage<T> | IntentMessage<T>, T> {
   return map(message => message.body);
+}
+
+/**
+ * Indicates that the request handler responded with an error response.
+ *
+ * @ignore
+ */
+export class RequestError extends Error {
+
+  constructor(error: string, public status: number, public msg: Message) {
+    super(error);
+    this.name = 'RequestError';
+  }
 }

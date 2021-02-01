@@ -9,7 +9,7 @@
  */
 
 import { defer, Observable } from 'rxjs';
-import { Intent, IntentMessage, TopicMessage } from '../../messaging.model';
+import { Intent, IntentMessage, throwOnErrorStatus, TopicMessage } from '../../messaging.model';
 import { Qualifier } from '../../platform.model';
 import { BrokerGateway } from './broker-gateway';
 import { MessagingChannel } from '../../ɵmessaging.model';
@@ -78,9 +78,10 @@ export abstract class IntentClient {
    * @param  body - Specifies optional transfer data to be carried along with the intent.
    *         It can be any object which is serializable with the structured clone algorithm.
    * @param  options - Controls how to send the request and allows setting request headers.
-   * @return An Observable that emits when receiving a reply. It never completes. It throws an error if the intent
-   *         could not be dispatched or if no replier is currently available to handle the intent. If expecting a single reply,
-   *         use the `take(1)` operator to unsubscribe upon the receipt of the first reply.
+   * @return An Observable that emits when receiving a reply. It never completes unless the intent handler sets the status code {@link ResponseStatusCodes.TERMINAL}
+   *         in the {@link MessageHeaders.Status} message header. Then, the Observable completes immediately after emitted the reply.
+   *         The Observable errors if the intent could not be dispatched or if no replier is currently available to handle the intent. It will also error if the
+   *         intent handler sets a status code greater than or equal to 400, e.g., {@link ResponseStatusCodes.ERROR}.
    */
   public abstract request$<T>(intent: Intent, body?: any, options?: IntentOptions): Observable<TopicMessage<T>>;
 
@@ -174,7 +175,7 @@ export class ɵIntentClient implements IntentClient { // tslint:disable-line:cla
     return defer(() => {
       const intentMessage: IntentMessage = {intent, headers: new Map(headers)};
       setBodyIfDefined(intentMessage, body);
-      return this._brokerGateway.requestReply$(MessagingChannel.Intent, intentMessage);
+      return this._brokerGateway.requestReply$(MessagingChannel.Intent, intentMessage).pipe(throwOnErrorStatus());
     });
   }
 

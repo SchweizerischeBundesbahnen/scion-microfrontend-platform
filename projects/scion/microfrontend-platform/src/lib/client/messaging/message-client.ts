@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { defer, MonoTypeOperatorFunction, Observable } from 'rxjs';
-import { IntentMessage, mapToBody, TopicMessage } from '../../messaging.model';
+import { IntentMessage, mapToBody, throwOnErrorStatus, TopicMessage } from '../../messaging.model';
 import { first, takeUntil } from 'rxjs/operators';
 import { BrokerGateway } from './broker-gateway';
 import { Defined } from '@scion/toolkit/util';
@@ -74,9 +74,10 @@ export abstract class MessageClient {
    * @param  request - Specifies optional transfer data to be carried along with the request.
    *         It can be any object which is serializable with the structured clone algorithm.
    * @param  options - Controls how to send the request and allows setting request headers.
-   * @return An Observable that emits when receiving a reply. It never completes. It throws an error if the message
-   *         could not be dispatched or if no replier is currently subscribed to the topic. If expecting a single reply,
-   *         use the `take(1)` operator to unsubscribe upon the receipt of the first reply.
+   * @return An Observable that emits when receiving a reply. It never completes unless the replier sets the status code {@link ResponseStatusCodes.TERMINAL}
+   *         in the {@link MessageHeaders.Status} message header. Then, the Observable completes immediately after emitted the reply.
+   *         The Observable errors if the message could not be dispatched or if no replier is currently subscribed to the topic. It will also error if the
+   *         replier sets a status code greater than or equal to 400, e.g., {@link ResponseStatusCodes.ERROR}.
    */
   public abstract request$<T>(topic: string, request?: any, options?: RequestOptions): Observable<TopicMessage<T>>;
 
@@ -200,7 +201,7 @@ export class ɵMessageClient implements MessageClient { // tslint:disable-line:c
     return defer(() => {
       const topicMessage: TopicMessage = {topic, retain: false, headers: new Map(headers)};
       setBodyIfDefined(topicMessage, request);
-      return this._brokerGateway.requestReply$(MessagingChannel.Topic, topicMessage);
+      return this._brokerGateway.requestReply$(MessagingChannel.Topic, topicMessage).pipe(throwOnErrorStatus());
     });
   }
 
