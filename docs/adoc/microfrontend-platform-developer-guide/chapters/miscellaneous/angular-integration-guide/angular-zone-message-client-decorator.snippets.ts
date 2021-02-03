@@ -1,6 +1,6 @@
-import { Intent, IntentClient, IntentMessage, IntentOptions, MessageClient, MicrofrontendPlatform, PlatformState, PublishOptions, RequestOptions, TopicMessage } from '@scion/microfrontend-platform';
+import { Intent, IntentClient, IntentMessage, IntentOptions, IntentSelector, MessageClient, MicrofrontendPlatform, PlatformState, PublishOptions, RequestOptions, TopicMessage } from '@scion/microfrontend-platform';
 import { Injectable, NgZone } from '@angular/core';
-import { MonoTypeOperatorFunction, Observable, pipe } from 'rxjs';
+import { MonoTypeOperatorFunction, Observable, pipe, Subscription } from 'rxjs';
 import { HttpPlatformConfigLoader } from './start-platform-via-initializer.snippets';
 import { BeanDecorator, Beans } from '@scion/toolkit/bean-manager';
 import { observeInside, subscribeInside } from '@scion/toolkit/operators';
@@ -31,6 +31,10 @@ export class NgZoneMessageClientDecorator implements BeanDecorator<MessageClient
 
       public observe$<T>(topic: string): Observable<TopicMessage<T>> {
         return messageClient.observe$<T>(topic).pipe(synchronizeWithAngular(zone)); // <3>
+      }
+
+      public onMessage<IN = any, OUT = any>(topic: string, callback: (message: TopicMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
+        return messageClient.onMessage(topic, callback);
       }
 
       public subscriberCount$(topic: string): Observable<number> {
@@ -66,6 +70,10 @@ export class NgZoneIntentClientDecorator implements BeanDecorator<IntentClient> 
 
       public observe$<T>(selector?: Intent): Observable<IntentMessage<T>> {
         return intentClient.observe$<T>(selector).pipe(synchronizeWithAngular(zone)); // <3>
+      }
+
+      public onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
+        return intentClient.onIntent(selector, callback);
       }
     };
   }

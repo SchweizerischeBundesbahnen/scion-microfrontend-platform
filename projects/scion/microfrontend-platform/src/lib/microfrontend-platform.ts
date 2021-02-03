@@ -7,8 +7,8 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { MessageClient, ɵMessageClient } from './client/messaging/message-client';
-import { IntentClient, ɵIntentClient } from './client/messaging/intent-client';
+import { MessageClient } from './client/messaging/message-client';
+import { IntentClient } from './client/messaging/intent-client';
 import { PlatformIntentClient } from './host/platform-intent-client';
 import { ManifestRegistry } from './host/manifest-registry/manifest-registry';
 import { ApplicationRegistry } from './host/application-registry';
@@ -47,6 +47,8 @@ import { ActivatorInstaller } from './host/activator/activator-installer';
 import { BrokerGateway, NullBrokerGateway, ɵBrokerGateway } from './client/messaging/broker-gateway';
 import { PlatformState, Runlevel } from './platform-state';
 import { AbstractType, BeanInstanceConstructInstructions, Beans, Type } from '@scion/toolkit/bean-manager';
+import { ɵIntentClient } from './client/messaging/ɵintent-client';
+import { ɵMessageClient } from './client/messaging/ɵmessage-client';
 
 window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {once: true});
 

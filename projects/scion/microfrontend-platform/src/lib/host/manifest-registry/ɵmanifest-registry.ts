@@ -23,6 +23,7 @@ import { filterArray } from '@scion/toolkit/operators';
 import { ManifestRegistry } from './manifest-registry';
 import { matchesIntentQualifier, matchesWildcardQualifier } from '../../qualifier-tester';
 import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
+import { stringifyError } from '../../error.util';
 
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tslint:disable-line:class-name
 
@@ -153,7 +154,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
           Beans.get(PlatformMessageClient).publish(replyTo, capabilityId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
-          Beans.get(PlatformMessageClient).publish(replyTo, readErrorMessage(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+          Beans.get(PlatformMessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
         }
       }));
   }
@@ -171,7 +172,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
           Beans.get(PlatformMessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
-          Beans.get(PlatformMessageClient).publish(replyTo, readErrorMessage(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+          Beans.get(PlatformMessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
         }
       }));
   }
@@ -190,7 +191,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
           Beans.get(PlatformMessageClient).publish(replyTo, intentionId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
-          Beans.get(PlatformMessageClient).publish(replyTo, readErrorMessage(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+          Beans.get(PlatformMessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
         }
       }));
   }
@@ -209,7 +210,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
           Beans.get(PlatformMessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
-          Beans.get(PlatformMessageClient).publish(replyTo, readErrorMessage(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+          Beans.get(PlatformMessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
         }
       }));
   }
@@ -275,16 +276,6 @@ export enum ManifestRegistryTopics {
   UnregisterCapabilities = 'ɵUNREGISTER_CAPABILITIES',
   RegisterIntention = 'ɵREGISTER_INTENTION',
   UnregisterIntentions = 'ɵUNREGISTER_INTENTIONS',
-}
-
-/**
- * Returns the error message if given an error object, or the `toString` representation otherwise.
- */
-function readErrorMessage(error: any): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return error.toString();
 }
 
 /**

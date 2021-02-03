@@ -13,14 +13,25 @@ import { Beans } from '@scion/toolkit/bean-manager';
 /**
  * Runs the given function. Errors are caught and logged.
  *
+ * If producing a Promise, returns that Promise, but with a catch handler installed.
+ *
  * @ignore
  */
 export function runSafe<T = void>(runnable: () => T): T {
+  let result: T;
   try {
-    return runnable();
+    result = runnable();
   }
   catch (error) {
     Beans.get(Logger).error('[UnexpectedError] An unexpected error occurred.', error);
     return undefined;
   }
+
+  if (result instanceof Promise) {
+    return result.catch(error => {
+      Beans.get(Logger).error('[UnexpectedError] An unexpected error occurred.', error);
+      return undefined;
+    }) as any;
+  }
+  return result;
 }
