@@ -7,13 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { defer, MonoTypeOperatorFunction, Observable } from 'rxjs';
-import { IntentMessage, mapToBody, throwOnErrorStatus, TopicMessage } from '../../messaging.model';
+import { MonoTypeOperatorFunction, Observable, Subscription } from 'rxjs';
+import { TopicMessage } from '../../messaging.model';
 import { first, takeUntil } from 'rxjs/operators';
-import { BrokerGateway } from './broker-gateway';
-import { Defined } from '@scion/toolkit/util';
-import { MessagingChannel, PlatformTopics } from '../../ɵmessaging.model';
-import { TopicMatcher } from '../../topic-matcher.util';
 import { AbstractType, Beans, Type } from '@scion/toolkit/bean-manager';
 
 /**
@@ -123,6 +119,30 @@ export abstract class MessageClient {
   public abstract observe$<T>(topic: string): Observable<TopicMessage<T>>;
 
   /**
+   * Convenience API for handling messages.
+   *
+   * Unlike `observe$`, messages are passed to a callback function rather than emitted from an Observable. Response(s) can be returned directly
+   * from the callback. It supports error propagation and request termination. Using this method over `observe$` significantly reduces the code
+   * required to respond to requests.
+   *
+   * For each message received, the specified callback function is called. When used in request-response communication,
+   * the callback function can return the response either directly or in the form of a Promise or Observable. Returning a Promise
+   * allows the response to be computed asynchronously, and an Observable allows to return one or more responses, e.g., for
+   * streaming data. In either case, when the final response is produced, the handler terminates the communication, completing
+   * the requestor's Observable. If the callback throws an error, or the returned Promise or Observable errors, the error is
+   * transported to the requestor, erroring the requestor's Observable.
+   *
+   * @param  topic - Specifies the topic which to observe.
+   *         For more information, see the API description of {@link observe$}.
+   * @param  callback - Specifies the callback to be called for each message. When used in request-response communication,
+   *         the callback function can return the response either directly or in the form of a Promise or Observable. If returning
+   *         a response in fire-and-forget communication, it is ignored. Throwing an error in the callback does not unregister the callback.
+   * @return Subscription to unregister the callback. Calling {@link Subscription.unsubscribe} will complete the Observable of all
+   *         requestors, if any.
+   */
+  public abstract onMessage<IN = any, OUT = any>(topic: string, callback: (message: TopicMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription;
+
+  /**
    * Allows observing the number of subscriptions on a topic.
    *
    * @param  topic - Specifies the topic to observe. The topic must be exact, thus not contain wildcards.
@@ -173,61 +193,4 @@ export interface RequestOptions {
    * Sets headers to pass additional information with a message.
    */
   headers?: Map<string, any>;
-}
-
-/**
- * @ignore
- */
-export class ɵMessageClient implements MessageClient { // tslint:disable-line:class-name
-
-  constructor(private readonly _brokerGateway: BrokerGateway) {
-  }
-
-  public publish<T = any>(topic: string, message?: T, options?: PublishOptions): Promise<void> {
-    assertTopic(topic, {allowWildcardSegments: false});
-    const headers = new Map(options && options.headers);
-    const topicMessage: TopicMessage = {topic, retain: Defined.orElse(options && options.retain, false), headers: new Map(headers)};
-    setBodyIfDefined(topicMessage, message);
-    return this._brokerGateway.postMessage(MessagingChannel.Topic, topicMessage);
-  }
-
-  public request$<T>(topic: string, request?: any, options?: RequestOptions): Observable<TopicMessage<T>> {
-    assertTopic(topic, {allowWildcardSegments: false});
-    // IMPORTANT:
-    // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
-    // to the returned Observable, each subscription must have its individual message instance and headers map.
-    // In addition, the headers are copied to prevent modifications before the effective subscription.
-    const headers = new Map(options && options.headers);
-    return defer(() => {
-      const topicMessage: TopicMessage = {topic, retain: false, headers: new Map(headers)};
-      setBodyIfDefined(topicMessage, request);
-      return this._brokerGateway.requestReply$(MessagingChannel.Topic, topicMessage).pipe(throwOnErrorStatus());
-    });
-  }
-
-  public observe$<T>(topic: string): Observable<TopicMessage<T>> {
-    assertTopic(topic, {allowWildcardSegments: true});
-    return this._brokerGateway.subscribeToTopic<T>(topic);
-  }
-
-  public subscriberCount$(topic: string): Observable<number> {
-    assertTopic(topic, {allowWildcardSegments: false});
-    return this.request$<number>(PlatformTopics.RequestSubscriberCount, topic).pipe(mapToBody());
-  }
-}
-
-function assertTopic(topic: string, options: { allowWildcardSegments: boolean }): void {
-  if (topic === undefined || topic === null || topic.length === 0) {
-    throw Error('[IllegalTopicError] Topic must not be `null`, `undefined` or empty');
-  }
-
-  if (!options.allowWildcardSegments && TopicMatcher.containsWildcardSegments(topic)) {
-    throw Error(`[IllegalTopicError] Topic not allowed to contain wildcard segments. [topic='${topic}']`);
-  }
-}
-
-function setBodyIfDefined<T>(message: TopicMessage<T> | IntentMessage<T>, body?: T): void {
-  if (body !== undefined) {
-    message.body = body;
-  }
 }

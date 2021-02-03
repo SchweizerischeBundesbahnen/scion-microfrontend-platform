@@ -11,7 +11,7 @@ import { ApplicationRegistry } from './application-registry';
 import { MicrofrontendPlatform } from '../microfrontend-platform';
 import { ManifestRegistry } from './manifest-registry/manifest-registry';
 import { PlatformMessageClient } from './platform-message-client';
-import { ɵMessageClient } from '../client/messaging/message-client';
+import { ɵMessageClient } from '../client/messaging/ɵmessage-client';
 import { ɵManifestRegistry } from './manifest-registry/ɵmanifest-registry';
 import { NullBrokerGateway } from '../client/messaging/broker-gateway';
 import { Beans } from '@scion/toolkit/bean-manager';

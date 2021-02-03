@@ -17,6 +17,7 @@ In this Chapter
 - <<chapter:topic-based-messaging:publishing-a-retained-message>>
 - <<chapter:topic-based-messaging:publishing-a-message-with-headers>>
 - <<chapter:topic-based-messaging:request-response-message-exchange-pattern>>
+- <<chapter:topic-based-messaging:convenience-api-for-handling-messages>>
 
 ****
 
@@ -158,4 +159,17 @@ include::topic-based-communication.snippets.ts[tags=reply]
 <4> Sets a message header to immediately complete the requestor's Observable after emitted the reply.
 
 TIP: If streaming data like in the example above, the replier can use the RxJS `takeUntilUnsubscribe` operator of the platform to stop replying when the requestor unsubscribes.
+
+
+[[chapter:topic-based-messaging:convenience-api-for-handling-messages]]
+[discrete]
+=== Convenience API for handling messages
+The message client provides the `onMessage` method as a convenience to the `observe$` method. Unlike `observe$`, messages are passed to a callback function rather than emitted from an Observable. Response(s) can be returned directly from the callback. It supports error propagation and request termination. Using this method over `observe$` significantly reduces the code required to respond to requests.
+
+[source,typescript]
+----
+include::topic-based-communication.snippets.ts[tags=onMessage]
+----
+
+For each message received, the specified callback function is called. When used in request-response communication, the callback function can return the response either directly or in the form of a Promise or Observable. Returning a Promise allows the response to be computed asynchronously, and an Observable allows to return one or more responses, e.g., for streaming data. In either case, when the final response is produced, the handler terminates the communication, completing the requestor's Observable. If the callback throws an error, or the returned Promise or Observable errors, the error is transported to the requestor, erroring the requestor's Observable.
 

@@ -8,19 +8,14 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { defer, Observable } from 'rxjs';
-import { Intent, IntentMessage, throwOnErrorStatus, TopicMessage } from '../../messaging.model';
+import { Observable, Subscription } from 'rxjs';
+import { Intent, IntentMessage, TopicMessage } from '../../messaging.model';
 import { Qualifier } from '../../platform.model';
-import { BrokerGateway } from './broker-gateway';
-import { MessagingChannel } from '../../ɵmessaging.model';
-import { filterByChannel, pluckMessage } from '../../operators';
-import { filter } from 'rxjs/operators';
-import { matchesIntentQualifier } from '../../qualifier-tester';
 
 /**
  * Intent client for sending and receiving intents between microfrontends across origins.
  *
- * Intent-based communication enables controlled collaboration between micro applications. It is inspired by the Android platform,
+ * Intent-based messaging enables controlled collaboration between micro applications, a mechanism known from Android development
  * where an application can start an activity via an intent (such as sending an email).
  *
  * Like topic-based communication, intent-based communication implements the pub/sub (publish/subscribe) messaging pattern, but is,
@@ -147,47 +142,30 @@ export abstract class IntentClient {
    * @return An Observable that emits intents for which this application provides a satisfying capability. It never completes.
    */
   public abstract observe$<T>(selector?: IntentSelector): Observable<IntentMessage<T>>;
-}
 
-/**
- * @ignore
- */
-export class ɵIntentClient implements IntentClient { // tslint:disable-line:class-name
-
-  constructor(private readonly _brokerGateway: BrokerGateway) {
-  }
-
-  public publish<T = any>(intent: Intent, body?: T, options?: IntentOptions): Promise<void> {
-    assertIntentQualifier(intent.qualifier, {allowWildcards: false});
-    const headers = new Map(options && options.headers);
-    const intentMessage: IntentMessage = {intent, headers: new Map(headers)};
-    setBodyIfDefined(intentMessage, body);
-    return this._brokerGateway.postMessage(MessagingChannel.Intent, intentMessage);
-  }
-
-  public request$<T>(intent: Intent, body?: any, options?: IntentOptions): Observable<TopicMessage<T>> {
-    assertIntentQualifier(intent.qualifier, {allowWildcards: false});
-    // IMPORTANT:
-    // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
-    // to the returned Observable, each subscription must have its individual message instance and headers map.
-    // In addition, the headers are copied to prevent modifications before the effective subscription.
-    const headers = new Map(options && options.headers);
-    return defer(() => {
-      const intentMessage: IntentMessage = {intent, headers: new Map(headers)};
-      setBodyIfDefined(intentMessage, body);
-      return this._brokerGateway.requestReply$(MessagingChannel.Intent, intentMessage).pipe(throwOnErrorStatus());
-    });
-  }
-
-  public observe$<T>(selector?: IntentSelector): Observable<IntentMessage<T>> {
-    return this._brokerGateway.message$
-      .pipe(
-        filterByChannel<IntentMessage<T>>(MessagingChannel.Intent),
-        pluckMessage(),
-        filter(message => !selector || !selector.type || selector.type === message.intent.type),
-        filter(message => !selector || !selector.qualifier || matchesIntentQualifier(selector.qualifier, message.intent.qualifier)),
-      );
-  }
+  /**
+   * Convenience API for handling intents.
+   *
+   * Unlike `observe$`, intents are passed to a callback function rather than emitted from an Observable. Response(s) can be returned directly
+   * from the callback. It supports error propagation and request termination. Using this method over `observe$` significantly reduces the code
+   * required to respond to requests.
+   *
+   * For each intent received, the specified callback function is called. When used in request-response communication,
+   * the callback function can return the response either directly or in the form of a Promise or Observable. Returning a Promise
+   * allows the response to be computed asynchronously, and an Observable allows to return one or more responses, e.g., for
+   * streaming data. In either case, when the final response is produced, the handler terminates the communication, completing
+   * the requestor's Observable. If the callback throws an error, or the returned Promise or Observable errors, the error is
+   * transported to the requestor, erroring the requestor's Observable.
+   *
+   * @param  selector - Allows filtering intents.
+   *         For more information, see the API description of {@link observe$}.
+   * @param  callback - Specifies the callback to be called for each intent. When used in request-response communication,
+   *         the callback function can return the response either directly or in the form of a Promise or Observable. If returning
+   *         a response in fire-and-forget communication, it is ignored. Throwing an error in the callback does not unregister the callback.
+   * @return Subscription to unregister the callback. Calling {@link Subscription.unsubscribe} will complete the Observable of all
+   *         requestors, if any.
+   */
+  public abstract onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription;
 }
 
 /**
@@ -217,20 +195,4 @@ export interface IntentSelector {
    * or optional wildcard character (`?`) to match multiple intents.
    */
   qualifier?: Qualifier;
-}
-
-function assertIntentQualifier(qualifier: Qualifier, options: { allowWildcards: boolean }): void {
-  if (!qualifier || Object.keys(qualifier).length === 0) {
-    return;
-  }
-
-  if (!options.allowWildcards && Object.entries(qualifier).some(([key, value]) => key === '*' || value === '*' || value === '?')) {
-    throw Error(`[IllegalQualifierError] Qualifier must not contain wildcards. [qualifier='${JSON.stringify(qualifier)}']`);
-  }
-}
-
-function setBodyIfDefined<T>(message: TopicMessage<T> | IntentMessage<T>, body?: T): void {
-  if (body !== undefined) {
-    message.body = body;
-  }
 }
