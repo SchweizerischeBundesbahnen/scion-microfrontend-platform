@@ -1,3 +1,45 @@
+# [1.0.0-beta.11](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.10...1.0.0-beta.11) (2021-02-03)
+
+
+### Features
+
+* **platform:** add convenience API to reduce code required to respond to requests ([d0eeaf5](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/d0eeaf5aef0bc4cfc39f3de2e8443f5a1988e1ea)), closes [#43](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/43)
+* **platform:** allow to specify a generic when registering a capability to increase type safety ([4af9433](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/4af943315d81b6aabc7f68e2ee788b86b04a8520)), closes [#60](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/60)
+* **platform:** let the message/intent replier control the lifecycle of the requestor’s Observable ([77a4dd9](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/77a4dd9877188fd8d78edc6404118a6e97b02c46))
+
+
+### BREAKING CHANGES
+
+* **platform:** Adding the convenience API for responding to requests introduced the following breaking change for Angular projects.
+    
+    > Note: The messaging protocol between the host and client HAS NOT CHANGED. Thus, you can upgrade the host and clients to the new version independently.
+    
+    To migrate:
+    - If an Angular project, add the method `onMessage` to your NgZone message client decorator, as following:
+       ```typescript
+       public onMessage<IN = any, OUT = any>(topic: string, callback: (message: TopicMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
+         return messageClient.onMessage(topic, callback);
+       }
+       ```
+       See https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular for more information.
+    
+    - If an Angular project, add the method `onIntent` to your NgZone intent client decorator, as following:
+       ```typescript
+       public onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
+         return intentClient.onIntent(selector, callback);
+       }
+       ```
+       See https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular for more information.
+* **platform:** Enabling the message/intent replier to control the requestor’s Observable lifecycle introduced a breaking change in the host/client communication protocol.
+    
+    > Note: The messaging protocol between host and client HAS CHANGED for registering/unregistering capabilities/intentions using the `ManifestService`. Therefore, you must update the host and affected clients to the new version together. The API has not changed; the breaking change only applies to the `@scion/microfrontend-platform` version.
+    
+    To migrate:
+    - Upgrade host and clients (which use the `ManifestService`) to `@scion/microfrontend-platform@1.0.0-beta.11`.
+    - Remove the `throwOnErrorStatus` SCION RxJS operator when using `IntentClient#request$` or `MessageClient#request$` as already installed by the platform.
+
+
+
 # [1.0.0-beta.10](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.9...1.0.0-beta.10) (2021-01-25)
 
 
