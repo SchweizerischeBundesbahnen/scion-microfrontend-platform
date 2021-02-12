@@ -290,6 +290,254 @@ describe('KeyboardEvent', () => {
     ]));
   });
 
+  it('should not prevent default action if keyboard flags not set', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      outlet1: {
+        outlet2: {
+          outlet3: {
+            microfrontend: Microfrontend1PagePO,
+          },
+        },
+      },
+    });
+
+    const outletPO = pagePOs.get<BrowserOutletPO>('microfrontend:outlet');
+    await outletPO.setKeystrokesViaAttr('keydown.control.alt.shift.s');
+
+    const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
+    await microfrontendPagePO.clickInputField();
+    await sendKeys(Key.chord(Key.CONTROL, Key.ALT, Key.SHIFT, 's'));
+
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[TRUSTED]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=false]`,
+    ]));
+  });
+
+  it('should not prevent default action if `preventDefault` is set to `false`', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      outlet1: {
+        outlet2: {
+          outlet3: {
+            microfrontend: Microfrontend1PagePO,
+          },
+        },
+      },
+    });
+
+    const outletPO = pagePOs.get<BrowserOutletPO>('microfrontend:outlet');
+    await outletPO.setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=false}');
+
+    const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
+    await microfrontendPagePO.clickInputField();
+    await sendKeys(Key.chord(Key.CONTROL, Key.ALT, Key.SHIFT, 's'));
+
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[TRUSTED]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=false]`,
+    ]));
+  });
+
+  it('should prevent default action if `preventDefault` is set to `true`', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      outlet1: {
+        outlet2: {
+          outlet3: {
+            microfrontend: Microfrontend1PagePO,
+          },
+        },
+      },
+    });
+
+    const outletPO = pagePOs.get<BrowserOutletPO>('microfrontend:outlet');
+    await outletPO.setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=true}');
+
+    const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
+    await microfrontendPagePO.clickInputField();
+    await sendKeys(Key.chord(Key.CONTROL, Key.ALT, Key.SHIFT, 's'));
+
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[TRUSTED]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=true]`,
+    ]));
+  });
+
+  it('should prevent default action if `preventDefault` is set to `true` in outlet3', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      outlet1: {
+        outlet2: {
+          outlet3: {
+            microfrontend: Microfrontend1PagePO,
+          },
+        },
+      },
+    });
+
+    await pagePOs.get<BrowserOutletPO>('microfrontend:outlet').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet3').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=true}');
+    await pagePOs.get<BrowserOutletPO>('outlet2').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=false}');
+    await pagePOs.get<BrowserOutletPO>('outlet1').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=false}');
+
+    const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
+    await microfrontendPagePO.clickInputField();
+    await sendKeys(Key.chord(Key.CONTROL, Key.ALT, Key.SHIFT, 's'));
+
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[TRUSTED]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=true]`,
+    ]));
+  });
+
+  it('should prevent default action if `preventDefault` is set to `true` in outlet2', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      outlet1: {
+        outlet2: {
+          outlet3: {
+            microfrontend: Microfrontend1PagePO,
+          },
+        },
+      },
+    });
+
+    await pagePOs.get<BrowserOutletPO>('microfrontend:outlet').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet3').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet2').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=true}');
+    await pagePOs.get<BrowserOutletPO>('outlet1').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=false}');
+
+    const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
+    await microfrontendPagePO.clickInputField();
+    await sendKeys(Key.chord(Key.CONTROL, Key.ALT, Key.SHIFT, 's'));
+
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[TRUSTED]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=true]`,
+    ]));
+  });
+
+  it('should prevent default action if `preventDefault` is set to `true` in outlet1', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      outlet1: {
+        outlet2: {
+          outlet3: {
+            microfrontend: Microfrontend1PagePO,
+          },
+        },
+      },
+    });
+
+    await pagePOs.get<BrowserOutletPO>('microfrontend:outlet').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet3').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet2').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet1').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=true}');
+
+    const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
+    await microfrontendPagePO.clickInputField();
+    await sendKeys(Key.chord(Key.CONTROL, Key.ALT, Key.SHIFT, 's'));
+
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[TRUSTED]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=true]`,
+    ]));
+  });
+
+  it('should not prevent default action if `preventDefault` is set to `false` in outlet3', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      outlet1: {
+        outlet2: {
+          outlet3: {
+            microfrontend: Microfrontend1PagePO,
+          },
+        },
+      },
+    });
+
+    await pagePOs.get<BrowserOutletPO>('microfrontend:outlet').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet3').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=false}');
+    await pagePOs.get<BrowserOutletPO>('outlet2').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=true}');
+    await pagePOs.get<BrowserOutletPO>('outlet1').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=true}');
+
+    const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
+    await microfrontendPagePO.clickInputField();
+    await sendKeys(Key.chord(Key.CONTROL, Key.ALT, Key.SHIFT, 's'));
+
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[TRUSTED]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=false]`,
+    ]));
+  });
+
+  it('should not prevent default action if `preventDefault` is set to `false` in outlet2', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      outlet1: {
+        outlet2: {
+          outlet3: {
+            microfrontend: Microfrontend1PagePO,
+          },
+        },
+      },
+    });
+
+    await pagePOs.get<BrowserOutletPO>('microfrontend:outlet').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet3').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet2').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=false}');
+    await pagePOs.get<BrowserOutletPO>('outlet1').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=true}');
+
+    const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
+    await microfrontendPagePO.clickInputField();
+    await sendKeys(Key.chord(Key.CONTROL, Key.ALT, Key.SHIFT, 's'));
+
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[TRUSTED]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=false]`,
+    ]));
+  });
+
+  it('should not prevent default action if `preventDefault` is set to `false` in outlet1', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      outlet1: {
+        outlet2: {
+          outlet3: {
+            microfrontend: Microfrontend1PagePO,
+          },
+        },
+      },
+    });
+
+    await pagePOs.get<BrowserOutletPO>('microfrontend:outlet').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet3').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet2').setKeystrokesViaAttr('keydown.control.alt.shift.s');
+    await pagePOs.get<BrowserOutletPO>('outlet1').setKeystrokesViaAttr('keydown.control.alt.shift.s{preventDefault=false}');
+
+    const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
+    await microfrontendPagePO.clickInputField();
+    await sendKeys(Key.chord(Key.CONTROL, Key.ALT, Key.SHIFT, 's'));
+
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[TRUSTED]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=false]`,
+    ]));
+  });
+
+  it('should unsubscribe keyboard event handlers when keystrokes change, thus avoiding subscription leaks', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      microfrontend: Microfrontend1PagePO,
+    });
+
+    const outletPO = pagePOs.get<BrowserOutletPO>('microfrontend:outlet');
+    await outletPO.setKeystrokesViaAttr('keydown.alt.x');
+    await outletPO.setKeystrokesViaAttr('keydown.alt.y'); // override the keystroke above by this one
+
+    const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
+    await microfrontendPagePO.clickInputField();
+    await sendKeys(Key.chord(Key.ALT, 'x'));
+    await sendKeys(Key.chord(Key.ALT, 'y'));
+
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='y', control=false, shift=false, alt=true, meta=false]`,
+    ]));
+  });
+
   it('should allow registering multiple keystrokes via <sci-router-outlet> attribute', async () => {
     const testingAppPO = new TestingAppPO();
     const pagePOs = await testingAppPO.navigateTo({

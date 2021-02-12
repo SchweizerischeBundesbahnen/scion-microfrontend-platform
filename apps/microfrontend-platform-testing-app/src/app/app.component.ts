@@ -23,6 +23,14 @@ export class AppComponent implements OnDestroy {
     this._outletContext = Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
   }
 
+  @HostListener('document:keydown.control.alt.shift.s', ['$event'])
+  public async onE2eTestKeyboardEvent(event: KeyboardEvent): Promise<void> {
+    // only log "real", aka trusted events and ignore synthetic events, e.g. keyboard events propagated across iframe boundaries.
+    if (event.isTrusted) {
+      const outletContextName = (await this._outletContext)?.name ?? 'n/a';
+      console.debug(`[AppComponent::document:onkeydown] [TRUSTED] [outletContext=${outletContextName}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}, defaultPrevented=${event.defaultPrevented}]`); // tslint:disable-line:no-console
+    }
+  }
 
   @HostListener('document:keydown', ['$event'])
   @HostListener('document:keyup', ['$event'])

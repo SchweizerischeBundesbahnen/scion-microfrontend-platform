@@ -118,9 +118,11 @@ const HTML_TEMPLATE = `
  * You can register keystrokes via the `keystrokes` attribute in the HTML template, or via the `keystrokes` property on the DOM
  * element. If setting keystrokes via the HTML template, multiple keystrokes are separated by a comma.
  *
+ * If you want to prevent the default action of a keystroke, add the `preventDefault` flag. If not specifying the flag, the default action won't be prevented.
+ *
  * HTML template:
  * ```html
- * <sci-router-outlet keystrokes="keydown.control.alt.enter,keydown.escape,keydown.control.space"></sci-router-outlet>
+ * <sci-router-outlet keystrokes="keydown.control.alt.enter{preventDefault=true},keydown.escape,keydown.control.space"></sci-router-outlet>
  * ```
  *
  * Alternatively, you can register keystrokes on the DOM element as shown below.
@@ -129,7 +131,7 @@ const HTML_TEMPLATE = `
  * ```ts
  *  const outlet: SciRouterOutletElement = document.querySelector('sci-router-outlet');
  *  outlet.keystrokes = [
- *      'keydown.control.alt.enter',
+ *      'keydown.control.alt.enter{preventDefault=true}',
  *      'keydown.escape',
  *      'keydown.control.space'
  *  ];
@@ -275,7 +277,9 @@ export class SciRouterOutletElement extends HTMLElement {
    *                   list of valid key values, see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values. Two keys are an
    *                   exception to the value of the `KeyboardEvent#key` property: `dot` and `space`.
    *                   <br>
-   *                   Examples: `keydown.control.z`, `keydown.escape`, `keyup.enter`, `keydown.control.alt.enter`, `keydown.control.space`.
+   *                   To prevent the default action of a keystroke, the `preventDefault` flag can be added.
+   *                   <br>
+   *                   Examples: `keydown.control.z{preventDefault=true}`, `keydown.escape`, `keyup.enter`, `keydown.control.alt.enter`, `keydown.control.space`.
    */
   public set keystrokes(keystrokes: string[]) {
     if (keystrokes && keystrokes.length) {
@@ -397,6 +401,19 @@ export class SciRouterOutletElement extends HTMLElement {
       });
   }
 
+  /**
+   * Dispatches synthetic keyboard events that bubble up the DOM like regular events.
+   * Note that synthetic events have the `isTrusted` flag set to `false`, preventing them of triggering default actions.
+   *
+   * Therefore, if default actions should be prevented, it has to be done where the original event is listened to.
+   * @see KeyboardEventDispatcher
+   *
+   * For more information about trusted events
+   * @see https://www.w3.org/TR/DOM-Level-3-Events/#trusted-events
+   * @see https://www.chromestatus.com/features#istrusted
+   *
+   * @internal
+   */
   private installKeyboardEventDispatcher(): void {
     Beans.get(MessageClient).observe$<KeyboardEventInit>(RouterOutlets.keyboardEventTopic(this._uid, ':eventType'))
       .pipe(takeUntil(this._disconnect$))
@@ -497,7 +514,10 @@ export class SciRouterOutletElement extends HTMLElement {
       }
       case ATTR_KEYSTROKES: {
         KeystrokesAttributeUtil.split(oldValue).forEach(keystroke => this.removeContextValue(KEYSTROKE_CONTEXT_NAME_PREFIX + Keystroke.fromString(keystroke).parts));
-        KeystrokesAttributeUtil.split(newValue).forEach(keystroke => this.setContextValue(KEYSTROKE_CONTEXT_NAME_PREFIX + Keystroke.fromString(keystroke).parts, undefined));
+        KeystrokesAttributeUtil.split(newValue).forEach(keystrokeStr => {
+          const keystroke = Keystroke.fromString(keystrokeStr);
+          this.setContextValue(KEYSTROKE_CONTEXT_NAME_PREFIX + keystroke.parts, keystroke.flags);
+        });
         break;
       }
     }
