@@ -265,6 +265,7 @@ export function getInputValue(elementFinder: ElementFinder): Promise<any> {
  * you need to change the loggingPrefs.browser capabilities in `protractor.conf.js`.
  */
 export async function consumeBrowserLog(severity: Level = Level.SEVERE, filter?: RegExp): Promise<string[]> {
+  await browser.sleep(500); // waits until console log is written
   return (await browser.manage().logs().get('browser'))
     .filter(log => log.level === severity)
     .map(log => log.message)

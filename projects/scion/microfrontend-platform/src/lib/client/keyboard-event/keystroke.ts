@@ -8,6 +8,9 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
+import { Beans } from '@scion/toolkit/bean-manager';
+import { Logger } from '../../logger';
+
 /**
  * Describes a user interaction with the keyboard.
  *
@@ -20,7 +23,12 @@ export class Keystroke {
    */
   public readonly parts: string;
 
-  constructor(public readonly eventType: string, key: string, modifiers?: { control?: boolean, shift?: boolean, alt?: boolean, meta?: boolean }) {
+  /**
+   * Flags to control keystroke handling.
+   */
+  public flags: KeystrokeFlags;
+
+  constructor(public readonly eventType: string, key: string, modifiers?: { control?: boolean, shift?: boolean, alt?: boolean, meta?: boolean }, flags?: KeystrokeFlags) {
     const parts = [];
     parts.push(eventType);
     if (modifiers) {
@@ -31,6 +39,12 @@ export class Keystroke {
     }
     parts.push(key.toLowerCase());
     this.parts = parts.join('.');
+    this.flags = flags;
+  }
+
+  public withFlags(flags: KeystrokeFlags): this {
+    this.flags = flags;
+    return this;
   }
 
   /**
@@ -44,20 +58,25 @@ export class Keystroke {
   }
 
   /**
-   * Parses a string and returns a {@link Keystroke}.
+   * Parses the textual representation of a keystroke into a {@link Keystroke} object.
    *
-   * The string is a dot-separated list of the different parts describing the keystroke. The first part specifies the event type (keydown or keyup),
-   * followed by optional modifier part(s) (alt, shift, control, meta, or a combination thereof) and with the keyboard key as the last part. The key is a
-   * case-insensitive value of the {@link KeyboardEvent#key} property. For a complete list of valid key values, please see
-   * https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values.
+   * keydown.control.alt.enter{preventDefault=true}
+   * |<--1->|<----2---->|<-3->|<--------4--------->|
    *
-   * Two keys are an exception to the value of the {@link KeyboardEvent#key} property: dot and space.
-   *
-   * Examples: 'keydown.control.z', 'keydown.escape', 'keyup.enter', 'keydown.control.alt.enter', 'keydown.control.space'.
+   * 1: Event type
+   * 2: Modifier part(s) (optional)
+   * 3. Key as defined in https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values.
+   *    Two keys are an exception to the value of the {@link KeyboardEvent#key} property: dot and space.
+   * 4. flags (optional)
    */
   public static fromString(value: string): Keystroke {
     if (!value) {
       throw Error('[KeystrokeParseError] Cannot parse the keystroke from \'null\' or \'undefined\'.');
+    }
+
+    const flags = parseFlags(value);
+    if (flags !== undefined) {
+      value = value.substring(0, value.indexOf('{'));
     }
 
     const parts = value.split('.');
@@ -65,8 +84,8 @@ export class Keystroke {
       throw Error(`[KeystrokeParseError] Cannot parse the keystroke '${value}'. Requires at least the event type and keyboard key, and optionally some modifiers. Examples: 'keydown.control.z', 'keydown.escape', 'keyup.enter', 'keydown.control.alt.enter', 'keydown.control.space'`);
     }
 
-    const eventName = parts[0];
-    if (eventName !== 'keydown' && eventName !== 'keyup') {
+    const eventType = parts[0];
+    if (eventType !== 'keydown' && eventType !== 'keyup') {
       throw Error(`[KeystrokeParseError] Cannot parse the keystroke '${value}'. Unsupported event type. Supported event types are: 'keydown' or 'keyup'. Examples: 'keydown.control.z', 'keydown.escape', 'keyup.enter', 'keydown.control.alt.enter', 'keydown.control.space'`);
     }
 
@@ -76,10 +95,11 @@ export class Keystroke {
     }
 
     const modifiers = new Set(parts.slice(1, -1));
-    const keystroke = new Keystroke(eventName, key, {control: modifiers.delete('control'), shift: modifiers.delete('shift'), alt: modifiers.delete('alt'), meta: modifiers.delete('meta')});
+    const keystroke = new Keystroke(eventType, key, {control: modifiers.delete('control'), shift: modifiers.delete('shift'), alt: modifiers.delete('alt'), meta: modifiers.delete('meta')}, flags);
     if (modifiers.size > 0) {
       throw Error(`[KeystrokeParseError] Cannot parse the keystroke '${value}'. Illegal modifier found. Supported modifiers are: 'alt', 'shift', 'control' or 'meta'. Examples: 'keydown.control.z', 'keydown.escape', 'keyup.enter', 'keydown.control.alt.enter', 'keydown.control.space'`);
     }
+
     return keystroke;
   }
 }
@@ -96,3 +116,39 @@ function escapeKeyboardEventKey(key: string): string {
   }
 }
 
+/** @ignore */
+function parseFlags(keystroke: string): KeystrokeFlags | undefined {
+  const flagsStr = keystroke.match(/{(?<flagsDictionary>.*)}/)?.groups['flagsDictionary'] ?? null;
+  if (flagsStr === null) {
+    return undefined;
+  }
+  if (flagsStr === '') {
+    return {};
+  }
+
+  return flagsStr
+    .split(';')
+    .map(flag => flag.split('='))
+    .reduce((flags, [flagName, flagValue]) => {
+      switch (flagName) {
+        case 'preventDefault':
+          return {...flags, preventDefault: flagValue === 'true'};
+        default: {
+          Beans.get(Logger).warn(`[KeystrokeParseError] Ignore unkown flag \'${keystroke}\'. Supported flags are: \'preventDefault\'.`);
+          return flags;
+        }
+      }
+    }, {} as KeystrokeFlags);
+}
+
+/**
+ * Flags to control keystroke handling.
+ *
+ * @ignore
+ */
+export interface KeystrokeFlags {
+  /**
+   * If set to `true`, the default action of the keystroke is prevented.
+   */
+  preventDefault?: boolean;
+}

@@ -105,7 +105,7 @@ include::outlet.snippets.ts[tags=router-outlet:page-scrolling-disabled]
 === Keystroke Bubbling
 The router outlet allows the registration of keystrokes, instructing embedded content at any nesting level to propagate corresponding keyboard events to this outlet.
 
-The outlet dispatches keyboard events for registered keystrokes as synthetic keyboard events via its event dispatcher. They bubble up the DOM tree like regular events. Propagated events are of the original type, meaning that when the user presses a key on the keyboard, a `keydown` keyboard event is dispatched, or a `keyup` event when releasing a key, respectively.
+The outlet dispatches keyboard events for registered keystrokes as synthetic, untrusted keyboard events via its event dispatcher. They bubble up the DOM tree like regular events. Propagated events are of the original type, meaning that when the user presses a key on the keyboard, a `keydown` keyboard event is dispatched, or a `keyup` event when releasing a key, respectively.
 
 A keystroke has the following syntax.
 [.text-center]
@@ -114,6 +114,21 @@ image::keystroke-syntax.svg[]
 A keystroke is a `string` that has several parts, each separated with a dot. The first part specifies the event type (`keydown` or `keyup`), followed by optional modifier part(s) (`alt`, `shift`, `control`, `meta`, or a combination thereof) and with the keyboard key as the last part. The key is a case-insensitive value of the `KeyboardEvent.key` property. Two keys are an exception to the value of the `KeyboardEvent.key` property: `dot` and `space`.
 
 TIP: For a complete list of valid key values, see link:https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values[window=\"_blank\"].
+
+The keystroke behavior can be controlled via flags, a dictionary of key-value pairs. Flags are optional. Multiple flags are separated by a semicolon. The following flags are supported:
+
+.Supported keystroke flags
+[cols="1,1,1,2,2"]
+|===
+| Flag | Supported Values | Default if not set | Description | Example
+
+| preventDefault
+a| `true`, `false`
+a| `false`
+| allows preventing the browser's default action
+a| `{preventDefault=true}`
+
+|===
 
 You can register keystrokes on a `<sci-router-outlet>` as follows. Multiple keystrokes are separated with a comma.
 
