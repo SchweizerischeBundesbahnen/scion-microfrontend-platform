@@ -7,8 +7,10 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
+import { consumeBrowserLog, seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
 import { TestingAppPO } from '../testing-app.po';
+import { logging } from 'protractor';
+import Level = logging.Level;
 
 describe('Activator', () => {
 
@@ -20,16 +22,12 @@ describe('Activator', () => {
     const testingAppPO = new TestingAppPO();
     await testingAppPO.navigateTo({}, {queryParams: new Map().set('manifestClassifier', 'activator')});
 
-    const consolePanelPO = testingAppPO.consolePanelPO();
-    await consolePanelPO.open();
-
-    await expect(consolePanelPO.getLog(['onActivate'])).toEqual(jasmine.arrayWithExactContents([
-        jasmine.objectContaining({type: 'onActivate', message: 'app-1 - app-1 [primary: true, X-APP-NAME: app-1]'}),
-        jasmine.objectContaining({type: 'onActivate', message: 'app-1 - app-1 [primary: false, X-APP-NAME: app-1]'}),
-        jasmine.objectContaining({type: 'onActivate', message: 'app-2 - app-2 [primary: true, X-APP-NAME: app-2]'}),
-        jasmine.objectContaining({type: 'onActivate', message: 'app-3 - app-3 [primary: true, X-APP-NAME: app-3]'}),
-        jasmine.objectContaining({type: 'onActivate', message: 'app-4 - app-4 [primary: true, X-APP-NAME: app-4]'}),
-      ],
-    ));
+    await expect(await consumeBrowserLog(Level.DEBUG, /PlatformInitializer::activator:onactivate/)).toEqual(jasmine.arrayWithExactContents([
+      `[PlatformInitializer::activator:onactivate] [app=app-1, pingReply=app-1 [primary: true, X-APP-NAME: app-1]]`,
+      `[PlatformInitializer::activator:onactivate] [app=app-1, pingReply=app-1 [primary: false, X-APP-NAME: app-1]]`,
+      `[PlatformInitializer::activator:onactivate] [app=app-2, pingReply=app-2 [primary: true, X-APP-NAME: app-2]]`,
+      `[PlatformInitializer::activator:onactivate] [app=app-3, pingReply=app-3 [primary: true, X-APP-NAME: app-3]]`,
+      `[PlatformInitializer::activator:onactivate] [app=app-4, pingReply=app-4 [primary: true, X-APP-NAME: app-4]]`,
+    ]));
   }, 20000); // Increase the timeout as activators signal readiness in the range from 0 to 10s.
 });

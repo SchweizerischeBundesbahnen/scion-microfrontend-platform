@@ -7,12 +7,12 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { seleniumWebDriverClickFix, SeleniumWebDriverClickFix, sendKeys } from '../spec.util';
+import { consumeBrowserLog, seleniumWebDriverClickFix, SeleniumWebDriverClickFix, sendKeys } from '../spec.util';
 import { TestingAppPO } from '../testing-app.po';
 import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
 import { Microfrontend1PagePO } from '../microfrontend/microfrontend-1-page.po';
-import { ConsoleLog } from '../console/console-panel.po';
-import { Key } from 'protractor';
+import { Key, logging } from 'protractor';
+import Level = logging.Level;
 
 describe('KeyboardEvent', () => {
 
@@ -21,146 +21,201 @@ describe('KeyboardEvent', () => {
   afterAll(() => fix.uninstall());
 
   it('should receive keyboard events for the \'m\' keystroke', async () => {
-    await testKeystrokePropagation({
-      keystroke: 'keydown.m',
-      sendKeys: ['m'],
-      expectedParentLog: {type: 'keydown', message: '[key=\'m\', control=false, shift=false, alt=false, meta=false]'},
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keydown.m',
+      keysToPress: ['m'],
     });
-    await testKeystrokePropagation({
-      keystroke: 'keyup.m',
-      sendKeys: ['m'],
-      expectedParentLog: {type: 'keyup', message: '[key=\'m\', control=false, shift=false, alt=false, meta=false]'},
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='m', control=false, shift=false, alt=false, meta=false]`,
+    ]));
+
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keyup.m',
+      keysToPress: ['m'],
     });
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeyup] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='m', control=false, shift=false, alt=false, meta=false]`,
+    ]));
   });
 
   it('should receive keyboard events for the \'control.m\' keystroke', async () => {
-    await testKeystrokePropagation({
-      keystroke: 'keydown.control.m',
-      sendKeys: [Key.CONTROL, 'm'],
-      expectedParentLog: {type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'},
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keydown.control.m',
+      keysToPress: [Key.CONTROL, 'm'],
     });
-    await testKeystrokePropagation({
-      keystroke: 'keyup.control.m',
-      sendKeys: [Key.CONTROL, 'm'],
-      expectedParentLog: {type: 'keyup', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'},
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='m', control=true, shift=false, alt=false, meta=false]`,
+    ]));
+
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keyup.control.m',
+      keysToPress: [Key.CONTROL, 'm'],
     });
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeyup] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='m', control=true, shift=false, alt=false, meta=false]`,
+    ]));
   });
 
   it('should receive keyboard events for the \'control.shift.m\' keystroke', async () => {
-    await testKeystrokePropagation({
-      keystroke: 'keydown.control.shift.m',
-      sendKeys: [Key.CONTROL, Key.SHIFT, 'm'],
-      expectedParentLog: {type: 'keydown', message: '[key=\'M\', control=true, shift=true, alt=false, meta=false]'},
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keydown.control.shift.m',
+      keysToPress: [Key.CONTROL, Key.SHIFT, 'm'],
     });
-    await testKeystrokePropagation({
-      keystroke: 'keyup.control.shift.m',
-      sendKeys: [Key.CONTROL, Key.SHIFT, 'm'],
-      expectedParentLog: {type: 'keyup', message: '[key=\'M\', control=true, shift=true, alt=false, meta=false]'},
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=false, meta=false]`,
+    ]));
+
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keyup.control.shift.m',
+      keysToPress: [Key.CONTROL, Key.SHIFT, 'm'],
     });
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeyup] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=false, meta=false]`,
+    ]));
   });
 
   it('should receive keyboard events for the \'control.shift.alt.m\' keystroke', async () => {
-    await testKeystrokePropagation({
-      keystroke: 'keydown.control.shift.alt.m',
-      sendKeys: [Key.CONTROL, Key.SHIFT, Key.ALT, 'm'],
-      expectedParentLog: {type: 'keydown', message: '[key=\'M\', control=true, shift=true, alt=true, meta=false]'},
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keydown.control.shift.alt.m',
+      keysToPress: [Key.CONTROL, Key.SHIFT, Key.ALT, 'm'],
     });
-    await testKeystrokePropagation({
-      keystroke: 'keyup.control.shift.alt.m',
-      sendKeys: [Key.CONTROL, Key.SHIFT, Key.ALT, 'm'],
-      expectedParentLog: {type: 'keyup', message: '[key=\'M\', control=true, shift=true, alt=true, meta=false]'},
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=true, meta=false]`,
+    ]));
+
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keyup.control.shift.alt.m',
+      keysToPress: [Key.CONTROL, Key.SHIFT, Key.ALT, 'm'],
     });
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeyup] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=true, meta=false]`,
+    ]));
   });
 
   it('should receive keyboard events for the \'control.shift.alt.meta.m\' keystroke', async () => {
-    await testKeystrokePropagation({
-      keystroke: 'keydown.control.shift.alt.meta.m',
-      sendKeys: [Key.CONTROL, Key.SHIFT, Key.ALT, Key.META, 'm'],
-      expectedParentLog: {type: 'keydown', message: '[key=\'M\', control=true, shift=true, alt=true, meta=true]'},
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keydown.control.shift.alt.meta.m',
+      keysToPress: [Key.CONTROL, Key.SHIFT, Key.ALT, Key.META, 'm'],
     });
-    await testKeystrokePropagation({
-      keystroke: 'keyup.control.shift.alt.meta.m',
-      sendKeys: [Key.CONTROL, Key.SHIFT, Key.ALT, Key.META, 'm'],
-      expectedParentLog: {type: 'keyup', message: '[key=\'M\', control=true, shift=true, alt=true, meta=true]'},
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=true, meta=true]`,
+    ]));
+
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keyup.control.shift.alt.meta.m',
+      keysToPress: [Key.CONTROL, Key.SHIFT, Key.ALT, Key.META, 'm'],
     });
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeyup] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=true, meta=true]`,
+    ]));
   });
 
   it('should receive keyboard events for the \'dot\' keystroke', async () => {
-    await testKeystrokePropagation({
-      keystroke: 'keydown.dot',
-      sendKeys: ['.'],
-      expectedParentLog: {type: 'keydown', message: '[key=\'.\', control=false, shift=false, alt=false, meta=false]'},
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keydown.dot',
+      keysToPress: ['.'],
     });
-    await testKeystrokePropagation({
-      keystroke: 'keyup.dot',
-      sendKeys: ['.'],
-      expectedParentLog: {type: 'keyup', message: '[key=\'.\', control=false, shift=false, alt=false, meta=false]'},
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='.', control=false, shift=false, alt=false, meta=false]`,
+    ]));
+
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keyup.dot',
+      keysToPress: ['.'],
     });
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeyup] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='.', control=false, shift=false, alt=false, meta=false]`,
+    ]));
   });
 
   it('should receive keyboard events for the \'space\' keystroke', async () => {
-    await testKeystrokePropagation({
-      keystroke: 'keydown.space',
-      sendKeys: [' '],
-      expectedParentLog: {type: 'keydown', message: '[key=\' \', control=false, shift=false, alt=false, meta=false]'},
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keydown.space',
+      keysToPress: [' '],
     });
-    await testKeystrokePropagation({
-      keystroke: 'keyup.space',
-      sendKeys: [' '],
-      expectedParentLog: {type: 'keyup', message: '[key=\' \', control=false, shift=false, alt=false, meta=false]'},
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key=' ', control=false, shift=false, alt=false, meta=false]`,
+    ]));
+
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keyup.space',
+      keysToPress: [' '],
     });
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeyup] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key=' ', control=false, shift=false, alt=false, meta=false]`,
+    ]));
   });
 
   it('should receive keyboard events for the \'escape\' keystroke', async () => {
-    await testKeystrokePropagation({
-      keystroke: 'keydown.escape',
-      sendKeys: [Key.ESCAPE],
-      expectedParentLog: {type: 'keydown', message: '[key=\'Escape\', control=false, shift=false, alt=false, meta=false]'},
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keydown.escape',
+      keysToPress: [Key.ESCAPE],
     });
-    await testKeystrokePropagation({
-      keystroke: 'keyup.escape',
-      sendKeys: [Key.ESCAPE],
-      expectedParentLog: {type: 'keyup', message: '[key=\'Escape\', control=false, shift=false, alt=false, meta=false]'},
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='Escape', control=false, shift=false, alt=false, meta=false]`,
+    ]));
+
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keyup.escape',
+      keysToPress: [Key.ESCAPE],
     });
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeyup] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='Escape', control=false, shift=false, alt=false, meta=false]`,
+    ]));
   });
 
   it('should receive keyboard events for the \'enter\' keystroke', async () => {
-    await testKeystrokePropagation({
-      keystroke: 'keydown.enter',
-      sendKeys: [Key.ENTER],
-      expectedParentLog: {type: 'keydown', message: '[key=\'Enter\', control=false, shift=false, alt=false, meta=false]'},
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keydown.enter',
+      keysToPress: [Key.ENTER],
     });
-    await testKeystrokePropagation({
-      keystroke: 'keyup.enter',
-      sendKeys: [Key.ENTER],
-      expectedParentLog: {type: 'keyup', message: '[key=\'Enter\', control=false, shift=false, alt=false, meta=false]'},
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='Enter', control=false, shift=false, alt=false, meta=false]`,
+    ]));
+
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keyup.enter',
+      keysToPress: [Key.ENTER],
     });
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeyup] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='Enter', control=false, shift=false, alt=false, meta=false]`,
+    ]));
   });
 
   it('should receive keyboard events for the \'f7\' keystroke', async () => {
-    await testKeystrokePropagation({
-      keystroke: 'keydown.f7',
-      sendKeys: [Key.F7],
-      expectedParentLog: {type: 'keydown', message: '[key=\'F7\', control=false, shift=false, alt=false, meta=false]'},
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keydown.f7',
+      keysToPress: [Key.F7],
     });
-    await testKeystrokePropagation({
-      keystroke: 'keyup.f7',
-      sendKeys: [Key.F7],
-      expectedParentLog: {type: 'keyup', message: '[key=\'F7\', control=false, shift=false, alt=false, meta=false]'},
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='F7', control=false, shift=false, alt=false, meta=false]`,
+    ]));
+
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keyup.f7',
+      keysToPress: [Key.F7],
     });
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeyup] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='F7', control=false, shift=false, alt=false, meta=false]`,
+    ]));
   });
 
   it('should receive keyboard events for the \'backspace\' keystroke', async () => {
-    await testKeystrokePropagation({
-      keystroke: 'keydown.backspace',
-      sendKeys: [Key.BACK_SPACE],
-      expectedParentLog: {type: 'keydown', message: '[key=\'Backspace\', control=false, shift=false, alt=false, meta=false]'},
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keydown.backspace',
+      keysToPress: [Key.BACK_SPACE],
     });
-    await testKeystrokePropagation({
-      keystroke: 'keyup.backspace',
-      sendKeys: [Key.BACK_SPACE],
-      expectedParentLog: {type: 'keyup', message: '[key=\'Backspace\', control=false, shift=false, alt=false, meta=false]'},
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='Backspace', control=false, shift=false, alt=false, meta=false]`,
+    ]));
+
+    await setupAndPressKeystroke({
+      keystrokeToRegister: 'keyup.backspace',
+      keysToPress: [Key.BACK_SPACE],
     });
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeyup] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='Backspace', control=false, shift=false, alt=false, meta=false]`,
+    ]));
   });
 
   it('should receive keyboard events from nested microfrontends', async () => {
@@ -177,27 +232,17 @@ describe('KeyboardEvent', () => {
     // Register the keystroke in the top-level outlet
     await pagePOs.get<BrowserOutletPO>('outlet1').setKeystrokesViaAttr('keydown.control.m');
 
-    // Clear all consoles
-    const consoleOutlet1PanelPO = testingAppPO.consolePanelPO((): Promise<void> => pagePOs.get<BrowserOutletPO>('outlet1').switchToOutlet());
-    await consoleOutlet1PanelPO.open();
-    await consoleOutlet1PanelPO.clearLog();
-
-    const consoleOutlet2PanelPO = testingAppPO.consolePanelPO((): Promise<void> => pagePOs.get<BrowserOutletPO>('outlet2').switchToOutlet());
-    await consoleOutlet2PanelPO.open();
-    await consoleOutlet2PanelPO.clearLog();
-
-    const consoleOutlet3PanelPO = testingAppPO.consolePanelPO((): Promise<void> => pagePOs.get<BrowserOutletPO>('outlet3').switchToOutlet());
-    await consoleOutlet3PanelPO.open();
-    await consoleOutlet3PanelPO.clearLog();
-
     // Enter the keystroke in the lowermost microfrontend
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.clickInputField();
     await sendKeys(Key.chord(Key.CONTROL, 'm'));
 
-    await expect(await consoleOutlet3PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
-    await expect(await consoleOutlet2PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
-    await expect(await consoleOutlet1PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet3, key='m', control=true, shift=false, alt=false, meta=false]`,
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet2, key='m', control=true, shift=false, alt=false, meta=false]`,
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet1, key='m', control=true, shift=false, alt=false, meta=false]`,
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='m', control=true, shift=false, alt=false, meta=false]`,
+    ]));
   });
 
   it('should not receive the keyboard events for a keystroke registered in a nested microfrontend', async () => {
@@ -214,27 +259,16 @@ describe('KeyboardEvent', () => {
     // Register the keystroke in the middle outlet, but not in the parent
     await pagePOs.get<BrowserOutletPO>('outlet2').setKeystrokesViaAttr('keydown.control.m');
 
-    // Clear all consoles
-    const consoleOutlet1PanelPO = testingAppPO.consolePanelPO((): Promise<void> => pagePOs.get<BrowserOutletPO>('outlet1').switchToOutlet());
-    await consoleOutlet1PanelPO.open();
-    await consoleOutlet1PanelPO.clearLog();
-
-    const consoleOutlet2PanelPO = testingAppPO.consolePanelPO((): Promise<void> => pagePOs.get<BrowserOutletPO>('outlet2').switchToOutlet());
-    await consoleOutlet2PanelPO.open();
-    await consoleOutlet2PanelPO.clearLog();
-
-    const consoleOutlet3PanelPO = testingAppPO.consolePanelPO((): Promise<void> => pagePOs.get<BrowserOutletPO>('outlet3').switchToOutlet());
-    await consoleOutlet3PanelPO.open();
-    await consoleOutlet3PanelPO.clearLog();
-
     // Enter the keystroke in the lowermost microfrontend
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.clickInputField();
     await sendKeys(Key.chord(Key.CONTROL, 'm'));
 
-    await expect(await consoleOutlet3PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
-    await expect(await consoleOutlet2PanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=true, shift=false, alt=false, meta=false]'})]);
-    await expect(await consoleOutlet1PanelPO.getLog(['keydown', 'keyup'])).toEqual([]);
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet3, key='m', control=true, shift=false, alt=false, meta=false]`,
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet2, key='m', control=true, shift=false, alt=false, meta=false]`,
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet1, key='m', control=true, shift=false, alt=false, meta=false]`,
+    ]));
   });
 
   it('should not receive keyboard events for not registered keystrokes', async () => {
@@ -244,17 +278,16 @@ describe('KeyboardEvent', () => {
     });
 
     const outletPO = pagePOs.get<BrowserOutletPO>('microfrontend:outlet');
-    const consolePanelPO = testingAppPO.consolePanelPO();
     await outletPO.setKeystrokesViaAttr('keydown.alt.x');
-    await consolePanelPO.open();
-    await consolePanelPO.clearLog();
 
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.clickInputField();
     await sendKeys(Key.chord(Key.ALT, 'x'));
     await sendKeys(Key.chord(Key.ALT, 'v'));
 
-    await expect(await consolePanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining({type: 'keydown', message: '[key=\'x\', control=false, shift=false, alt=true, meta=false]'})]);
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='x', control=false, shift=false, alt=true, meta=false]`,
+    ]));
   });
 
   it('should allow registering multiple keystrokes via <sci-router-outlet> attribute', async () => {
@@ -264,10 +297,7 @@ describe('KeyboardEvent', () => {
     });
 
     const outletPO = pagePOs.get<BrowserOutletPO>('microfrontend:outlet');
-    const consolePanelPO = testingAppPO.consolePanelPO();
     await outletPO.setKeystrokesViaAttr('keydown.alt.x,keydown.alt.y,keydown.m');
-    await consolePanelPO.open();
-    await consolePanelPO.clearLog();
 
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.clickInputField();
@@ -275,10 +305,10 @@ describe('KeyboardEvent', () => {
     await sendKeys(Key.chord(Key.ALT, 'y'));
     await sendKeys(Key.chord('m'));
 
-    await expect(consolePanelPO.getLog(['keydown', 'keyup'])).toEqual(jasmine.arrayWithExactContents([
-      jasmine.objectContaining({type: 'keydown', message: '[key=\'x\', control=false, shift=false, alt=true, meta=false]'}),
-      jasmine.objectContaining({type: 'keydown', message: '[key=\'y\', control=false, shift=false, alt=true, meta=false]'}),
-      jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=false, shift=false, alt=false, meta=false]'}),
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='x', control=false, shift=false, alt=true, meta=false]`,
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='y', control=false, shift=false, alt=true, meta=false]`,
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='m', control=false, shift=false, alt=false, meta=false]`,
     ]));
   });
 
@@ -289,10 +319,7 @@ describe('KeyboardEvent', () => {
     });
 
     const outletPO = pagePOs.get<BrowserOutletPO>('microfrontend:outlet');
-    const consolePanelPO = testingAppPO.consolePanelPO();
     await outletPO.setKeystrokesViaDom(['keydown.alt.x', 'keydown.alt.y', 'keydown.m']);
-    await consolePanelPO.open();
-    await consolePanelPO.clearLog();
 
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.clickInputField();
@@ -300,31 +327,32 @@ describe('KeyboardEvent', () => {
     await sendKeys(Key.chord(Key.ALT, 'y'));
     await sendKeys(Key.chord('m'));
 
-    await expect(consolePanelPO.getLog(['keydown', 'keyup'])).toEqual(jasmine.arrayWithExactContents([
-      jasmine.objectContaining({type: 'keydown', message: '[key=\'x\', control=false, shift=false, alt=true, meta=false]'}),
-      jasmine.objectContaining({type: 'keydown', message: '[key=\'y\', control=false, shift=false, alt=true, meta=false]'}),
-      jasmine.objectContaining({type: 'keydown', message: '[key=\'m\', control=false, shift=false, alt=false, meta=false]'}),
+    await expect(await consumeBrowserLog(Level.DEBUG, /AppComponent::document:onkeydown] \[SYNTHETIC]/)).toEqual(jasmine.arrayWithExactContents([
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='x', control=false, shift=false, alt=true, meta=false]`,
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='y', control=false, shift=false, alt=true, meta=false]`,
+      `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='m', control=false, shift=false, alt=false, meta=false]`,
     ]));
   });
 });
 
 /**
- * Registers the keystroke in the top-level router outlet and presses the keystroke in the embedded content of the router outlet.
+ * Does the following steps:
+ *
+ * 1. Starts the testing app
+ * 2. Embeds a microfrontend
+ * 3. Registers the passed keystroke for propagation on the outlet
+ * 4. Presses passed keys in the embedded microfrontend
  */
-async function testKeystrokePropagation(testdata: { keystroke: string, sendKeys: string[], expectedParentLog: Partial<ConsoleLog> }): Promise<void> {
+async function setupAndPressKeystroke(instructions: { keystrokeToRegister: string, keysToPress: string[] }): Promise<void> {
   const testingAppPO = new TestingAppPO();
   const pagePOs = await testingAppPO.navigateTo({
     microfrontend: Microfrontend1PagePO,
   });
 
   const outletPO = pagePOs.get<BrowserOutletPO>('microfrontend:outlet');
-  await outletPO.setKeystrokesViaAttr(testdata.keystroke);
-  const consolePanelPO = testingAppPO.consolePanelPO();
-  await consolePanelPO.open();
-  await consolePanelPO.clearLog();
+  await outletPO.setKeystrokesViaAttr(instructions.keystrokeToRegister);
 
   const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
   await microfrontendPagePO.clickInputField();
-  await sendKeys(Key.chord(...testdata.sendKeys));
-  await expect(await consolePanelPO.getLog(['keydown', 'keyup'])).toEqual([jasmine.objectContaining(testdata.expectedParentLog)]);
+  await sendKeys(Key.chord(...instructions.keysToPress));
 }

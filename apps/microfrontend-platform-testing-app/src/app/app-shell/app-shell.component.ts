@@ -7,11 +7,10 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Component, ElementRef, HostBinding, OnDestroy } from '@angular/core';
-import { asapScheduler, fromEvent, merge, Subject } from 'rxjs';
-import { ConsoleService } from '../console/console.service';
+import { Component, HostBinding, OnDestroy } from '@angular/core';
+import { asapScheduler, Subject } from 'rxjs';
 import { ContextService, FocusMonitor, IS_PLATFORM_HOST, MicroApplicationConfig, OUTLET_CONTEXT, OutletContext } from '@scion/microfrontend-platform';
-import { filter, switchMapTo, takeUntil } from 'rxjs/operators';
+import { switchMapTo, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { Defined } from '@scion/toolkit/util';
 import { Beans } from '@scion/toolkit/bean-manager';
@@ -29,18 +28,16 @@ export class AppShellComponent implements OnDestroy {
   public appSymbolicName: string;
   public pageTitle: string;
   public isFocusWithin: boolean;
-  public isConsoleOpened = false;
   public isDevToolsOpened = false;
 
   @HostBinding('class.top-window')
   public isPlatformHost = Beans.get<boolean>(IS_PLATFORM_HOST);
 
-  constructor(host: ElementRef<HTMLElement>, private _consoleService: ConsoleService) {
+  constructor() {
     this.appSymbolicName = Beans.get(MicroApplicationConfig).symbolicName;
 
     this.installFocusWithinListener();
     this.installRouteActivateListener();
-    this.installKeyboardEventListener(host);
   }
 
   private installRouteActivateListener(): void {
@@ -50,12 +47,8 @@ export class AppShellComponent implements OnDestroy {
         takeUntil(this._destroy$),
       )
       .subscribe(outletContext => {
-        if (outletContext) {
-          this._consoleService.log('onload', `${window.location.href} [app='${this.appSymbolicName}', outlet='${outletContext.name}']`);
-        }
-        else {
-          this._consoleService.log('onload', `${window.location.href} [app='${this.appSymbolicName}']`);
-        }
+        const context = outletContext?.name ?? 'n/a';
+        console.debug(`[AppShellComponent::router-outlet:onactivate] [app=${this.appSymbolicName}, location=${window.location.href}, outletContext=${context}]]`); // tslint:disable-line:no-console
       });
   }
 
@@ -64,17 +57,6 @@ export class AppShellComponent implements OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe(isFocusWithin => {
         this.isFocusWithin = isFocusWithin;
-      });
-  }
-
-  private installKeyboardEventListener(host: ElementRef<HTMLElement>): void {
-    merge(fromEvent<KeyboardEvent>(host.nativeElement, 'keydown'), fromEvent<KeyboardEvent>(host.nativeElement, 'keyup'))
-      .pipe(
-        filter(event => (event.target as Element).tagName === 'SCI-ROUTER-OUTLET'),
-        takeUntil(this._destroy$),
-      )
-      .subscribe(event => {
-        this._consoleService.log(event.type, `[key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}]`);
       });
   }
 
@@ -99,10 +81,6 @@ export class AppShellComponent implements OnDestroy {
     const isPageTitleVisible = Defined.orElse(route.snapshot.data['pageTitleVisible'], true);
     asapScheduler.schedule(() => this.pageTitle = isPageTitleVisible ? route.snapshot.data['pageTitle'] : null);
     this._routeActivate$.next();
-  }
-
-  public onConsoleToggle(): void {
-    this.isConsoleOpened = !this.isConsoleOpened;
   }
 
   public isDevtoolsEnabled(): boolean {

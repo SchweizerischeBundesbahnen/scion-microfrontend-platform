@@ -9,15 +9,13 @@
  */
 import { browserNavigateBack, consumeBrowserLog, expectMap, seleniumWebDriverClickFix, SeleniumWebDriverClickFix, waitUntilLocation } from '../spec.util';
 import { TestingAppOrigins, TestingAppPO } from '../testing-app.po';
-import { browser } from 'protractor';
+import { browser, logging } from 'protractor';
 import { OutletRouterPagePO } from './outlet-router-page.po';
 import { ContextPagePO } from '../context/context-page.po';
 import { RouterOutletPagePO } from './router-outlet-page.po';
 import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
 import { Microfrontend1PagePO } from '../microfrontend/microfrontend-1-page.po';
 import { Microfrontend2PagePO } from '../microfrontend/microfrontend-2-page.po';
-import { ConsoleLog } from '../console/console-panel.po';
-import { logging } from 'protractor';
 import Level = logging.Level;
 
 describe('RouterOutlet', () => {
@@ -809,13 +807,9 @@ describe('RouterOutlet', () => {
 
     // Verify the navigation and the emitted activation events
     await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
-    await routerOutletPO.consolePanelPO.open();
-    await expect(await routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
-      jasmine.objectContaining({type: 'sci-router-outlet:activate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
-    ]);
-
-    await routerOutletPO.consolePanelPO.clearLog();
-    await routerOutletPO.consolePanelPO.close();
+    await expect(await consumeBrowserLog(Level.DEBUG, /RouterOutletComponent::sci-router-outlet:(onactivate|ondeactivate)/)).toEqual(jasmine.arrayWithExactContents([
+      `[RouterOutletComponent::sci-router-outlet:onactivate] [outlet=microfrontend-outlet, url=${(await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}))}]`,
+    ]));
 
     // Navigate to the 'microfrontend-2' page
     await routerPO.enterOutletName('microfrontend-outlet');
@@ -824,11 +818,10 @@ describe('RouterOutlet', () => {
 
     // Verify the emitted events
     await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
-    await routerOutletPO.consolePanelPO.open();
-    await expect(await routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
-      jasmine.objectContaining({type: 'sci-router-outlet:deactivate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
-      jasmine.objectContaining({type: 'sci-router-outlet:activate', message: await getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
-    ]);
+    await expect(await consumeBrowserLog(Level.DEBUG, /RouterOutletComponent::sci-router-outlet:(onactivate|ondeactivate)/)).toEqual(jasmine.arrayWithExactContents([
+      `[RouterOutletComponent::sci-router-outlet:ondeactivate] [outlet=microfrontend-outlet, url=${(await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}))}]`,
+      `[RouterOutletComponent::sci-router-outlet:onactivate] [outlet=microfrontend-outlet, url=${(await getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}))}]`,
+    ]));
   });
 
   it('should emit an activation event when mounting the outlet after navigation has taken place', async () => {
@@ -850,10 +843,9 @@ describe('RouterOutlet', () => {
     await routerOutletPO.clickApply();
 
     // Verify the emitted events
-    await routerOutletPO.consolePanelPO.open();
-    await expect(await routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
-      jasmine.objectContaining({type: 'sci-router-outlet:activate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
-    ]);
+    await expect(await consumeBrowserLog(Level.DEBUG, /RouterOutletComponent::sci-router-outlet:(onactivate|ondeactivate)/)).toEqual(jasmine.arrayWithExactContents([
+      `[RouterOutletComponent::sci-router-outlet:onactivate] [outlet=microfrontend-outlet, url=${(await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}))}]`,
+    ]));
   });
 
   it('should emit an activation event for the page \'about:blank\' when clearing the outlet', async () => {
@@ -887,14 +879,13 @@ describe('RouterOutlet', () => {
     await routerPO.clickNavigate();
 
     // Verify the emitted events
-    await routerOutletPO.consolePanelPO.open();
-    await expect(await routerOutletPO.consolePanelPO.getLog(['sci-router-outlet:deactivate', 'sci-router-outlet:activate'])).toEqual([
-      jasmine.objectContaining({type: 'sci-router-outlet:activate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
-      jasmine.objectContaining({type: 'sci-router-outlet:deactivate', message: await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
-      jasmine.objectContaining({type: 'sci-router-outlet:activate', message: 'about:blank'} as Partial<ConsoleLog>),
-      jasmine.objectContaining({type: 'sci-router-outlet:deactivate', message: 'about:blank'} as Partial<ConsoleLog>),
-      jasmine.objectContaining({type: 'sci-router-outlet:activate', message: await getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1})} as Partial<ConsoleLog>),
-    ]);
+    await expect(await consumeBrowserLog(Level.DEBUG, /RouterOutletComponent::sci-router-outlet:(onactivate|ondeactivate)/)).toEqual(jasmine.arrayWithExactContents([
+      `[RouterOutletComponent::sci-router-outlet:onactivate] [outlet=microfrontend-outlet, url=${(await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}))}]`,
+      `[RouterOutletComponent::sci-router-outlet:ondeactivate] [outlet=microfrontend-outlet, url=${(await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}))}]`,
+      '[RouterOutletComponent::sci-router-outlet:onactivate] [outlet=microfrontend-outlet, url=about:blank]',
+      '[RouterOutletComponent::sci-router-outlet:ondeactivate] [outlet=microfrontend-outlet, url=about:blank]',
+      `[RouterOutletComponent::sci-router-outlet:onactivate] [outlet=microfrontend-outlet, url=${(await getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}))}]`,
+    ]));
     // Verify the page 'microfrontend-2' to be displayed
     await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend2PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
   });
@@ -1020,55 +1011,47 @@ describe('RouterOutlet', () => {
     // Focus the root document in order to have no microfrontend focused
     await rootBrowserOutletPO.clickUrl();
 
-    await browser.sleep(500); // waits until console log is written
     await consumeBrowserLog();
 
     await testee1.clickInputField();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
-      `[sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=true]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=true]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=true]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=true]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=true]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=true]`,
     ]));
 
     await testee2.clickInputField();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
-      `[sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=false]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=true]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=false]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=true]`,
     ]));
 
     await testee3.clickInputField();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
-      `[sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=false]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=true]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=false]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=true]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=false]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=true]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=false]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=true]`,
     ]));
 
     await testee4.clickInputField();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
-      `[sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=false]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=testee4, focuswithin=true]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=false]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee4, focuswithin=true]`,
     ]));
 
     await outlet2PO.clickUrl();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
-      `[sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=false]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=testee4, focuswithin=false]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=false]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee4, focuswithin=false]`,
     ]));
 
     await outlet1PO.clickUrl();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual([]);
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual([]);
 
     await rootBrowserOutletPO.clickUrl();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual([
-      `[sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=false]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=false]`,
     ]);
   });
 
@@ -1097,49 +1080,42 @@ describe('RouterOutlet', () => {
     // Focus the root document in order to have no microfrontend focused
     await rootBrowserOutletPO.clickUrl();
 
-    await browser.sleep(500); // waits until console log is written
     await consumeBrowserLog();
 
     await testee1.clickInputField();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
-      `[sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=true]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=true]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=true]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=true]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=true]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=true]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=true]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=true]`,
     ]));
 
     await testee2.clickInputField();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
-      `[sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=false]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=true]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee1, focuswithin=false]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=true]`,
     ]));
 
     await testee3.clickInputField();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
-      `[sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=false]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=true]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee2, focuswithin=false]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=true]`,
     ]));
 
     await outlet2PO.clickUrl();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
-      `[sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=false]`,
-      `[sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=false]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee3, focuswithin=false]`,
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=outlet2, focuswithin=false]`,
     ]));
 
     await outlet1PO.clickUrl();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
-      `[sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=false]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=outlet1, focuswithin=false]`,
     ]));
 
     await rootBrowserOutletPO.clickUrl();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual([
-      `[sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=false]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=root, focuswithin=false]`,
     ]);
   });
 
@@ -1151,13 +1127,11 @@ describe('RouterOutlet', () => {
 
     const testeePO = pagePOs.get<Microfrontend1PagePO>('testee');
 
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual([]);
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual([]);
 
     await testeePO.clickInputField();
-    await browser.sleep(500); // waits until console debug log is written
-    await expect(await consumeBrowserLog(Level.DEBUG, /sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
-      `[sci-router-outlet:onfocuswithin] [outlet=testee, focuswithin=true]`,
+    await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
+      `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee, focuswithin=true]`,
     ]));
   });
 });

@@ -9,7 +9,6 @@
  */
 import { $, browser } from 'protractor';
 import { BrowserOutletPO, OutletDescriptorTypes, OutletPageObjectClass, OutletPageObjectDescriptor, SwitchToIframeFn } from './browser-outlet/browser-outlet.po';
-import { ConsolePanelPO } from './console/console-panel.po';
 import { runOutsideAngularSynchronization, waitUntilTestingAppInteractableElseNoop } from './spec.util';
 
 /**
@@ -184,15 +183,6 @@ export class TestingAppPO {
     }
 
     return $('app-root').$('.e2e-focus-within').isPresent();
-  }
-
-  /**
-   * Allows reading logs from the console of the testing app.
-   *
-   * If not specifying a 'switchTo' function, Protractor commands are sent to the console in the root context.
-   */
-  public consolePanelPO(switchToIframeFn?: SwitchToIframeFn): ConsolePanelPO {
-    return new ConsolePanelPO($('app-root').$('app-console-panel'), switchToIframeFn || ((): Promise<void> => browser.switchTo().defaultContent() as Promise<void>));
   }
 }
 

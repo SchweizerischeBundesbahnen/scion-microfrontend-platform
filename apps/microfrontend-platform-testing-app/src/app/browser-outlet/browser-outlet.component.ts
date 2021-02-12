@@ -14,7 +14,6 @@ import { Overlay } from '@angular/cdk/overlay';
 import { RouterOutletContextComponent } from '../router-outlet-context/router-outlet-context.component';
 import { RouterOutletSettingsComponent } from '../router-outlet-settings/router-outlet-settings.component';
 import { ActivatedRoute } from '@angular/router';
-import { ConsoleService } from '../console/console.service';
 import { Beans } from '@scion/toolkit/bean-manager';
 
 export const URL = 'url';
@@ -51,8 +50,7 @@ export class BrowserOutletComponent {
               formBuilder: FormBuilder,
               private _activatedRoute: ActivatedRoute,
               private _overlay: Overlay,
-              private _injector: Injector,
-              private _consoleService: ConsoleService) {
+              private _injector: Injector) {
     this.form = formBuilder.group({
       [URL]: new FormControl('', Validators.required),
     });
@@ -92,15 +90,15 @@ export class BrowserOutletComponent {
   }
 
   public onActivate(event: Event): void {
-    this._consoleService.log('sci-router-outlet:onactivate', (event as CustomEvent).detail);
+    console.debug(`[BrowserOutletComponent::sci-router-outlet:onactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
   }
 
   public onDeactivate(event: Event): void {
-    this._consoleService.log('sci-router-outlet:ondeactivate', (event as CustomEvent).detail);
+    console.debug(`[BrowserOutletComponent::sci-router-outlet:ondeactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
   }
 
   public onFocusWithin(event: Event): void {
-    console.debug(`[sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
+    console.debug(`[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
   }
 
   private readAppEntryPoints(): AppEndpoint[] {
