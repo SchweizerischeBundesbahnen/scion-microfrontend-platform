@@ -1,7 +1,7 @@
 <header>
   <span class="page-title" *ngIf="pageTitle; else logo">{{pageTitle}}</span>
   <span class="chip focus-within e2e-focus-within" title="This document or its embedded web content has received focus" *ngIf="isFocusWithin">focus-within</span>
-  <span class="chip app-name e2e-console" title="Click to show the console" (click)="onConsoleToggle()">{{appSymbolicName}}</span>
+  <span class="chip app-name">{{appSymbolicName}}</span>
   <span class="chip devtools" *ngIf="isDevtoolsEnabled()" (click)="onDevToolsToggle()">
     <span>DevTools</span>
     <button type="button" class="material-icons toggle" [class.enabled]="isDevToolsOpened">{{isDevToolsOpened ? 'toggle_on' : 'toggle_off'}}</button>
@@ -15,9 +15,6 @@
   </ng-template>
   <ng-template sciSash size="1" *ngIf="isDevToolsOpened">
     <app-devtools></app-devtools>
-  </ng-template>
-  <ng-template sciSash size="1" *ngIf="isConsoleOpened">
-    <app-console-panel (close)="onConsoleToggle()"></app-console-panel>
   </ng-template>
 </sci-sashbox>
 <ng-template #logo>

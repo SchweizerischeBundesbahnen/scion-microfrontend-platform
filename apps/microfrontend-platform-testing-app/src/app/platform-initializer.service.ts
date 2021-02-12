@@ -12,7 +12,6 @@ import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { ApplicationConfig, Handler, IntentClient, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatform, PlatformState, TopicMessage } from '@scion/microfrontend-platform';
 import { environment } from '../environments/environment';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
-import { ConsoleService } from './console/console.service';
 import { TestingAppTopics } from './testing-app.topics';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
@@ -30,8 +29,8 @@ export class PlatformInitializer implements OnDestroy {
   private readonly _queryParams: Map<string, string>;
   private readonly _destroy$ = new Subject<void>();
 
-  constructor(private _zone: NgZone, locationStrategy: LocationStrategy, private _consoleService: ConsoleService,
-              private _messageClientDecorator: NgZoneMessageClientDecorator, private _intentClientDecorator: NgZoneIntentClientDecorator) {
+  constructor(private _zone: NgZone, locationStrategy: LocationStrategy, private _messageClientDecorator: NgZoneMessageClientDecorator,
+              private _intentClientDecorator: NgZoneIntentClientDecorator) {
     this._queryParams = this.getQueryParams(locationStrategy);
   }
 
@@ -88,7 +87,7 @@ export class PlatformInitializer implements OnDestroy {
       Beans.get(MessageClient).request$<string>(TestingAppTopics.ActivatorPing)
         .pipe(takeUntil(this._destroy$))
         .subscribe(reply => {
-          this._consoleService.log('onActivate', `${reply.headers.get(MessageHeaders.AppSymbolicName)} - ${reply.body}`);
+          console.debug(`[PlatformInitializer::activator:onactivate] [app=${reply.headers.get(MessageHeaders.AppSymbolicName)}, pingReply=${reply.body}]`); // tslint:disable-line:no-console
         });
     }
   }

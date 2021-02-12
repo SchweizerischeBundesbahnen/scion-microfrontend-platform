@@ -20,7 +20,6 @@ import { BrowserOutletComponent } from './browser-outlet/browser-outlet.componen
 import { RouterOutletComponent } from './router-outlet/router-outlet.component';
 import { RouterOutletSettingsComponent } from './router-outlet-settings/router-outlet-settings.component';
 import { RouterOutletContextComponent } from './router-outlet-context/router-outlet-context.component';
-import { ConsolePanelComponent } from './console/console-panel.component';
 import { OutletRouterComponent } from './outlet-router/outlet-router.component';
 import { ContextComponent } from './outlet-context/context/context.component';
 import { ContextEntryComponent } from './context-entry/context-entry.component';
@@ -54,7 +53,6 @@ import { LookupContextValueComponent } from './outlet-context/lookup-context-val
     RouterOutletComponent,
     RouterOutletSettingsComponent,
     RouterOutletContextComponent,
-    ConsolePanelComponent,
     OutletRouterComponent,
     ContextComponent,
     ContextEntryComponent,

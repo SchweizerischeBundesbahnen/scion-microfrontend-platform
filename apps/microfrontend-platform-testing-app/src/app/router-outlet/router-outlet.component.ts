@@ -13,7 +13,6 @@ import { RouterOutletContextComponent } from '../router-outlet-context/router-ou
 import { Overlay } from '@angular/cdk/overlay';
 import { SciRouterOutletElement } from '@scion/microfrontend-platform';
 import { RouterOutletSettingsComponent } from '../router-outlet-settings/router-outlet-settings.component';
-import { ConsoleService } from '../console/console.service';
 import { NEVER, Observable } from 'rxjs';
 
 export const OUTLET_NAME = 'outletName';
@@ -41,7 +40,6 @@ export class RouterOutletComponent {
   public _routerOutlet: ElementRef<SciRouterOutletElement>;
 
   constructor(formBuilder: FormBuilder,
-              private _consoleService: ConsoleService,
               private _overlay: Overlay,
               private _injector: Injector) {
     this.form = formBuilder.group({
@@ -73,15 +71,15 @@ export class RouterOutletComponent {
   }
 
   public onActivate(event: Event): void {
-    this._consoleService.log('sci-router-outlet:activate', (event as CustomEvent).detail);
+    console.debug(`[RouterOutletComponent::sci-router-outlet:onactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
   }
 
   public onDeactivate(event: Event): void {
-    this._consoleService.log('sci-router-outlet:deactivate', (event as CustomEvent).detail);
+    console.debug(`[RouterOutletComponent::sci-router-outlet:ondeactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
   }
 
   public onFocusWithin(event: Event): void {
-    console.debug(`[sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
+    console.debug(`[RouterOutletComponent::sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
   }
 
   public get empty$(): Observable<boolean> {

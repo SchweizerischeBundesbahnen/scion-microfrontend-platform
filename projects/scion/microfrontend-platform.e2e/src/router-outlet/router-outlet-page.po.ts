@@ -13,8 +13,6 @@ import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
 import { RouterOutletContextPO } from '../context/router-outlet-context.po';
 import { ISize } from 'selenium-webdriver';
 import { RouterOutletSettingsPO } from '../settings/router-outlet-settings.po';
-import { TestingAppPO } from '../testing-app.po';
-import { ConsolePanelPO } from '../console/console-panel.po';
 
 export class RouterOutletPagePO {
 
@@ -28,18 +26,12 @@ export class RouterOutletPagePO {
   public readonly outletContextPO: RouterOutletContextPO;
 
   /**
-   * Allows reading logs from the console of the testing app.
-   */
-  public readonly consolePanelPO: ConsolePanelPO;
-
-  /**
    * Allows configuring the settings of this outlet.
    */
   public readonly outletSettingsPO: RouterOutletSettingsPO;
 
   constructor(private _switchToIframeFn: SwitchToIframeFn) {
     this.outletContextPO = new RouterOutletContextPO(this._pageFinder, this._switchToIframeFn);
-    this.consolePanelPO = new TestingAppPO().consolePanelPO(this._switchToIframeFn);
     this.outletSettingsPO = new RouterOutletSettingsPO(this._pageFinder, this._switchToIframeFn);
   }
 
