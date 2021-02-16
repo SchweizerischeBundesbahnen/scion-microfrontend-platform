@@ -9,7 +9,7 @@
  */
 import { PlatformMessageClient } from '../../host/platform-message-client';
 import { first, publishReplay, timeoutWith } from 'rxjs/operators';
-import { ConnectableObservable, Observable, Subject, throwError } from 'rxjs';
+import { ConnectableObservable, noop, Observable, Subject, throwError } from 'rxjs';
 import { IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage } from '../../messaging.model';
 import { MessageClient, takeUntilUnsubscribe } from './message-client';
 import { IntentClient } from './intent-client';
@@ -440,13 +440,15 @@ describe('Messaging', () => {
 
   it('should reject a client connect attempt if the app is not registered', async () => {
     const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'warn', 'info']);
+    const readLoggedWarnings = (): string[] => loggerSpy.warn.calls.all().map(callData => callData.args[0]);
     Beans.register(Logger, {useValue: loggerSpy});
     await MicrofrontendPlatform.startHost([]); // no app is registered
 
     const badClient = mountBadClientAndConnect({symbolicName: 'bad-client'});
     try {
-      await waitForCondition(() => loggerSpy.warn.calls.all().length > 0, 1000);
-      expect(loggerSpy.warn.calls.mostRecent().args[0]).toEqual('[WARNING] Client connect attempt rejected by the message broker: Unknown client. [app=\'bad-client\']');
+      const expectedLogMessage = `[WARNING] Client connect attempt rejected by the message broker: Unknown client. [app='bad-client']`;
+      await waitForCondition(() => readLoggedWarnings().some(warning => warning === expectedLogMessage), 1000).catch(noop);
+      expect(readLoggedWarnings()).toEqual(jasmine.arrayContaining([expectedLogMessage]));
     }
     finally {
       badClient.dispose();
@@ -456,6 +458,7 @@ describe('Messaging', () => {
 
   it('should reject a client connect attempt if the client\'s origin is different to the registered app origin', async () => {
     const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'warn', 'info']);
+    const readLoggedWarnings = (): string[] => loggerSpy.warn.calls.all().map(callData => callData.args[0]);
     Beans.register(Logger, {useValue: loggerSpy});
 
     const manifestUrl = serveManifest({name: 'Client', baseUrl: 'http://app-origin'});
@@ -464,8 +467,9 @@ describe('Messaging', () => {
 
     const badClient = mountBadClientAndConnect({symbolicName: 'client'}); // bad client connects under karma test runner origin (window.origin)
     try {
-      await waitForCondition(() => loggerSpy.warn.calls.all().length > 0, 1000);
-      expect(loggerSpy.warn.calls.mostRecent().args[0]).toEqual(`[WARNING] Client connect attempt blocked by the message broker: Wrong origin [actual='${window.origin}', expected='http://app-origin', app='client']`);
+      const expectedLogMessage = `[WARNING] Client connect attempt blocked by the message broker: Wrong origin [actual='${window.origin}', expected='http://app-origin', app='client']`;
+      await waitForCondition(() => readLoggedWarnings().some(warning => warning === expectedLogMessage), 1000).catch(noop);
+      expect(readLoggedWarnings()).toEqual(jasmine.arrayContaining([expectedLogMessage]));
     }
     finally {
       badClient.dispose();
@@ -1302,7 +1306,7 @@ async function waitUntilSubscriberCount(topic: string, expectedCount: number, op
 /**
  * Waits until a message with the given body is received.
  */
-async function waitUntilMessageReceived(observable$: Observable<TopicMessage<any> | IntentMessage<any>>, waitUntil: { body: any, timeout?: number }): Promise<void> {
+async function waitUntilMessageReceived(observable$: Observable<TopicMessage | IntentMessage>, waitUntil: { body: any, timeout?: number }): Promise<void> {
   const timeout = Defined.orElse(waitUntil.timeout, 250);
   await observable$
     .pipe(
