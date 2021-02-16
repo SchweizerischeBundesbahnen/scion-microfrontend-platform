@@ -185,9 +185,9 @@ export class ContextService implements PreDestroy {
         .subscribe(observer);
 
       // Send the request.
-      Promise.all([whenSubscribedToReplyTopic(replyTo), this._whenContextTreeChangeListenerInstalled]).then(() => {
-        window.parent.postMessage(contextValueLookupRequest, '*');
-      });
+      Promise.all([whenSubscribedToReplyTopic(replyTo), this._whenContextTreeChangeListenerInstalled])
+        .then(() => window.parent.postMessage(contextValueLookupRequest, '*'))
+        .catch(error => observer.error(error));
 
       return (): void => unsubscribe$.next();
     });
@@ -214,9 +214,9 @@ export class ContextService implements PreDestroy {
         .subscribe(observer);
 
       // Send the request.
-      Promise.all([whenSubscribedToReplyTopic(replyTo), this._whenContextTreeChangeListenerInstalled]).then(() => {
-        window.parent.postMessage(contextNamesLookupRequest, '*');
-      });
+      Promise.all([whenSubscribedToReplyTopic(replyTo), this._whenContextTreeChangeListenerInstalled])
+        .then(() => window.parent.postMessage(contextNamesLookupRequest, '*'))
+        .catch(error => observer.error(error));
       return (): void => unsubscribe$.next();
     });
   }
@@ -230,7 +230,7 @@ export class ContextService implements PreDestroy {
     const replyTo = UUID.randomUUID();
     const contextObserveRequest = Contexts.newContextTreeObserveRequest(replyTo);
 
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve, reject) => {
       // Receive change notifications.
       Beans.get(MessageClient).observe$<Contexts.ContextTreeChangeEvent | Contexts.RootContextSubscribeEventType>(replyTo)
         .pipe(
@@ -244,10 +244,12 @@ export class ContextService implements PreDestroy {
           else {
             listener(event);
           }
-        });
+        }, error => reject(error));
 
       // Send the observe request.
-      whenSubscribedToReplyTopic(replyTo).then(() => window.parent.postMessage(contextObserveRequest, '*'));
+      whenSubscribedToReplyTopic(replyTo)
+        .then(() => window.parent.postMessage(contextObserveRequest, '*'))
+        .catch(error => reject(error));
     });
   }
 
