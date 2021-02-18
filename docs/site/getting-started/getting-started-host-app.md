@@ -55,7 +55,7 @@ In this section, we will register the `host`, `products`, `shopping cart` and `d
      {symbolicName: 'host-app', manifestUrl: '/manifest.json'},
      {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
      {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
-     {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.now.sh/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
+     {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
    ];
    ```
    For each micro application, we provide an application config with the application's symbolic name and the URL to its manifest. Symbolic names must be unique and are used by the micro applications to connect to the platform host. The manifest is a JSON file that contains information about a micro application.
@@ -145,7 +145,7 @@ In this section, we will embed the `products`, `shopping cart` and `devtools` mi
           Beans.get(OutletRouter).navigate('http://localhost:4201/products.html');
 
    [+]    // Display the devtools microfrontend in the devtools router outlet
-   [+]    Beans.get(OutletRouter).navigate('https://scion-microfrontend-platform-devtools.now.sh', {outlet: 'DEV-TOOLS'});
+   [+]    Beans.get(OutletRouter).navigate('https://scion-microfrontend-platform-devtools.vercel.app', {outlet: 'DEV-TOOLS'});
         }
    ```
    > Lines to be added are preceded by the [+] mark.
@@ -241,7 +241,7 @@ class HostController {
     {symbolicName: 'host-app', manifestUrl: '/manifest.json'},
     {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
     {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
-    {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.now.sh/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
+    {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
   ];
 
   constructor() {
@@ -256,7 +256,7 @@ class HostController {
     Beans.get(OutletRouter).navigate('http://localhost:4201/products.html');
 
     // Display the devtools microfrontend in the devtools router outlet
-    Beans.get(OutletRouter).navigate('https://scion-microfrontend-platform-devtools.now.sh', {outlet: 'DEV-TOOLS'});
+    Beans.get(OutletRouter).navigate('https://scion-microfrontend-platform-devtools.vercel.app', {outlet: 'DEV-TOOLS'});
   }
 
   private onToggleShoppingCart(): void {
@@ -297,7 +297,7 @@ new HostController().init();
 
 [menu-getting-started]: /docs/site/getting-started/getting-started.md
 [link-getting-started#installation]: /docs/site/getting-started/getting-started.md#how-to-complete-this-guide
-[link-developer-guide#routing-in-the-activator]: https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:activator:routing-in-the-activator
-[link-developer-guide#routing]: https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:embedding-microfrontends
-[link-developer-guide#manifest]: https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:intention-api:manifest
+[link-developer-guide#routing-in-the-activator]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:activator:routing-in-the-activator
+[link-developer-guide#routing]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:embedding-microfrontends
+[link-developer-guide#manifest]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:intention-api:manifest
 [link-getting-started:products-app]: /docs/site/getting-started/getting-started-products-app.md

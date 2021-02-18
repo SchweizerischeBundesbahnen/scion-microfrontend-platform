@@ -13,7 +13,7 @@ import { ApplicationConfig } from '@scion/microfrontend-platform';
 
 const devtools: ApplicationConfig = {
   symbolicName: 'devtools',
-  manifestUrl: `https://scion-microfrontend-platform-devtools-v${version.replace(/\./g, '-')}.now.sh/assets/manifest.json`,
+  manifestUrl: `https://scion-microfrontend-platform-devtools-v${version.replace(/\./g, '-')}.vercel.app/assets/manifest.json`,
   intentionCheckDisabled: true,
   scopeCheckDisabled: true,
 };
@@ -26,19 +26,19 @@ export const environment = {
   apps: {
     app_1: {
       symbolicName: 'app-1',
-      url: `https://scion-microfrontend-platform-testing-app1-v${version.replace(/\./g, '-')}.now.sh`,
+      url: `https://scion-microfrontend-platform-testing-app1-v${version.replace(/\./g, '-')}.vercel.app`,
     },
     app_2: {
       symbolicName: 'app-2',
-      url: `https://scion-microfrontend-platform-testing-app2-v${version.replace(/\./g, '-')}.now.sh`,
+      url: `https://scion-microfrontend-platform-testing-app2-v${version.replace(/\./g, '-')}.vercel.app`,
     },
     app_3: {
       symbolicName: 'app-3',
-      url: `https://scion-microfrontend-platform-testing-app3-v${version.replace(/\./g, '-')}.now.sh`,
+      url: `https://scion-microfrontend-platform-testing-app3-v${version.replace(/\./g, '-')}.vercel.app`,
     },
     app_4: {
       symbolicName: 'app-4',
-      url: `https://scion-microfrontend-platform-testing-app4-v${version.replace(/\./g, '-')}.now.sh`,
+      url: `https://scion-microfrontend-platform-testing-app4-v${version.replace(/\./g, '-')}.vercel.app`,
     },
   },
   devtools,

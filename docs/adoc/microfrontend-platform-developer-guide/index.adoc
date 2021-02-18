@@ -19,8 +19,8 @@
 :revnumber:
 :revnumber-dasherized:
 
-:typedoc-url: https://scion-microfrontend-platform-api-v{revnumber-dasherized}.now.sh
-:testing-app-url: https://scion-microfrontend-platform-testing-app1-v{revnumber-dasherized}.now.sh
+:typedoc-url: https://scion-microfrontend-platform-api-v{revnumber-dasherized}.vercel.app
+:testing-app-url: https://scion-microfrontend-platform-testing-app1-v{revnumber-dasherized}.vercel.app
 
 // Use prism.js instead of highlight.js to have typescript support; see https://www.npmjs.com/package/asciidoctor-prism-extension
 :source-highlighter: prism

@@ -102,6 +102,6 @@ This short manual helps to install the SCION Microfrontend Platform and describe
 [menu-contributing]: /CONTRIBUTING.md
 [menu-sponsoring]: /docs/site/sponsoring.md
 
-[link-developer-guide#configuration]: https://scion-microfrontend-platform-developer-guide.now.sh#chapter:configuration
-[link-developer-guide#angular_integration_guide]: https://scion-microfrontend-platform-developer-guide.now.sh#chapter:angular_integration_guide
+[link-developer-guide#configuration]: https://scion-microfrontend-platform-developer-guide.vercel.app#chapter:configuration
+[link-developer-guide#angular_integration_guide]: https://scion-microfrontend-platform-developer-guide.vercel.app#chapter:angular_integration_guide
 [link-scion-toolkit]: https://github.com/SchweizerischeBundesbahnen/scion-toolkit/blob/master/README.md
