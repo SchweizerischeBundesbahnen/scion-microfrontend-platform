@@ -263,4 +263,4 @@ interface Product {
 [link-getting-started:host-app]: /docs/site/getting-started/getting-started-host-app.md
 [link-getting-started:shopping-cart-app]: /docs/site/getting-started/getting-started-shopping-cart-app.md
 [link-getting-started#installation]: /docs/site/getting-started/getting-started.md#how-to-complete-this-guide
-[link-developer-guide#manifest]: https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:intention-api:manifest
+[link-developer-guide#manifest]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:intention-api:manifest

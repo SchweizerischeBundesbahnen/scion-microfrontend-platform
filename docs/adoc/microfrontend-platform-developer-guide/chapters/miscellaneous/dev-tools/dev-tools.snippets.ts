@@ -5,7 +5,7 @@
       // your apps
       {
         symbolicName: 'devtools',
-        manifestUrl: 'https://scion-microfrontend-platform-devtools-<version>.now.sh/assets/manifest.json', <1>
+        manifestUrl: 'https://scion-microfrontend-platform-devtools-<version>.vercel.app/assets/manifest.json', <1>
         intentionCheckDisabled: true, <2>
         scopeCheckDisabled: true, <2>
       },
@@ -22,6 +22,6 @@
 
 `
   // tag::dev-tools:dev-tools-navigation[]
-  Beans.get(OutletRouter).navigate('https://scion-microfrontend-platform-devtools-<version>.now.sh', {outlet: 'DEV-TOOLS'});
+  Beans.get(OutletRouter).navigate('https://scion-microfrontend-platform-devtools-<version>.vercel.app', {outlet: 'DEV-TOOLS'});
   // end::dev-tools:dev-tools-navigation[]
 `;

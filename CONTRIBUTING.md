@@ -282,19 +282,19 @@ This chapter describes the tasks to publish a new release to NPM.
 1. Verify that: 
    - **@scion/microfrontend-platform** is published to: https://www.npmjs.com/package/@scion/microfrontend-platform.
    - **Testing App** is deployed to:
-      - https://scion-microfrontend-platform-testing-app1-vX-X-X.now.sh.
-      - https://scion-microfrontend-platform-testing-app2-vX-X-X.now.sh.
-      - https://scion-microfrontend-platform-testing-app3-vX-X-X.now.sh.
-      - https://scion-microfrontend-platform-testing-app4-vX-X-X.now.sh.
+      - https://scion-microfrontend-platform-testing-app1-vX-X-X.vercel.app.
+      - https://scion-microfrontend-platform-testing-app2-vX-X-X.vercel.app.
+      - https://scion-microfrontend-platform-testing-app3-vX-X-X.vercel.app.
+      - https://scion-microfrontend-platform-testing-app4-vX-X-X.vercel.app.
    - **DevTools** are deployed to:
-      - https://scion-microfrontend-platform-devtools.now.sh.
-      - https://scion-microfrontend-platform-devtools-vX-X-X.now.sh.
+      - https://scion-microfrontend-platform-devtools.vercel.app.
+      - https://scion-microfrontend-platform-devtools-vX-X-X.vercel.app.
    - **API Documentation (TypeDoc)** is deployed to: 
-      - https://scion-microfrontend-platform-api.now.sh.
-      - https://scion-microfrontend-platform-api-vX-X-X.now.sh.
+      - https://scion-microfrontend-platform-api.vercel.app.
+      - https://scion-microfrontend-platform-api-vX-X-X.vercel.app.
    - **Reference Documentation (Developer Guide)** is deployed to: 
-      - https://scion-microfrontend-platform-developer-guide.now.sh.
-      - https://scion-microfrontend-platform-developer-guide-vX-X-X.now.sh.
+      - https://scion-microfrontend-platform-developer-guide.vercel.app.
+      - https://scion-microfrontend-platform-developer-guide-vX-X-X.vercel.app.
 1. Migrate the [Getting Started Guide][link-getting-started-guide-repo] Git Repo if necessary.
  
 </details>
