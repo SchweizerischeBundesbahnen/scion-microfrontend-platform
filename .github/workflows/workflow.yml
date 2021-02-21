@@ -199,10 +199,10 @@ jobs:
           project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_TESTING_APP_PROJECT_ID }}
           version: ${{ needs.build-platform.outputs.version }}
           aliases: |
-            scion-microfrontend-platform-testing-app1-v%v.now.sh,
-            scion-microfrontend-platform-testing-app2-v%v.now.sh,
-            scion-microfrontend-platform-testing-app3-v%v.now.sh,
-            scion-microfrontend-platform-testing-app4-v%v.now.sh
+            scion-microfrontend-platform-testing-app1-v%v.vercel.app,
+            scion-microfrontend-platform-testing-app2-v%v.vercel.app,
+            scion-microfrontend-platform-testing-app3-v%v.vercel.app,
+            scion-microfrontend-platform-testing-app4-v%v.vercel.app
       - name: 'Deploying microfrontend-platform-devtools to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
@@ -212,8 +212,8 @@ jobs:
           project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_DEVTOOLS_PROJECT_ID }}
           version: ${{ needs.build-platform.outputs.version }}
           aliases: |
-            scion-microfrontend-platform-devtools.now.sh,
-            scion-microfrontend-platform-devtools-v%v.now.sh
+            scion-microfrontend-platform-devtools.vercel.app,
+            scion-microfrontend-platform-devtools-v%v.vercel.app
       - name: 'Deploying API Documentation (TypeDoc) to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
@@ -223,8 +223,8 @@ jobs:
           project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_API_PROJECT_ID }}
           version: ${{ needs.build-platform.outputs.version }}
           aliases: |
-            scion-microfrontend-platform-api.now.sh,
-            scion-microfrontend-platform-api-v%v.now.sh
+            scion-microfrontend-platform-api.vercel.app,
+            scion-microfrontend-platform-api-v%v.vercel.app
       - name: 'Deploying Reference Documentation (Developer Guide) to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
@@ -234,8 +234,8 @@ jobs:
           project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_DEVELOPER_GUIDE_PROJECT_ID }}
           version: ${{ needs.build-platform.outputs.version }}
           aliases: |
-            scion-microfrontend-platform-developer-guide.now.sh,
-            scion-microfrontend-platform-developer-guide-v%v.now.sh
+            scion-microfrontend-platform-developer-guide.vercel.app,
+            scion-microfrontend-platform-developer-guide-v%v.vercel.app
       - name: 'Publishing @scion/microfrontend-platform to NPM'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/npm-publish@master
         with:

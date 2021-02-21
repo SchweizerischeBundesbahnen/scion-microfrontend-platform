@@ -7,7 +7,7 @@
 This Getting Started Guide introduces you to the essentials of the SCION Microfrontend Platform by developing a simple webshop. The webshop consists of a products page and a shopping cart, both implemented as a microfrontend. The microfrontends are provided by two different micro applications.
 
 <p align="center">
-  <a href="https://scion-microfrontend-platform-getting-started.now.sh"><img src="webshop.svg" alt="Getting Started Webshop"></a>
+  <a href="https://scion-microfrontend-platform-getting-started.vercel.app"><img src="webshop.svg" alt="Getting Started Webshop"></a>
 </p>
 
 In total we have 3 applications:
@@ -108,7 +108,7 @@ We can now move on to the development of the host and micro applications. If you
 
 - We use [Parcel][link-parcel] as web application bundler to build and serve the webshop. Sometimes, Parcel hot module reloading fails, mostly when adding new files or changing JSON files. Then, serve the webshop anew using the `npm run start` command.
 
-- When you have finished this guide, the webshop should look as follows: https://scion-microfrontend-platform-getting-started.now.sh.
+- When you have finished this guide, the webshop should look as follows: https://scion-microfrontend-platform-getting-started.vercel.app.
 
 **Let's get started!**
 

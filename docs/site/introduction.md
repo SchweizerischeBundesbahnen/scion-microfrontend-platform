@@ -35,5 +35,5 @@ A microfrontend architecture can be achieved in many different ways, each with i
 [menu-contributing]: /CONTRIBUTING.md
 [menu-sponsoring]: /docs/site/sponsoring.md
 
-[link-developer-guide#cross-application-communication]: https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:cross-application-communication
-[link-developer-guide#embedding-microfrontends]: https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:embedding-microfrontends
+[link-developer-guide#cross-application-communication]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:cross-application-communication
+[link-developer-guide#embedding-microfrontends]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:embedding-microfrontends

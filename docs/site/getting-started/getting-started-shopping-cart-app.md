@@ -561,10 +561,10 @@ export interface Product {
 [menu-getting-started]: /docs/site/getting-started/getting-started.md
 [link-getting-started:host-app]: /docs/site/getting-started/getting-started-host-app.md
 [link-getting-started#installation]: /docs/site/getting-started/getting-started.md#how-to-complete-this-guide
-[link-developer-guide]: https://scion-microfrontend-platform-developer-guide.now.sh
-[link-developer-guide#activator]: https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:activator
-[link-developer-guide#capability]: https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:intention-api:capability
-[link-developer-guide#activator:state-sharing]: https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:activator:sharing-state
-[link-developer-guide#cross-application-communication]: https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:cross
-[link-developer-guide#manifest]: https://scion-microfrontend-platform-developer-guide.now.sh/#chapter:intention-api:manifest-application-communication
+[link-developer-guide]: https://scion-microfrontend-platform-developer-guide.vercel.app
+[link-developer-guide#activator]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:activator
+[link-developer-guide#capability]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:intention-api:capability
+[link-developer-guide#activator:state-sharing]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:activator:sharing-state
+[link-developer-guide#cross-application-communication]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:cross
+[link-developer-guide#manifest]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:intention-api:manifest-application-communication
 [link-issues]: https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues
