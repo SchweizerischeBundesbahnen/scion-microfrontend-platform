@@ -1,3 +1,35 @@
+# [1.0.0-beta.12](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.11...1.0.0-beta.12) (2021-02-22)
+
+
+### Bug Fixes
+
+* **platform:** allow preventing default action of registered keystrokes ([8ae8595](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/8ae859595731897da09eec2d80d709b919b973e1)), closes [#32](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/32)
+* **platform:** propagate topic subscription errors in context service ([08bbaf7](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/08bbaf7ce06fa4e725525a04cea03c753cc8307f))
+
+
+### chore
+
+* migrate Vercel deployments to the updated Vercel URL format ([f31fe5d](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/f31fe5d1c4dda63bc82be3938e063a5feaf516be)), closes [#56](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/56)
+
+
+### Features
+
+* **platform:** allow collecting values on contextual data lookup ([2e87b51](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/2e87b51e0a7a819e3526c1a72265d7df3a6b4ea8))
+
+
+### BREAKING CHANGES
+
+* URLs of applications deployed on Vercel now end with `*.vercel.app` instead of `*.now.sh`
+
+  To migrate:
+  - If using the `SCION Microfrontend Platform DevTools`, load them from https://scion-microfrontend-platform-devtools.vercel.app or from the versioned URL https://scion-microfrontend-platform-devtools-v1-0-0-beta-12.vercel.app.
+  - The Developer Guide is now available under https://scion-microfrontend-platform-developer-guide.vercel.app
+  - The TypeDoc is now available under https://scion-microfrontend-platform-api.vercel.app
+
+  See https://vercel.com/changelog/urls-are-becoming-consistent for more information.
+
+
+
 # [1.0.0-beta.11](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.10...1.0.0-beta.11) (2021-02-03)
 
 
@@ -15,7 +47,7 @@
     > Note: The messaging protocol between the host and client HAS NOT CHANGED. Thus, you can upgrade the host and clients to the new version independently.
     
     To migrate:
-    - If an Angular project, add the method `onMessage` to your NgZone message client decorator, as following:
+    - If an Angular project, add the method `onMessage` to your `NgZone` message client decorator, as following:
        ```typescript
        public onMessage<IN = any, OUT = any>(topic: string, callback: (message: TopicMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
          return messageClient.onMessage(topic, callback);
@@ -23,7 +55,7 @@
        ```
        See https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular for more information.
     
-    - If an Angular project, add the method `onIntent` to your NgZone intent client decorator, as following:
+    - If an Angular project, add the method `onIntent` to your `NgZone` intent client decorator, as following:
        ```typescript
        public onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
          return intentClient.onIntent(selector, callback);
@@ -36,7 +68,7 @@
     
     To migrate:
     - Upgrade host and clients (which use the `ManifestService`) to `@scion/microfrontend-platform@1.0.0-beta.11`.
-    - Remove the `throwOnErrorStatus` SCION RxJS operator when using `IntentClient#request$` or `MessageClient#request$` as already installed by the platform.
+    - Remove the `throwOnErrorStatus` SCION RxJS operator when using `IntentClient#request$ ` or `MessageClient#request$ ` as already installed by the platform.
 
 
 
