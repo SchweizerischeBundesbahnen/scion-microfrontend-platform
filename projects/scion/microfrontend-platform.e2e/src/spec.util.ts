@@ -8,7 +8,6 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { $, browser, ElementFinder, Key, logging, protractor, WebElement } from 'protractor';
-import { SciListItemPO } from '@scion/toolkit.internal/widgets.po';
 import Level = logging.Level;
 
 /**
@@ -40,22 +39,41 @@ export async function sendKeys(...keys: string[]): Promise<void> {
  * By default, the text is set directly as input to the field, because 'sendKeys' is very slow.
  */
 export async function enterText(text: string, elementFinder: ElementFinder, inputStrategy: 'sendKeys' | 'setValue' = 'setValue'): Promise<void> {
-  switch (inputStrategy) {
-    case 'sendKeys': { // send keys is slow for long texts
-      await elementFinder.clear();
-      await elementFinder.click();
-      await sendKeys(text);
-      break;
+  const enterTextFn = async () => {
+    switch (inputStrategy) {
+      case 'sendKeys': { // send keys is slow for long texts
+        await elementFinder.clear();
+        await elementFinder.click();
+        await sendKeys(text);
+        break;
+      }
+      case 'setValue': {
+        // fire the 'input' event manually because not fired when setting the value with javascript
+        await elementFinder.click();
+        await browser.executeScript('arguments[0].value=arguments[1]; arguments[0].dispatchEvent(new Event(\'input\'));', elementFinder.getWebElement(), text);
+        await sendKeys(Key.TAB);
+        break;
+      }
+      default: {
+        throw Error('[UnsupportedStrategyError] Input strategy not supported.');
+      }
     }
-    case 'setValue': {
-      // fire the 'input' event manually because not fired when setting the value with javascript
-      await elementFinder.click();
-      await browser.executeScript('arguments[0].value=arguments[1]; arguments[0].dispatchEvent(new Event(\'input\'));', elementFinder.getWebElement(), text);
-      await sendKeys(Key.TAB);
-      break;
+  };
+
+  try {
+    await enterTextFn();
+  }
+  catch (error) {
+    // Maybe, the element is not interactable because not scrolled into view. Try again, but scroll it into view first.
+    // This error often occurs on GitHub CI, but not when running tests locally.
+    if (error instanceof Error && error.name === 'ElementNotVisibleError') {
+      console.log(`[ElementNotVisibleError] Element not interactable: ${elementFinder.locator().toString()}. Scrolling it into view and trying to enter text again.`, error);
+      await browser.executeScript('arguments[0].scrollIntoView()', elementFinder.getWebElement());
+      await enterTextFn();
+      console.log(`Text successfully entered into input field: ${elementFinder.locator().toString()}`);
     }
-    default: {
-      throw Error('[UnsupportedStrategyError] Input strategy not supported.');
+    else {
+      throw error;
     }
   }
 }
@@ -72,100 +90,6 @@ export async function setAttribute(elementFinder: ElementFinder, name: string, v
  */
 export async function removeAttribute(elementFinder: ElementFinder, name: string): Promise<void> {
   await browser.executeScript('arguments[0].removeAttribute(arguments[1]);', elementFinder.getWebElement(), name);
-}
-
-/**
- * Due to an issue with the Selenium WebDriver, elements within an iframe cannot be clicked if the iframe is part of a shadow DOM.
- *
- * Error: 'Failed: unknown error: no element reference returned by script'.
- *
- * This fix patches {@link WebElement#click} and {@link ElementFinder#click} methods and clicks the element programmatically
- * through a script.
- *
- * ---
- * Protractor: 5.4.2
- * Chrome: 79.0.3945.0
- * Chrome WebDriver: 79.0.3945.0 // webdriver-manager update --versions.chrome=79.0.3945.0
- * Puppeteer: 2.0.0 // Chrome 79
- *
- * ---
- * See related issues:
- * https://stackoverflow.com/q/51629411
- * https://stackoverflow.com/q/58872973
- */
-export function seleniumWebDriverClickFix(): SeleniumWebDriverClickFix {
-  const elementFinderClickFn = ElementFinder.prototype.click;
-  const webElementClickFn = WebElement.prototype.click;
-  const sciListItemPOClickFn = SciListItemPO.prototype.clickAction;
-
-  return new class implements SeleniumWebDriverClickFix { // tslint:disable-line:new-parens
-    public install(): this {
-      ElementFinder.prototype.click = async function(): Promise<void> {
-        await click(this.getWebElement());
-      };
-      WebElement.prototype.click = async function(): Promise<void> {
-        await click(this);
-      };
-      SciListItemPO.prototype.clickAction = async function(cssClass: string): Promise<void> {
-        const actionButtonFinder = this.actionsFinder.$$(`button.${cssClass}`).first();
-        // hovering the action is not necessary as being clicked through script
-        await click(actionButtonFinder.getWebElement());
-      };
-      return this;
-    }
-
-    public uninstall(): void {
-      ElementFinder.prototype.click = elementFinderClickFn;
-      WebElement.prototype.click = webElementClickFn;
-      SciListItemPO.prototype.clickAction = sciListItemPOClickFn;
-    }
-  };
-}
-
-/**
- * Repairs clicking DOM elements contained in an iframe part of a shadow DOM.
- */
-export interface SeleniumWebDriverClickFix {
-  install(): this;
-
-  uninstall(): void;
-}
-
-/**
- * Due to an issue with the Selenium WebDriver, elements within an iframe cannot be clicked if the iframe is part of a shadow DOM.
- *
- * Error: 'Failed: unknown error: no element reference returned through a script'.
- *
- * This method clicks the element returned by the {@link ElementFinder} programmatically via script.
- *
- * ---
- * Protractor: 5.4.2
- * Chrome: 79.0.3945.0
- * Chrome WebDriver: 79.0.3945.0 // webdriver-manager update --versions.chrome=79.0.3945.0
- * Puppeteer: 2.0.0 // Chrome 79
- *
- * ---
- * See related issues:
- * https://stackoverflow.com/q/51629411
- * https://stackoverflow.com/q/58872973
- */
-async function click(element: WebElement): Promise<void> {
-  const script = `
-    if (arguments[0].tagName === 'INPUT' && arguments[0].type === 'text') {
-      arguments[0].focus();
-    }
-    else if (arguments[0].tagName === 'TEXTAREA') {
-      arguments[0].focus();
-    }
-    else if (arguments[0].tagName === 'OPTION') {
-      arguments[0].selected = true;
-      // fire the 'change' event manually because not fired when selecting the option with javascript
-      arguments[0].parentElement.dispatchEvent(new Event('change'));
-    }
-    else {
-      arguments[0].click();
-    }`;
-  await browser.executeScript(script, element);
 }
 
 /**

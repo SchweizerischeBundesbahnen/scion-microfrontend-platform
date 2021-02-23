@@ -24,7 +24,8 @@
   }
 
   > sci-tabbar {
-    flex: auto;
+    flex: 1 1 0;
+    overflow: hidden;
 
     section.capabilities, section.intentions {
       display: flex;

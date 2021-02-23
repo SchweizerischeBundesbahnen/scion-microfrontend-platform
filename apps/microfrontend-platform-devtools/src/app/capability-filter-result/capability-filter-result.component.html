@@ -1,16 +1,18 @@
-<ng-container *ngIf="capabilities$ | async as capabilities">
-  <sci-accordion *ngIf="capabilities.length else notFound">
-    <ng-container *ngFor="let capability of capabilities">
-      <ng-template sciAccordionItem [panel]="panel">
-        <devtools-capability-accordion-item [capability]="capability" [appSymbolicName]="capability.metadata.appSymbolicName"></devtools-capability-accordion-item>
-      </ng-template>
+<sci-viewport>
+  <ng-container *ngIf="capabilities$ | async as capabilities">
+    <sci-accordion *ngIf="capabilities.length else notFound">
+      <ng-container *ngFor="let capability of capabilities">
+        <ng-template sciAccordionItem [panel]="panel">
+          <devtools-capability-accordion-item [capability]="capability" [appSymbolicName]="capability.metadata.appSymbolicName"></devtools-capability-accordion-item>
+        </ng-template>
 
-      <ng-template #panel>
-        <devtools-capability-accordion-panel [capability]="capability"></devtools-capability-accordion-panel>
-      </ng-template>
-    </ng-container>
-  </sci-accordion>
-  <ng-template #notFound>
-    <span class="placeholder">No capabilities found.</span>
-  </ng-template>
-</ng-container>
+        <ng-template #panel>
+          <devtools-capability-accordion-panel [capability]="capability"></devtools-capability-accordion-panel>
+        </ng-template>
+      </ng-container>
+    </sci-accordion>
+    <ng-template #notFound>
+      <span class="placeholder">No capabilities found.</span>
+    </ng-template>
+  </ng-container>
+</sci-viewport>

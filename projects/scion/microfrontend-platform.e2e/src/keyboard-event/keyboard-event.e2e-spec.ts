@@ -7,18 +7,17 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { consumeBrowserLog, seleniumWebDriverClickFix, SeleniumWebDriverClickFix, sendKeys } from '../spec.util';
+import { consumeBrowserLog, sendKeys } from '../spec.util';
 import { TestingAppPO } from '../testing-app.po';
 import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
 import { Microfrontend1PagePO } from '../microfrontend/microfrontend-1-page.po';
 import { Key, logging } from 'protractor';
+import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
 import Level = logging.Level;
 
 describe('KeyboardEvent', () => {
 
-  let fix: SeleniumWebDriverClickFix;
-  beforeAll(() => fix = seleniumWebDriverClickFix().install());
-  afterAll(() => fix.uninstall());
+  installSeleniumWebDriverClickFix();
 
   it('should receive keyboard events for the \'m\' keystroke', async () => {
     await setupAndPressKeystroke({

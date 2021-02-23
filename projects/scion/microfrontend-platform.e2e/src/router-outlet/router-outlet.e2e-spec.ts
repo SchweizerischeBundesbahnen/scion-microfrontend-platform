@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { browserNavigateBack, consumeBrowserLog, expectMap, seleniumWebDriverClickFix, SeleniumWebDriverClickFix, waitUntilLocation } from '../spec.util';
+import { browserNavigateBack, consumeBrowserLog, expectMap, waitUntilLocation } from '../spec.util';
 import { TestingAppOrigins, TestingAppPO } from '../testing-app.po';
 import { browser, logging } from 'protractor';
 import { OutletRouterPagePO } from './outlet-router-page.po';
@@ -16,13 +16,12 @@ import { RouterOutletPagePO } from './router-outlet-page.po';
 import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
 import { Microfrontend1PagePO } from '../microfrontend/microfrontend-1-page.po';
 import { Microfrontend2PagePO } from '../microfrontend/microfrontend-2-page.po';
+import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
 import Level = logging.Level;
 
 describe('RouterOutlet', () => {
 
-  let fix: SeleniumWebDriverClickFix;
-  beforeAll(() => fix = seleniumWebDriverClickFix().install());
-  afterAll(() => fix.uninstall());
+  installSeleniumWebDriverClickFix();
   beforeEach(() => consumeBrowserLog());
 
   it('should allow navigating within the outlet (self navigation)', async () => {

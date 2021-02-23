@@ -7,15 +7,13 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
 import { TestingAppPO } from '../testing-app.po';
 import { PlatformPropertiesPagePO } from './platform-properties-page.po';
+import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
 
 describe('PlatformProperties', () => {
 
-  let fix: SeleniumWebDriverClickFix;
-  beforeAll(() => fix = seleniumWebDriverClickFix().install());
-  afterAll(() => fix.uninstall());
+  installSeleniumWebDriverClickFix();
 
   it('should allow looking up platform properties from a microfrontend', async () => {
     const platformProperties = new Map().set('property1', 'value1').set('property2', 'value2');

@@ -7,16 +7,15 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { consumeBrowserLog, seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
+import { consumeBrowserLog } from '../spec.util';
 import { TestingAppPO } from '../testing-app.po';
 import { logging } from 'protractor';
+import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
 import Level = logging.Level;
 
 describe('Activator', () => {
 
-  let fix: SeleniumWebDriverClickFix;
-  beforeAll(() => fix = seleniumWebDriverClickFix().install());
-  afterAll(() => fix.uninstall());
+  installSeleniumWebDriverClickFix();
 
   it('should activate applications on platform startup', async () => {
     const testingAppPO = new TestingAppPO();

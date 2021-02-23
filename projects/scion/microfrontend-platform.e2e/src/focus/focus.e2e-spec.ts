@@ -9,14 +9,12 @@
  */
 import { TestingAppPO } from '../testing-app.po';
 import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
-import { seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
 import { Microfrontend1PagePO } from '../microfrontend/microfrontend-1-page.po';
+import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
 
 describe('Focus', () => {
 
-  let fix: SeleniumWebDriverClickFix;
-  beforeAll(() => fix = seleniumWebDriverClickFix().install());
-  afterAll(() => fix.uninstall());
+  installSeleniumWebDriverClickFix();
 
   it('should track the focus across microfrontends [This test only works if the browser window keeps the focus while executing the test, i.e. the browser window is the active window or the test runs headless.]', async () => {
     const testingAppPO = new TestingAppPO();

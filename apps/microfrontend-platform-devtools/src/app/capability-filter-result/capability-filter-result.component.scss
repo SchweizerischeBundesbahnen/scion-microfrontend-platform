@@ -3,12 +3,13 @@
 :host {
   display: flex;
   padding: 1em;
+  overflow: hidden;
 
-  > sci-accordion {
+  > sci-viewport {
     flex: auto;
-  }
 
-  > span.placeholder {
-    font-style: italic;
+    span.placeholder {
+      font-style: italic;
+    }
   }
 }
