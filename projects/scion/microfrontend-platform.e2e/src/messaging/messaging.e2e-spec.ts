@@ -10,13 +10,11 @@
 import { TestingAppOrigins } from '../testing-app.po';
 import { TopicBasedMessagingSpecs } from './topic-based-messaging-specs';
 import { IntendBasedMessagingSpecs } from './intent-based-messaging-specs';
-import { seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
+import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
 
 describe('Messaging', () => {
 
-  let fix: SeleniumWebDriverClickFix;
-  beforeAll(() => fix = seleniumWebDriverClickFix().install());
-  afterAll(() => fix.uninstall());
+  installSeleniumWebDriverClickFix();
 
   describe('topic-based', () => {
 

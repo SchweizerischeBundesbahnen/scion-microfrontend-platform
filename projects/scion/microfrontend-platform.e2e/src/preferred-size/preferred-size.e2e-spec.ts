@@ -8,18 +8,17 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { OutletPageObjectMap, TestingAppPO } from '../testing-app.po';
-import { consumeBrowserLog, seleniumWebDriverClickFix, SeleniumWebDriverClickFix } from '../spec.util';
+import { consumeBrowserLog } from '../spec.util';
 import { OutletRouterPagePO } from '../router-outlet/outlet-router-page.po';
 import { RouterOutletPagePO } from '../router-outlet/router-outlet-page.po';
 import { PreferredSizePagePO } from './preferred-size-page.po';
 import { browser } from 'protractor';
+import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
 import objectContaining = jasmine.objectContaining;
 
 describe('RouterOutlet', () => {
 
-  let fix: SeleniumWebDriverClickFix;
-  beforeAll(() => fix = seleniumWebDriverClickFix().install());
-  afterAll(() => fix.uninstall());
+  installSeleniumWebDriverClickFix();
 
   it('should be a noop when setting the preferred size outside of an outlet context (e.g. when running as standalone application)', async () => {
     await browser.get(`/#/${PreferredSizePagePO.pageUrl}`);
