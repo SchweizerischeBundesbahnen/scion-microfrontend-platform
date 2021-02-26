@@ -133,8 +133,7 @@ export interface Capability {
    * The qualifier allows using wildcards (such as `*` or `?`) to match multiple intents simultaneously.
    *
    * - **Asterisk wildcard character (`*`):**
-   *   - If used as qualifier property key, matches intents even if having additional properties. Use it like this: `{'*': '*'}`.
-   *   - If used as qualifier property value, requires intents to contain that property, but with any value allowed (except for `null` or `undefined` values).
+   *   Is allowed as qualifier property value only and requires intents to contain that property, but with any value allowed (except for `null` or `undefined` values).
    * - **Optional wildcard character (?):**\
    *   Is allowed as qualifier property value only and matches intents regardless of having or not having that property.
    */
