@@ -80,7 +80,7 @@ export namespace Contexts {
       transport: MessagingTransport.EmbeddedOutletContentToOutlet,
       channel: MessagingChannel.Topic,
       message: {
-        topic: contextValueLookupTopic(name),
+        topic: contextValueLookupTopic(encodeURIComponent(name)), // Encode in order to support names containing forward slashes or starting with a colon.
         body: values || [],
         headers: new Map()
           .set(MessageHeaders.MessageId, UUID.randomUUID())
