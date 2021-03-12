@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { AnyQualifier, ApplicationManifest, Intention, PlatformCapabilityTypes } from '../platform.model';
+import { ApplicationManifest, Intention, PlatformCapabilityTypes } from '../platform.model';
 import { ApplicationConfig, PlatformFlags } from './platform-config';
 import { PLATFORM_SYMBOLIC_NAME } from './platform.constants';
 import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
@@ -51,5 +51,5 @@ export class HostPlatformAppProvider implements PreDestroy {
  * @ignore
  */
 function provideActivatorApiIntentions(): Intention[] {
-  return Beans.get(PlatformFlags).activatorApiDisabled ? [] : [{type: PlatformCapabilityTypes.Activator, qualifier: AnyQualifier}];
+  return Beans.get(PlatformFlags).activatorApiDisabled ? [] : [{type: PlatformCapabilityTypes.Activator, qualifier: {'*': '*'}}];
 }

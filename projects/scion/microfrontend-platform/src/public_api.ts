@@ -20,3 +20,4 @@ export * from './lib/logger';
 export * from './lib/client/public_api';
 export * from './lib/host/public_api';
 export * from './lib/topic-matcher.util';
+export * from './lib/qualifier-matcher';

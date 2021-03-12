@@ -9,9 +9,8 @@
  */
 
 import { ApplicationManifest } from './platform.model';
-import { AsyncSubject, Observer, ReplaySubject, throwError } from 'rxjs';
-import { take, timeoutWith } from 'rxjs/operators';
 import { Arrays } from '@scion/toolkit/util';
+import { ObserveCaptor } from '@scion/toolkit/testing';
 
 /**
  * Expects the given Promise to either resolve or reject.
@@ -103,88 +102,6 @@ export function waitForCondition(condition: () => boolean | Promise<boolean>, ti
     };
     periodicConditionCheckerFn().then();
   });
-}
-
-/**
- * Allows capturing emissions of an Observable.
- */
-export class ObserveCaptor<T = any, R = T> implements Observer<T> {
-
-  private _projectFn: (value: T) => R;
-
-  private _values: R[] = [];
-  private _completed = false;
-  private _error: any;
-
-  private _completeOrError$ = new AsyncSubject<void>();
-  private _emitCount$ = new ReplaySubject<void>();
-
-  constructor(projectFn?: (value: T) => R) {
-    this._projectFn = projectFn || ((value) => value as any);
-  }
-
-  /**
-   * @internal
-   */
-  public next = (value: T): void => {
-    this._values.push(this._projectFn(value));
-    this._emitCount$.next();
-  }
-
-  /**
-   * @internal
-   */
-  public error = (error: any): void => {
-    this._error = error;
-    this._completeOrError$.complete();
-  }
-
-  /**
-   * @internal
-   */
-  public complete = (): void => {
-    this._completed = true;
-    this._completeOrError$.complete();
-  }
-
-  public getValues(): R[] {
-    return this._values;
-  }
-
-  public getLastValue(): R {
-    return this._values[this._values.length - 1];
-  }
-
-  public getError(): any {
-    return this._error;
-  }
-
-  public hasCompleted(): boolean {
-    return this._completed;
-  }
-
-  public hasErrored(): boolean {
-    return this._error !== undefined;
-  }
-
-  /**
-   * Waits until the Observable emits the given number of items, or throws if the given timeout elapses.
-   */
-  public async waitUntilEmitCount(count: number, timeout: number = 5000): Promise<void> {
-    return this._emitCount$
-      .pipe(
-        take(count),
-        timeoutWith(new Date(Date.now() + timeout), throwError('[SpecTimeoutError] Timeout elapsed.')),
-      )
-      .toPromise();
-  }
-
-  /**
-   * Waits until the Observable completes or errors.
-   */
-  public async waitUntilCompletedOrErrored(): Promise<void> {
-    return this._completeOrError$.toPromise();
-  }
 }
 
 /**

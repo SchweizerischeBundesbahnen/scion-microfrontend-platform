@@ -10,12 +10,11 @@
 
 import { defer, Observable, Subscription } from 'rxjs';
 import { Intent, IntentMessage, throwOnErrorStatus, TopicMessage } from '../../messaging.model';
-import { Qualifier } from '../../platform.model';
 import { BrokerGateway } from './broker-gateway';
 import { MessagingChannel } from '../../ɵmessaging.model';
 import { filterByChannel, pluckMessage } from '../../operators';
 import { filter } from 'rxjs/operators';
-import { matchesIntentQualifier } from '../../qualifier-tester';
+import { assertExactQualifier, QualifierMatcher } from '../../qualifier-matcher';
 import { IntentClient, IntentOptions, IntentSelector } from './intent-client';
 import { Beans } from '@scion/toolkit/bean-manager';
 import { MessageHandler } from './message-handler';
@@ -26,7 +25,7 @@ export class ɵIntentClient implements IntentClient { // tslint:disable-line:cla
   }
 
   public publish<T = any>(intent: Intent, body?: T, options?: IntentOptions): Promise<void> {
-    assertIntentQualifier(intent.qualifier, {allowWildcards: false});
+    assertExactQualifier(intent.qualifier);
     const headers = new Map(options && options.headers);
     const intentMessage: IntentMessage = {intent, headers: new Map(headers)};
     setBodyIfDefined(intentMessage, body);
@@ -34,7 +33,7 @@ export class ɵIntentClient implements IntentClient { // tslint:disable-line:cla
   }
 
   public request$<T>(intent: Intent, body?: any, options?: IntentOptions): Observable<TopicMessage<T>> {
-    assertIntentQualifier(intent.qualifier, {allowWildcards: false});
+    assertExactQualifier(intent.qualifier);
     // IMPORTANT:
     // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
     // to the returned Observable, each subscription must have its individual message instance and headers map.
@@ -53,22 +52,12 @@ export class ɵIntentClient implements IntentClient { // tslint:disable-line:cla
         filterByChannel<IntentMessage<T>>(MessagingChannel.Intent),
         pluckMessage(),
         filter(message => !selector || !selector.type || selector.type === message.intent.type),
-        filter(message => !selector || !selector.qualifier || matchesIntentQualifier(selector.qualifier, message.intent.qualifier)),
+        filter(message => !selector || !selector.qualifier || new QualifierMatcher(selector.qualifier, {evalAsterisk: true, evalOptional: true}).matches(message.intent.qualifier)),
       );
   }
 
   public onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
     return new MessageHandler(Beans.get(IntentClient).observe$<IN>(selector), callback).subscription;
-  }
-}
-
-function assertIntentQualifier(qualifier: Qualifier, options: { allowWildcards: boolean }): void {
-  if (!qualifier || Object.keys(qualifier).length === 0) {
-    return;
-  }
-
-  if (!options.allowWildcards && Object.entries(qualifier).some(([key, value]) => key === '*' || value === '*' || value === '?')) {
-    throw Error(`[IllegalQualifierError] Qualifier must not contain wildcards. [qualifier='${JSON.stringify(qualifier)}']`);
   }
 }
 

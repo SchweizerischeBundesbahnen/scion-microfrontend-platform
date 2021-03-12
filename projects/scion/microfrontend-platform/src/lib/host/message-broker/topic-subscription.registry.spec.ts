@@ -10,7 +10,8 @@
 import { TopicSubscriptionRegistry } from './topic-subscription.registry';
 import { Client } from './client.registry';
 import { take } from 'rxjs/operators';
-import { expectEmissions, ObserveCaptor } from '../../spec.util.spec';
+import { expectEmissions } from '../../spec.util.spec';
+import { ObserveCaptor } from '@scion/toolkit/testing';
 
 describe('TopicSubscriptionRegistry', () => {
 

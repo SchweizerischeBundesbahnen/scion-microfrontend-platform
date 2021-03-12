@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { isEqualQualifier, matchesWildcardQualifier, QualifierMatcher } from '../../qualifier-tester';
+import { QualifierMatcher } from '../../qualifier-matcher';
 import { Observable, Subject } from 'rxjs';
 import { Arrays, Maps } from '@scion/toolkit/util';
 import { Qualifier } from '../../platform.model';
@@ -42,7 +42,7 @@ export class ManifestObjectStore<T extends ManifestObject> {
    *        Wildcards in the qualifier criterion, if any, are not interpreted as wildcards, but as exact values instead.
    */
   public remove(filter: ManifestObjectFilter): void {
-    const objectsToRemove = this.find(filter, isEqualQualifier);
+    const objectsToRemove = this.find(filter);
     this._remove(objectsToRemove);
   }
 
@@ -50,10 +50,12 @@ export class ManifestObjectStore<T extends ManifestObject> {
    * Finds manifest objects that match the given filter.
    *
    * @param filter - Control which manifest objects to return.
-   *        Specified filter criteria are "AND"ed together. If no filter criterion is specified, no filtering takes place.
-   * @param qualifierMatcher - Control how to match qualifiers if specified in the filter. If not specified, {@link matchesWildcardQualifier} is used.
+   *        Specified filter criteria are "AND"ed together. If no filter criteria are specified, all objects will be returned.
+   * @param qualifierPredicate - Predicate for testing qualifiers; is used in combination with a qualifier filter.
+   *        If not specifying a predicate, qualifiers will be matched against the specified qualifier filter, supporting
+   *        the asterisk wildcard, but not the optional wildcard character.
    */
-  public find(filter: ManifestObjectFilter, qualifierMatcher: QualifierMatcher = matchesWildcardQualifier): T[] {
+  public find(filter: ManifestObjectFilter, qualifierPredicate?: (testee: Qualifier) => boolean): T[] {
     const filterById = filter.id !== undefined;
     const filterByType = filter.type !== undefined;
     const filterByApp = filter.appSymbolicName !== undefined;
@@ -66,7 +68,14 @@ export class ManifestObjectStore<T extends ManifestObject> {
         (filterById || filterByType || filterByApp) ? undefined : Array.from(this._objectById.values()),
       )
       .filter(object => {
-        return filter.qualifier === undefined || qualifierMatcher(object.qualifier, filter.qualifier);
+        if (filter.qualifier === undefined) {
+          return true;
+        }
+        if (qualifierPredicate) {
+          return qualifierPredicate(object.qualifier);
+        }
+
+        return new QualifierMatcher(filter.qualifier, {evalAsterisk: true, evalOptional: false}).matches(object.qualifier);
       });
   }
 
@@ -108,7 +117,8 @@ export interface ManifestObject {
 /**
  * Allows filtering manifest objects like capabilities or intentions.
  *
- * All specified filter criteria are "AND"ed together. If no filter criterion is specified, no filtering takes place.
+ * All specified filter criteria are "AND"ed together. Unspecified filter criteria are ignored.
+ * If no filter criterion is specified, no filtering takes place, thus all available objects are returned.
  *
  * @category Manifest
  */

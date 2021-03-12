@@ -10,7 +10,7 @@
 
 import { Subject } from 'rxjs';
 import { MessageHeaders, ResponseStatusCodes, throwOnErrorStatus, TopicMessage } from './messaging.model';
-import { ObserveCaptor } from './spec.util.spec';
+import { ObserveCaptor } from '@scion/toolkit/testing';
 
 describe('Messaging', () => {
 

@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Capability, Intention, NilQualifier } from '../../platform.model';
+import { Capability, Intention } from '../../platform.model';
 import { sha256 } from 'js-sha256';
 import { Defined } from '@scion/toolkit/util';
 import { ManifestObjectFilter, ManifestObjectStore } from './manifest-object-store';
@@ -21,7 +21,7 @@ import { ApplicationRegistry } from '../application-registry';
 import { runSafe } from '../../safe-runner';
 import { filterArray } from '@scion/toolkit/operators';
 import { ManifestRegistry } from './manifest-registry';
-import { matchesIntentQualifier, matchesWildcardQualifier } from '../../qualifier-tester';
+import { assertExactQualifier, QualifierMatcher } from '../../qualifier-matcher';
 import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 import { stringifyError } from '../../error.util';
 
@@ -49,8 +49,9 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
    * @inheritDoc
    */
   public resolveCapabilitiesByIntent(intent: Intent, appSymbolicName: string): Capability[] {
+    assertExactQualifier(intent.qualifier);
     const filter: ManifestObjectFilter = {type: intent.type, qualifier: intent.qualifier || {}};
-    return this._capabilityStore.find(filter, matchesIntentQualifier)
+    return this._capabilityStore.find(filter, capabilityQualifier => new QualifierMatcher(capabilityQualifier, {evalAsterisk: true, evalOptional: true}).matches(intent.qualifier))
       .filter(capability => this.isCapabilityVisibleToMicroApplication(capability, appSymbolicName));
   }
 
@@ -58,11 +59,12 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
    * @inheritDoc
    */
   public hasIntention(intent: Intent, appSymbolicName: string): boolean {
+    assertExactQualifier(intent.qualifier);
     const filter: ManifestObjectFilter = {appSymbolicName, type: intent.type, qualifier: intent.qualifier || {}};
     return (
       Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName) ||
-      this._intentionStore.find(filter, matchesIntentQualifier).length > 0 ||
-      this._capabilityStore.find(filter, matchesIntentQualifier).length > 0
+      this._intentionStore.find(filter, intentionQualifier => new QualifierMatcher(intentionQualifier, {evalAsterisk: true, evalOptional: true}).matches(intent.qualifier)).length > 0 ||
+      this._capabilityStore.find(filter, capabilityQualifier => new QualifierMatcher(capabilityQualifier, {evalAsterisk: true, evalOptional: true}).matches(intent.qualifier)).length > 0
     );
   }
 
@@ -71,11 +73,16 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
    * or 'intention check' is disabled for the app.
    */
   private hasIntentionForCapability(appSymbolicName: string, capability: Capability): boolean {
-    return (
-      Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName) ||
-      capability.metadata.appSymbolicName === appSymbolicName ||
-      this._intentionStore.find({appSymbolicName, type: capability.type, qualifier: capability.qualifier}, matchesWildcardQualifier).length > 0
-    );
+    if (Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName)) {
+      return true;
+    }
+
+    if (capability.metadata.appSymbolicName === appSymbolicName) {
+      return true;
+    }
+
+    const filter: ManifestObjectFilter = {appSymbolicName, type: capability.type, qualifier: capability.qualifier};
+    return this._intentionStore.find(filter, intentionQualifier => new QualifierMatcher(intentionQualifier, {evalAsterisk: true, evalOptional: true}).matches(capability.qualifier)).length > 0;
   }
 
   /**
@@ -100,7 +107,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
 
     const registeredCapability: Capability = {
       ...capability,
-      qualifier: Defined.orElse(capability.qualifier, NilQualifier),
+      qualifier: Defined.orElse(capability.qualifier, {}),
       requiredParams: Defined.orElse(capability.requiredParams, []),
       optionalParams: Defined.orElse(capability.optionalParams, []),
       private: Defined.orElse(capability.private, true),
@@ -226,7 +233,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
         // The queried capabilities may change on both, capability or intention change, because the computation
         // of visible and qualified capabilities depends on registered capabilities and manifested intentions.
         const registryChange$ = merge(this._capabilityStore.change$, this._intentionStore.change$);
-        const finder$ = defer(() => of(this._capabilityStore.find(lookupFilter, matchesWildcardQualifier)));
+        const finder$ = defer(() => of(this._capabilityStore.find(lookupFilter)));
         return finder$
           .pipe(
             expand(() => registryChange$.pipe(take(1), mergeMapTo(finder$))),
@@ -248,7 +255,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
         const lookupFilter = request.body || {};
 
-        const finder$ = defer(() => of(this._intentionStore.find(lookupFilter, matchesWildcardQualifier)));
+        const finder$ = defer(() => of(this._intentionStore.find(lookupFilter)));
         return finder$
           .pipe(
             expand(() => this._intentionStore.change$.pipe(take(1), mergeMapTo(finder$))),

@@ -113,14 +113,14 @@ a| `string`
 a| `Dictionary`
 | no
 a|
-The qualifier is a dictionary of arbitrary key-value pairs to differentiate capabilities of the same _type_ and is like an abstract description of the capability. It should include enough information for the platform to uniquely resolve the capability.
+The qualifier is a dictionary of arbitrary key-value pairs to differentiate capabilities of the same _type_ and is like an abstract description of the capability. It should include enough information to uniquely identify the capability.
 
-The qualifier allows using wildcards (such as `*` or `?`) to match multiple intents simultaneously.
+Intents must exactly match the qualifier of the capability, if any. The capability qualifier allows using wildcards (such as `*` or `?`) to match multiple intents simultaneously.
 
 * *Asterisk wildcard character (`{asterisk}`):* +
-Is allowed as qualifier property value only and requires intents to contain that property, but with any value allowed (except for `null` or `undefined` values).
+Intents must contain such a property, but any value is allowed (except `null` or `undefined`). Use it like this: `{property: '{asterisk}'}`
 * *Optional wildcard character (`?`):* +
-Is allowed as qualifier property value only and matches intents regardless of having or not having that property.
+Intents can contain such a property. Use it like this: `{property: '?'}`.
 
 | requiredParams
 a| `string[]`
@@ -204,14 +204,17 @@ a| `Dictionary`
 a|
 Qualifies the capability which to interact with.
 
-The qualifier is a dictionary of arbitrary key-value pairs to differentiate capabilities of the same _type_. It can be either exact or contain wildcards to declare multiple intentions simultaneously.
+The qualifier is a dictionary of arbitrary key-value pairs to differentiate capabilities of the same _type_.
+
+The intention must exactly match the qualifier of the capability, if any. The intention qualifier allows using wildcards (such as `*` or `?`) to match multiple capabilities simultaneously.
 
 * *Asterisk wildcard character (`{asterisk}`):* +
-** If used as qualifier property key, matches capabilities even if having additional properties.
-Use it like this: `{'{asterisk}': '{asterisk}'}` +
-** If used as qualifier property value, requires capabilities to contain that property, but with any value allowed (except for `null` or `undefined` values).
+Matches capabilities with such a qualifier property no matter of its value (except `null` or `undefined`). Use it like this: `{property: '{asterisk}'}`.
 * *Optional wildcard character (`?`):* +
-Is allowed as qualifier property value only and matches capabilities regardless of having or not having that property.
+Matches capabilities regardless of having or not having such a property. Use it like this: `{property: '?'}`.
+* *Partial wildcard (`{asterisk}{asterisk}`):* +
+Matches capabilities even if having additional properties. Use it like this: `{'{asterisk}': '{asterisk}'}`.
+
 |===
 
 [[chapter:intention-api:intent]]
@@ -281,14 +284,9 @@ a| `string`
 a| `Dictionary`
 | no
 a|
-Observes capabilities matching the qualifier. The qualifier can be either exact or contain wildcards.
+Observes capabilities that match the qualifier.
 
-* *Asterisk wildcard character (`{asterisk}`):* +
-** If used as qualifier property key, matches capabilities even if having additional properties.
-Use it like this: `{'{asterisk}': '{asterisk}'}` +
-** If used as qualifier property value, requires capabilities to contain that property, but with any value allowed.
-* *Optional wildcard character (`?`):* +
-Is allowed as qualifier property value only and matches capabilities regardless of having or not having that property.
+If specifying a qualifier filter, the capabilities must match that filter exactly. The filter supports the asterisk wildcard to match any value, e.g., `{property: '{asterisk}'}`, or partial matching to find capabilities with at least the specified qualifier properties. Partial matching is enabled by appending the _any-more_ entry to the qualifier, as following: `{'{asterisk}': '{asterisk}'}`.
 
 | appSymbolicName
 a| `string`
@@ -323,14 +321,9 @@ a| `string`
 a| `Dictionary`
 | no
 a|
-Observes intentions matching the qualifier. The qualifier can be either exact or contain wildcards.
+Observes intentions that match the qualifier.
 
-* *Asterisk wildcard character (`{asterisk}`):* +
-** If used as qualifier property key, matches intentions even if having additional properties.
-Use it like this: `{'{asterisk}': '{asterisk}'}` +
-** If used as qualifier property value, requires intentions to contain that property, but with any value allowed.
-* *Optional wildcard character (`?`):* +
-Is allowed as qualifier property value only and matches intentions regardless of having or not having that property.
+If specifying a qualifier filter, the intentions must match that filter exactly. The filter supports the asterisk wildcard to match any value, e.g., `{property: '{asterisk}'}`, or partial matching to find intentions with at least the specified qualifier properties. Partial matching is enabled by appending the _any-more_ entry to the qualifier, as following: `{'{asterisk}': '{asterisk}'}`.
 
 | appSymbolicName
 a| `string`

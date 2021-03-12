@@ -17,17 +17,20 @@ import { Logger } from '../../logger';
 import { ManifestRegistry } from '../../host/manifest-registry/manifest-registry';
 import { ApplicationConfig } from '../../host/platform-config';
 import { PLATFORM_SYMBOLIC_NAME } from '../../host/platform.constants';
-import { expectEmissions, expectPromise, ObserveCaptor, serveManifest, waitForCondition } from '../../spec.util.spec';
+import { expectEmissions, expectPromise, serveManifest, waitForCondition } from '../../spec.util.spec';
 import { MicrofrontendPlatform } from '../../microfrontend-platform';
 import { Defined, Objects } from '@scion/toolkit/util';
 import { ClientRegistry } from '../../host/message-broker/client.registry';
 import { MessageEnvelope } from '../../ɵmessaging.model';
 import { PlatformIntentClient } from '../../host/platform-intent-client';
 import { Beans } from '@scion/toolkit/bean-manager';
+import { ManifestService } from '../manifest-registry/manifest-service';
+import { ObserveCaptor } from '@scion/toolkit/testing';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
 const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<string, any> => msg.headers;
 const paramsExtractFn = <T>(msg: IntentMessage<T>): Map<string, any> => msg.intent.params;
+const capabilityIdExtractFn = <T>(msg: IntentMessage<T>): string => msg.capability.metadata.id;
 
 /**
  * Tests most important and fundamental features of the messaging facility with a single client, the host-app, only.
@@ -899,6 +902,65 @@ describe('Messaging', () => {
 
     // expect only the two intents to be dispatched
     await expectEmissions(intentCaptor).toEqual(['intent 1', 'intent 2']);
+  });
+
+  it('should receive an intent for a capability having an exact qualifier', async () => {
+    const manifestUrl = serveManifest({name: 'Host Application'});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+    // Register capability
+    const capabilityId = await Beans.get(ManifestService).registerCapability({type: 'view', qualifier: {entity: 'person', id: '5'}});
+
+    // Subscribe for intents
+    const intentCaptor = new ObserveCaptor(capabilityIdExtractFn);
+    Beans.get(IntentClient).observe$<string>().subscribe(intentCaptor);
+
+    // Publish the intent
+    await Beans.get(IntentClient).publish({type: 'view', qualifier: {entity: 'person', id: '5'}});
+
+    // Expect the intent to be received
+    await expectEmissions(intentCaptor).toEqual([capabilityId]);
+  });
+
+  it('should receive an intent for a capability having an asterisk qualifier', async () => {
+    const manifestUrl = serveManifest({name: 'Host Application'});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+    // Register capability
+    const capabilityId = await Beans.get(ManifestService).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}});
+
+    // Subscribe for intents
+    const intentCaptor = new ObserveCaptor(capabilityIdExtractFn);
+    Beans.get(IntentClient).observe$<string>().subscribe(intentCaptor);
+
+    // Publish the intent
+    await Beans.get(IntentClient).publish({type: 'view', qualifier: {entity: 'person', id: '5'}});
+
+    // Expect the intent to be received
+    await expectEmissions(intentCaptor).toEqual([capabilityId]);
+  });
+
+  it('should receive an intent for a capability having an optional qualifier', async () => {
+    const manifestUrl = serveManifest({name: 'Host Application'});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+    // Register capability
+    const capabilityId = await Beans.get(ManifestService).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}});
+
+    // Publish and receive intent published to {entity: 'person', id: '5'}
+    const intentCaptor1 = new ObserveCaptor(capabilityIdExtractFn);
+    Beans.get(IntentClient).observe$<string>().subscribe(intentCaptor1);
+    await Beans.get(IntentClient).publish({type: 'view', qualifier: {entity: 'person', id: '5'}});
+    await expectEmissions(intentCaptor1).toEqual([capabilityId]);
+
+    // Publish and receive intent published to {entity: 'person'}
+    const intentCaptor2 = new ObserveCaptor(capabilityIdExtractFn);
+    Beans.get(IntentClient).observe$<string>().subscribe(intentCaptor2);
+    await Beans.get(IntentClient).publish({type: 'view', qualifier: {entity: 'person'}});
+    await expectEmissions(intentCaptor2).toEqual([capabilityId]);
   });
 
   it('should allow tracking the subscriptions on a topic', async () => {

@@ -78,10 +78,9 @@ export class ManifestService implements PreDestroy {
    * @param  filter - Control which capabilities to return. If no or an empty filter is given, all capabilities visible to the requesting
    *         app are returned. Specified filter criteria are "AND"ed together.\
    *         <p>
-   *         If given a qualifier in the filter, the qualifier can be either exact or contain wildcards to match
-   *         multiple capabilities. The asterisk wildcard (`*`), if used as a qualifier entry value, requires capabilities to have such
-   *         an entry. An even more lenient option is the optional wildcard (`?`), which does not require the qualifier entry at all.
-   *         And finally, if using the asterisk wildcard (`*`) as the qualifier key, capabilities may contain additional qualifier entries.
+   *         If specifying a qualifier filter, the capabilities must match that filter exactly. The filter supports the asterisk wildcard
+   *         to match any value, e.g., `{property: '*'}`, or partial matching to find capabilities with at least the specified qualifier
+   *         properties. Partial matching is enabled by appending the _any-more_ entry to the qualifier, as following: `{'*': '*'}`.
    * @return An Observable that, when subscribed, emits the requested capabilities.
    *         It never completes and emits continuously when satisfying capabilities are registered or unregistered.
    */
@@ -96,10 +95,9 @@ export class ManifestService implements PreDestroy {
    * @param  filter - Control which intentions to return. If no or an empty filter is given, no filtering takes place. Specified filter
    *         criteria are "AND"ed together.\
    *         <p>
-   *         If given a qualifier in the filter, the qualifier can be either exact or contain wildcards to match
-   *         multiple intentions. The asterisk wildcard (`*`), if used as a qualifier entry value, requires intentions to have such
-   *         an entry. An even more lenient option is the optional wildcard (`?`), which does not require the qualifier entry at all.
-   *         And finally, if using the asterisk wildcard (`*`) as the qualifier key, intentions may contain additional qualifier entries.
+   *         If specifying a qualifier filter, the intentions must match that filter exactly. The filter supports the asterisk wildcard
+   *         to match any value, e.g., `{property: '*'}`, or partial matching to find intentions with at least the specified qualifier
+   *         properties. Partial matching is enabled by appending the _any-more_ entry to the qualifier, as following: `{'*': '*'}`.
    * @return An Observable that, when subscribed, emits the requested intentions.
    *         It never completes and emits continuously when satisfying intentions are registered or unregistered.
    */
@@ -125,11 +123,13 @@ export class ManifestService implements PreDestroy {
    *
    * <strong>The app can only unregister capabilities it provides itself.</strong>
    *
-   * @param  filter - Control which capabilities to unregister by specifying filter criteria which are "AND"ed together.\
+   * @param  filter - Control which capabilities to unregister by specifying filter criteria which are "AND"ed together. If not passing a filter,
+   *         all capabilities of the requesting app are unregistered.\
    *         <p>
-   *         If no or an empty filter is given, all capabilities of the requesting app are unregistered.\
-   *         If given a qualifier in the filter, wildcards, if any, are not interpreted as wildcards, but as exact values instead.\
-   *         If given an app symbolic name in the filter, it is ignored.
+   *         If specifying a qualifier filter, the capabilities to unregister must match that filter exactly. The filter supports the asterisk
+   *         wildcard to match any value, e.g., `{property: '*'}`, or partial matching to unregister capabilities with at least the specified
+   *         qualifier properties. Partial matching is enabled by appending the _any-more_ entry to the qualifier, as following: `{'*': '*'}`.
+   *         Note that specifying a symbolic app name in the filter has no effect.
    * @return A Promise that resolves when unregistered the capability,
    *         or that rejects if the unregistration failed.
    */
@@ -159,11 +159,13 @@ export class ManifestService implements PreDestroy {
    *
    * <strong>This operation requires that the 'Intention Registration API' is enabled for the requesting application.</strong>
    *
-   * @param  filter - Control which intentions to unregister by specifying filter criteria which are "AND"ed together.\
+   * @param  filter - Control which intentions to unregister by specifying filter criteria which are "AND"ed together. If not passing a filter,
+   *         all intentions of the requesting app are unregistered.\
    *         <p>
-   *         If no or an empty filter is given, all intentions of the requesting app are unregistered.\
-   *         If given a qualifier in the filter, wildcards, if any, are not interpreted as wildcards, but as exact values instead.\
-   *         If given an app symbolic name in the filter, it is ignored.
+   *         If specifying a qualifier filter, the intentions to unregister must match that filter exactly. The filter supports the asterisk
+   *         wildcard to match any value, e.g., `{property: '*'}`, or partial matching to unregister intentions with at least the specified
+   *         qualifier properties. Partial matching is enabled by appending the _any-more_ entry to the qualifier, as following: `{'*': '*'}`.
+   *         Note that specifying a symbolic app name in the filter has no effect.
    * @return A Promise that resolves when unregistered the intention,
    *         or that rejects if the unregistration failed.
    */
