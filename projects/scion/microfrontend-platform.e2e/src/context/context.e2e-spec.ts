@@ -57,6 +57,36 @@ describe('Context', () => {
     await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value');
   });
 
+  it('should allow setting a context key name containing forward slashes', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      context: LookupContextValuePagePO,
+    });
+
+    const outlet = pagePOs.get<BrowserOutletPO>('context:outlet');
+    await outlet.outletContextPO.open();
+    await outlet.outletContextPO.addContextValue('a/b/c', 'value');
+    await outlet.outletContextPO.close();
+
+    const lookupContextValuePO = pagePOs.get<LookupContextValuePagePO>('context');
+    await expect(await lookupContextValuePO.lookupValue('a/b/c')).toEqual('value');
+  });
+
+  it('should allow setting a context key name starting with a colon', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      context: LookupContextValuePagePO,
+    });
+
+    const outlet = pagePOs.get<BrowserOutletPO>('context:outlet');
+    await outlet.outletContextPO.open();
+    await outlet.outletContextPO.addContextValue(':key', 'value');
+    await outlet.outletContextPO.close();
+
+    const lookupContextValuePO = pagePOs.get<LookupContextValuePagePO>('context');
+    await expect(await lookupContextValuePO.lookupValue(':key')).toEqual('value');
+  });
+
   it('should allow removing a context value', async () => {
     const testingAppPO = new TestingAppPO();
     const pagePOs = await testingAppPO.navigateTo({

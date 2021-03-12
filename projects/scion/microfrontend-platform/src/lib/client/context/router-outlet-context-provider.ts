@@ -115,7 +115,10 @@ export class RouterOutletContextProvider {
         takeUntil(this._outletDisconnect$),
       )
       .subscribe((lookupRequest: TopicMessage<any[]>) => runSafe(() => {
-        const name = new TopicMatcher(Contexts.contextValueLookupTopic(':name')).match(lookupRequest.topic).params.get('name');
+        const encodedName = new TopicMatcher(Contexts.contextValueLookupTopic(':name')).match(lookupRequest.topic).params.get('name');
+
+        // The name has to be decoded here because it was encoded in `newContextValueLookupRequest` where the topic was created.
+        const name = decodeURIComponent(encodedName);
         const replyTo = lookupRequest.headers.get(MessageHeaders.ReplyTo);
         const options = lookupRequest.headers.get(CONTEXT_LOOKUP_OPTIONS);
         const entries = this._entries$.getValue();
