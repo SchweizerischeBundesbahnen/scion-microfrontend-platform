@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { MessageClient } from '../../client/messaging/message-client';
-import { expectPromise, ObserveCaptor, serveManifest, waitFor, waitForCondition } from '../../spec.util.spec';
+import { expectPromise, serveManifest, waitFor, waitForCondition } from '../../spec.util.spec';
 import { MicrofrontendPlatform } from '../../microfrontend-platform';
 import { Beans } from '@scion/toolkit/bean-manager';
 import { ApplicationConfig } from '../../host/platform-config';
@@ -16,6 +16,7 @@ import { IntentMessage, TopicMessage } from '../../messaging.model';
 import { AsyncSubject, concat, Observable, of, ReplaySubject, Subject, throwError } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { IntentClient } from './intent-client';
+import { ObserveCaptor } from '@scion/toolkit/testing';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
 

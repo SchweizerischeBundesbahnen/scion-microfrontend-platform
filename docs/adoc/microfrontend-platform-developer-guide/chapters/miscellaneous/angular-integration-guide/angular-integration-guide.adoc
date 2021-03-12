@@ -56,7 +56,7 @@ include::start-platform-via-initializer.snippets.ts[tags=host-app:register-initi
 <2> Instructs Angular to pass the `PlatformInitializer` to the higher order function.
 <3> Returns the initializer function. When Angular invokes the initializer function, we delegate platform startup to the `PlatformInitializer` service.
 
-IMPORTANT: Angular is very strict when compiling module definitions ahead-of-time (if enabled the AOT compilation). Therefore, you may need to replace the lamdas with the ES5 function syntax. Also, do not forget to export all functions that you reference in the module metadata definition.
+IMPORTANT: Angular is very strict when compiling module definitions ahead-of-time (if enabled the AOT compilation). Therefore, you may need to replace the lambdas with the ES5 function syntax. Also, do not forget to export all functions that you reference in the module metadata definition.
 
 Next, we implement the `PlatformInitializer` to start the platform.
 
