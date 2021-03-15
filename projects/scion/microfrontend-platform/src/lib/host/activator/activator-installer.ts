@@ -19,9 +19,9 @@ import { Logger } from '../../logger';
 import { PlatformMessageClient } from '../platform-message-client';
 import { MessageHeaders } from '../../messaging.model';
 import { EMPTY } from 'rxjs';
-import { MicrofrontendPlatform } from '../../microfrontend-platform';
 import { PlatformState } from '../../platform-state';
 import { Beans, Initializer } from '@scion/toolkit/bean-manager';
+import { PlatformStateRef } from '../../platform-state-ref';
 
 /**
  * Activates micro applications which provide an activator capability.
@@ -119,7 +119,7 @@ export class ActivatorInstaller implements Initializer {
     // Add the router outlet to the DOM
     document.body.appendChild(routerOutlet);
     // Unmount the router outlet on platform shutdown
-    MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => document.body.removeChild(routerOutlet));
+    Beans.get(PlatformStateRef).whenState(PlatformState.Stopped).then(() => document.body.removeChild(routerOutlet));
   }
 }
 
