@@ -49,6 +49,7 @@ import { PlatformState, Runlevel } from './platform-state';
 import { AbstractType, BeanInstanceConstructInstructions, Beans, Type } from '@scion/toolkit/bean-manager';
 import { ɵIntentClient } from './client/messaging/ɵintent-client';
 import { ɵMessageClient } from './client/messaging/ɵmessage-client';
+import { PlatformStateRef } from './platform-state-ref';
 
 window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {once: true});
 
@@ -102,7 +103,7 @@ window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {
  *
  * @category Platform
  */
-// @dynamic `ng-packagr` does not support lamdas in statics if `strictMetaDataEmit` is enabled. `ng-packagr` is used to build this library. See https://github.com/ng-packagr/ng-packagr/issues/696#issuecomment-373487183.
+// @dynamic `ng-packagr` does not support lambdas in statics if `strictMetaDataEmit` is enabled. `ng-packagr` is used to build this library. See https://github.com/ng-packagr/ng-packagr/issues/696#issuecomment-373487183.
 export class MicrofrontendPlatform {
 
   private static _state$ = new BehaviorSubject<PlatformState>(PlatformState.Stopped);
@@ -181,6 +182,7 @@ export class MicrofrontendPlatform {
         Beans.registerIfAbsent(OutletRouter);
         Beans.registerIfAbsent(RelativePathResolver);
         Beans.registerIfAbsent(RouterOutletUrlAssigner);
+        Beans.register(PlatformStateRef, {useValue: MicrofrontendPlatform});
 
         Beans.register(ɵPlatformBrokerGatewaySymbol, provideBrokerGateway(PLATFORM_SYMBOLIC_NAME, hostAppConfig && hostAppConfig.messaging));
         Beans.registerIfAbsent(PlatformMessageClient, provideMessageClient(ɵPlatformBrokerGatewaySymbol));
@@ -266,6 +268,7 @@ export class MicrofrontendPlatform {
         Beans.register(ContextService);
         Beans.register(ManifestService);
         Beans.register(KeyboardEventDispatcher, {eager: true});
+        Beans.register(PlatformStateRef, {useValue: MicrofrontendPlatform});
       },
     );
   }

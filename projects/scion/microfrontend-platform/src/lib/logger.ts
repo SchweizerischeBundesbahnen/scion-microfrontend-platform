@@ -38,7 +38,6 @@ export abstract class Logger {
  *
  * Replace this bean to capture the log output.
  *
- * @ignore
  * @internal
  */
 export class ConsoleLogger implements Logger {
