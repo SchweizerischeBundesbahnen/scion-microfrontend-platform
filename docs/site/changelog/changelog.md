@@ -5,6 +5,38 @@
 
 ## Changelog
 
+# [1.0.0-beta.13](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.12...1.0.0-beta.13) (2021-04-12)
+
+
+### Bug Fixes
+
+* **platform:** allow context key names containing forward slashes or starting with a colon ([5637832](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/5637832310538ba817a7cf7170de52d55abdeeba)), closes [#49](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/49)
+* **platform:** remove ES2015 import cycles ([5dfc7f6](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/5dfc7f61054ee8012d5bb2fac71a882d1f8d9a27)), closes [#42](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/42)
+
+
+### Features
+
+* **platform:** add wildcard support for unregistering capabilities and intentions ([4d22403](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/4d224036ad1e9607492f994082bcf9a9c36ad811)), closes [#61](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/61)
+
+
+### BREAKING CHANGES
+
+* **platform:** Allowing context key names containing forward slashes
+or starting with a colon introduced a breaking change in the host/client
+communication protocol.
+  
+  The messaging protocol between host and client HAS CHANGED for context
+value lookup using the `ContextService`.
+Therefore, you must update the host and affected clients to the new
+version together. The API has not changed; the breaking change only
+applies to the `@scion/microfrontend-platform` version.
+
+  To migrate:
+  - Upgrade host and clients (which use the `ContextService`) to
+`@scion/microfrontend-platform@1.0.0-beta.13`.
+
+
+
 # [1.0.0-beta.12](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.11...1.0.0-beta.12) (2021-02-22)
 
 
