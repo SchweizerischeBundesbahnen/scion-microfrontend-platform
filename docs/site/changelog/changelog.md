@@ -35,7 +35,15 @@ applies to the `@scion/microfrontend-platform` version.
   - Upgrade host and clients (which use the `ContextService`) to
 `@scion/microfrontend-platform@1.0.0-beta.13`.
 
+* **platform:** Adding wildcard support for unregistering capabilities and intentions introduced a breaking change.
 
+  To migrate:
+  - upgrade host and client apps to use `@scion/microfrontend-platform@1.0.0-beta.13`
+  - When searching for capabilities with a qualifier filter that contains scalar qualifier values, only capabilities with exactly those values are now returned. This is different from previous versions where a qualifier filter like `{entity: 'person', id: '5'}` matched capabilities with exactly that qualifier, as well as capabilities containing a wildcard (`*` or `?`) in the qualifier, such as `{entity: 'person', id: '*'}` or `{entity: 'person', id: '?'}`. To keep the old lookup behavior, do not pass a qualifier filter and filter the capabilities yourself, e.g. by using the `QualifierMatcher`, as follows:
+    ```ts
+      Beans.get(ManifestService).lookupCapabilities$({type: 'view'})
+      .pipe(filterArray(capability => new QualifierMatcher(capability.qualifier, {evalOptional: true, evalAsterisk: true}).matches({entity: 'person', id: '5'})))
+    ```
 
 # [1.0.0-beta.12](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.11...1.0.0-beta.12) (2021-02-22)
 
