@@ -215,7 +215,7 @@ export class SciRouterOutletElement extends HTMLElement {
     this._outletName$ = new BehaviorSubject<string>(PRIMARY_OUTLET);
     this._shadowRoot = this.attachShadow({mode: 'open'});
     this._shadowRoot.innerHTML = HTML_TEMPLATE.trim();
-    this._iframe = this._shadowRoot.querySelector('iframe');
+    this._iframe = this._shadowRoot.querySelector('iframe')!;
     this._contextProvider = new RouterOutletContextProvider(this._iframe);
     this.empty$ = this._empty$.pipe(distinctUntilChanged());
   }
@@ -226,7 +226,7 @@ export class SciRouterOutletElement extends HTMLElement {
    * By giving the outlet a name, you can reference the outlet when navigating. The name is optional;
    * if not set, it defaults to {@link PRIMARY_OUTLET primary}
    */
-  public set name(name: string) {
+  public set name(name: string | undefined) {
     if (name) {
       this.setAttribute(ATTR_NAME, name);
     }
@@ -238,8 +238,8 @@ export class SciRouterOutletElement extends HTMLElement {
   /**
    * Returns the name of this outlet.
    */
-  public get name(): string {
-    return this.getAttribute(ATTR_NAME);
+  public get name(): string | undefined {
+    return this.getAttribute(ATTR_NAME) ?? undefined;
   }
 
   /**
@@ -369,9 +369,9 @@ export class SciRouterOutletElement extends HTMLElement {
   private installOutletUrlListener(): void {
     this._outletName$
       .pipe(
-        switchMap(outlet => outletNavigate$(outlet).pipe(startWith(null as Navigation))), // start with a `null` navigation in case no navigation took place yet
+        switchMap(outlet => outletNavigate$(outlet).pipe(startWith(null! as Navigation))), // start with a `null` navigation in case no navigation took place yet
         tap(navigation => this._empty$.next(!navigation || navigation.url === 'about:blank')),
-        distinctUntilChanged(null, navigation => navigation && navigation.url),
+        distinctUntilChanged((url1, url2) => url1 === url2, navigation => navigation?.url),
         pairwise(),
         takeUntil(this._disconnect$),
       )
@@ -391,13 +391,15 @@ export class SciRouterOutletElement extends HTMLElement {
         takeUntil(this._disconnect$),
         mapToBody(),
       )
-      .subscribe((preferredSize: PreferredSize) => {
-        this.style.minWidth = preferredSize && preferredSize.minWidth || null;
-        this.style.width = preferredSize && preferredSize.width || null;
-        this.style.maxWidth = preferredSize && preferredSize.maxWidth || null;
-        this.style.minHeight = preferredSize && preferredSize.minHeight || null;
-        this.style.height = preferredSize && preferredSize.height || null;
-        this.style.maxHeight = preferredSize && preferredSize.maxHeight || null;
+      .subscribe((preferredSize: PreferredSize | undefined) => {
+        setStyle(this, {
+          'min-width': preferredSize?.minWidth ?? null,
+          'width': preferredSize?.width ?? null,
+          'max-width': preferredSize?.maxWidth ?? null,
+          'min-height': preferredSize?.minHeight ?? null,
+          'height': preferredSize?.height ?? null,
+          'max-height': preferredSize?.maxHeight ?? null,
+        });
       });
   }
 
@@ -418,7 +420,7 @@ export class SciRouterOutletElement extends HTMLElement {
     Beans.get(MessageClient).observe$<KeyboardEventInit>(RouterOutlets.keyboardEventTopic(this._uid, ':eventType'))
       .pipe(takeUntil(this._disconnect$))
       .subscribe((event: TopicMessage<KeyboardEventInit>) => {
-        const type = event.params.get('eventType');
+        const type = event.params!.get('eventType')!;
         this.dispatchEvent(new KeyboardEvent(type, event.body));
       });
   }
@@ -637,8 +639,8 @@ namespace KeystrokesAttributeUtil {
     return attributeValue ? attributeValue.split(delimiter) : [];
   }
 
-  export function join(keystrokes: string[] | null): string | null {
-    return keystrokes ? keystrokes.join(delimiter) : null;
+  export function join(keystrokes: string[]): string {
+    return keystrokes.join(delimiter);
   }
 }
 
@@ -661,4 +663,16 @@ function outletNavigate$(outlet: string): Observable<Navigation> {
         pushStateToSessionHistoryStack: Defined.orElse(navigateMessage.headers.get(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER), false),
       };
     }));
+}
+
+/**
+ * Applies the given style(s) to the given element.
+ *
+ * Specify styles to be modified by passing a dictionary containing CSS property names (hyphen case).
+ * To remove a style, set its value to `null`.
+ *
+ * @ignore
+ */
+function setStyle(element: HTMLElement, style: { [style: string]: any | null }): void {
+  Object.keys(style).forEach(key => element.style.setProperty(key, style[key]));
 }

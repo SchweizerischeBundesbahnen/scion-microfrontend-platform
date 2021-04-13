@@ -33,10 +33,10 @@ export class RouterOutletUrlAssigner {
     const patchedUrl = this.patchUrl(currNavigation.url, prevNavigation && prevNavigation.url);
 
     if (currNavigation.pushStateToSessionHistoryStack) {
-      iframe.contentWindow.location.assign(patchedUrl);
+      iframe.contentWindow!.location.assign(patchedUrl);
     }
     else {
-      iframe.contentWindow.location.replace(patchedUrl);
+      iframe.contentWindow!.location.replace(patchedUrl);
     }
   }
 

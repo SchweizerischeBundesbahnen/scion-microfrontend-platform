@@ -62,7 +62,7 @@ export class ApplicationRegistry {
     manifest.intentions && manifest.intentions.forEach(intention => Beans.get(ManifestRegistry).registerIntention(intention, applicationConfig.symbolicName));
   }
 
-  public getApplication(symbolicName: string): Application {
+  public getApplication(symbolicName: string): Application | undefined {
     return this._applications.get(symbolicName);
   }
 
@@ -74,21 +74,21 @@ export class ApplicationRegistry {
    * Returns whether or not capability 'scope check' is disabled for the given application.
    */
   public isScopeCheckDisabled(appSymbolicName: string): boolean {
-    return this._applications.get(appSymbolicName).scopeCheckDisabled;
+    return Defined.orElseThrow(this._applications.get(appSymbolicName), () => Error(`[NullApplicationError] No application registered under the symbolic name '${appSymbolicName}'.`)).scopeCheckDisabled;
   }
 
   /**
    * Returns whether or not the 'Intention Registration API' is disabled for the given application.
    */
   public isIntentionRegisterApiDisabled(appSymbolicName: string): boolean {
-    return this._applications.get(appSymbolicName).intentionRegisterApiDisabled;
+    return Defined.orElseThrow(this._applications.get(appSymbolicName), () => Error(`[NullApplicationError] No application registered under the symbolic name '${appSymbolicName}'.`)).intentionRegisterApiDisabled;
   }
 
   /**
    * Returns whether or not 'intention check' is disabled for the given application.
    */
   public isIntentionCheckDisabled(appSymbolicName: string): boolean {
-    return this._applications.get(appSymbolicName).intentionCheckDisabled;
+    return Defined.orElseThrow(this._applications.get(appSymbolicName), () => Error(`[NullApplicationError] No application registered under the symbolic name '${appSymbolicName}'.`)).intentionCheckDisabled;
   }
 
   /**

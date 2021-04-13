@@ -16,7 +16,7 @@ import { filter, finalize } from 'rxjs/operators';
  *
  * @ignore
  */
-export class MessageHandler<IN, OUT> {
+export class MessageHandler<MSG extends Message, REPLY> {
 
   private _messageClient = Beans.get(MessageClient);
 
@@ -26,7 +26,7 @@ export class MessageHandler<IN, OUT> {
    */
   public readonly subscription = new Subscription();
 
-  constructor(message$: Observable<Message>, private _callback: (message: Message) => Observable<OUT> | Promise<OUT> | OUT | void) {
+  constructor(message$: Observable<MSG>, private _callback: (message: MSG) => Observable<REPLY> | Promise<REPLY> | REPLY | void) {
     this.subscription.add(message$.subscribe(message => {
       if (message.headers.has(MessageHeaders.ReplyTo)) {
         this.handleMessage(message);
@@ -40,7 +40,7 @@ export class MessageHandler<IN, OUT> {
   /**
    * The requestor has initiated a fire-and-forget communication, thus we simply pass the message to the callback and ignore response(s).
    */
-  private consumeMessage(message: Message): void {
+  private consumeMessage(message: MSG): void {
     runSafe(() => this._callback(message));
   }
 
@@ -48,11 +48,11 @@ export class MessageHandler<IN, OUT> {
    * The requestor has initiated a request-response communication, thus we pass the request to the callback and send response(s)
    * or a potential completion or error to the requestor.
    */
-  private handleMessage(request: Message): void {
+  private handleMessage(request: MSG): void {
     const replyTo = request.headers.get(MessageHeaders.ReplyTo);
 
     // Invoke the callback to produce value(s).
-    let reply: Observable<OUT> | Promise<OUT> | OUT | void;
+    let reply: Observable<REPLY> | Promise<REPLY> | REPLY | void;
     try {
       reply = this._callback(request);
     }

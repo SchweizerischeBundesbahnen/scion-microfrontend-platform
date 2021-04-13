@@ -29,9 +29,9 @@ export class ManifestObjectStore<T extends ManifestObject> {
    * Adds the given {@link ManifestObject} to this store.
    */
   public add(object: T): void {
-    this._objectById.set(object.metadata.id, object);
+    this._objectById.set(object.metadata!.id, object);
     Maps.addListValue(this._objectsByType, object.type, object);
-    Maps.addListValue(this._objectsByApplication, object.metadata.appSymbolicName, object);
+    Maps.addListValue(this._objectsByApplication, object.metadata!.appSymbolicName, object);
     this._change$.next();
   }
 
@@ -62,9 +62,9 @@ export class ManifestObjectStore<T extends ManifestObject> {
 
     return Arrays
       .intersect(
-        filterById ? Arrays.coerce(this._objectById.get(filter.id)) : undefined,
-        filterByType ? Arrays.coerce(this._objectsByType.get(filter.type)) : undefined,
-        filterByApp ? Arrays.coerce(this._objectsByApplication.get(filter.appSymbolicName)) : undefined,
+        filterById ? Arrays.coerce(this._objectById.get(filter.id!)) : undefined,
+        filterByType ? Arrays.coerce(this._objectsByType.get(filter.type!)) : undefined,
+        filterByApp ? Arrays.coerce(this._objectsByApplication.get(filter.appSymbolicName!)) : undefined,
         (filterById || filterByType || filterByApp) ? undefined : Array.from(this._objectById.values()),
       )
       .filter(object => {
@@ -72,7 +72,7 @@ export class ManifestObjectStore<T extends ManifestObject> {
           return true;
         }
         if (qualifierPredicate) {
-          return qualifierPredicate(object.qualifier);
+          return qualifierPredicate(object.qualifier || {});
         }
 
         return new QualifierMatcher(filter.qualifier, {evalAsterisk: true, evalOptional: false}).matches(object.qualifier);
@@ -92,9 +92,10 @@ export class ManifestObjectStore<T extends ManifestObject> {
   private _remove(objects: T[]): void {
     let deleted = false;
     objects.forEach(object => {
-      deleted = this._objectById.delete(object.metadata.id) || deleted;
-      deleted = Maps.removeListValue(this._objectsByType, object.type, candidate => candidate.metadata.id === object.metadata.id) || deleted;
-      deleted = Maps.removeListValue(this._objectsByApplication, object.metadata.appSymbolicName, candidate => candidate.metadata.id === object.metadata.id) || deleted;
+      const objectId = object.metadata!.id;
+      deleted = this._objectById.delete(objectId) || deleted;
+      deleted = Maps.removeListValue(this._objectsByType, object.type, candidate => candidate.metadata?.id === objectId) || deleted;
+      deleted = Maps.removeListValue(this._objectsByApplication, object.metadata!.appSymbolicName, candidate => candidate.metadata?.id === objectId) || deleted;
     });
     deleted && this._change$.next();
   }

@@ -105,7 +105,7 @@ export class TopicSubscriptionRegistry {
     return this.subscriptions.reduce((resolvedTopicDestinations: ResolvedTopicDestination[], subscription: TopicSubscription) => {
       const match = new TopicMatcher(subscription.topic).match(publishTopic);
       if (match.matches) {
-        return resolvedTopicDestinations.concat({subscription, topic: publishTopic, params: match.params});
+        return resolvedTopicDestinations.concat({subscription, topic: publishTopic, params: match.params!});
       }
       return resolvedTopicDestinations;
     }, [] as ResolvedTopicDestination[]);

@@ -252,7 +252,7 @@ export class MessageBroker implements PreDestroy {
       .subscribe((clientMessage: ClientMessage<TopicMessage<string>>) => runSafe(() => {
         const client = clientMessage.client;
         const request = clientMessage.envelope.message;
-        const topic = request.body;
+        const topic = request.body!;
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
         const messageId = request.headers.get(MessageHeaders.MessageId);
         sendDeliveryStatusSuccess(client, {transport: MessagingTransport.BrokerToClient, topic: messageId});
@@ -387,7 +387,7 @@ export class MessageBroker implements PreDestroy {
   private createIntentPublisher(): PublishInterceptorChain<IntentMessage> {
     return chainInterceptors(Beans.all(IntentInterceptor), (message: IntentMessage): void => {
       const capability = Defined.orElseThrow(message.capability, () => Error(`[IllegalStateError] Missing target capability on intent message: ${JSON.stringify(message)}`));
-      const clients = this._clientRegistry.getByApplication(capability.metadata.appSymbolicName);
+      const clients = this._clientRegistry.getByApplication(capability.metadata!.appSymbolicName);
 
       clients.forEach(client => {
         const envelope: MessageEnvelope<IntentMessage> = {
@@ -433,7 +433,7 @@ export class MessageBroker implements PreDestroy {
    * Tests if at least one client is running that can handle one of the specified capabilities.
    */
   private existsClient(capabilities: Capability[]): boolean {
-    return capabilities.some(capability => this._clientRegistry.getByApplication(capability.metadata.appSymbolicName).length > 0);
+    return capabilities.some(capability => this._clientRegistry.getByApplication(capability.metadata!.appSymbolicName).length > 0);
   }
 
   public preDestroy(): void {

@@ -25,7 +25,7 @@ export class QualifierMatcher {
    * @param pattern - Pattern to match qualifiers. If `null` or `undefined`, uses an empty qualifier pattern.
    * @param flags   - Controls how to match qualifiers.
    */
-  constructor(pattern: Qualifier, flags: Flags) {
+  constructor(pattern: Qualifier | null | undefined, flags: Flags) {
     this._pattern = pattern || {};
     this._patternKeys = Object.keys(this._pattern);
     this._flags = flags;
@@ -34,8 +34,8 @@ export class QualifierMatcher {
   /**
    * Attempts to match the given qualifier against the pattern which was passed to the constructor.
    */
-  public matches(testee: Qualifier): boolean {
-    testee = testee || {};
+  public matches(qualifier: Qualifier | null | undefined): boolean {
+    const testee = qualifier || {};
     const testeeKeys = Object.keys(testee);
     const {_patternKeys: patternKeys, _pattern: pattern, _flags: flags} = this;
 
@@ -68,7 +68,7 @@ export class QualifierMatcher {
  *
  * @internal
  */
-export function assertExactQualifier(qualifier: Qualifier): void {
+export function assertExactQualifier(qualifier: Qualifier | null | undefined): void {
   if (!qualifier || Object.keys(qualifier).length === 0) {
     return;
   }

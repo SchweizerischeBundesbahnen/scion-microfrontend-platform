@@ -18,10 +18,10 @@
  *
  * @ignore
  */
-export function matchesCapabilityParams(intentParams: Map<string, any>, options?: { requiredCapabilityParams?: string[], optionalCapabilityParams?: string[] }): ParamsMatcherResult {
+export function matchesCapabilityParams(intentParams?: Map<string, any>, options?: { requiredCapabilityParams?: string[], optionalCapabilityParams?: string[] }): ParamsMatcherResult {
   const requiredCapabilityParams = options?.requiredCapabilityParams || [];
   const optionalCapabilityParams = options?.optionalCapabilityParams || [];
-  intentParams = intentParams || new Map<string, any>();
+  const params = intentParams || new Map<string, any>();
 
   const matcherResult: ParamsMatcherResult = {
     matches: true,
@@ -31,14 +31,14 @@ export function matchesCapabilityParams(intentParams: Map<string, any>, options?
 
   // Test if the intent contains all required params.
   requiredCapabilityParams
-    .filter(requiredParam => intentParams.get(requiredParam) === undefined)
+    .filter(requiredParam => params.get(requiredParam) === undefined)
     .forEach(requiredParam => {
       matcherResult.matches = false;
       matcherResult.missingParams.push(requiredParam);
     });
 
   // Test if the intent contains any additional params.
-  Array.from(intentParams.keys())
+  Array.from(params.keys())
     .filter(intentParam => !requiredCapabilityParams.includes(intentParam) && !optionalCapabilityParams.includes(intentParam))
     .forEach(intentParam => {
       matcherResult.matches = false;
@@ -59,7 +59,7 @@ export interface ParamsMatcherResult {
   /**
    * Params that are missing in the intent params.
    */
-  missingParams?: string[];
+  missingParams: string[];
   /**
    * Intent params that are neither required nor optional.
    */
