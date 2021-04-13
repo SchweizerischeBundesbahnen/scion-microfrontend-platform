@@ -26,7 +26,7 @@ export class Keystroke {
   /**
    * Flags to control keystroke handling.
    */
-  public flags: KeystrokeFlags;
+  public flags?: KeystrokeFlags;
 
   constructor(public readonly eventType: string, key: string, modifiers?: { control?: boolean, shift?: boolean, alt?: boolean, meta?: boolean }, flags?: KeystrokeFlags) {
     const parts = [];
@@ -118,7 +118,7 @@ function escapeKeyboardEventKey(key: string): string {
 
 /** @ignore */
 function parseFlags(keystroke: string): KeystrokeFlags | undefined {
-  const flagsStr = keystroke.match(/{(?<flagsDictionary>.*)}/)?.groups['flagsDictionary'] ?? null;
+  const flagsStr = keystroke.match(/{(?<flagsDictionary>.*)}/)?.groups!['flagsDictionary'] ?? null;
   if (flagsStr === null) {
     return undefined;
   }

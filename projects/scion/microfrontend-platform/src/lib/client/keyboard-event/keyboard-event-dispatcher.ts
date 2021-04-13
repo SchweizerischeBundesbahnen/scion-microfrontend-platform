@@ -135,7 +135,7 @@ export class KeyboardEventDispatcher implements PreDestroy {
  *
  * @internal
  */
-function applyKeystrokeFlags(flags: KeystrokeFlags): MonoTypeOperatorFunction<KeyboardEvent> {
+function applyKeystrokeFlags(flags: KeystrokeFlags | undefined): MonoTypeOperatorFunction<KeyboardEvent> {
   return tap(keystrokeEvent => {
     if (flags?.preventDefault) {
       keystrokeEvent.preventDefault();

@@ -209,9 +209,9 @@ function initGateway(config: GatewayConfig, constants: Constants): void {
         }
 
         const envelope: MessageEnvelope<TopicMessage<ConnackMessage>> = event.data;
-        const response = envelope.message.body;
+        const response = envelope.message.body!;
         if (response.returnCode === 'accepted') {
-          resolve({clientId: response.clientId, window: event.source as Window, origin: event.origin});
+          resolve({clientId: response.clientId!, window: event.source as Window, origin: event.origin});
         }
         else {
           reject(`${response.returnMessage} [code: '${response.returnCode}']`);

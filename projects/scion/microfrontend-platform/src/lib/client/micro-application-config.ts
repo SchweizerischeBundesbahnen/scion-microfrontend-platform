@@ -17,7 +17,7 @@ export abstract class MicroApplicationConfig {
   /**
    * Specifies the symbolic name of the micro application. The micro application must be registered in the host application under this symbol.
    */
-  public symbolicName: string;
+  public symbolicName!: string;
   /**
    * Configures interaction with the message broker.
    */

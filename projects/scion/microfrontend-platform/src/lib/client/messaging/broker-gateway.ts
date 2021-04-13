@@ -192,7 +192,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:di
         first(),
         timeoutWith(new Date(Date.now() + this._config.deliveryTimeout), throwError(`[MessageDispatchError] Broker did not report message delivery state within the ${this._config.deliveryTimeout}ms timeout. [envelope=${stringifyEnvelope(envelope)}]`)),
         takeUntil(this._destroy$),
-        mergeMap(statusMessage => statusMessage.body.ok ? EMPTY : throwError(statusMessage.body.details)),
+        mergeMap(statusMessage => statusMessage.body!.ok ? EMPTY : throwError(statusMessage.body!.details)),
       )
       .toPromise();
 
@@ -296,7 +296,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:di
         takeUntil(this._destroy$),
       )
       .toPromise()
-      .then(neverResolveIfUndefined);
+      .then(neverResolveIfUndefined)
+      .then(contentWindow => contentWindow !== null ? Promise.resolve(contentWindow) : NEVER_PROMISE);
   }
 
   /**
@@ -325,8 +326,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:di
         pluckEnvelope(),
         filterByTopic<GatewayInfoResponse>(replyToTopic),
         mergeMap((reply: TopicMessage<GatewayInfoResponse>): Observable<GatewayInfo> => {
-          const response: GatewayInfoResponse = reply.body;
-          return response.ok ? of({clientId: response.clientId, window: gatewayWindow, brokerOrigin: response.brokerOrigin}) : throwError(response.error);
+          const response: GatewayInfoResponse = reply.body!;
+          return response.ok ? of({clientId: response.clientId!, window: gatewayWindow, brokerOrigin: response.brokerOrigin!}) : throwError(response.error);
         }),
         take(1),
         timeoutWith(new Date(Date.now() + options.brokerDiscoveryTimeout), throwError(`[BrokerDiscoverTimeoutError] Message broker not discovered within the ${options.brokerDiscoveryTimeout}ms timeout. Messages cannot be published or received.`)),
@@ -396,8 +397,8 @@ function stringifyEnvelope(envelope: MessageEnvelope): string {
  * @see http://man.hubwiz.com/docset/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm.html
  * @internal
  */
-function copyMap<K, V>(data: Map<K, V>): Map<K, V> {
-  return new Map(data);
+function copyMap<K, V>(data?: Map<K, V>): Map<K, V> {
+  return new Map(data || []);
 }
 
 /**

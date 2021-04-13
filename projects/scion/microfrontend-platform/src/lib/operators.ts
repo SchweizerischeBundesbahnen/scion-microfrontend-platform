@@ -14,10 +14,8 @@ import { Message, TopicMessage } from './messaging.model';
 import { TopicMatcher } from './topic-matcher.util';
 
 /** @ignore */
-export function filterByChannel<T extends Message>(channel: MessagingChannel): MonoTypeOperatorFunction<MessageEnvelope<T>> {
-  return filter((envelope: MessageEnvelope<any>): boolean => {
-    return envelope.channel === channel;
-  });
+export function filterByChannel<T extends Message>(channel: MessagingChannel): OperatorFunction<MessageEnvelope, MessageEnvelope<T>> {
+  return filter((envelope: MessageEnvelope): envelope is MessageEnvelope<T> => envelope.channel === channel);
 }
 
 /** @ignore */

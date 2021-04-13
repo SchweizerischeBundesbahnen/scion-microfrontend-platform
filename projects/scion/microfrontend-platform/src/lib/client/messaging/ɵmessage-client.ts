@@ -10,7 +10,6 @@
 import { defer, Observable, Subscription } from 'rxjs';
 import { IntentMessage, mapToBody, throwOnErrorStatus, TopicMessage } from '../../messaging.model';
 import { BrokerGateway } from './broker-gateway';
-import { Defined } from '@scion/toolkit/util';
 import { MessagingChannel, PlatformTopics } from '../../ɵmessaging.model';
 import { TopicMatcher } from '../../topic-matcher.util';
 import { MessageClient, PublishOptions, RequestOptions } from './message-client';
@@ -24,8 +23,11 @@ export class ɵMessageClient implements MessageClient { // tslint:disable-line:c
 
   public publish<T = any>(topic: string, message?: T, options?: PublishOptions): Promise<void> {
     assertTopic(topic, {allowWildcardSegments: false});
-    const headers = new Map(options && options.headers);
-    const topicMessage: TopicMessage = {topic, retain: Defined.orElse(options && options.retain, false), headers: new Map(headers)};
+    const topicMessage: TopicMessage = {
+      topic,
+      retain: options?.retain ?? false,
+      headers: new Map(options?.headers || []),
+    };
     setBodyIfDefined(topicMessage, message);
     return this._brokerGateway.postMessage(MessagingChannel.Topic, topicMessage);
   }
@@ -36,9 +38,9 @@ export class ɵMessageClient implements MessageClient { // tslint:disable-line:c
     // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
     // to the returned Observable, each subscription must have its individual message instance and headers map.
     // In addition, the headers are copied to prevent modifications before the effective subscription.
-    const headers = new Map(options && options.headers);
+    const headers = new Map(options?.headers || []);
     return defer(() => {
-      const topicMessage: TopicMessage = {topic, retain: false, headers: new Map(headers)};
+      const topicMessage: TopicMessage = {topic, retain: false, headers: new Map(headers) /* make a copy for each subscription to support multiple subscriptions */};
       setBodyIfDefined(topicMessage, request);
       return this._brokerGateway.requestReply$(MessagingChannel.Topic, topicMessage).pipe(throwOnErrorStatus());
     });

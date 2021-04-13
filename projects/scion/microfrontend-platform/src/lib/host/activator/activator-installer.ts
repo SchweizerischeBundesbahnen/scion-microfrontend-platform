@@ -42,7 +42,7 @@ export class ActivatorInstaller implements Initializer {
     // Group activators by their providing application.
     const activatorsGroupedByApp: Map<string, Activator[]> = activators
       .filter(this.skipInvalidActivators())
-      .reduce((grouped, activator) => Maps.addListValue(grouped, activator.metadata.appSymbolicName, activator), new Map<string, Activator[]>());
+      .reduce((grouped, activator) => Maps.addListValue(grouped, activator.metadata!.appSymbolicName, activator), new Map<string, Activator[]>());
 
     // Create Promises that wait for activators to signal ready.
     const activatorReadyPromises: Promise<void>[] = Array
@@ -63,7 +63,7 @@ export class ActivatorInstaller implements Initializer {
   private skipInvalidActivators(): (activator: Activator) => boolean {
     return (activator: Activator): boolean => {
       if (!activator.properties || !activator.properties.path) {
-        Beans.get(Logger).error(`[ActivatorError] Failed to activate the application '${activator.metadata.appSymbolicName}'. Missing required 'path' property in the provided activator capability.`, activator);
+        Beans.get(Logger).error(`[ActivatorError] Failed to activate the application '${activator.metadata!.appSymbolicName}'. Missing required 'path' property in the provided activator capability.`, activator);
         return false;
       }
       return true;
@@ -76,7 +76,7 @@ export class ActivatorInstaller implements Initializer {
   private async waitForActivatorsToSignalReady(appSymbolicName: string, activators: Activator[]): Promise<void> {
     const t0 = Date.now();
     const readinessPromises: Promise<void>[] = activators
-      .reduce((acc, activator) => acc.concat(Arrays.coerce(activator.properties.readinessTopics)), []) // concat readiness topics
+      .reduce((acc, activator) => acc.concat(Arrays.coerce(activator.properties.readinessTopics)), new Array<string>()) // concat readiness topics
       .map(readinessTopic => Beans.get(PlatformMessageClient).observe$<void>(readinessTopic)
         .pipe(
           filter(msg => msg.headers.get(MessageHeaders.AppSymbolicName) === appSymbolicName),
@@ -98,7 +98,7 @@ export class ActivatorInstaller implements Initializer {
    * Mounts a hidden <sci-router-outlet> and loads the activator endpoint.
    */
   private mountActivator(activator: Activator, primary: boolean): void {
-    const application = Beans.get(ApplicationRegistry).getApplication(activator.metadata.appSymbolicName);
+    const application = Beans.get(ApplicationRegistry).getApplication(activator.metadata!.appSymbolicName)!;
 
     // Create the router outlet and navigate to the activator endpoint.
     const routerOutlet = document.createElement('sci-router-outlet') as SciRouterOutletElement;

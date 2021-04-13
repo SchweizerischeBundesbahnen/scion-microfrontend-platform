@@ -12,7 +12,7 @@ import { OUTLET_CONTEXT, OutletContext, PRIMARY_OUTLET, RouterOutlets } from './
 import { ContextService } from '../context/context-service';
 import { Urls } from '../../url.util';
 import { RelativePathResolver } from './relative-path-resolver';
-import { Defined, Maps } from '@scion/toolkit/util';
+import { Maps } from '@scion/toolkit/util';
 import { NavigationOptions, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER } from './metadata';
 import { Beans } from '@scion/toolkit/bean-manager';
 
@@ -116,16 +116,16 @@ export class OutletRouter {
 
     return messageClient.publish(outletUrlTopic, navigationUrl, {
       retain: true,
-      headers: new Map<string, any>().set(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, Defined.orElse(options && options.pushStateToSessionHistoryStack, false)),
+      headers: new Map<string, any>().set(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, options?.pushStateToSessionHistoryStack ?? false),
     });
   }
 
-  private computeNavigationUrl(url: string, options?: NavigationOptions): string {
+  private computeNavigationUrl(url: string | null | undefined, options?: NavigationOptions): string {
     if (url === undefined || url === null) { // empty path is a valid url
       return 'about:blank';
     }
 
-    const params = Maps.coerce(options && options.params);
+    const params = Maps.coerce(options?.params);
     if (params.size) {
       url = this.substituteNamedParameters(url, params);
     }
@@ -133,13 +133,13 @@ export class OutletRouter {
       return url;
     }
     else {
-      const relativeTo = Defined.orElse(options && options.relativeTo, window.location.href);
+      const relativeTo = options?.relativeTo ?? window.location.href;
       return Beans.get(RelativePathResolver).resolve(url, {relativeTo});
     }
   }
 
-  private async resolveOutlet(options: NavigationOptions): Promise<string> {
-    const outlet = options && options.outlet;
+  private async resolveOutlet(options?: NavigationOptions): Promise<string> {
+    const outlet = options?.outlet;
     if (outlet) {
       return outlet;
     }
@@ -164,7 +164,7 @@ export class OutletRouter {
    * /segment/segment;matrixParam1=:param1;matrixParam2=:param2 // matrix params
    * /segment/segment?queryParam1=:param1&queryParam2=:param2 // query params
    */
-  private substituteNamedParameters(path: string, params?: Map<string, any>): string {
+  private substituteNamedParameters(path: string, params: Map<string, any>): string {
     // A named parameter can be followed by another path segment (`/`), by a query param (`?` or `&`), by a matrix param (`;`)
     // or by the fragment part (`#`).
     return path.replace(/:([^/;&?#]+)/g, (match, $1) => params.has($1) ? params.get($1) : match);

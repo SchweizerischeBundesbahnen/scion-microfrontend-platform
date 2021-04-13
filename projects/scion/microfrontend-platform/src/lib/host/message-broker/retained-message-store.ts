@@ -54,6 +54,6 @@ export class RetainedMessageStore {
         return message;
       }
       return mostRecentMessage;
-    }, null as TopicMessage);
+    }, null! as TopicMessage);
   }
 }

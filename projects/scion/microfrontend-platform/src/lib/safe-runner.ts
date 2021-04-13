@@ -24,7 +24,7 @@ export function runSafe<T = void>(runnable: () => T): T {
   }
   catch (error) {
     Beans.get(Logger).error('[UnexpectedError] An unexpected error occurred.', error);
-    return undefined;
+    return undefined!;
   }
 
   if (result instanceof Promise) {

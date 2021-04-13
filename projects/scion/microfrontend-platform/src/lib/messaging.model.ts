@@ -300,7 +300,7 @@ export function throwOnErrorStatus<BODY>(): MonoTypeOperatorFunction<TopicMessag
  * @category Messaging
  */
 export function mapToBody<T>(): OperatorFunction<TopicMessage<T> | IntentMessage<T>, T> {
-  return map(message => message.body);
+  return map(message => message.body!);
 }
 
 /**
