@@ -14,6 +14,7 @@ import { SciParamsEnterComponent } from '@scion/toolkit.internal/widgets';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { Beans } from '@scion/toolkit/bean-manager';
+import { Clipboard } from '@angular/cdk/clipboard';
 
 const ID = 'id';
 const TYPE = 'type';
@@ -37,7 +38,7 @@ export class LookupCapabilityComponent {
   public form: FormGroup;
   public capabilities$: Observable<Capability[]>;
 
-  constructor(fb: FormBuilder) {
+  constructor(fb: FormBuilder, private _clipboard: Clipboard) {
     this.form = fb.group({
       [ID]: new FormControl(''),
       [TYPE]: new FormControl(''),
@@ -63,6 +64,10 @@ export class LookupCapabilityComponent {
 
   public onLookupCancel(): void {
     this.capabilities$ = null;
+  }
+
+  public onCopyToClipboard(capability: Capability): void {
+    this._clipboard.copy(JSON.stringify(capability, null, 2));
   }
 
   public onReset(): void {

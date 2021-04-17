@@ -15,7 +15,10 @@ import { RegisterCapabilityPagePO } from '../manifest/register-capability-page.p
 import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
 import { expectToBeRejectedWithError } from '../spec.util';
 import { MessageListItemPO } from './message-list-item.po';
-import { IntentMessage } from '@scion/microfrontend-platform';
+import { Capability, IntentMessage } from '@scion/microfrontend-platform';
+import { LookupCapabilityPagePO } from '../manifest/lookup-capability-page.po';
+
+const anyCapability: Capability = {} as any;
 
 /**
  * Contains Specs for intent-based messaging.
@@ -700,6 +703,7 @@ export namespace IntendBasedMessagingSpecs {
       intent: {type: 'testing', qualifier: {q1: 'v1', q2: 'v2'}},
       body: '',
       headers: new Map().set('header1', 'value').set('header2', '42'),
+      capability: anyCapability,
     });
   }
 
@@ -733,6 +737,7 @@ export namespace IntendBasedMessagingSpecs {
       intent: {type: 'uppercase', qualifier: {}},
       body: 'PAYLOAD',
       headers: new Map(),
+      capability: anyCapability,
     });
   }
 
@@ -740,7 +745,7 @@ export namespace IntendBasedMessagingSpecs {
    * Tests intent rejection.
    * The testing app is configured to reject intents of the type 'reject'.
    */
-  export async function rejectIntentSpec(): Promise<void> {
+  export async function interceptIntentRejectSpec(): Promise<void> {
     const testingAppPO = new TestingAppPO();
     const pagePOs = await testingAppPO.navigateTo({
       registrator: RegisterCapabilityPagePO,
@@ -770,7 +775,7 @@ export namespace IntendBasedMessagingSpecs {
    * Tests swallowing an intent.
    * The testing app is configured to swallow intents of the type 'swallow'.
    */
-  export async function swallowIntentSpec(): Promise<void> {
+  export async function interceptIntentSwallowSpec(): Promise<void> {
     const testingAppPO = new TestingAppPO();
     const pagePOs = await testingAppPO.navigateTo({
       registrator: RegisterCapabilityPagePO,
@@ -823,6 +828,16 @@ export namespace IntendBasedMessagingSpecs {
     const capabilityManager_app3 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3});
     const capabilityId_app3 = await capabilityManager_app3.registerCapability({type: 'testing', qualifier: {key: 'value'}, private: false});
 
+    const capabilityLookupPO = await managerOutlet.enterUrl<LookupCapabilityPagePO>({useClass: LookupCapabilityPagePO, origin: TestingAppOrigins.APP_1});
+
+    // Lookup capability of app-2
+    await capabilityLookupPO.lookup({id: capabilityId_app2});
+    const capability_app2 = (await capabilityLookupPO.getLookedUpCapabilities())[0];
+
+    // Lookup capability of app-3
+    await capabilityLookupPO.lookup({id: capabilityId_app3});
+    const capability_app3 = (await capabilityLookupPO.getLookedUpCapabilities())[0];
+
     // Receive intents in app-2 (client-1)
     const receiver1_app2 = pagePOs.get<ReceiveMessagePagePO>('receiver1_app2');
     await receiver1_app2.selectFlavor(MessagingFlavor.Intent);
@@ -856,45 +871,115 @@ export namespace IntendBasedMessagingSpecs {
     await expectIntent(receiver1_app2.getFirstMessageOrElseReject()).toEqual({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
-      capabilityId: capabilityId_app2,
+      capability: capability_app2,
     });
 
     // verify intent received in app-2 with resolved capability `capabilityId_app2` (client-2)
     await expectIntent(receiver2_app2.getFirstMessageOrElseReject()).toEqual({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
-      capabilityId: capabilityId_app2,
+      capability: capability_app2,
     });
 
     // verify intent received in app-3 with resolved capability `capabilityId_app3` (client-1)
     await expectIntent(receiver1_app3.getFirstMessageOrElseReject()).toEqual({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
-      capabilityId: capabilityId_app3,
+      capability: capability_app3,
     });
 
     // verify intent received in app-3 with resolved capability `capabilityId_app3` (client-2)
     await expectIntent(receiver2_app3.getFirstMessageOrElseReject()).toEqual({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
-      capabilityId: capabilityId_app3,
+      capability: capability_app3,
+    });
+  }
+
+  /**
+   * Tests that the capability is present on the intent message to be intercepted.
+   * The interceptor continues the interceptor chain with the message body replaced with the stringified capability.
+   */
+  export async function interceptIntentCapabilityPresentSpec(): Promise<void> {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      managerOutlet: 'about:blank',
+      publisher_app: PublishMessagePagePO,
+      receiver_app2: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2},
+      receiver_app3: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_3},
+    }, {queryParams: new Map().set('intercept-intent:capability-present', 'testee')});
+
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
+
+    // Register intention for app-1
+    const intentionManager_app1 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1});
+    await intentionManager_app1.registerIntention({type: 'testee'});
+
+    // Provide capability in app-2
+    const capabilityManager_app2 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_2});
+    const capabilityId_app2 = await capabilityManager_app2.registerCapability({type: 'testee', private: false});
+
+    // Provide capability in app-3
+    const capabilityManager_app3 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3});
+    const capabilityId_app3 = await capabilityManager_app3.registerCapability({type: 'testee', private: false});
+
+    const capabilityLookupPO = await managerOutlet.enterUrl<LookupCapabilityPagePO>({useClass: LookupCapabilityPagePO, origin: TestingAppOrigins.APP_1});
+
+    // Lookup capability of app-2
+    await capabilityLookupPO.lookup({id: capabilityId_app2});
+    const capability_app2 = (await capabilityLookupPO.getLookedUpCapabilities())[0];
+
+    // Lookup capability of app-3
+    await capabilityLookupPO.lookup({id: capabilityId_app3});
+    const capability_app3 = (await capabilityLookupPO.getLookedUpCapabilities())[0];
+
+    // Receive intents in app-2
+    const receiver_app2 = pagePOs.get<ReceiveMessagePagePO>('receiver_app2');
+    await receiver_app2.selectFlavor(MessagingFlavor.Intent);
+    await receiver_app2.clickSubscribe();
+
+    // Receive intents in app-3
+    const receiver_app3 = pagePOs.get<ReceiveMessagePagePO>('receiver_app3');
+    await receiver_app3.selectFlavor(MessagingFlavor.Intent);
+    await receiver_app3.clickSubscribe();
+
+    // issue the intent
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher_app');
+    await publisherPO.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO.enterIntent('testee');
+    await publisherPO.clickPublish();
+
+    // verify the interceptor to have replaced the message body with the stringified capability.
+    await expectIntent(receiver_app2.getFirstMessageOrElseReject()).toEqual({
+      intent: {type: 'testee', qualifier: {}},
+      body: JSON.stringify(capability_app2),
+      headers: new Map(),
+      capability: capability_app2,
+    });
+
+    // verify the interceptor to have replaced the message body with the stringified capability.
+    await expectIntent(receiver_app3.getFirstMessageOrElseReject()).toEqual({
+      intent: {type: 'testee', qualifier: {}},
+      body: JSON.stringify(capability_app3),
+      headers: new Map(),
+      capability: capability_app3,
     });
   }
 
   /**
    * Expects the intent to equal the expected intent with its headers to contain at minimum the given map entries.
    */
-  function expectIntent(actual: Promise<MessageListItemPO>): { toEqual: (expected: IntentMessage & { capabilityId?: string }) => void } {
+  function expectIntent(actual: Promise<MessageListItemPO>): { toEqual: (expected: IntentMessage) => void } {
     return {
-      toEqual: async (expected: IntentMessage & { capabilityId?: string }): Promise<void> => {
+      toEqual: async (expected: IntentMessage): Promise<void> => {
         const actualMessage = await actual;
         await expect(await actualMessage.getIntentType()).toEqual(expected.intent.type);
         await expect(await actualMessage.getIntentQualifier()).toEqual(expected.intent.qualifier);
         if (expected.body !== undefined) {
           await expect(actualMessage.getBody()).toEqual(expected.body);
         }
-        if (expected.capabilityId !== undefined) {
-          await expect(await actualMessage.getCapabilityId()).toEqual(expected.capabilityId);
+        if (expected.capability !== anyCapability) {
+          await expect(await actualMessage.getCapability()).toEqual(expected.capability);
         }
         // Jasmine 3.5 provides 'mapContaining' matcher; when updated, this custom matcher can be removed.
         await expect([...await actualMessage.getHeaders()]).toEqual(jasmine.arrayContaining([...expected.headers]));

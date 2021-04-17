@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Component, Input } from '@angular/core';
+import { Component, HostBinding, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { IntentMessage, MessageHeaders, TopicMessage } from '@scion/microfrontend-platform';
 
 @Component({
@@ -15,7 +15,7 @@ import { IntentMessage, MessageHeaders, TopicMessage } from '@scion/microfronten
   templateUrl: './message-list-item.component.html',
   styleUrls: ['./message-list-item.component.scss'],
 })
-export class MessageListItemComponent {
+export class MessageListItemComponent implements OnChanges {
 
   public MessageHeaders = MessageHeaders;
 
@@ -24,4 +24,11 @@ export class MessageListItemComponent {
 
   @Input()
   public message: TopicMessage | IntentMessage;
+
+  @HostBinding('attr.data-e2e-capability')
+  public capability: string;
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    this.capability = (this.isTopicMessage ? undefined : JSON.stringify((this.message as IntentMessage).capability, null, 2));
+  }
 }
