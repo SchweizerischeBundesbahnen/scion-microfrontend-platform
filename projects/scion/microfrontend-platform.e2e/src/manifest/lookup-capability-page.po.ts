@@ -9,7 +9,7 @@
  */
 import { $ } from 'protractor';
 import { enterText } from '../spec.util';
-import { ManifestObjectFilter } from '@scion/microfrontend-platform';
+import { Capability, ManifestObjectFilter } from '@scion/microfrontend-platform';
 import { SciCheckboxPO, SciListPO, SciParamsEnterPO, WaitUntil } from '@scion/toolkit.internal/widgets.po';
 import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
 
@@ -26,7 +26,7 @@ export class LookupCapabilityPagePO {
 
   /**
    * Looks up capabilities matching the given filter. The lookup never completes.
-   * Looked up capabilities can be read via {@link getLookedUpCapabilityIds} method.
+   * Looked up capabilities can be read via {@link getLookedUpCapabilities} method.
    */
   public async lookup(filter?: ManifestObjectFilter): Promise<void> {
     await this._switchToIframeFn();
@@ -58,11 +58,25 @@ export class LookupCapabilityPagePO {
   }
 
   /**
+   * Returns looked up capabilities.
+   */
+  public async getLookedUpCapabilities(waitUntil?: WaitUntil): Promise<Capability[]> {
+    await this._switchToIframeFn();
+    const listItemPOs = await this._capabilityListPO.getListItems(waitUntil);
+
+    const capabilities: Capability[] = [];
+    for (const listItemPO of listItemPOs) {
+      const capability = await listItemPO.contentFinder.$('[data-e2e-capability]').getAttribute('data-e2e-capability');
+      capabilities.push(JSON.parse(capability));
+    }
+    return capabilities;
+  }
+
+  /**
    * Returns the identity of the looked up capabilities.
    */
   public async getLookedUpCapabilityIds(waitUntil?: WaitUntil): Promise<string[]> {
-    await this._switchToIframeFn();
-    const listItemPOs = await this._capabilityListPO.getListItems(waitUntil);
-    return Promise.all(listItemPOs.map(listItemPO => listItemPO.contentFinder.$('span.e2e-id').getText()));
+    const capabilities = await this.getLookedUpCapabilities(waitUntil);
+    return capabilities.map(capability => capability.metadata.id);
   }
 }

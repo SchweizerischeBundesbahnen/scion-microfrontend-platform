@@ -95,11 +95,11 @@ describe('Messaging', () => {
       });
 
       it('allows rejecting messages', async () => {
-        await TopicBasedMessagingSpecs.rejectMessageSpec();
+        await TopicBasedMessagingSpecs.interceptMessageRejectSpec();
       });
 
       it('allows swallowing messages', async () => {
-        await TopicBasedMessagingSpecs.swallowMessageSpec();
+        await TopicBasedMessagingSpecs.interceptMessageSwallowSpec();
       });
     });
   });
@@ -165,7 +165,7 @@ describe('Messaging', () => {
       await IntendBasedMessagingSpecs.passHeadersSpec();
     });
 
-    it('resolves to the satisfying capability', async () => {
+    it('resolves to the fulfilling capability', async () => {
       await IntendBasedMessagingSpecs.resolveCapabilitySpec();
     });
 
@@ -176,11 +176,15 @@ describe('Messaging', () => {
       });
 
       it('allows rejecting intents', async () => {
-        await IntendBasedMessagingSpecs.rejectIntentSpec();
+        await IntendBasedMessagingSpecs.interceptIntentRejectSpec();
       });
 
       it('allows swallowing intents', async () => {
-        await IntendBasedMessagingSpecs.swallowIntentSpec();
+        await IntendBasedMessagingSpecs.interceptIntentSwallowSpec();
+      });
+
+      it('contains the resolved capability in the intent', async () => {
+        await IntendBasedMessagingSpecs.interceptIntentCapabilityPresentSpec();
       });
     });
   });

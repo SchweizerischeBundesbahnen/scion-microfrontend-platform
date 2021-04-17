@@ -34,17 +34,17 @@ export interface Message {
  */
 export interface IntentMessage<BODY = any> extends Message {
   /**
-   * The intent that represents this message.
+   * Intent that represents this message.
    */
   intent: Intent;
   /**
-   * Optional data to pass with the intent.
+   * Optional data passed along with the intent.
    */
   body?: BODY;
   /**
-   * Reference to the resolved capability as specified in the manifest.
+   * Capability that fulfills the intent.
    */
-  capability?: Capability;
+  capability: Capability;
 }
 
 /**

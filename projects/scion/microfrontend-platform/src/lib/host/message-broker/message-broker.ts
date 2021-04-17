@@ -13,7 +13,7 @@ import { Intent, IntentMessage, Message, MessageHeaders, TopicMessage } from '..
 import { ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand } from '../../ɵmessaging.model';
 import { ApplicationRegistry } from '../application-registry';
 import { ManifestRegistry } from '../manifest-registry/manifest-registry';
-import { Maps } from '@scion/toolkit/util';
+import { Defined } from '@scion/toolkit/util';
 import { UUID } from '@scion/toolkit/uuid';
 import { Logger } from '../../logger';
 import { runSafe } from '../../safe-runner';
@@ -24,10 +24,10 @@ import { RetainedMessageStore } from './retained-message-store';
 import { TopicMatcher } from '../../topic-matcher.util';
 import { bufferUntil } from '../../operators';
 import { chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain } from './message-interception';
-import { Capability } from '../../platform.model';
 import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 import { Runlevel } from '../../platform-state';
 import { matchesCapabilityParams, ParamsMatcherResult } from './params-tester';
+import { Capability } from '../../platform.model';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -326,8 +326,33 @@ export class MessageBroker implements PreDestroy {
           return;
         }
 
+        // Find capabilities fulfilling the intent, or send an error otherwise.
+        const capabilities = this._manifestRegistry.resolveCapabilitiesByIntent(intentMessage.intent, intentMessage.headers.get(MessageHeaders.AppSymbolicName));
+        if (capabilities.length === 0) {
+          const error = `[NullProviderError] No application found to provide a capability of the type '${intentMessage.intent.type}' and qualifiers '${JSON.stringify(intentMessage.intent.qualifier || {})}'. Maybe, the capability is not public API or the providing application not available.`;
+          sendDeliveryStatusError(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, error);
+          return;
+        }
+
+        // If the params of the intent do not match the params of every fulfilling capability, send an error.
+        for (const capability of capabilities) {
+          const matchResult = matchesCapabilityParams(intentMessage.intent.params, {requiredCapabilityParams: capability.requiredParams, optionalCapabilityParams: capability.optionalParams});
+          if (!matchResult.matches) {
+            const error = `[ParamMismatchError] ${constructParamsMismatchErrorMessage(matchResult, intentMessage.intent)}`;
+            sendDeliveryStatusError(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, error);
+            return;
+          }
+        }
+
+        // If request-reply communication, send an error if no replier is running to reply to the intent.
+        if (intentMessage.headers.has(MessageHeaders.ReplyTo) && !this.existsClient(capabilities)) {
+          const error = `[RequestReplyError] No client is currently running which could answer the intent '{type=${intentMessage.intent.type}, qualifier=${JSON.stringify(intentMessage.intent.qualifier)}}'.`;
+          sendDeliveryStatusError(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, error);
+          return;
+        }
+
         try {
-          this._intentPublisher.publish(intentMessage);
+          capabilities.forEach(capability => this._intentPublisher.publish({...intentMessage, capability}));
           sendDeliveryStatusSuccess(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId});
         }
         catch (error) {
@@ -361,48 +386,16 @@ export class MessageBroker implements PreDestroy {
    */
   private createIntentPublisher(): PublishInterceptorChain<IntentMessage> {
     return chainInterceptors(Beans.all(IntentInterceptor), (message: IntentMessage): void => {
-      // Find satisfying capabilities.
-      const capabilities = this._manifestRegistry.resolveCapabilitiesByIntent(message.intent, message.headers.get(MessageHeaders.AppSymbolicName));
-      if (capabilities.length === 0) {
-        throw Error(`[NullProviderError] No application found to provide a capability of the type '${message.intent.type}' and qualifiers '${JSON.stringify(message.intent.qualifier || {})}'. Maybe, the capability is not public API or the providing application not available.`);
-      }
+      const capability = Defined.orElseThrow(message.capability, () => Error(`[IllegalStateError] Missing target capability on intent message: ${JSON.stringify(message)}`));
+      const clients = this._clientRegistry.getByApplication(capability.metadata.appSymbolicName);
 
-      // Resolve clients of the found capabilities.
-      const capabilitiesByClientMap = new Map<Client, Set<Capability>>();
-      capabilities.forEach(capability => {
-        const clients = this._clientRegistry.getByApplication(capability.metadata.appSymbolicName);
-        clients.forEach(client => Maps.addSetValue(capabilitiesByClientMap, client, capability));
-      });
-
-      // If the params of the intent don't match the params of the capability, send an error.
-      capabilities.forEach(capability => {
-        const matchResult = matchesCapabilityParams(message.intent.params, {requiredCapabilityParams: capability.requiredParams, optionalCapabilityParams: capability.optionalParams});
-        if (!matchResult.matches) {
-          throw Error(`[ParamMismatchError] ${constructParamsMismatchErrorMessage(matchResult, message.intent)}`);
-        }
-      });
-
-      // If request-reply communication, send an error if no replier is found to reply to the intent.
-      if (capabilitiesByClientMap.size === 0 && message.headers.has(MessageHeaders.ReplyTo)) {
-        throw Error(`[RequestReplyError] No client is currently running which could answer the intent '{type=${message.intent.type}, qualifier=${JSON.stringify(message.intent.qualifier)}}'.`);
-      }
-
-      // Dispatch the intent.
-      capabilitiesByClientMap.forEach((clientCapabilities, client) => {
-        if (clientCapabilities.size > 1) {
-          Beans.get(Logger).warn(`Intent cannot be uniquely resolved to a capability. The application '${client.application.symbolicName}' provides multiple matching capabilities. Most likely this is not intended and may indicate an incorrect manifest configuration.`, clientCapabilities);
-        }
-        clientCapabilities.forEach(capability => {
-          const envelope: MessageEnvelope<IntentMessage> = {
-            transport: MessagingTransport.BrokerToClient,
-            channel: MessagingChannel.Intent,
-            message: {
-              ...message,
-              capability,
-            },
-          };
-          client.gatewayWindow.postMessage(envelope, client.application.origin);
-        });
+      clients.forEach(client => {
+        const envelope: MessageEnvelope<IntentMessage> = {
+          transport: MessagingTransport.BrokerToClient,
+          channel: MessagingChannel.Intent,
+          message: message,
+        };
+        client.gatewayWindow.postMessage(envelope, client.application.origin);
       });
     });
   }
@@ -434,6 +427,13 @@ export class MessageBroker implements PreDestroy {
     });
 
     return true;
+  }
+
+  /**
+   * Tests if at least one client is running that can handle one of the specified capabilities.
+   */
+  private existsClient(capabilities: Capability[]): boolean {
+    return capabilities.some(capability => this._clientRegistry.getByApplication(capability.metadata.appSymbolicName).length > 0);
   }
 
   public preDestroy(): void {

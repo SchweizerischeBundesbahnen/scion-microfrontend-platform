@@ -25,11 +25,12 @@
 <sci-list class="capabilities e2e-capabilities">
   <ng-container *ngFor="let capability of capabilities$ | async">
     <ng-template sciListItem>
-      <section class="capability">
+      <section class="capability" [attr.data-e2e-capability]="capability | json">
         <sci-qualifier-chip-list [qualifier]="capability.qualifier" [type]="capability.type"></sci-qualifier-chip-list>
         <span class="app">{{capability.metadata.appSymbolicName}}</span>
-        <span class="id e2e-id">{{capability.metadata.id}}</span>
+        <span class="id">{{capability.metadata.id}}</span>
         <span class="visibility">{{capability.private ? 'PRIVATE' : 'PUBLIC'}}</span>
+        <button type="button" class="material-icons" title="Copy capability to clipboard" (click)="onCopyToClipboard(capability)">content_copy</button>
       </section>
     </ng-template>
   </ng-container>

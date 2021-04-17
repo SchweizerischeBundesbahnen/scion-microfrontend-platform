@@ -673,7 +673,7 @@ export namespace TopicBasedMessagingSpecs {
    * Tests message rejection.
    * The testing app is configured to reject messages sent to the topic 'reject'.
    */
-  export async function rejectMessageSpec(): Promise<void> {
+  export async function interceptMessageRejectSpec(): Promise<void> {
     const testingAppPO = new TestingAppPO();
     const pagePOs = await testingAppPO.navigateTo({
       publisher: PublishMessagePagePO,
@@ -699,7 +699,7 @@ export namespace TopicBasedMessagingSpecs {
    * Tests swallowing a message.
    * The testing app is configured to swallow messages sent to the topic 'swallow'.
    */
-  export async function swallowMessageSpec(): Promise<void> {
+  export async function interceptMessageSwallowSpec(): Promise<void> {
     const testingAppPO = new TestingAppPO();
     const pagePOs = await testingAppPO.navigateTo({
       publisher: PublishMessagePagePO,

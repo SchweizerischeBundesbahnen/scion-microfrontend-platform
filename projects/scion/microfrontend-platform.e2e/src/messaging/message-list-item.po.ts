@@ -10,7 +10,7 @@
 import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
 import { SciListItemPO, SciPropertyPO } from '@scion/toolkit.internal/widgets.po';
 import { ElementFinder } from 'protractor';
-import { Qualifier } from '@scion/microfrontend-platform';
+import { Capability, Qualifier } from '@scion/microfrontend-platform';
 
 export class MessageListItemPO {
 
@@ -65,9 +65,9 @@ export class MessageListItemPO {
     return new SciPropertyPO(this._contentFinder.$('sci-property.e2e-intent-params')).readAsMap();
   }
 
-  public async getCapabilityId(): Promise<string> {
+  public async getCapability(): Promise<Capability> {
     await this._switchToIframeFn();
-    return this._contentFinder.$('span.e2e-capability-id').getText();
+    return JSON.parse(await this._listItemPO.contentFinder.$('[data-e2e-capability]').getAttribute('data-e2e-capability'));
   }
 
   public async clickReply(): Promise<void> {

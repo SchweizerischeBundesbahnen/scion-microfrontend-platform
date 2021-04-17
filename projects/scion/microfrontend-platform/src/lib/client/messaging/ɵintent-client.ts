@@ -27,7 +27,7 @@ export class ɵIntentClient implements IntentClient { // tslint:disable-line:cla
   public publish<T = any>(intent: Intent, body?: T, options?: IntentOptions): Promise<void> {
     assertExactQualifier(intent.qualifier);
     const headers = new Map(options && options.headers);
-    const intentMessage: IntentMessage = {intent, headers: new Map(headers)};
+    const intentMessage: IntentMessage = {intent, headers: new Map(headers), capability: undefined /* set by the broker when dispatching the intent */ };
     setBodyIfDefined(intentMessage, body);
     return this._brokerGateway.postMessage(MessagingChannel.Intent, intentMessage);
   }
@@ -40,7 +40,7 @@ export class ɵIntentClient implements IntentClient { // tslint:disable-line:cla
     // In addition, the headers are copied to prevent modifications before the effective subscription.
     const headers = new Map(options && options.headers);
     return defer(() => {
-      const intentMessage: IntentMessage = {intent, headers: new Map(headers)};
+      const intentMessage: IntentMessage = {intent, headers: new Map(headers), capability: undefined /* set by the broker when dispatching the intent */};
       setBodyIfDefined(intentMessage, body);
       return this._brokerGateway.requestReply$(MessagingChannel.Intent, intentMessage).pipe(throwOnErrorStatus());
     });

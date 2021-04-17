@@ -169,11 +169,26 @@ export class PlatformInitializer implements OnDestroy {
       };
       Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
     }
+    // Continues the interceptor chain with the message body put into uppercase.
     if (queryParams.has('intercept-intent:uppercase')) {
       const interceptor = new class implements IntentInterceptor { // tslint:disable-line:new-parens
         public intercept(message: IntentMessage<string>, next: Handler<IntentMessage<string>>): void {
           if (message.intent.type === queryParams.get('intercept-intent:uppercase')) {
             next.handle({...message, body: message.body.toUpperCase()});
+          }
+          else {
+            next.handle(message);
+          }
+        }
+      };
+      Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
+    }
+    // Continues the interceptor chain with the message body replaced with the stringified capability.
+    if (queryParams.has('intercept-intent:capability-present')) {
+      const interceptor = new class implements IntentInterceptor { // tslint:disable-line:new-parens
+        public intercept(message: IntentMessage<string>, next: Handler<IntentMessage<string>>): void {
+          if (message.intent.type === queryParams.get('intercept-intent:capability-present')) {
+            next.handle({...message, body: JSON.stringify(message.capability)});
           }
           else {
             next.handle(message);

@@ -748,28 +748,6 @@ describe('Messaging', () => {
     await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toResolve();
   });
 
-  it('should warn if an intent cannot be uniquely resolved to a capability of an application', async () => {
-    const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'warn', 'info']);
-    Beans.register(Logger, {useValue: loggerSpy});
-
-    const manifestUrl = serveManifest({
-      name: 'Host Application', capabilities: [
-        {type: 'microfrontend', qualifier: {entity: 'product', id: '*'}},
-        {type: 'microfrontend', qualifier: {entity: '*', id: '*'}},
-      ],
-    });
-    const platformConfig: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-    await MicrofrontendPlatform.startHost(platformConfig, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
-
-    Beans.get(IntentClient).publish({type: 'microfrontend', qualifier: {entity: 'product', id: '42'}});
-    await waitForCondition(() => loggerSpy.warn.calls.all().find(call => {
-      const log: string = call.args[0];
-      return log.match(/Intent cannot be uniquely resolved to a capability/);
-    }), 1000);
-
-    expect(true).toBeTrue(); // add noop expectation to omit 'no expectations warning'
-  });
-
   it('should receive a message once regardless of the number of subscribers in the same client', async () => {
     const manifestUrl = serveManifest({name: 'Host Application'});
     const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
