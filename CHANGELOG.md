@@ -1,3 +1,12 @@
+# [1.0.0-beta.14](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.13...1.0.0-beta.14) (2021-04-22)
+
+
+### Features
+
+* **platform:** pass intent with resolved capability to intent interceptors ([b51959d](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/b51959dc1dae9715b049b8c8ffbf67929e587ffa)), closes [#72](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/72)
+
+
+
 # [1.0.0-beta.13](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.12...1.0.0-beta.13) (2021-04-12)
 
 
