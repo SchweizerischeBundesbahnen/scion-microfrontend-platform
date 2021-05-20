@@ -19,6 +19,8 @@ import { PlatformMessageClient } from '../host/platform-message-client';
 import { PlatformTopics } from '../ɵmessaging.model';
 import { Beans, Initializer } from '@scion/toolkit/bean-manager';
 import { Runlevel } from '../platform-state';
+import { from } from 'rxjs';
+import { timeoutIfPresent } from '../operators';
 
 /**
  * Collects manifests of registered applications.
@@ -34,10 +36,10 @@ export class ManifestCollector implements Initializer {
     Defined.orElseThrow(platformConfig, () => Error('[PlatformConfigError] No platform config provided.'));
     Defined.orElseThrow(platformConfig.apps, () => Error('[PlatformConfigError] Missing \'apps\' property in platform config. Did you forget to register applications?'));
     Beans.register(PlatformFlags, {useValue: this.computePlatformFlags(platformConfig)});
+    Beans.register(PlatformConfig, {useValue: platformConfig});
 
     // Load application manifests
-    const appConfigs: ApplicationConfig[] = [Beans.get(HostPlatformAppProvider).appConfig, ...platformConfig.apps];
-    await Promise.all(this.fetchAndRegisterManifests(appConfigs));
+    await Promise.all(this.fetchAndRegisterManifests(platformConfig));
 
     // Wait until messaging is enabled to avoid running into a publish timeout.
     Beans.whenRunlevel(Runlevel.Two).then(() => {
@@ -46,10 +48,13 @@ export class ManifestCollector implements Initializer {
     });
   }
 
-  private fetchAndRegisterManifests(appConfigs: ApplicationConfig[]): Promise<void>[] {
-    return appConfigs
-      .filter(appConfig => !appConfig.exclude)
-      .map(appConfig => this.fetchAndRegisterManifest(appConfig));
+  private fetchAndRegisterManifests(platformConfig: PlatformConfig): Promise<void>[] {
+    const appConfigs: ApplicationConfig[] = new Array<ApplicationConfig>()
+      .concat(Beans.get(HostPlatformAppProvider).appConfig)
+      .concat(platformConfig.apps)
+      .filter(appConfig => !appConfig.exclude);
+
+    return appConfigs.map(appConfig => this.fetchAndRegisterManifest(appConfig));
   }
 
   private async fetchAndRegisterManifest(appConfig: ApplicationConfig): Promise<void> {
@@ -59,7 +64,10 @@ export class ManifestCollector implements Initializer {
     }
 
     try {
-      const response = await Beans.get(HttpClient).fetch(appConfig.manifestUrl);
+      const response = await from(Beans.get(HttpClient).fetch(appConfig.manifestUrl))
+        .pipe(timeoutIfPresent(appConfig.manifestLoadTimeout ?? platformConfig.manifestLoadTimeout))
+        .toPromise();
+
       if (!response.ok) {
         Beans.get(Logger).error(`[ManifestFetchError] Failed to fetch manifest for application '${appConfig.symbolicName}'. Maybe the application is currently unavailable. [httpStatusCode=${response.status}, httpStatusText=${response.statusText}]`, appConfig, response.status);
         return;

@@ -62,6 +62,7 @@ export class PlatformInitializer implements OnDestroy {
     const apps: ApplicationConfig[] = Object.values(environment.apps).map(app => {
       return {
         manifestUrl: `${app.url}/assets/${app.symbolicName}-manifest${manifestClassifier}.json`,
+        activatorLoadTimeout: app.activatorLoadTimeout,
         symbolicName: app.symbolicName,
         intentionRegisterApiDisabled: intentionRegisterApiDisabled.has(app.symbolicName),
       };
@@ -76,14 +77,15 @@ export class PlatformInitializer implements OnDestroy {
     await this._zone.runOutsideAngular(() => {
         return MicrofrontendPlatform.startHost({
           apps: apps,
+          activatorLoadTimeout: environment.activatorLoadTimeout,
           properties: Array.from(this._queryParams.keys()).reduce((dictionary, key) => ({...dictionary, [key]: this._queryParams.get(key)}), {}),
           platformFlags: {activatorApiDisabled: activatorApiDisabled},
         }, {symbolicName: determineAppSymbolicName()});
       },
     );
 
-    // When starting the app with activators, send a ping request to the activators to test their readiness. (activator.e2e-spec.ts).
-    if (manifestClassifier === '-activator') {
+    // When starting the app with the manifest classifier `activator-readiness`, send a ping request to the activators to test their readiness. (activator-readiness.e2e-spec.ts).
+    if (manifestClassifier === '-activator-readiness') {
       Beans.get(MessageClient).request$<string>(TestingAppTopics.ActivatorPing)
         .pipe(takeUntil(this._destroy$))
         .subscribe(reply => {

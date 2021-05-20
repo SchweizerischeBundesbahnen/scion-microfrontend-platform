@@ -26,20 +26,25 @@ export const environment = {
     app_1: {
       symbolicName: 'app-1',
       url: 'http://localhost:4201',
+      activatorLoadTimeout: undefined,
     },
     app_2: {
       symbolicName: 'app-2',
       url: 'http://localhost:4202',
+      activatorLoadTimeout: undefined,
     },
     app_3: {
       symbolicName: 'app-3',
       url: 'http://localhost:4203',
+      activatorLoadTimeout: 800, // activator-readiness.e2e-spec.ts & startup-progress.e2e-spec.ts
     },
     app_4: {
       symbolicName: 'app-4',
       url: 'http://localhost:4204',
+      activatorLoadTimeout: undefined,
     },
   },
+  activatorLoadTimeout: 20000,
   devtools,
 };
 

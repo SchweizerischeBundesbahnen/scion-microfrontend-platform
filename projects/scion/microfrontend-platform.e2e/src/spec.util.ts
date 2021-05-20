@@ -191,7 +191,7 @@ export function getInputValue(elementFinder: ElementFinder): Promise<any> {
 export async function consumeBrowserLog(severity: Level = Level.SEVERE, filter?: RegExp): Promise<string[]> {
   await browser.sleep(500); // waits until console log is written
   return (await browser.manage().logs().get('browser'))
-    .filter(log => log.level === severity)
+    .filter(log => log.level === severity || Level.ALL === severity)
     .map(log => log.message)
     .map(message => message.match(/"(.+)"/)[1]) // log message is contained in double quotes
     .filter(log => filter ? log.match(filter) : true);
