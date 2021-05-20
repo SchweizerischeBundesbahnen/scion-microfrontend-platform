@@ -83,7 +83,8 @@ export class AppShellComponent implements OnDestroy {
     this._routeActivate$.next();
   }
 
-  public isDevtoolsEnabled(): boolean {
+  @HostBinding('class.e2e-devtools-enabled')
+  public get isDevtoolsEnabled(): boolean {
     return this.isPlatformHost && environment.devtools !== null;
   }
 

@@ -22,6 +22,8 @@ import { EMPTY } from 'rxjs';
 import { PlatformState } from '../../platform-state';
 import { Beans, Initializer } from '@scion/toolkit/bean-manager';
 import { PlatformStateRef } from '../../platform-state-ref';
+import { ProgressMonitor } from '../progress-monitor/progress-monitor';
+import { ActivatorLoadProgressMonitor } from '../progress-monitor/progress-monitors';
 import { timeoutIfPresent } from '../../operators';
 
 /**
@@ -40,15 +42,24 @@ export class ActivatorInstaller implements Initializer {
       .pipe(take(1))
       .toPromise();
 
+    const monitor = Beans.get(ActivatorLoadProgressMonitor);
+    if (!activators.length) {
+      monitor.done();
+      return;
+    }
+
     // Group activators by their providing application.
     const activatorsGroupedByApp: Map<string, Activator[]> = activators
       .filter(this.skipInvalidActivators())
       .reduce((grouped, activator) => Maps.addListValue(grouped, activator.metadata!.appSymbolicName, activator), new Map<string, Activator[]>());
 
     // Create Promises that wait for activators to signal ready.
+    const subMonitors = monitor.splitEven(activatorsGroupedByApp.size);
     const activatorReadyPromises: Promise<void>[] = Array
       .from(activatorsGroupedByApp.entries())
-      .reduce((acc, [appSymbolicName, appActivators]) => acc.concat(this.waitForActivatorsToSignalReady(appSymbolicName, appActivators)), [] as Promise<void>[]);
+      .reduce((acc, [appSymbolicName, appActivators], index) => {
+        return acc.concat(this.waitForActivatorsToSignalReady(appSymbolicName, appActivators, subMonitors[index]));
+      }, [] as Promise<void>[]);
 
     // Mount activators in hidden iframes
     activatorsGroupedByApp.forEach((sameAppActivators: Activator[]) => {
@@ -74,7 +85,7 @@ export class ActivatorInstaller implements Initializer {
   /**
    * Creates a Promise that resolves when given activators signal ready.
    */
-  private async waitForActivatorsToSignalReady(appSymbolicName: string, activators: Activator[]): Promise<void> {
+  private async waitForActivatorsToSignalReady(appSymbolicName: string, activators: Activator[], monitor: ProgressMonitor): Promise<void> {
     const t0 = Date.now();
     const activatorLoadTimeout = Beans.get(ApplicationRegistry).getApplication(appSymbolicName)!.activatorLoadTimeout;
     const readinessPromises: Promise<void>[] = activators
@@ -94,10 +105,12 @@ export class ActivatorInstaller implements Initializer {
       );
 
     if (!readinessPromises.length) {
+      monitor.done();
       return Promise.resolve();
     }
 
     await Promise.all(readinessPromises);
+    monitor.done();
     Beans.get(Logger).info(`Activator startup of '${appSymbolicName}' took ${Date.now() - t0}ms.`);
   }
 

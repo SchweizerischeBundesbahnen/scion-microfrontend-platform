@@ -13,7 +13,7 @@ import { PlatformIntentClient } from './host/platform-intent-client';
 import { ManifestRegistry } from './host/manifest-registry/manifest-registry';
 import { ApplicationRegistry } from './host/application-registry';
 import { PlatformConfigLoader } from './host/platform-config-loader';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, from, Observable, Subject } from 'rxjs';
 import { MicroApplicationConfig } from './client/micro-application-config';
 import { ApplicationConfig, PlatformConfig } from './host/platform-config';
 import { PlatformPropertyService } from './platform-property-service';
@@ -24,7 +24,7 @@ import { PlatformMessageClient } from './host/platform-message-client';
 import { PLATFORM_SYMBOLIC_NAME } from './host/platform.constants';
 import { Defined } from '@scion/toolkit/util';
 import { MessageBroker } from './host/message-broker/message-broker';
-import { filter, take } from 'rxjs/operators';
+import { filter, take, takeUntil } from 'rxjs/operators';
 import { OutletRouter } from './client/router-outlet/outlet-router';
 import { SciRouterOutletElement } from './client/router-outlet/router-outlet.element';
 import { FocusInEventDispatcher } from './client/focus/focus-in-event-dispatcher';
@@ -50,6 +50,8 @@ import { AbstractType, BeanInstanceConstructInstructions, Beans, Type } from '@s
 import { ɵIntentClient } from './client/messaging/ɵintent-client';
 import { ɵMessageClient } from './client/messaging/ɵmessage-client';
 import { PlatformStateRef } from './platform-state-ref';
+import { ProgressMonitor } from './host/progress-monitor/progress-monitor';
+import { ActivatorLoadProgressMonitor, ManifestLoadProgressMonitor } from './host/progress-monitor/progress-monitors';
 
 window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {once: true});
 
@@ -107,6 +109,7 @@ window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {
 export class MicrofrontendPlatform {
 
   private static _state$ = new BehaviorSubject<PlatformState>(PlatformState.Stopped);
+  private static _startupProgress$ = new Subject<number>();
 
   /**
    * Starts the platform in the host application.
@@ -139,6 +142,7 @@ export class MicrofrontendPlatform {
    */
   public static startHost(platformConfig: ApplicationConfig[] | PlatformConfig | Type<PlatformConfigLoader>, hostAppConfig?: MicroApplicationConfig): Promise<void> {
     return MicrofrontendPlatform.startPlatform(() => {
+        MicrofrontendPlatform.installHostStartupProgressMonitor();
         const ɵPlatformBrokerGatewaySymbol = Symbol('INTERNAL_PLATFORM_BROKER_GATEWAY');
 
         // Construct the message broker in runlevel 0 to buffer connect requests of micro applications.
@@ -233,6 +237,8 @@ export class MicrofrontendPlatform {
    */
   public static connectToHost(config: MicroApplicationConfig): Promise<void> {
     return MicrofrontendPlatform.startPlatform(() => {
+        this.installClientStartupProgressMonitor();
+
         // Obtain platform properties and applications before signaling the platform as started to allow synchronous retrieval.
         Beans.registerInitializer({
           useFunction: async () => {
@@ -354,6 +360,52 @@ export class MicrofrontendPlatform {
 
     // Let microtasks waiting for entering that state to resolve first.
     await this.whenState(newState);
+  }
+
+  /**
+   * Allows listening to the startup progress of the platform.
+   *
+   * In the host, when the platform starts, it fetches the manifests of the registered applications, among other things,
+   * and waits for the applications to signal their readiness, which can take some time.
+   *
+   * You can subscribe to this Observable to provide feedback to the user about the progress of the platform startup.
+   * The Observable reports the progress as a percentage number between `0` and `100`. The Observable completes
+   * once the platform finished startup.
+   */
+  public static get startupProgress$(): Observable<number> {
+    return this._startupProgress$;
+  }
+
+  private static installHostStartupProgressMonitor(): void {
+    const monitor = new ProgressMonitor();
+
+    const [startupProgressMonitor, manifestLoadProgressMonitor, activatorLoadProgressMonitor] = monitor.split(1, 3, 5);
+    Beans.register(ManifestLoadProgressMonitor, {useValue: manifestLoadProgressMonitor});
+    Beans.register(ActivatorLoadProgressMonitor, {useValue: activatorLoadProgressMonitor});
+    MicrofrontendPlatform.whenState(PlatformState.Started).then(() => {
+      startupProgressMonitor.done();
+    });
+    MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => {
+      MicrofrontendPlatform._startupProgress$ = new Subject<number>();
+    });
+
+    monitor.progress$
+      .pipe(takeUntil(from(MicrofrontendPlatform.whenState(PlatformState.Started))))
+      .subscribe(MicrofrontendPlatform._startupProgress$);
+  }
+
+  private static installClientStartupProgressMonitor(): void {
+    const monitor = new ProgressMonitor();
+    MicrofrontendPlatform.whenState(PlatformState.Started).then(() => {
+      monitor.done();
+    });
+    MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => {
+      MicrofrontendPlatform._startupProgress$ = new Subject<number>();
+    });
+
+    monitor.progress$
+      .pipe(takeUntil(from(MicrofrontendPlatform.whenState(PlatformState.Started))))
+      .subscribe(MicrofrontendPlatform._startupProgress$);
   }
 }
 

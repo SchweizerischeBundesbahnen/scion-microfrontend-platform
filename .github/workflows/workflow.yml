@@ -117,6 +117,7 @@ jobs:
       matrix:
         suite:
           - activator
+          - startupProgress
           - context
           - focus
           - keyboardEvent
