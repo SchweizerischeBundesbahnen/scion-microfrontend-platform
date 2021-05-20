@@ -27,7 +27,7 @@ import { AppShellComponent } from './app-shell/app-shell.component';
 import { LookupContextValueComponent } from './outlet-context/lookup-context-value/lookup-context-value.component';
 
 const routes: Routes = [
-  {path: 'activator', loadChildren: (): any => import('./activator.module').then(m => m.ActivatorModule)},
+  {path: 'activator/readiness', loadChildren: (): any => import('./activator/activator-readiness.module').then(m => m.ActivatorReadinessModule)},
   {path: '', redirectTo: 'browser-outlets;count=2', pathMatch: 'full'},
   {
     path: '',

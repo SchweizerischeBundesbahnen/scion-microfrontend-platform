@@ -10,25 +10,25 @@
 
 import { NgModule } from '@angular/core';
 import { ACTIVATION_CONTEXT, ActivationContext, ContextService, MessageClient, MessageHeaders, MicroApplicationConfig } from '@scion/microfrontend-platform';
-import { TestingAppTopics } from './testing-app.topics';
+import { TestingAppTopics } from '../testing-app.topics';
 import { RouterModule } from '@angular/router';
 import { Beans } from '@scion/toolkit/bean-manager';
 
 /**
  * Module which operates as activator.
  *
- * Note: This module is loaded only if loading the host app with the query parameter 'manifestClassifier=activator' into the browser.
+ * Note: This module is loaded only if loading the host app with the query parameter 'manifestClassifier=activator-readiness' into the browser.
  */
 @NgModule({
   imports: [
     RouterModule.forChild([]),
   ],
 })
-export class ActivatorModule {
+export class ActivatorReadinessModule {
 
   constructor() {
     const symbolicName = Beans.get(MicroApplicationConfig).symbolicName;
-    const randomDelay = Math.floor(Math.random() * 10000);
+    const randomDelay = 1000 + Math.floor(Math.random() * 3000); // range: [1s, 4s); >=1s to exceed the 'activatorLoadTimeout' timeout of app3 [app3#activatorLoadTimeout=800ms] @see environment.ts
 
     console.log(`[testing] Delay the readiness signaling of the app '${symbolicName}' by ${randomDelay}ms.`);
     setTimeout(() => this.installPingReplierAndSignalReady(), randomDelay);
@@ -42,6 +42,7 @@ export class ActivatorModule {
     if (!activationContext) {
       throw Error('[NullActivatorContextError] Not running in an activator context.');
     }
+
     const symbolicName = Beans.get(MicroApplicationConfig).symbolicName;
     const pingReply = `${symbolicName} [primary: ${activationContext.primary}, X-APP-NAME: ${activationContext.activator.properties['X-APP-NAME']}]`;
 

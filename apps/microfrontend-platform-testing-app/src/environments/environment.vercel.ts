@@ -27,19 +27,24 @@ export const environment = {
     app_1: {
       symbolicName: 'app-1',
       url: `https://scion-microfrontend-platform-testing-app1-v${version.replace(/\./g, '-')}.vercel.app`,
+      activatorLoadTimeout: undefined,
     },
     app_2: {
       symbolicName: 'app-2',
       url: `https://scion-microfrontend-platform-testing-app2-v${version.replace(/\./g, '-')}.vercel.app`,
+      activatorLoadTimeout: undefined,
     },
     app_3: {
       symbolicName: 'app-3',
       url: `https://scion-microfrontend-platform-testing-app3-v${version.replace(/\./g, '-')}.vercel.app`,
+      activatorLoadTimeout: 800, // activator-readiness.e2e-spec.ts & startup-progress.e2e-spec.ts
     },
     app_4: {
       symbolicName: 'app-4',
       url: `https://scion-microfrontend-platform-testing-app4-v${version.replace(/\./g, '-')}.vercel.app`,
+      activatorLoadTimeout: undefined,
     },
   },
+  activatorLoadTimeout: 20000,
   devtools,
 };
