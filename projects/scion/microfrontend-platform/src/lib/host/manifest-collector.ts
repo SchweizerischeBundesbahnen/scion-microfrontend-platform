@@ -19,6 +19,8 @@ import { PlatformMessageClient } from '../host/platform-message-client';
 import { PlatformTopics } from '../ɵmessaging.model';
 import { Beans, Initializer } from '@scion/toolkit/bean-manager';
 import { Runlevel } from '../platform-state';
+import { ProgressMonitor } from './progress-monitor/progress-monitor';
+import { ManifestLoadProgressMonitor } from './progress-monitor/progress-monitors';
 import { from } from 'rxjs';
 import { timeoutIfPresent } from '../operators';
 
@@ -54,10 +56,17 @@ export class ManifestCollector implements Initializer {
       .concat(platformConfig.apps)
       .filter(appConfig => !appConfig.exclude);
 
-    return appConfigs.map(appConfig => this.fetchAndRegisterManifest(appConfig));
+    const monitor = Beans.get(ManifestLoadProgressMonitor);
+    if (!appConfigs.length) {
+      monitor.done();
+      return [];
+    }
+
+    const subMonitors = monitor.splitEven(appConfigs.length);
+    return appConfigs.map((appConfig, index) => this.fetchAndRegisterManifest(platformConfig, appConfig, subMonitors[index]));
   }
 
-  private async fetchAndRegisterManifest(appConfig: ApplicationConfig): Promise<void> {
+  private async fetchAndRegisterManifest(platformConfig: PlatformConfig, appConfig: ApplicationConfig, monitor: ProgressMonitor): Promise<void> {
     if (!appConfig.manifestUrl) {
       Beans.get(Logger).error(`[AppConfigError] Failed to fetch manifest for application '${appConfig.symbolicName}'. Manifest URL must not be empty.`);
       return;
@@ -81,6 +90,9 @@ export class ManifestCollector implements Initializer {
       // It will only reject on network failure or if anything prevented the request from completing.
       // See https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#Checking_that_the_fetch_was_successful
       Beans.get(Logger).error(`[ManifestFetchError] Failed to fetch manifest for application '${appConfig.symbolicName}'. Maybe the application is currently unavailable.`, error);
+    }
+    finally {
+      monitor.done();
     }
   }
 

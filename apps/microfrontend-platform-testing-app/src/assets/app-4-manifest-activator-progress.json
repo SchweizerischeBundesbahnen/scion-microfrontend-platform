@@ -1,0 +1,15 @@
+{
+  "name": "Testing App 4",
+  "baseUrl": "#",
+  "capabilities": [
+    {
+      "type": "activator",
+      "private": false,
+      "properties": {
+        "path": "activator/progress"
+      }
+    }
+   ],
+  "intentions": [
+  ]
+}

@@ -9,7 +9,7 @@
  */
 import { $, browser } from 'protractor';
 import { BrowserOutletPO, OutletDescriptorTypes, OutletPageObjectClass, OutletPageObjectDescriptor, SwitchToIframeFn } from './browser-outlet/browser-outlet.po';
-import { runOutsideAngularSynchronization, waitUntilTestingAppInteractableElseNoop } from './spec.util';
+import { isCssClassPresent, runOutsideAngularSynchronization, waitUntilTestingAppInteractableElseNoop } from './spec.util';
 
 /**
  * The central page object of the testing app to perform the initial navigation.
@@ -183,6 +183,14 @@ export class TestingAppPO {
     }
 
     return $('app-root').$('.e2e-focus-within').isPresent();
+  }
+
+  /**
+   * Returns `true` if the devtools is present in the current configuration.
+   */
+  public async isDevtoolsEnabled(): Promise<boolean> {
+    await browser.switchTo().defaultContent();
+    return isCssClassPresent($('app-shell'), 'e2e-devtools-enabled');
   }
 }
 

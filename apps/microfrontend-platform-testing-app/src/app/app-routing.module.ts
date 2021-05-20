@@ -28,6 +28,7 @@ import { LookupContextValueComponent } from './outlet-context/lookup-context-val
 
 const routes: Routes = [
   {path: 'activator/readiness', loadChildren: (): any => import('./activator/activator-readiness.module').then(m => m.ActivatorReadinessModule)},
+  {path: 'activator/progress', loadChildren: (): any => import('./activator/activator-progress.module').then(m => m.ActivatorProgressModule)},
   {path: '', redirectTo: 'browser-outlets;count=2', pathMatch: 'full'},
   {
     path: '',
