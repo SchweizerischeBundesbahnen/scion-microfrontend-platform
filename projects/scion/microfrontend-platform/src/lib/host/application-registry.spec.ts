@@ -15,6 +15,7 @@ import { ɵMessageClient } from '../client/messaging/ɵmessage-client';
 import { ɵManifestRegistry } from './manifest-registry/ɵmanifest-registry';
 import { NullBrokerGateway } from '../client/messaging/broker-gateway';
 import { Beans } from '@scion/toolkit/bean-manager';
+import { PlatformConfig } from './platform-config';
 
 describe('ApplicationRegistry', () => {
 
@@ -23,6 +24,7 @@ describe('ApplicationRegistry', () => {
   beforeEach(async () => {
     await MicrofrontendPlatform.destroy();
     await MicrofrontendPlatform.startPlatform(() => {
+      Beans.register(PlatformConfig);
       Beans.register(ApplicationRegistry);
       Beans.register(ManifestRegistry, {useClass: ɵManifestRegistry, eager: true});
       Beans.register(PlatformMessageClient, {useFactory: () => new ɵMessageClient(new NullBrokerGateway())});

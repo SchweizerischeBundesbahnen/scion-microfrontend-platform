@@ -1,13 +1,13 @@
 {
-  "name": "Testing App 3",
+  "name": "Testing App 4",
   "baseUrl": "#",
   "capabilities": [
     {
       "type": "activator",
       "private": false,
       "properties": {
-        "path": "activator",
-        "X-APP-NAME": "app-3",
+        "path": "activator/readiness",
+        "X-APP-NAME": "app-4",
         "readinessTopics": "activator/ready"
       }
     }

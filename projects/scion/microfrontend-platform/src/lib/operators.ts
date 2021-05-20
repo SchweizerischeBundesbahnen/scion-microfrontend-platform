@@ -7,8 +7,8 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { concat, EMPTY, from, MonoTypeOperatorFunction, Observable, of, OperatorFunction, pipe } from 'rxjs';
-import { filter, map, mergeMap, mergeMapTo, publishLast, refCount, take } from 'rxjs/operators';
+import { concat, EMPTY, from, MonoTypeOperatorFunction, Observable, of, OperatorFunction, pipe, throwError } from 'rxjs';
+import { filter, map, mergeMap, mergeMapTo, publishLast, refCount, take, timeoutWith } from 'rxjs/operators';
 import { MessageEnvelope, MessagingChannel, MessagingTransport } from './ɵmessaging.model';
 import { Message, TopicMessage } from './messaging.model';
 import { TopicMatcher } from './topic-matcher.util';
@@ -71,4 +71,22 @@ export function filterByHeader<T extends Message>(header: { key: string, value: 
 export function bufferUntil<T>(closingNotifier$: Observable<any> | Promise<any>): MonoTypeOperatorFunction<T> {
   const guard$ = from(closingNotifier$).pipe(take(1), publishLast(), refCount(), mergeMapTo(EMPTY));
   return mergeMap((item: T) => concat(guard$, of(item)));
+}
+
+/**
+ * Like RxJS {@link timeoutWith}, but without effect if passing a `0` or `undefined` timeout.
+ *
+ * Throws an error if passing a negative timeout.
+ *
+ * @ignore
+ */
+export function timeoutIfPresent<T>(timeout: number | undefined): MonoTypeOperatorFunction<T> {
+  if (timeout && timeout < 0) {
+    throw Error(`[IllegalTimeoutError] Negative timeouts not supported [timeout=${timeout}]`);
+  }
+
+  if (timeout) {
+    return timeoutWith(new Date(Date.now() + timeout), throwError(`Timeout of ${timeout}ms elapsed.`));
+  }
+  return pipe();
 }

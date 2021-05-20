@@ -11,7 +11,7 @@
 import { Application, ApplicationManifest } from '../platform.model';
 import { Defined } from '@scion/toolkit/util';
 import { Urls } from '../url.util';
-import { ApplicationConfig } from './platform-config';
+import { ApplicationConfig, PlatformConfig } from './platform-config';
 import { ManifestRegistry } from './manifest-registry/manifest-registry';
 import { Beans } from '@scion/toolkit/bean-manager';
 
@@ -25,9 +25,6 @@ export class ApplicationRegistry {
   private static readonly SYMBOLIC_NAME_REGEXP = new RegExp('^[a-z0-9-]+$');
 
   private readonly _applications = new Map<string, Application>();
-
-  constructor() {
-  }
 
   /**
    * Registers the given application.
@@ -52,6 +49,8 @@ export class ApplicationRegistry {
       name: manifest.name,
       baseUrl: this.computeBaseUrl(applicationConfig, manifest),
       manifestUrl: Urls.newUrl(applicationConfig.manifestUrl, Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? applicationConfig.manifestUrl : window.origin).toString(),
+      manifestLoadTimeout: applicationConfig.manifestLoadTimeout ?? Beans.get(PlatformConfig).manifestLoadTimeout,
+      activatorLoadTimeout: applicationConfig.activatorLoadTimeout ?? Beans.get(PlatformConfig).activatorLoadTimeout,
       origin: Urls.newUrl(this.computeBaseUrl(applicationConfig, manifest)).origin,
       scopeCheckDisabled: Defined.orElse(applicationConfig.scopeCheckDisabled, false),
       intentionCheckDisabled: Defined.orElse(applicationConfig.intentionCheckDisabled, false),

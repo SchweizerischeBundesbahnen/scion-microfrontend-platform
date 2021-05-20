@@ -9,7 +9,7 @@
       },
       "private": false,
       "properties": {
-        "path": "activator",
+        "path": "activator/readiness",
         "X-APP-NAME": "app-1",
         "readinessTopics": "activator/ready-1"
       }
@@ -21,7 +21,7 @@
       },
       "private": false,
       "properties": {
-        "path": "activator",
+        "path": "activator/readiness",
         "X-APP-NAME": "app-1",
         "readinessTopics": "activator/ready-2"
       }

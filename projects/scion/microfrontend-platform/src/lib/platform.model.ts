@@ -78,6 +78,20 @@ export interface Application {
    */
   manifestUrl: string;
   /**
+   * Maximum time (in milliseconds) that the host waits for this application to fetch its manifest.
+   *
+   * This is the effective timeout, i.e, either the application-specific timeout as defined in {@link ApplicationConfig.manifestLoadTimeout},
+   * or the global timeout as defined in {@link PlatformConfig.manifestLoadTimeout}, otherwise `undefined`.
+   */
+  manifestLoadTimeout?: number;
+  /**
+   * Maximum time (in milliseconds) that the host waits for this application to signal readiness.
+   *
+   * This is the effective timeout, i.e, either the application-specific timeout as defined in {@link ApplicationConfig.activatorLoadTimeout},
+   * or the global timeout as defined in {@link PlatformConfig.activatorLoadTimeout}, otherwise `undefined`.
+   */
+  activatorLoadTimeout?: number;
+  /**
    * Indicates whether or not capability scope check is disabled for this application.
    */
   scopeCheckDisabled: boolean;

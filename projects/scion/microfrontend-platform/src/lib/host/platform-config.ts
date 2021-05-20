@@ -13,21 +13,40 @@
  *
  * @category Platform
  */
-export interface PlatformConfig {
+export abstract class PlatformConfig {
   /**
    * Defines the micro applications running in the platform.
    */
-  apps: ApplicationConfig[];
+  public abstract readonly apps: ApplicationConfig[];
+  /**
+   * Maximum time (in milliseconds) for each application to fetch its manifest.
+   * You can set a different timeout per application via {@link ApplicationConfig.manifestLoadTimeout}.
+   * If not set, by default, the browser's HTTP fetch timeout applies.
+   *
+   * Consider setting this timeout if, for example, a web application firewall delays the responses of unavailable
+   * applications.
+   */
+  public abstract readonly manifestLoadTimeout?: number;
+  /**
+   * Maximum time (in milliseconds) that the host waits for each application to signal readiness.
+   * Has no effect for applications having no activator(s) or are not configured to signal readiness.
+   * You can set a different timeout per application via {@link ApplicationConfig.activatorLoadTimeout}.
+   * By default, no timeout is set.
+   *
+   * If an app fails to signal its readiness, e.g., due to an error, setting no timeout would cause
+   * that app to block the startup process indefinitely.
+   */
+  public abstract readonly activatorLoadTimeout?: number;
   /**
    * Defines user-defined properties which can be read by micro applications via {@link PlatformPropertyService}.
    */
-  properties?: {
+  public abstract readonly properties?: {
     [key: string]: any;
   };
   /**
    * Platform flags are settings and features that you can enable to change how the platform works.
    */
-  platformFlags?: PlatformFlags;
+  public abstract readonly platformFlags?: PlatformFlags;
 }
 
 /**
@@ -46,6 +65,19 @@ export interface ApplicationConfig {
    * URL to the application manifest.
    */
   manifestUrl: string;
+  /**
+   * Maximum time (in milliseconds) that the host waits for this application to fetch its manifest.
+   *
+   * If set, overrides the global timeout as configured in {@link PlatformConfig.manifestLoadTimeout}.
+   */
+  manifestLoadTimeout?: number;
+  /**
+   * Maximum time (in milliseconds) that the host waits for this application to signal readiness.
+   *
+   * If set, overrides the global timeout as configured in {@link PlatformConfig.activatorLoadTimeout}.
+   */
+  activatorLoadTimeout?: number;
+
   /**
    * Excludes this micro application from registration, e.g. to not register it in a specific environment.
    */

@@ -9,7 +9,7 @@
  */
 import { Activator, PlatformCapabilityTypes } from '../../platform.model';
 import { PlatformManifestService } from '../../client/manifest-registry/platform-manifest-service';
-import { filter, mergeMapTo, take } from 'rxjs/operators';
+import { catchError, filter, mergeMapTo, take } from 'rxjs/operators';
 import { ApplicationRegistry } from '../application-registry';
 import { OutletRouter } from '../../client/router-outlet/outlet-router';
 import { SciRouterOutletElement } from '../../client/router-outlet/router-outlet.element';
@@ -22,6 +22,7 @@ import { EMPTY } from 'rxjs';
 import { PlatformState } from '../../platform-state';
 import { Beans, Initializer } from '@scion/toolkit/bean-manager';
 import { PlatformStateRef } from '../../platform-state-ref';
+import { timeoutIfPresent } from '../../operators';
 
 /**
  * Activates micro applications which provide an activator capability.
@@ -75,13 +76,19 @@ export class ActivatorInstaller implements Initializer {
    */
   private async waitForActivatorsToSignalReady(appSymbolicName: string, activators: Activator[]): Promise<void> {
     const t0 = Date.now();
+    const activatorLoadTimeout = Beans.get(ApplicationRegistry).getApplication(appSymbolicName)!.activatorLoadTimeout;
     const readinessPromises: Promise<void>[] = activators
       .reduce((acc, activator) => acc.concat(Arrays.coerce(activator.properties.readinessTopics)), new Array<string>()) // concat readiness topics
       .map(readinessTopic => Beans.get(PlatformMessageClient).observe$<void>(readinessTopic)
         .pipe(
           filter(msg => msg.headers.get(MessageHeaders.AppSymbolicName) === appSymbolicName),
+          timeoutIfPresent(activatorLoadTimeout),
           take(1),
           mergeMapTo(EMPTY),
+          catchError(error => {
+            Beans.get(Logger).error(`[ActivatorLoadTimeoutError] Timeout elapsed while waiting for application to signal readiness [app=${appSymbolicName}, timeout=${activatorLoadTimeout}ms, readinessTopic=${readinessTopic}].`, error);
+            return EMPTY;
+          }),
         )
         .toPromise(),
       );
