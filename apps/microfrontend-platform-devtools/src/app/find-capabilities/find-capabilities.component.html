@@ -4,7 +4,7 @@
                            [logicalOperator]="capabilityFilterSession.typeLogicalOperator" (changeLogicalOperator)="onTypeLogicalOperatorChange($event)"
                            [initialFilters]="typeFilters" (addValueFilter)="onTypeFilterAdd($event)" (removeValueFilter)="onTypeFilterRemove($event)">
     </devtools-filter-field>
-    <devtools-filter-field [title]="'Filter by Qualifier'" type="key-value" [autocompleteValues]="['*','?']"
+    <devtools-filter-field [title]="'Filter by Qualifier'" type="key-value" [autocompleteKeys]="qualifierKeys$ | async" [autocompleteValues]="qualifierValues$ | async"
                            [logicalOperator]="capabilityFilterSession.qualifierLogicalOperator" (changeLogicalOperator)="onQualifierLogicalOperatorChange($event)"
                            [initialFilters]="qualifierFilters" (addKeyValueFilter)="onQualifierFilterAdd($event)" (removeKeyValueFilter)="onQualifierFilterRemove($event)">
     </devtools-filter-field>

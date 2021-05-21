@@ -12,6 +12,9 @@ import { Observable } from 'rxjs';
 import { Capability } from '@scion/microfrontend-platform';
 import { CapabilityFilterSession } from '../find-capabilities/capability-filter-session.service';
 import { ShellService } from '../shell.service';
+import { FormControl } from '@angular/forms';
+import { expand, map, mapTo, take } from 'rxjs/operators';
+import { filterManifestObjects } from '../manifest-object-filter.utils';
 
 @Component({
   selector: 'devtools-capability-filter-result',
@@ -22,9 +25,14 @@ import { ShellService } from '../shell.service';
 export class CapabilityFilterResultComponent {
 
   public capabilities$: Observable<Capability[]>;
+  public filterFormControl = new FormControl();
 
   constructor(shellService: ShellService, capabilityFilterSession: CapabilityFilterSession) {
-    shellService.detailsTitle = 'Capabilities matching your filter criteria';
-    this.capabilities$ = capabilityFilterSession.capabilities$();
+    shellService.detailsTitle = 'Capabilities';
+    this.capabilities$ = capabilityFilterSession.capabilities$()
+      .pipe(
+        expand(capabilities => this.filterFormControl.valueChanges.pipe(take(1), mapTo(capabilities))),
+        map(capabilities => filterManifestObjects(capabilities, this.filterFormControl.value)),
+      );
   }
 }
