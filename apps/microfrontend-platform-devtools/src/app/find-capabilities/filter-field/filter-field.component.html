@@ -4,10 +4,13 @@
   <button [class.active]="logicalOperator === AND" (click)="onLogicalOperatorClick(AND)" type="button">AND</button>
 </header>
 <div class="filter" [class]="type" *ngIf="showFilter; else showFilterButton" cdkMonitorSubtreeFocus (cdkFocusChange)="onFocusChange($event)">
-  <input type="text" [formControl]="keyFC" (keydown.enter)="onAddFilterClick()" *ngIf="isTypeKeyValue()" placeholder="Key" #key>
-  <input type="text" [formControl]="valueFC" (keydown.enter)="onAddFilterClick()" [placeholder]="placeholder" [attr.list]="autocompleteListId" #value>
+  <input type="text" [formControl]="keyFC" (keydown.enter)="onAddFilterClick()" *ngIf="isTypeKeyValue()" placeholder="Key" [attr.list]="autocompleteKeysDatalistId" #key>
+  <input type="text" [formControl]="valueFC" (keydown.enter)="onAddFilterClick()" [placeholder]="placeholder" [attr.list]="autocompleteValuesDatalistId" #value>
   <button type="button" (click)="onAddFilterClick()" [disabled]="isAddButtonDisabled()">Add</button>
-  <datalist [attr.id]="autocompleteListId">
+  <datalist [attr.id]="autocompleteKeysDatalistId">
+    <option *ngFor="let autocompleteKey of autocompleteKeys" [value]="autocompleteKey"></option>
+  </datalist>
+  <datalist [attr.id]="autocompleteValuesDatalistId">
     <option *ngFor="let autocompleteValue of autocompleteValues" [value]="autocompleteValue"></option>
   </datalist>
 </div>

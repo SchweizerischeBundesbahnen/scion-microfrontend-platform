@@ -2,14 +2,21 @@
 
 :host {
   display: flex;
+  flex-direction: column;
   padding: 1em;
-  overflow: hidden;
+
+  > sci-filter-field {
+    flex: none;
+    margin-bottom: .25em;
+  }
 
   > sci-viewport {
-    flex: auto;
+    flex: 1 1 0;
 
-    span.placeholder {
+    section.no-result {
       font-style: italic;
+      text-align: center;
+      margin: 2em;
     }
   }
 }

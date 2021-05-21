@@ -20,7 +20,8 @@ import { FocusOrigin } from '@angular/cdk/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FilterFieldComponent implements OnInit {
-  public autocompleteListId = UUID.randomUUID();  // generate random id for autocomplete list in order to support multiple filter fields in the same document
+  public autocompleteKeysDatalistId = UUID.randomUUID();  // generate random id for autocomplete list in order to support multiple filter fields in the same document
+  public autocompleteValuesDatalistId = UUID.randomUUID();  // generate random id for autocomplete list in order to support multiple filter fields in the same document
   public readonly OR = 'or';
   public readonly AND = 'and';
 
@@ -35,6 +36,9 @@ export class FilterFieldComponent implements OnInit {
 
   @Input()
   public placeholder = 'Value';
+
+  @Input()
+  public autocompleteKeys;
 
   @Input()
   public autocompleteValues;
@@ -110,7 +114,7 @@ export class FilterFieldComponent implements OnInit {
     if (this.isAddButtonDisabled()) {
       return;
     }
-    const newFilter = this.add(this.keyFC.value?.toLowerCase(), this.valueFC.value?.toLowerCase());
+    const newFilter = this.add(this.keyFC.value, this.valueFC.value);
     if (newFilter) {
       this.addValueFilter.emit(newFilter.value);
       this.addKeyValueFilter.emit(newFilter);

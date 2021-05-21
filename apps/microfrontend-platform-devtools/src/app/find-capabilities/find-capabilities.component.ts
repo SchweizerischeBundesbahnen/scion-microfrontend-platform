@@ -13,6 +13,9 @@ import { CapabilityFilterSession } from './capability-filter-session.service';
 import { Observable } from 'rxjs';
 import { DevToolsManifestService } from '../dev-tools-manifest.service';
 import { ShellService } from '../shell.service';
+import { map } from 'rxjs/operators';
+import { distinctArray } from '../operators';
+import { sortArray } from '@scion/toolkit/operators';
 
 @Component({
   selector: 'devtools-find-capabilities',
@@ -24,11 +27,25 @@ export class FindCapabilitiesComponent {
 
   public capabilityTypes$: Observable<string[]>;
   public appSymbolicNames: string[];
+  public qualifierKeys$: Observable<string[]>;
+  public qualifierValues$: Observable<string[]>;
 
   constructor(shellService: ShellService, public capabilityFilterSession: CapabilityFilterSession, manifestService: DevToolsManifestService) {
-    shellService.primaryTitle = 'Capabilities';
+    shellService.primaryTitle = 'Filter';
     this.capabilityTypes$ = manifestService.capabilityTypes$();
     this.appSymbolicNames = manifestService.applications.map(app => app.symbolicName).sort();
+    this.qualifierKeys$ = manifestService.capabilities$()
+      .pipe(
+        map(capabilities => capabilities.reduce((acc, capability) => acc.concat(Object.keys(capability.qualifier || {})), [])),
+        distinctArray(),
+        sortArray((a, b) => a.localeCompare(b)),
+      );
+    this.qualifierValues$ = manifestService.capabilities$()
+      .pipe(
+        map(capabilities => capabilities.reduce((acc, capability) => acc.concat(Object.values(capability.qualifier || {})), [])),
+        distinctArray(),
+        sortArray((a, b) => a.localeCompare(b)),
+      );
   }
 
   public onTypeFilterAdd(type: string): void {
