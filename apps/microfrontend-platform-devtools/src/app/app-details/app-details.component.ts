@@ -7,14 +7,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
+import { BehaviorSubject, combineLatest, MonoTypeOperatorFunction, Observable, Subject } from 'rxjs';
 import { Application, Capability, Intention } from '@scion/microfrontend-platform';
-import { distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, switchMap, takeUntil } from 'rxjs/operators';
 import { DevToolsManifestService } from '../dev-tools-manifest.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, UrlSegmentGroup } from '@angular/router';
 import { filterCapabilities, filterIntentions, splitFilter } from '../filter-utils';
 import { ShellService } from '../shell.service';
+import { SciTabbarComponent } from '@scion/toolkit.internal/widgets';
+import { Arrays } from '@scion/toolkit/util';
+import { bufferUntil } from '../operators';
+
+/**
+ * Instruction passed with a navigation to specify the tab to be activated.
+ */
+export const ACTIVE_TAB_ROUTER_STATE = 'activeTab';
 
 @Component({
   selector: 'devtools-app-details',
@@ -31,28 +39,26 @@ export class AppDetailsComponent implements OnDestroy {
 
   private _capabilityFilter$ = new BehaviorSubject<string[]>([]);
   private _intentionFilter$ = new BehaviorSubject<string[]>([]);
+
+  private _tabbar$ = new BehaviorSubject<SciTabbarComponent>(null);
   private _destroy$ = new Subject<void>();
 
-  constructor(private _shellService: ShellService, route: ActivatedRoute, private _manifestService: DevToolsManifestService) {
-    this.appSymbolicName$ = route.paramMap
+  constructor(private _shellService: ShellService,
+              private _route: ActivatedRoute,
+              private _router: Router,
+              private _manifestService: DevToolsManifestService,
+              private _cd: ChangeDetectorRef) {
+    this.appSymbolicName$ = this._route.paramMap
       .pipe(
         map(paramMap => paramMap.get('appSymbolicName')),
         distinctUntilChanged(),
       );
-    this.installTitleProvider();
     this.application$ = this.observeApplication$();
     this.capabilities$ = this.observeCapabilities$();
     this.intentions$ = this.observeIntentions$();
-  }
 
-  private installTitleProvider(): void {
-    this.appSymbolicName$
-      .pipe(
-        map(appSymbolicName => this._manifestService.application(appSymbolicName)),
-        map(application => application?.name),
-        takeUntil(this._destroy$),
-      )
-      .subscribe(appName => this._shellService.detailsTitle = appName);
+    this.installTitleProvider();
+    this.installTabActivator();
   }
 
   private observeApplication$(): Observable<Application> {
@@ -90,7 +96,57 @@ export class AppDetailsComponent implements OnDestroy {
     this._intentionFilter$.next(splitFilter(filter));
   }
 
+  private installTitleProvider(): void {
+    this.appSymbolicName$
+      .pipe(
+        map(appSymbolicName => this._manifestService.application(appSymbolicName)),
+        map(application => application?.name),
+        takeUntil(this._destroy$),
+      )
+      .subscribe(appName => {
+        this._shellService.detailsTitle = appName;
+        this._cd.markForCheck();
+      });
+  }
+
+  private installTabActivator(): void {
+    this._router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        matchesRoute(this._router, this._route),
+        map(() => this._router.getCurrentNavigation()?.extras.state?.[ACTIVE_TAB_ROUTER_STATE] as string),
+        bufferUntil(this._tabbar$.pipe(filter(Boolean))),
+        takeUntil(this._destroy$),
+      )
+      .subscribe((tabToActivate: string | undefined) => {
+        if (tabToActivate) {
+          this._tabbar$.value.activateTab(tabToActivate);
+          this._cd.markForCheck();
+        }
+      });
+  }
+
+  @ViewChild(SciTabbarComponent)
+  public set injectTabbar(tabbar: SciTabbarComponent) {
+    this._tabbar$.next(tabbar);
+  }
+
   public ngOnDestroy(): void {
     this._destroy$.next();
   }
+}
+
+/**
+ * Filters {@link NavigationEnd} events matching the given route.
+ */
+function matchesRoute(router: Router, route: ActivatedRoute): MonoTypeOperatorFunction<NavigationEnd> {
+  return filter((navigationEnd: NavigationEnd): boolean => {
+    const rootUrlSegmentGroup = router.parseUrl(navigationEnd.url).root;
+
+    let urlSegmentGroupUnderTest: UrlSegmentGroup = null;
+    return route.snapshot.pathFromRoot.every(activatedRoute => {
+      urlSegmentGroupUnderTest = urlSegmentGroupUnderTest ? urlSegmentGroupUnderTest.children[activatedRoute.outlet] : rootUrlSegmentGroup;
+      return Arrays.isEqual(activatedRoute.url.map(segment => segment.toString()), urlSegmentGroupUnderTest.segments.map(segment => segment.toString()));
+    });
+  });
 }

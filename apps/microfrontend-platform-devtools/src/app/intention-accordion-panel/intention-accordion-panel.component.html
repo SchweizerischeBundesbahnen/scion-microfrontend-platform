@@ -1,8 +1,7 @@
 <header>Provided by:</header>
 <ul>
   <li *ngFor="let application of applications$ | async">
-    <a class="app-name"
-       [routerLink]="['../', application.symbolicName]"
+    <a (click)="onProviderClick(application)" href=""
        [class.self]="application.symbolicName === intention.metadata.appSymbolicName">
       {{application.name}}
     </a>

@@ -12,40 +12,40 @@
     </ng-container>
   </section>
   <sci-tabbar>
-    <ng-template sciTab label="Capabilities">
+    <ng-template sciTab label="Capabilities" name="capabilities">
       <section class="capabilities" *ngIf="capabilities$ | async as capabilities">
         <sci-filter-field #capability_filter_field (filter)="onCapabilityFilter($event)"
                           placeholder="You can filter capabilities by type and qualifier. Enter one or more search terms separated by space.">
         </sci-filter-field>
         <sci-accordion (keydown)="capability_filter_field.onKeydown($event)">
-          <ng-container *ngFor="let capability of capabilities">
-            <ng-template sciAccordionItem [panel]="panel">
-              <devtools-capability-accordion-item [capability]="capability"></devtools-capability-accordion-item>
-            </ng-template>
+            <ng-container *ngFor="let capability of capabilities">
+              <ng-template sciAccordionItem [panel]="panel">
+                <devtools-capability-accordion-item [capability]="capability"></devtools-capability-accordion-item>
+              </ng-template>
 
-            <ng-template #panel>
-              <devtools-capability-accordion-panel [capability]="capability"></devtools-capability-accordion-panel>
-            </ng-template>
-          </ng-container>
-        </sci-accordion>
+              <ng-template #panel>
+                <devtools-capability-accordion-panel [capability]="capability"></devtools-capability-accordion-panel>
+              </ng-template>
+            </ng-container>
+          </sci-accordion>
       </section>
     </ng-template>
-    <ng-template sciTab label="Intentions">
+    <ng-template sciTab label="Intentions" name="intentions">
       <section class="intentions" *ngIf="intentions$ | async as intentions">
         <sci-filter-field #intention_filter_field (filter)="onIntentionFilter($event)"
                           placeholder="You can filter intentions by type and qualifier. Enter one or more search terms separated by space.">
         </sci-filter-field>
         <sci-accordion (keydown)="intention_filter_field.onKeydown($event)">
-          <ng-container *ngFor="let intention of intentions">
-            <ng-template sciAccordionItem [panel]="panel">
-              <devtools-intention-accordion-item [intention]="intention"></devtools-intention-accordion-item>
-            </ng-template>
+            <ng-container *ngFor="let intention of intentions">
+              <ng-template sciAccordionItem [panel]="panel">
+                <devtools-intention-accordion-item [intention]="intention"></devtools-intention-accordion-item>
+              </ng-template>
 
-            <ng-template #panel>
-              <devtools-intention-accordion-panel [intention]="intention"></devtools-intention-accordion-panel>
-            </ng-template>
-          </ng-container>
-        </sci-accordion>
+              <ng-template #panel>
+                <devtools-intention-accordion-panel [intention]="intention"></devtools-intention-accordion-panel>
+              </ng-template>
+            </ng-container>
+          </sci-accordion>
       </section>
     </ng-template>
     <ng-template sciTab label="Dependencies">

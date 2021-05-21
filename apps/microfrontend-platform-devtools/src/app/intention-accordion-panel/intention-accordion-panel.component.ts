@@ -11,6 +11,8 @@ import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core
 import { Observable } from 'rxjs';
 import { Application, Intention } from '@scion/microfrontend-platform';
 import { DevToolsManifestService } from '../dev-tools-manifest.service';
+import { ACTIVE_TAB_ROUTER_STATE } from '../app-details/app-details.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'devtools-intention-accordion-panel',
@@ -25,10 +27,15 @@ export class IntentionAccordionPanelComponent implements OnInit {
   @Input()
   public intention: Intention;
 
-  constructor(private _manifestService: DevToolsManifestService) {
+  constructor(private _manifestService: DevToolsManifestService, private _router: Router) {
   }
 
   public ngOnInit(): void {
     this.applications$ = this._manifestService.capabilityProviders$(this.intention);
+  }
+
+  public onProviderClick(application: Application): boolean {
+    this._router.navigate(['apps', {outlets: {details: [application.symbolicName]}}], {state: {[ACTIVE_TAB_ROUTER_STATE]: 'capabilities'}}).then();
+    return false;
   }
 }

@@ -18,8 +18,13 @@
     margin: 0;
     padding: 0;
 
-    > li > a.self {
-      font-style: italic;
+    > li {
+      margin-bottom: .25em;
+
+      > a.self {
+        pointer-events: none;
+        color: var(--sci-color-P500);
+      }
     }
   }
 }
