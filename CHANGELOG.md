@@ -1,3 +1,17 @@
+# [1.0.0-beta.15](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.14...1.0.0-beta.15) (2021-05-20)
+
+
+### Features
+
+* **platform:** allow setting a timeout for loading manifests and activators ([fe26507](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/fe265079d333391df675a7f01591437b910086f2)), closes [#6](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/6)
+* **platform:** report platform startup progress ([0e9300d](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/0e9300db912a6f76d527e671bbb70e87e7806ca4)), closes [#18](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/18)
+
+
+### chore
+
+* **platform:** compile with TypeScript strict checks enabled ([bc390a8](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/bc390a8fa380b63e0af2aa43b24bb9981aaae342)), closes [#55](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/55)
+
+
 # [1.0.0-beta.14](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.13...1.0.0-beta.14) (2021-04-22)
 
 
