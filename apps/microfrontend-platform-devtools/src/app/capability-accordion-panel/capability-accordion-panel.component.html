@@ -21,8 +21,7 @@
   <header>Required by:</header>
   <ul>
     <li *ngFor="let application of applications$ | async">
-      <a class="app-name"
-         [routerLink]="['/apps', {outlets: {details: [application.symbolicName]}}]"
+      <a (click)="onConsumerClick(application)" href=""
          [class.self]="application.symbolicName === capability.metadata.appSymbolicName">
         {{application.name}}
       </a>
