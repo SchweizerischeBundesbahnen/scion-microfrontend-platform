@@ -31,7 +31,10 @@ exports.config = {
   ],
   suites: {
     activator: [
-      './src/**/activator.e2e-spec.ts',
+      './src/**/activator-readiness.e2e-spec.ts',
+    ],
+    startupProgress: [
+      './src/**/startup-progress.e2e-spec.ts',
     ],
     context: [
       './src/**/context.e2e-spec.ts',

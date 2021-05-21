@@ -16,6 +16,7 @@ import { PlatformMessageClient } from './host/platform-message-client';
 import { PlatformState } from './platform-state';
 import { Beans } from '@scion/toolkit/bean-manager';
 import { PlatformPropertyService } from './platform-property-service';
+import { ObserveCaptor } from '@scion/toolkit/testing';
 
 describe('MicrofrontendPlatform', () => {
 
@@ -264,6 +265,63 @@ describe('MicrofrontendPlatform', () => {
       .set('prop2', 'PROP2')
       .set('prop3', 'PROP3'),
     );
+  });
+
+  it('should not emit progress if not startet yet, report progress during startup, and complete after started [MicrofrontendPlatform.startHost]', async () => {
+    const manifestUrl = serveManifest({name: 'Host Application'});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+    const captor1 = new ObserveCaptor<number>();
+    const captor2 = new ObserveCaptor<number>();
+
+    // Expect no emission if the platform is not yet started
+    await MicrofrontendPlatform.startupProgress$.subscribe(captor1);
+    expect(captor1.getValues()).toEqual([]); // no emission
+
+    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+    // Expect the progress to be 100% after the platform is started and the Observable to be completed.
+    expect(captor1.getLastValue()).toEqual(100);
+    expect(captor1.hasCompleted()).toBeTrue();
+
+    await MicrofrontendPlatform.destroy();
+
+    // Expect no emission if the platform is not yet started
+    await MicrofrontendPlatform.startupProgress$.subscribe(captor2);
+    expect(captor2.getValues()).toEqual([]); // no emission
+
+    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+    // Expect the progress to be 100% after the platform completed startup and the Observable to be completed.
+    expect(captor2.getLastValue()).toEqual(100);
+    expect(captor2.hasCompleted()).toBeTrue();
+  });
+
+  it('should not emit progress if not startet yet, report progress during startup, and complete after started [MicrofrontendPlatform.connectToHost]', async () => {
+    const captor1 = new ObserveCaptor<number>();
+    const captor2 = new ObserveCaptor<number>();
+
+    // Expect no emission if the platform is not yet started
+    await MicrofrontendPlatform.startupProgress$.subscribe(captor1);
+    expect(captor1.getValues()).toEqual([]); // no emission
+
+    // start the platform
+    await MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}});
+
+    // Expect the progress to be 100% after the platform completed startup and the Observable to be completed.
+    expect(captor1.getLastValue()).toEqual(100);
+    expect(captor1.hasCompleted()).toBeTrue();
+
+    await MicrofrontendPlatform.destroy();
+
+    // Expect no emission if the platform is not yet started
+    await MicrofrontendPlatform.startupProgress$.subscribe(captor2);
+    expect(captor2.getValues()).toEqual([]); // no emission
+
+    await MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}});
+
+    // Expect the progress to be 100% after the platform completed startup and the Observable to be completed.
+    expect(captor2.getLastValue()).toEqual(100);
+    expect(captor2.hasCompleted()).toBeTrue();
   });
 });
 
