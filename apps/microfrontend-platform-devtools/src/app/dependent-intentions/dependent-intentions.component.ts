@@ -7,14 +7,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from '@angular/core';
-import { Application, Intention } from '@scion/microfrontend-platform';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Intention } from '@scion/microfrontend-platform';
 import { Router } from '@angular/router';
-import { SciFilterFieldComponent } from '@scion/toolkit.internal/widgets';
-import { Subject } from 'rxjs';
-import { switchMap, takeUntil } from 'rxjs/operators';
-import { filterCapabilitiesByTypeAndQualifier, filterIntentionsByTypeAndQualifier, splitFilter } from '../filter-utils';
+import { Observable, ReplaySubject } from 'rxjs';
+import { expand, map, mapTo, switchMap, take } from 'rxjs/operators';
+import { filterManifestObjects } from '../manifest-object-filter.utils';
 import { DevToolsManifestService } from '../dev-tools-manifest.service';
+import { Maps } from '@scion/toolkit/util';
+import { FormControl } from '@angular/forms';
+import { KeyValue } from '@angular/common';
 
 @Component({
   selector: 'devtools-dependent-intentions',
@@ -22,46 +24,29 @@ import { DevToolsManifestService } from '../dev-tools-manifest.service';
   styleUrls: ['./dependent-intentions.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DependentIntentionsComponent implements OnChanges, OnDestroy {
+export class DependentIntentionsComponent implements OnChanges {
+
+  private _appChange$ = new ReplaySubject<void>(1);
 
   @Input()
   public appSymbolicName: string;
 
-  @ViewChild(SciFilterFieldComponent)
-  private _filterField: SciFilterFieldComponent;
-  private _appIntentionMap: Map<Application, Intention[]>;
-  private _filter: string[] = [];
-  private _updateApp$ = new Subject<void>();
-  private _destroy$ = new Subject<void>();
+  public intentionsByApp$: Observable<Map<string, Intention[]>>;
+  public filterFormControl = new FormControl();
 
-  constructor(manifestService: DevToolsManifestService, private _router: Router, private _cdRef: ChangeDetectorRef) {
-    this._updateApp$
+  constructor(manifestService: DevToolsManifestService, private _router: Router) {
+    this.intentionsByApp$ = this._appChange$
       .pipe(
         switchMap(() => manifestService.observeDependentIntentions$(this.appSymbolicName)),
-        takeUntil(this._destroy$),
-      )
-      .subscribe(intentionsByApplication => {
-        this._appIntentionMap = intentionsByApplication;
-        this._cdRef.markForCheck();
-      });
+        expand(intentions => this.filterFormControl.valueChanges.pipe(take(1), mapTo(intentions))),
+        map(intentions => filterManifestObjects(intentions, this.filterFormControl.value)),
+        map(intentions => intentions.reduce((acc, intention) => Maps.addListValue(acc, intention.metadata.appSymbolicName, intention), new Map())),
+      );
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    this._appIntentionMap = new Map<Application, Intention[]>();
-    this._filterField && this._filterField.formControl.reset('');
-    if (changes['appSymbolicName'] && changes['appSymbolicName'].currentValue) {
-      this._updateApp$.next();
-    }
-  }
-
-  public get applications(): Application[] {
-    return Array.from(this._appIntentionMap.keys())
-      .filter(app => filterCapabilitiesByTypeAndQualifier(this._appIntentionMap.get(app), this._filter).length)
-      .sort(byAppName);
-  }
-
-  public intentions(app: Application): Intention[] {
-    return filterIntentionsByTypeAndQualifier(this._appIntentionMap.get(app), this._filter);
+    this.filterFormControl.reset('');
+    this._appChange$.next();
   }
 
   public onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
@@ -69,21 +54,11 @@ export class DependentIntentionsComponent implements OnChanges, OnDestroy {
     this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
   }
 
-  public trackByApplicationFn(index: number, app: Application): string {
-    return app.symbolicName;
+  public trackByApplicationFn(index: number, entry: KeyValue<string, Intention[]>): string {
+    return entry.key;
   }
 
   public trackByIntentionFn(index: number, intention: Intention): string {
     return intention.metadata.id;
   }
-
-  public onFilterChange(filter: string): void {
-    this._filter = splitFilter(filter);
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
-  }
 }
-
-const byAppName = (app1: Application, app2: Application) => app1.name.localeCompare(app2.name);

@@ -7,14 +7,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from '@angular/core';
-import { Application, Capability, Intention } from '@scion/microfrontend-platform';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Capability } from '@scion/microfrontend-platform';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { switchMap, takeUntil } from 'rxjs/operators';
-import { SciFilterFieldComponent } from '@scion/toolkit.internal/widgets';
-import { filterCapabilitiesByTypeAndQualifier, splitFilter } from '../filter-utils';
+import { Observable, ReplaySubject } from 'rxjs';
+import { expand, map, mapTo, switchMap, take } from 'rxjs/operators';
+import { filterManifestObjects } from '../manifest-object-filter.utils';
 import { DevToolsManifestService } from '../dev-tools-manifest.service';
+import { FormControl } from '@angular/forms';
+import { Maps } from '@scion/toolkit/util';
+import { KeyValue } from '@angular/common';
 
 @Component({
   selector: 'devtools-required-capabilities',
@@ -22,49 +24,34 @@ import { DevToolsManifestService } from '../dev-tools-manifest.service';
   styleUrls: ['./required-capabilities.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RequiredCapabilitiesComponent implements OnChanges, OnDestroy {
+export class RequiredCapabilitiesComponent implements OnChanges {
+
+  private _appChange$ = new ReplaySubject<void>(1);
 
   @Input()
   public appSymbolicName: string;
+
+  public capabilitiesByApp$: Observable<Map<string, Capability[]>>;
+  public filterFormControl = new FormControl();
   public selectedCapability: Capability;
 
-  @ViewChild(SciFilterFieldComponent)
-  private _filterField: SciFilterFieldComponent;
-  private _appCapabilityMap: Map<Application, Capability[]>;
-  private _filter: string[] = [];
-  private _updateApp$ = new Subject<void>();
-  private _destroy$ = new Subject<void>();
-
-  constructor(manifestService: DevToolsManifestService, private _router: Router, private _cdRef: ChangeDetectorRef) {
-    this._updateApp$
+  constructor(manifestService: DevToolsManifestService, private _router: Router) {
+    this.capabilitiesByApp$ = this._appChange$
       .pipe(
-        switchMap(() => manifestService.observeRequiredCapabilities$(this.appSymbolicName)),
-        takeUntil(this._destroy$),
-      )
-      .subscribe(capabilitiesByApplication => {
-        this._appCapabilityMap = capabilitiesByApplication;
-        this._cdRef.markForCheck();
-      });
+        switchMap(() => manifestService.observeDependingCapabilities$(this.appSymbolicName)),
+        expand(capabilities => this.filterFormControl.valueChanges.pipe(take(1), mapTo(capabilities))),
+        map(capabilities => filterManifestObjects(capabilities, this.filterFormControl.value)),
+        map(capabilities => capabilities.reduce((acc, capability) => Maps.addListValue(acc, capability.metadata.appSymbolicName, capability), new Map())),
+      );
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    this._appCapabilityMap = new Map<Application, Intention[]>();
+    this.filterFormControl.reset('');
     this.selectedCapability = null;
-    this._filterField && this._filterField.formControl.reset('');
-    this._updateApp$.next();
+    this._appChange$.next();
   }
 
-  public get applications(): Application[] {
-    return Array.from(this._appCapabilityMap.keys())
-      .filter(app => filterCapabilitiesByTypeAndQualifier(this._appCapabilityMap.get(app), this._filter).length)
-      .sort(byAppName);
-  }
-
-  public capabilities(app: Application): Capability[] {
-    return filterCapabilitiesByTypeAndQualifier(this._appCapabilityMap.get(app), this._filter);
-  }
-
-  public onClick(capability: Capability): void {
+  public onCapabilityClick(capability: Capability): void {
     if (this.selectedCapability === capability) {
       this.selectedCapability = null;
     }
@@ -82,21 +69,11 @@ export class RequiredCapabilitiesComponent implements OnChanges, OnDestroy {
     this.selectedCapability = null;
   }
 
-  public trackByApplicationFn(index: number, application: Application): string {
-    return application.symbolicName;
+  public trackByApplicationFn(index: number, entry: KeyValue<string, Capability[]>): string {
+    return entry.key;
   }
 
   public trackByCapabilityFn(index: number, capability: Capability): string {
     return capability.metadata.id;
   }
-
-  public onFilterChange(filter: string): void {
-    this._filter = splitFilter(filter);
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
-  }
 }
-
-const byAppName = (app1: Application, app2: Application) => app1.name.localeCompare(app2.name);

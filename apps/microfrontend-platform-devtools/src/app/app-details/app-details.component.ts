@@ -8,16 +8,17 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
-import { BehaviorSubject, combineLatest, MonoTypeOperatorFunction, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, MonoTypeOperatorFunction, Observable, Subject } from 'rxjs';
 import { Application, Capability, Intention } from '@scion/microfrontend-platform';
-import { distinctUntilChanged, filter, map, switchMap, takeUntil } from 'rxjs/operators';
+import { distinctUntilChanged, expand, filter, map, mapTo, switchMap, take, takeUntil } from 'rxjs/operators';
 import { DevToolsManifestService } from '../dev-tools-manifest.service';
 import { ActivatedRoute, NavigationEnd, Router, UrlSegmentGroup } from '@angular/router';
-import { filterCapabilities, filterIntentions, splitFilter } from '../filter-utils';
+import { filterManifestObjects } from '../manifest-object-filter.utils';
 import { ShellService } from '../shell.service';
+import { FormControl } from '@angular/forms';
 import { SciTabbarComponent } from '@scion/toolkit.internal/widgets';
 import { Arrays } from '@scion/toolkit/util';
-import { bufferUntil } from '../operators';
+import { bufferUntil } from '@scion/toolkit/operators';
 
 /**
  * Instruction passed with a navigation to specify the tab to be activated.
@@ -32,13 +33,12 @@ export const ACTIVE_TAB_ROUTER_STATE = 'activeTab';
 })
 export class AppDetailsComponent implements OnDestroy {
 
-  public appSymbolicName$: Observable<string>;
   public application$: Observable<Application>;
   public capabilities$: Observable<Capability[]>;
   public intentions$: Observable<Intention[]>;
 
-  private _capabilityFilter$ = new BehaviorSubject<string[]>([]);
-  private _intentionFilter$ = new BehaviorSubject<string[]>([]);
+  public capabilityFilterFormControl = new FormControl();
+  public intentionFilterFormControl = new FormControl();
 
   private _tabbar$ = new BehaviorSubject<SciTabbarComponent>(null);
   private _destroy$ = new Subject<void>();
@@ -48,11 +48,6 @@ export class AppDetailsComponent implements OnDestroy {
               private _router: Router,
               private _manifestService: DevToolsManifestService,
               private _cd: ChangeDetectorRef) {
-    this.appSymbolicName$ = this._route.paramMap
-      .pipe(
-        map(paramMap => paramMap.get('appSymbolicName')),
-        distinctUntilChanged(),
-      );
     this.application$ = this.observeApplication$();
     this.capabilities$ = this.observeCapabilities$();
     this.intentions$ = this.observeIntentions$();
@@ -62,49 +57,37 @@ export class AppDetailsComponent implements OnDestroy {
   }
 
   private observeApplication$(): Observable<Application> {
-    return this.appSymbolicName$
-      .pipe(map(appSymbolicName => this._manifestService.application(appSymbolicName)));
+    return this._route.paramMap
+      .pipe(
+        map(paramMap => paramMap.get('appSymbolicName')),
+        distinctUntilChanged(),
+        map(appSymbolicName => this._manifestService.getApplication(appSymbolicName)),
+      );
   }
 
   private observeCapabilities$(): Observable<Capability[]> {
-    return this.appSymbolicName$
+    return this.application$
       .pipe(
-        switchMap(appSymbolicName => combineLatest([
-          this._manifestService.capabilities$({appSymbolicName}),
-          this._capabilityFilter$,
-        ])),
-        filterCapabilities(),
+        switchMap(application => this._manifestService.capabilities$({appSymbolicName: application.symbolicName})),
+        expand(capabilities => this.capabilityFilterFormControl.valueChanges.pipe(take(1), mapTo(capabilities))),
+        map(capabilities => filterManifestObjects(capabilities, this.capabilityFilterFormControl.value)),
       );
   }
 
   private observeIntentions$(): Observable<Intention[]> {
-    return this.appSymbolicName$
+    return this.application$
       .pipe(
-        switchMap(appSymbolicName => combineLatest([
-          this._manifestService.intentions$({appSymbolicName}),
-          this._intentionFilter$,
-        ])),
-        filterIntentions(),
+        switchMap(application => this._manifestService.intentions$({appSymbolicName: application.symbolicName})),
+        expand(intentions => this.intentionFilterFormControl.valueChanges.pipe(take(1), mapTo(intentions))),
+        map(intentions => filterManifestObjects(intentions, this.intentionFilterFormControl.value)),
       );
   }
 
-  public onCapabilityFilter(filter: string): void {
-    this._capabilityFilter$.next(splitFilter(filter));
-  }
-
-  public onIntentionFilter(filter: string): void {
-    this._intentionFilter$.next(splitFilter(filter));
-  }
-
   private installTitleProvider(): void {
-    this.appSymbolicName$
-      .pipe(
-        map(appSymbolicName => this._manifestService.application(appSymbolicName)),
-        map(application => application?.name),
-        takeUntil(this._destroy$),
-      )
-      .subscribe(appName => {
-        this._shellService.detailsTitle = appName;
+    this.application$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(application => {
+        this._shellService.detailsTitle = application.name;
         this._cd.markForCheck();
       });
   }

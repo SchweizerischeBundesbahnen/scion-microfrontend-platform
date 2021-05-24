@@ -14,8 +14,7 @@ import { Observable } from 'rxjs';
 import { DevToolsManifestService } from '../dev-tools-manifest.service';
 import { ShellService } from '../shell.service';
 import { map } from 'rxjs/operators';
-import { distinctArray } from '../operators';
-import { sortArray } from '@scion/toolkit/operators';
+import { sortArray, distinctArray } from '@scion/toolkit/operators';
 
 @Component({
   selector: 'devtools-find-capabilities',

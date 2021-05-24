@@ -14,10 +14,11 @@
   <sci-tabbar>
     <ng-template sciTab label="Capabilities" name="capabilities">
       <section class="capabilities" *ngIf="capabilities$ | async as capabilities">
-        <sci-filter-field #capability_filter_field (filter)="onCapabilityFilter($event)"
-                          placeholder="You can filter capabilities by type and qualifier. Enter one or more search terms separated by space.">
+        <sci-filter-field #capability_filter_field [formControl]="capabilityFilterFormControl"
+                          placeholder="Filter by type and qualifier, with multiple filter terms separated by space.">
         </sci-filter-field>
-        <sci-accordion (keydown)="capability_filter_field.onKeydown($event)">
+        <sci-viewport>
+          <sci-accordion (keydown)="capability_filter_field.focusAndApplyKeyboardEvent($event)">
             <ng-container *ngFor="let capability of capabilities">
               <ng-template sciAccordionItem [panel]="panel">
                 <devtools-capability-accordion-item [capability]="capability"></devtools-capability-accordion-item>
@@ -28,14 +29,16 @@
               </ng-template>
             </ng-container>
           </sci-accordion>
+        </sci-viewport>
       </section>
     </ng-template>
     <ng-template sciTab label="Intentions" name="intentions">
       <section class="intentions" *ngIf="intentions$ | async as intentions">
-        <sci-filter-field #intention_filter_field (filter)="onIntentionFilter($event)"
-                          placeholder="You can filter intentions by type and qualifier. Enter one or more search terms separated by space.">
+        <sci-filter-field #intention_filter_field [formControl]="intentionFilterFormControl"
+                          placeholder="Filter by type and qualifier, with multiple filter terms separated by space.">
         </sci-filter-field>
-        <sci-accordion (keydown)="intention_filter_field.onKeydown($event)">
+        <sci-viewport>
+          <sci-accordion (keydown)="intention_filter_field.focusAndApplyKeyboardEvent($event)">
             <ng-container *ngFor="let intention of intentions">
               <ng-template sciAccordionItem [panel]="panel">
                 <devtools-intention-accordion-item [intention]="intention"></devtools-intention-accordion-item>
@@ -46,6 +49,7 @@
               </ng-template>
             </ng-container>
           </sci-accordion>
+        </sci-viewport>
       </section>
     </ng-template>
     <ng-template sciTab label="Dependencies">
@@ -54,14 +58,14 @@
           <section class="required-applications">
             <header>Required Applications</header>
             <span class="description">Shows applications on which this application depends. The required capabilities are listed for each application.</span>
-            <devtools-required-capabilities [appSymbolicName]="appSymbolicName$ | async"></devtools-required-capabilities>
+            <devtools-required-capabilities [appSymbolicName]="application.symbolicName"></devtools-required-capabilities>
           </section>
         </ng-template>
         <ng-template sciSash>
           <section class="dependent-applications">
             <header>Dependent Applications</header>
             <span class="description">Shows applications that depend on this application. Dependent intentions are listed for each application.</span>
-            <devtools-dependent-intentions [appSymbolicName]="appSymbolicName$ | async"></devtools-dependent-intentions>
+            <devtools-dependent-intentions [appSymbolicName]="application.symbolicName"></devtools-dependent-intentions>
           </section>
         </ng-template>
       </sci-sashbox>
@@ -74,11 +78,11 @@
             Controls whether this application can interact with the private capabilities of other apps. Disabling scope check is discouraged. By default, scope check is enabled.
           </span>
           <span class="chip" *ngIf="application.scopeCheckDisabled; else scopeCheckEnabled" title="Scope check is disabled for this application. This application can interact with private capabilities of other applications.">
-            DISABLED
+            Disabled
           </span>
           <ng-template #scopeCheckEnabled>
             <span class="chip" title="Scope check is enabled for this application. This application cannot interact with private capabilities of other applications.">
-              ENABLED (default)
+              Default (enabled)
             </span>
           </ng-template>
         </section>
@@ -89,11 +93,11 @@
             Controls whether this application can register and unregister intentions dynamically at runtime. Enabling this API is strongly discouraged. By default, this API is disabled.
           </span>
           <span class="chip" *ngIf="application.intentionRegisterApiDisabled; else intentionRegisterApiEnabled" title="Intention register API is disabled for this application. This application has to declare intentions in its manifest.">
-            DISABLED (default)
+            Default (disabled)
           </span>
           <ng-template #intentionRegisterApiEnabled>
             <span class="chip" title="Intention register API is enabled for this application. This application can register intentions dynamically at runtime.">
-              ENABLED
+              Enabled
             </span>
           </ng-template>
         </section>
@@ -104,11 +108,11 @@
             Controls whether this application can interact with the capabilities of other apps without having to declare respective intentions. Disabling intention check is strongly discouraged. By default, intention check is enabled.
           </span>
           <span class="chip" *ngIf="application.intentionCheckDisabled; else intentionCheckEnabled" title="Intention check is disabled for this application. This application can issue intents for which it has not declared any intention.">
-            DISABLED
+            Disabled
           </span>
           <ng-template #intentionCheckEnabled>
             <span class="chip" title="Intention check is enabled for this application. This application can only issue intents for which it has declared an intention in its manifest.">
-              ENABLED (default)
+              Default (enabled)
             </span>
           </ng-template>
         </section>

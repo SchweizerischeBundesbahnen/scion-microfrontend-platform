@@ -7,8 +7,8 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { concat, EMPTY, from, MonoTypeOperatorFunction, Observable, of, OperatorFunction, pipe, throwError } from 'rxjs';
-import { filter, map, mergeMap, mergeMapTo, publishLast, refCount, take, timeoutWith } from 'rxjs/operators';
+import { MonoTypeOperatorFunction, OperatorFunction, pipe, throwError } from 'rxjs';
+import { filter, map, timeoutWith } from 'rxjs/operators';
 import { MessageEnvelope, MessagingChannel, MessagingTransport } from './ɵmessaging.model';
 import { Message, TopicMessage } from './messaging.model';
 import { TopicMatcher } from './topic-matcher.util';
@@ -61,16 +61,6 @@ export function filterByHeader<T extends Message>(header: { key: string, value: 
   return filter((message: T): boolean => {
     return message.headers.has(header.key) && message.headers.get(header.key) === header.value;
   });
-}
-
-/**
- * Buffers the source Observable values until `closingNotifier$` emits.
- * Once closed, items of the source Observable are emitted as they arrive.
- * @ignore
- */
-export function bufferUntil<T>(closingNotifier$: Observable<any> | Promise<any>): MonoTypeOperatorFunction<T> {
-  const guard$ = from(closingNotifier$).pipe(take(1), publishLast(), refCount(), mergeMapTo(EMPTY));
-  return mergeMap((item: T) => concat(guard$, of(item)));
 }
 
 /**

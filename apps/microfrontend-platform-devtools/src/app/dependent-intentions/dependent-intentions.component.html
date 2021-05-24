@@ -1,15 +1,16 @@
-<sci-filter-field (filter)="onFilterChange($event)" placeholder="You can filter intentions by type and qualifier. Enter one or more search terms separated by space."></sci-filter-field>
+<sci-filter-field [formControl]="filterFormControl" placeholder="Filter by type and qualifier, with multiple filter terms separated by space."></sci-filter-field>
 <sci-accordion>
-  <ng-container *ngFor="let app of applications; trackBy: trackByApplicationFn">
-    <ng-template sciAccordionItem [panel]="panel" [key]="app.symbolicName">
+  <ng-container *ngFor="let intentionsByApp of intentionsByApp$ | async | keyvalue; trackBy: trackByApplicationFn">
+    <ng-template sciAccordionItem [panel]="panel" [key]="intentionsByApp.key">
       <header>
-        <strong>{{app.name}}</strong>
-        <span class="material-icons" (click)="onOpenAppClick($event, app.symbolicName)" title="Navigate to details of {{app.name}}.">exit_to_app</span>
+        <strong>{{intentionsByApp.key | devtoolsAppName}}</strong>
+        <span class="material-icons" (click)="onOpenAppClick($event, intentionsByApp.key)" title="Navigate to details of {{intentionsByApp.key | devtoolsAppName}}.">exit_to_app</span>
       </header>
     </ng-template>
     <ng-template #panel>
-      <devtools-qualifier-chip-list *ngFor="let intention of intentions(app); trackBy: trackByIntentionFn"
-                                    [type]="intention.type" [qualifier]="intention.qualifier" [size]="'small'">
+      <devtools-qualifier-chip-list *ngFor="let intention of intentionsByApp.value; trackBy: trackByIntentionFn"
+                                    [type]="intention.type" [qualifier]="intention.qualifier"
+                                    [size]="'small'">
       </devtools-qualifier-chip-list>
     </ng-template>
   </ng-container>
