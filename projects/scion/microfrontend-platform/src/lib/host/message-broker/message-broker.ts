@@ -22,12 +22,12 @@ import { TopicSubscriptionRegistry } from './topic-subscription.registry';
 import { Client, ClientRegistry } from './client.registry';
 import { RetainedMessageStore } from './retained-message-store';
 import { TopicMatcher } from '../../topic-matcher.util';
-import { bufferUntil } from '../../operators';
 import { chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain } from './message-interception';
 import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 import { Runlevel } from '../../platform-state';
 import { matchesCapabilityParams, ParamsMatcherResult } from './params-tester';
 import { Capability } from '../../platform.model';
+import { bufferUntil } from '@scion/toolkit/operators';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is

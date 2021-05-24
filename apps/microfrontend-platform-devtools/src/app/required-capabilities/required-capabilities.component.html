@@ -1,18 +1,21 @@
-<sci-filter-field (filter)="onFilterChange($event)" placeholder="You can filter capabilities by type and qualifier. Enter one or more search terms separated by space."></sci-filter-field>
+<sci-filter-field [formControl]="filterFormControl" placeholder="Filter by type and qualifier, with multiple filter terms separated by space."></sci-filter-field>
 <sci-accordion>
-  <ng-container *ngFor="let app of applications; trackBy: trackByApplicationFn">
-    <ng-template sciAccordionItem [panel]="panel" [key]="app.symbolicName">
+  <ng-container *ngFor="let capabilitiesByApp of capabilitiesByApp$ | async | keyvalue; trackBy: trackByApplicationFn">
+    <ng-template sciAccordionItem [panel]="panel" [key]="capabilitiesByApp.key">
       <header (click)="onAccordionItemClick()">
-        <strong class="app-name">{{app.name}}</strong>
-        <span class="material-icons" (click)="onOpenAppClick($event, app.symbolicName)" title="Navigate to details of {{app.name}}.">exit_to_app</span>
+        <strong class="app-name">{{capabilitiesByApp.key | devtoolsAppName}}</strong>
+        <span class="material-icons" (click)="onOpenAppClick($event, capabilitiesByApp.key)" title="Navigate to details of {{capabilitiesByApp.key | devtoolsAppName}}.">exit_to_app</span>
       </header>
     </ng-template>
 
     <ng-template #panel>
       <section class="panel">
         <section class="capability-list">
-          <devtools-qualifier-chip-list *ngFor="let capability of capabilities(app); trackBy: trackByCapabilityFn" [class.active]="capability === selectedCapability"
-                                        [type]="capability.type" [qualifier]="capability.qualifier" [size]="'small'" (click)="onClick(capability)">
+          <devtools-qualifier-chip-list *ngFor="let capability of capabilitiesByApp.value; trackBy: trackByCapabilityFn"
+                                        [class.active]="capability === selectedCapability"
+                                        [type]="capability.type" [qualifier]="capability.qualifier"
+                                        [size]="'small'"
+                                        (click)="onCapabilityClick(capability)">
           </devtools-qualifier-chip-list>
         </section>
         <section *ngIf="selectedCapability" class="capability-details">

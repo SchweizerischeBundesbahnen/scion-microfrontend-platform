@@ -37,6 +37,7 @@ import { AppMenuComponent } from './app-menu/app-menu.component';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { Beans } from '@scion/toolkit/bean-manager';
 import { A11yModule } from '@angular/cdk/a11y';
+import { AppNamePipe } from './app-name.pipe';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,7 @@ import { A11yModule } from '@angular/cdk/a11y';
     FilterFieldComponent,
     CapabilityFilterResultComponent,
     QualifierChipListComponent,
+    AppNamePipe,
   ],
   imports: [
     BrowserModule,
