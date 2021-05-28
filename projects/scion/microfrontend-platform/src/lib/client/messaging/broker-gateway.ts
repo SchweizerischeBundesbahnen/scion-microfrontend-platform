@@ -61,7 +61,7 @@ export abstract class BrokerGateway {
    *
    * @return a Promise that resolves when successfully posted the message to the broker, or that rejects otherwise.
    */
-  public abstract async postMessage(channel: MessagingChannel, message: Message): Promise<void>;
+  public abstract postMessage(channel: MessagingChannel, message: Message): Promise<void>;
 
   /**
    * Posts a message to the message broker and receives replies.

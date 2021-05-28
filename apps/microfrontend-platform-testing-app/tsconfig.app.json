@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "../../out-tsc/microfrontend-platform-testing-app",
     "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "types": []
   },
   "files": [

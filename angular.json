@@ -12,21 +12,25 @@
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/scion/microfrontend-platform/tsconfig.lib.json",
             "project": "projects/scion/microfrontend-platform/ng-package.json"
           },
           "configurations": {
             "production": {
               "tsConfig": "projects/scion/microfrontend-platform/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/scion/microfrontend-platform/tsconfig.lib.json"
             }
-          }
+          },
+          "defaultConfiguration": "production"
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "projects/scion/microfrontend-platform/src/test.ts",
             "tsConfig": "projects/scion/microfrontend-platform/tsconfig.spec.json",
-            "karmaConfig": "projects/scion/microfrontend-platform/karma.conf.js"
+            "karmaConfig": "projects/scion/microfrontend-platform/karma.conf.js",
+            "inlineStyleLanguage": "scss"
           }
         },
         "lint": {
@@ -81,7 +85,7 @@
             "main": "apps/microfrontend-platform-testing-app/src/main.ts",
             "polyfills": "apps/microfrontend-platform-testing-app/src/polyfills.ts",
             "tsConfig": "apps/microfrontend-platform-testing-app/tsconfig.app.json",
-            "aot": true,
+            "inlineStyleLanguage": "scss",
             "assets": [
               "apps/microfrontend-platform-testing-app/src/assets",
               {
@@ -113,13 +117,7 @@
                   "with": "apps/microfrontend-platform-testing-app/src/environments/environment.vercel.ts"
                 }
               ],
-              "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "outputPath": "dist/microfrontend-platform-testing-app-vercel"
             },
             "production-ci": {
@@ -129,22 +127,31 @@
                   "with": "apps/microfrontend-platform-testing-app/src/environments/environment.ci.ts"
                 }
               ],
-              "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "outputPath": "dist/microfrontend-platform-testing-app-ci"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
             }
-          }
+          },
+          "defaultConfiguration": "production-ci"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "browserTarget": "microfrontend-platform-testing-app:build"
-          }
+          "configurations": {
+            "production": {
+              "browserTarget": "microfrontend-platform-testing-app:build:production-ci"
+            },
+            "development": {
+              "browserTarget": "microfrontend-platform-testing-app:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
@@ -161,6 +168,9 @@
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
+        },
+        "@schematics/angular:application": {
+          "strict": true
         }
       }
     },
@@ -178,7 +188,7 @@
             "main": "apps/microfrontend-platform-devtools/src/main.ts",
             "polyfills": "apps/microfrontend-platform-devtools/src/polyfills.ts",
             "tsConfig": "apps/microfrontend-platform-devtools/tsconfig.app.json",
-            "aot": true,
+            "inlineStyleLanguage": "scss",
             "assets": [
               "apps/microfrontend-platform-devtools/src/assets",
               {
@@ -210,22 +220,31 @@
                   "with": "apps/microfrontend-platform-devtools/src/environments/environment.vercel.ts"
                 }
               ],
-              "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "outputPath": "dist/microfrontend-platform-devtools-vercel"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
             }
-          }
+          },
+          "defaultConfiguration": "production-vercel"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "browserTarget": "microfrontend-platform-devtools:build"
-          }
+          "configurations": {
+            "production": {
+              "browserTarget": "microfrontend-platform-devtools:build:production-vercel"
+            },
+            "development": {
+              "browserTarget": "microfrontend-platform-devtools:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
@@ -242,6 +261,9 @@
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
+        },
+        "@schematics/angular:application": {
+          "strict": true
         }
       }
     }
