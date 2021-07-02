@@ -5,6 +5,15 @@
 
 ## Changelog
 
+# [1.0.0-beta.16](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.15...1.0.0-beta.16) (2021-07-02)
+
+
+### chore
+
+* update project workspace to Angular 12 ([31c81c8](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/31c81c8bb422f3784a90ef355ab6a2bf3097c032)), closes [#76](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/76)
+
+
+
 # [1.0.0-beta.15](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.14...1.0.0-beta.15) (2021-05-20)
 
 
