@@ -122,25 +122,14 @@ Intents must contain such a property, but any value is allowed (except `null` or
 * *Optional wildcard character (`?`):* +
 Intents can contain such a property. Use it like this: `{property: '?'}`.
 
-| requiredParams
-a| `string[]`
+| params
+a| `ParamDefinition[]`
 | no
 a|
-Specifies parameters which the intent issuer must pass along with the intent.
+Specifies parameters which the intent issuer can/must pass along with the intent.
 
-Parameters are part of the contract between the intent publisher and the capability provider.
-
-They do not affect the intent routing, unlike the qualifier.
-
-| optionalParams
-a| `string[]`
-| no
-a|
-Specifies parameters which the intent issuer optionally can pass along with the intent.
-
-Parameters are part of the contract between the intent publisher and the capability provider.
-
-They do not affect the intent routing, unlike the qualifier.
+Parameters are part of the contract between the intent publisher and the capability provider. They do not affect the intent routing, unlike the qualifier.
+A parameter needs to declare its name and whether it is required or optional, as follows: `"{"name":"param","required":true}"`. Optionally, a description and deprecation notes can be specified, or additional metadata to be interpreted in an interceptor.
 
 | private
 a| `boolean`

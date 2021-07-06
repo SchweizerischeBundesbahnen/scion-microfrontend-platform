@@ -9,7 +9,7 @@
  */
 import { $, browser, protractor } from 'protractor';
 import { enterText } from '../spec.util';
-import { ManifestObjectFilter, Qualifier } from '@scion/microfrontend-platform';
+import { ManifestObjectFilter, ParamDefinition, Qualifier } from '@scion/microfrontend-platform';
 import { SciCheckboxPO, SciParamsEnterPO } from '@scion/toolkit.internal/widgets.po';
 import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
 
@@ -31,17 +31,14 @@ export class RegisterCapabilityPagePO {
    *
    * Returns a Promise that resolves to the capability ID upon successful registration, or that rejects on registration error.
    */
-  public async registerCapability(capability: { type: string, qualifier?: Qualifier, requiredParams?: string[], optionalParams?: string[], private: boolean }): Promise<string> {
+  public async registerCapability(capability: { type: string, qualifier?: Qualifier, params?: ParamDefinition[], private: boolean }): Promise<string> {
     await this._switchToIframeFn();
     await enterText(capability.type, this._registerSectionFinder.$('input.e2e-type'));
     if (capability.qualifier) {
       await new SciParamsEnterPO(this._registerSectionFinder.$('sci-params-enter.e2e-qualifier')).enterParams(capability.qualifier);
     }
-    if (capability.requiredParams) {
-      await enterText(capability.requiredParams.join(','), this._registerSectionFinder.$('input.e2e-required-params'));
-    }
-    if (capability.optionalParams) {
-      await enterText(capability.optionalParams.join(','), this._registerSectionFinder.$('input.e2e-optional-params'));
+    if (capability.params) {
+      await enterText(JSON.stringify(capability.params), this._registerSectionFinder.$('input.e2e-params'));
     }
 
     await new SciCheckboxPO(this._registerSectionFinder.$('sci-checkbox.e2e-private')).toggle(capability.private);

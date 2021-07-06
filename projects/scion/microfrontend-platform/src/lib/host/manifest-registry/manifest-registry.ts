@@ -32,10 +32,10 @@ export abstract class ManifestRegistry {
   /**
    * Registers the given capability for the given application.
    */
-  public abstract registerCapability(capability: Capability, appSymbolicName: string): string | undefined;
+  public abstract registerCapability(capability: Capability, appSymbolicName: string): string;
 
   /**
    * Registers the given intention for the given application.
    */
-  public abstract registerIntention(intention: Intention, appSymbolicName: string): string | undefined;
+  public abstract registerIntention(intention: Intention, appSymbolicName: string): string;
 }

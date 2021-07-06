@@ -57,14 +57,14 @@
         <ng-template sciSash>
           <section class="required-applications">
             <header>Required Applications</header>
-            <span class="description">Shows applications on which this application depends. The required capabilities are listed for each application.</span>
+            <span class="description">Lists applications on which this application depends. The required capabilities are listed for each application.</span>
             <devtools-required-capabilities [appSymbolicName]="application.symbolicName"></devtools-required-capabilities>
           </section>
         </ng-template>
         <ng-template sciSash>
           <section class="dependent-applications">
             <header>Dependent Applications</header>
-            <span class="description">Shows applications that depend on this application. Dependent intentions are listed for each application.</span>
+            <span class="description">Lists applications that depend on this application. Dependent intentions are listed for each application.</span>
             <devtools-dependent-intentions [appSymbolicName]="application.symbolicName"></devtools-dependent-intentions>
           </section>
         </ng-template>

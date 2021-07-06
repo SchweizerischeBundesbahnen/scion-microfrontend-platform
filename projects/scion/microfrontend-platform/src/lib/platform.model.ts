@@ -142,14 +142,25 @@ export interface Capability {
    * Specifies parameters which the intent issuer must pass along with the intent.
    * Parameters are part of the contract between the intent publisher and the capability provider.
    * They do not affect the intent routing, unlike the qualifier.
+   *
+   * @deprecated This API will be removed in a future release. Instead, declare parameters via {@link Capability.params} property.
    */
   requiredParams?: string[];
   /**
    * Specifies parameters which the intent issuer optionally can pass along with the intent.
    * Parameters are part of the contract between the intent publisher and the capability provider.
    * They do not affect the intent routing, unlike the qualifier.
+   *
+   * @deprecated This API will be removed in a future release. Instead, declare parameters via {@link Capability.params} property.
    */
   optionalParams?: string[];
+  /**
+   * Specifies parameters which the intent issuer can/must pass along with the intent.
+   *
+   * Parameters are part of the contract between the intent publisher and the capability provider.
+   * They do not affect the intent routing, unlike the qualifier.
+   */
+  params?: ParamDefinition[];
   /**
    * Controls if this capability is visible to other micro applications. If private, which is by default, the capability is not visible
    * to other micro applications; thus, it can only be invoked or looked up by the providing micro application.
@@ -335,4 +346,35 @@ export interface Activator extends Capability {
      */
     readinessTopics?: string | string[];
   };
+}
+
+/**
+ * Describes a parameter to be passed along with an intent.
+ */
+export interface ParamDefinition {
+  /**
+   * Specifies the name of the parameter.
+   */
+  name: string;
+  /**
+   * Describes the parameter and its usage in more detail.
+   */
+  description?: string;
+  /**
+   * Specifies whether the parameter must be passed along with the intent.
+   */
+  required: boolean;
+  /**
+   * Allows deprecating the parameter.
+   *
+   * It is good practice to explain the deprecation, provide the date of removal, and how to migrate.
+   * If renaming the parameter, you can set the {@link ParamDefinition.deprecated.useInstead useInstead} property to specify
+   * which parameter to use instead. At runtime, this will map the parameter to the specified replacement, allowing for
+   * straightforward migration on the provider side.
+   */
+  deprecated?: true | { message?: string; useInstead?: string; };
+  /**
+   * Allows the declaration of additional metadata that can be interpreted in an interceptor, for example.
+   */
+  [property: string]: any;
 }

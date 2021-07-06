@@ -1,30 +1,57 @@
-<section class="description" *ngIf="capability.description">
-  {{capability.description}}
-</section>
-
-<section class="properties" *ngIf="capability.properties">
-  <header>Properties:</header>
-  <sci-property [properties]="capability.properties"></sci-property>
-</section>
-
-<section class="params" *ngIf="capability.requiredParams && capability.requiredParams.length">
-  <header>Required Params:</header>
-  {{capability.requiredParams.join(', ')}}
-</section>
-
-<section class="params" *ngIf="capability.optionalParams && capability.optionalParams.length">
-  <header>Optional Params:</header>
-  {{capability.optionalParams.join(', ')}}
-</section>
-
-<section class="required-by">
-  <header>Required by:</header>
-  <ul>
-    <li *ngFor="let application of applications$ | async">
-      <a (click)="onConsumerClick(application)" href=""
-         [class.self]="application.symbolicName === capability.metadata.appSymbolicName">
-        {{application.name}}
-      </a>
-    </li>
-  </ul>
-</section>
+<sci-tabbar>
+  <ng-template sciTab label="General">
+    <section class="tab general">
+      <span class="description" *ngIf="capability.description">{{capability.description}}</span>
+      <span class="label">Provider:</span><a [routerLink]="['/apps', {outlets: {details: [capability.metadata.appSymbolicName]}}]">{{capability.metadata.appSymbolicName | devtoolsAppName}} ({{capability.metadata.appSymbolicName}})</a>
+      <span class="label">ID:</span><span>{{capability.metadata.id}}</span>
+    </section>
+  </ng-template>
+  <ng-template sciTab label="Properties" *ngIf="capability.properties">
+    <section class="tab properties">
+      <span class="explanation">Metadata associated with this capability.</span>
+      <sci-property [properties]="capability.properties"></sci-property>
+    </section>
+  </ng-template>
+  <ng-template sciTab label="Parameters" *ngIf="capability.params?.length">
+    <section class="tab params">
+      <span class="explanation">Parameters to be passed when interacting with this capability via an intent.</span>
+      <ng-container *ngFor="let param of capability.params">
+        <header>
+          <span class="name" [class.deprecated]="param.deprecated">{{param.name}}</span>
+          <span class="required" *ngIf="param.required">Required</span>
+        </header>
+        <ng-container *ngIf="param.description">
+          <span class="label">Description:</span>
+          <span class="description">{{param.description}}</span>
+        </ng-container>
+        <ng-container>
+          <span class="label">Required:</span>
+          <span class="description">{{param.required}}</span>
+        </ng-container>
+        <ng-container *ngIf="param.deprecated as deprecation">
+          <span class="label">Deprecated:</span>
+          <span class="deprecation" *ngIf="deprecation === true">true</span>
+          <span class="deprecation-message" *ngIf="deprecation !== true && deprecation.message"><span>{{deprecation.message}}</span></span>
+          <span class="deprecation-use-instead" *ngIf="deprecation !== true && deprecation.useInstead">Use instead: <span>{{deprecation.useInstead}}</span></span>
+        </ng-container>
+        <ng-container *ngIf="param | devtoolsCustomParamMetadata as metadata">
+          <span class="label">Metadata:</span>
+          <span class="metadata">{{metadata | json}}</span>
+        </ng-container>
+      </ng-container>
+    </section>
+  </ng-template>
+  <ng-template sciTab label="Dependent Applications">
+    <section class="tab dependent-applications">
+      <span class="explanation">Applications that depend on this capability at runtime.</span>
+      <ul>
+        <li *ngFor="let application of applications$ | async">
+          <a (click)="onConsumerClick(application)" href=""
+             [class.self]="application.symbolicName === capability.metadata.appSymbolicName">
+            {{application.name}} ({{application.symbolicName}})
+          </a>
+        </li>
+      </ul>
+    </section>
+  </ng-template>
+</sci-tabbar>

@@ -8,17 +8,23 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import { MicrofrontendPlatform } from '../../microfrontend-platform';
-import { serveManifest } from '../../spec.util.spec';
+import { expectEmissions, installLoggerSpies, readConsoleLog, serveManifest } from '../../spec.util.spec';
 import { ApplicationConfig } from '../platform-config';
 import { Beans } from '@scion/toolkit/bean-manager';
 import { ManifestRegistry } from './manifest-registry';
 import { Capability } from '../../platform.model';
+import { ManifestService } from '../../client/manifest-registry/manifest-service';
+import { ObserveCaptor } from '@scion/toolkit/testing';
+import CallInfo = jasmine.CallInfo;
 
 const capabilityIdExtractFn = (capability: Capability): string => capability.metadata.id;
 
 describe('ManifestRegistry', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
+  beforeEach(async () => {
+    await MicrofrontendPlatform.destroy();
+    installLoggerSpies();
+  });
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
   describe('hasIntention', () => {
@@ -287,5 +293,243 @@ describe('ManifestRegistry', () => {
     await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
 
     expect(() => Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {'entity': 'person', '*': '*'}}, 'host-app')).toThrowError(`[CapabilityRegisterError] Asterisk wildcard ('*') not allowed in the qualifier key.`);
+  });
+
+  describe('Capability Params', () => {
+    it('should register params and support legacy param declaration (via manifest)', async () => {
+      // Register capability via manifest
+      const registeredApps: ApplicationConfig[] = [
+        {
+          symbolicName: 'host-app',
+          manifestUrl: serveManifest({
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'capability',
+                params: [
+                  {name: 'param1', required: true},
+                  {name: 'param2', required: false},
+                ],
+                requiredParams: ['param3'], // deprecated; expect legacy support
+                optionalParams: ['param4'], // deprecated; expect legacy support
+              },
+            ],
+          }),
+        },
+      ];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+      // Assert deprecation warning
+      expect(readConsoleLog('warn')).toEqual(jasmine.arrayContaining([
+        `[DEPRECATION WARNING] The 'host-app' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param3', required: true}] }`,
+        `[DEPRECATION WARNING] The 'host-app' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param4', required: false}] }`,
+      ]));
+
+      // Assert registration
+      const captor = new ObserveCaptor();
+      Beans.get(ManifestService).lookupCapabilities$({type: 'capability'}).subscribe(captor);
+      await expectEmissions(captor).toEqual([[jasmine.objectContaining<Capability>({
+        type: 'capability',
+        params: jasmine.arrayWithExactContents([
+          {name: 'param1', required: true},
+          {name: 'param2', required: false},
+          {name: 'param3', required: true},
+          {name: 'param4', required: false},
+        ]),
+        optionalParams: undefined,
+        requiredParams: undefined,
+      })]]);
+    });
+
+    it('should register params and support legacy param declaration (via ManifestService)', async () => {
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+      // Register capability via ManifestServie
+      const capabilityId = await Beans.get(ManifestService).registerCapability({
+        type: 'capability',
+        params: [
+          {name: 'param1', required: true},
+          {name: 'param2', required: false},
+        ],
+        requiredParams: ['param3'], // deprecated; expect legacy support
+        optionalParams: ['param4'], // deprecated; expect legacy support
+      });
+
+      // Assert deprecation warning
+      expect(readConsoleLog('warn')).toEqual(jasmine.arrayContaining([
+        `[DEPRECATION WARNING] The 'host-app' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param3', required: true}] }`,
+        `[DEPRECATION WARNING] The 'host-app' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param4', required: false}] }`,
+      ]));
+
+      // Assert registration
+      const captor = new ObserveCaptor();
+      Beans.get(ManifestService).lookupCapabilities$({id: capabilityId}).subscribe(captor);
+      await expectEmissions(captor).toEqual([[jasmine.objectContaining<Capability>({
+        type: 'capability',
+        params: jasmine.arrayWithExactContents([
+          {name: 'param1', required: true},
+          {name: 'param2', required: false},
+          {name: 'param3', required: true},
+          {name: 'param4', required: false},
+        ]),
+        optionalParams: undefined,
+        requiredParams: undefined,
+      })]]);
+    });
+
+    it('should error if params forget to declare whether they are required or optional (via manifest)', async () => {
+      // Register capability via manifest
+      const registeredApps: ApplicationConfig[] = [
+        {
+          symbolicName: 'host-app',
+          manifestUrl: serveManifest({
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'capability',
+                params: [
+                  {name: 'param', required: undefined},
+                ],
+              },
+            ],
+          }),
+        },
+      ];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+        `[CapabilityParamError] Parameter 'param' must be explicitly defined as required or optional.`,
+      ]));
+    });
+
+    it('should error if params forget to declare whether they are required or optional (via ManifestService)', async () => {
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+      // Register capability via ManifestServie
+      await expectAsync(Beans.get(ManifestService).registerCapability({
+        type: 'capability',
+        params: [{name: 'param', required: undefined}],
+      })).toBeRejectedWithError(`[CapabilityParamError] Parameter 'param' must be explicitly defined as required or optional.`);
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/})).toEqual([]);
+    });
+
+    it('should error if deprecated params are required (via manifest)', async () => {
+      // Register capability via manifest
+      const registeredApps: ApplicationConfig[] = [
+        {
+          symbolicName: 'host-app',
+          manifestUrl: serveManifest({
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'capability',
+                params: [
+                  {name: 'param1', required: true, deprecated: true},
+                ],
+              },
+            ],
+          }),
+        },
+      ];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+        `[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`,
+      ]));
+    });
+
+    it('should error if deprecated params, which declare a substitute, are required (via manifest)', async () => {
+      // Register capability via manifest
+      const registeredApps: ApplicationConfig[] = [
+        {
+          symbolicName: 'host-app',
+          manifestUrl: serveManifest({
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'capability',
+                params: [
+                  {name: 'param1', required: true, deprecated: {useInstead: 'param2'}},
+                  {name: 'param2', required: true},
+                ],
+              },
+            ],
+          }),
+        },
+      ];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+        `[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`,
+      ]));
+    });
+
+    it('should error if deprecated params are required (via ManifestService)', async () => {
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+      // Register capability via ManifestServie
+      await expectAsync(Beans.get(ManifestService).registerCapability({
+        type: 'capability',
+        params: [{name: 'param1', required: true, deprecated: true}],
+      })).toBeRejectedWithError(`[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`);
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/})).toEqual([]);
+    });
+
+    it('should error if deprecated params, which declare a substitute, are required (via ManifestService)', async () => {
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+      // Register capability via ManifestServie
+      await expectAsync(Beans.get(ManifestService).registerCapability({
+        type: 'capability',
+        params: [
+          {name: 'param1', required: true, deprecated: {useInstead: 'param2'}},
+          {name: 'param2', required: true},
+        ],
+      })).toBeRejectedWithError(`[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`);
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/})).toEqual([]);
+    });
+
+    it('should error if deprecated params declare an invalid substitute (via manifest)', async () => {
+      // Register capability via manifest
+      const registeredApps: ApplicationConfig[] = [
+        {
+          symbolicName: 'host-app',
+          manifestUrl: serveManifest({
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'capability',
+                params: [
+                  {name: 'param1', required: false, deprecated: {useInstead: 'paramX'}},
+                  {name: 'param2', required: true},
+                  {name: 'param3', required: false},
+                ],
+              },
+            ],
+          }),
+        },
+      ];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+        `[CapabilityParamError] The deprecated parameter 'param1' defines an invalid substitute 'paramX'. Valid substitutes are: [param2,param3]`,
+      ]));
+    });
+
+    it('should error if deprecated params declare an invalid substitute (via ManifestService)', async () => {
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+      // Register capability via ManifestServie
+      await expectAsync(Beans.get(ManifestService).registerCapability({
+        type: 'capability',
+        params: [
+          {name: 'param1', required: false, deprecated: {useInstead: 'paramX'}},
+          {name: 'param2', required: true},
+          {name: 'param3', required: false},
+        ],
+      })).toBeRejectedWithError(`[CapabilityParamError] The deprecated parameter 'param1' defines an invalid substitute 'paramX'. Valid substitutes are: [param2,param3]`);
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/})).toEqual([]);
+    });
   });
 });
