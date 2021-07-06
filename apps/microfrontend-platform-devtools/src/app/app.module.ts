@@ -38,6 +38,7 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
 import { Beans } from '@scion/toolkit/bean-manager';
 import { A11yModule } from '@angular/cdk/a11y';
 import { AppNamePipe } from './app-name.pipe';
+import { CustomParamMetadataPipe } from './custom-param-metadata.pipe';
 
 @NgModule({
   declarations: [
@@ -57,6 +58,7 @@ import { AppNamePipe } from './app-name.pipe';
     CapabilityFilterResultComponent,
     QualifierChipListComponent,
     AppNamePipe,
+    CustomParamMetadataPipe,
   ],
   imports: [
     BrowserModule,

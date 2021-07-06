@@ -7,11 +7,8 @@
     <sci-form-field label="Qualifier" direction="column">
       <sci-params-enter [paramsFormArray]="$any(registerForm.get(QUALIFIER))" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
     </sci-form-field>
-    <sci-form-field label="Required Params" direction="column">
-      <input [formControlName]="REQUIRED_PARAMS" class="e2e-required-params" placeholder="param1,param2,...">
-    </sci-form-field>
-    <sci-form-field label="Optional Params" direction="column">
-      <input [formControlName]="OPTIONAL_PARAMS" class="e2e-optional-params" placeholder="param1,param2,...">
+    <sci-form-field label="Params" direction="column">
+      <input [formControlName]="PARAMS" class="e2e-params" placeholder="JSON Array, e.g., {{paramsPlaceholder | json}}">
     </sci-form-field>
     <sci-form-field label="Private" direction="column">
       <sci-checkbox [formControlName]="PRIVATE" class="e2e-private"></sci-checkbox>

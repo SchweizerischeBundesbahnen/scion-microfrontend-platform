@@ -9,15 +9,14 @@
  */
 import { Component } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Capability, ManifestObjectFilter, ManifestService, MicroApplicationConfig } from '@scion/microfrontend-platform';
+import { Capability, ManifestObjectFilter, ManifestService, MicroApplicationConfig, ParamDefinition } from '@scion/microfrontend-platform';
 import { SciParamsEnterComponent } from '@scion/toolkit.internal/widgets';
 import { Observable } from 'rxjs';
 import { Beans } from '@scion/toolkit/bean-manager';
 
 const TYPE = 'type';
 const QUALIFIER = 'qualifier';
-const REQUIRED_PARAMS = 'requiredParams';
-const OPTIONAL_PARAMS = 'optionalParams';
+const PARAMS = 'params';
 const PRIVATE = 'private';
 const ID = 'id';
 const NILQUALIFIER_IF_EMPTY = 'nilQualifierIfEmpty';
@@ -32,13 +31,13 @@ export class RegisterCapabilityComponent {
 
   public readonly TYPE = TYPE;
   public readonly QUALIFIER = QUALIFIER;
-  public readonly REQUIRED_PARAMS = REQUIRED_PARAMS;
-  public readonly OPTIONAL_PARAMS = OPTIONAL_PARAMS;
+  public readonly PARAMS = PARAMS;
   public readonly PRIVATE = PRIVATE;
   public readonly ID = ID;
   public readonly NILQUALIFIER_IF_EMPTY = NILQUALIFIER_IF_EMPTY;
   public readonly APP_SYMBOLIC_NAME = APP_SYMBOLIC_NAME;
 
+  public paramsPlaceholder: ParamDefinition[] = [{name: 'param1', required: true}, {name: 'param2', required: true}];
   public registerForm: FormGroup;
   public unregisterForm: FormGroup;
 
@@ -53,8 +52,7 @@ export class RegisterCapabilityComponent {
     this.registerForm = fb.group({
       [TYPE]: new FormControl('', Validators.required),
       [QUALIFIER]: fb.array([]),
-      [REQUIRED_PARAMS]: new FormControl(''),
-      [OPTIONAL_PARAMS]: new FormControl(''),
+      [PARAMS]: new FormControl(''),
       [PRIVATE]: new FormControl(false),
     });
 
@@ -72,14 +70,12 @@ export class RegisterCapabilityComponent {
   public onRegister(): void {
     this.registerResponse = undefined;
     this.registerError = undefined;
-    const requiredParams = this.registerForm.get(REQUIRED_PARAMS).value;
-    const optionalParams = this.registerForm.get(OPTIONAL_PARAMS).value;
+    const params = this.registerForm.get(PARAMS).value;
 
     const capability: Capability = {
       type: this.registerForm.get(TYPE).value,
       qualifier: SciParamsEnterComponent.toParamsDictionary(this.registerForm.get(QUALIFIER) as FormArray),
-      requiredParams: requiredParams ? requiredParams.split(',').map(param => param.trim()) : undefined,
-      optionalParams: optionalParams ? optionalParams.split(',').map(param => param.trim()) : undefined,
+      params: params ? JSON.parse(params) : undefined,
       private: this.registerForm.get(PRIVATE).value,
     };
 

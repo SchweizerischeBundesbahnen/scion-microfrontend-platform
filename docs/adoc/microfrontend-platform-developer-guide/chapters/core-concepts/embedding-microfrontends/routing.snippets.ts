@@ -67,8 +67,8 @@ import { Beans } from '@scion/toolkit/bean-manager';
     "entity": "product",
     "id": "*", // <1>
   },
-  "requiredParams": [
-    "readonly", // <2>
+  "params": [
+    {"name":"readonly", "required":true}, // <2>
   ],
   "properties": {
     "path": "/products/:id?readonly=:readonly", // <3>

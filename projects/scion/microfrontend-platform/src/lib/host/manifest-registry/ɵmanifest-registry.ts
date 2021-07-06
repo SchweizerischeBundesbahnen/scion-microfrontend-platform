@@ -8,9 +8,8 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Capability, Intention } from '../../platform.model';
+import { Capability, Intention, ParamDefinition } from '../../platform.model';
 import { sha256 } from 'js-sha256';
-import { Defined } from '@scion/toolkit/util';
 import { ManifestObjectFilter, ManifestObjectStore } from './manifest-object-store';
 import { defer, merge, of, Subject } from 'rxjs';
 import { distinctUntilChanged, expand, mergeMapTo, take, takeUntil } from 'rxjs/operators';
@@ -24,6 +23,7 @@ import { ManifestRegistry } from './manifest-registry';
 import { assertExactQualifier, QualifierMatcher } from '../../qualifier-matcher';
 import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
 import { stringifyError } from '../../error.util';
+import { Logger } from '../../logger';
 
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tslint:disable-line:class-name
 
@@ -97,7 +97,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
     );
   }
 
-  public registerCapability(capability: Capability, appSymbolicName: string): string | undefined {
+  public registerCapability(capability: Capability, appSymbolicName: string): string {
     if (!capability) {
       throw Error('[CapabilityRegisterError] Missing required capability.');
     }
@@ -105,43 +105,48 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
       throw Error('[CapabilityRegisterError] Asterisk wildcard (\'*\') not allowed in the qualifier key.');
     }
 
+    // use the first 7 digits of the capability hash as capability id
+    const capabilityId = sha256(JSON.stringify({application: appSymbolicName, type: capability.type, ...capability.qualifier})).substr(0, 7);
     const registeredCapability: Capability = {
       ...capability,
-      qualifier: Defined.orElse(capability.qualifier, {}),
-      requiredParams: Defined.orElse(capability.requiredParams, []),
-      optionalParams: Defined.orElse(capability.optionalParams, []),
-      private: Defined.orElse(capability.private, true),
+      qualifier: capability.qualifier ?? {},
+      params: coerceCapabilityParamDefinitions(capability, appSymbolicName),
+      requiredParams: undefined,
+      optionalParams: undefined,
+      private: capability.private ?? true,
       metadata: {
-        id: sha256(JSON.stringify({application: appSymbolicName, type: capability.type, ...capability.qualifier})).substr(0, 7), // use the first 7 digits of the capability hash as capability id
+        id: capabilityId,
         appSymbolicName: appSymbolicName,
       },
     };
 
     // Register the capability.
     this._capabilityStore.add(registeredCapability);
-
-    return registeredCapability.metadata!.id;
+    return capabilityId;
   }
 
   private unregisterCapabilities(appSymbolicName: string, filter: ManifestObjectFilter): void {
     this._capabilityStore.remove({...filter, appSymbolicName});
   }
 
-  public registerIntention(intention: Intention, appSymbolicName: string): string | undefined {
+  public registerIntention(intention: Intention, appSymbolicName: string): string {
     if (!intention) {
       throw Error(`[IntentionRegisterError] Missing required intention.`);
     }
 
+    // use the first 7 digits of the intention hash as intention id
+    const intentionId = sha256(JSON.stringify({application: appSymbolicName, type: intention.type, ...intention.qualifier})).substr(0, 7);
     const registeredIntention: Intention = {
       ...intention,
       metadata: {
-        id: sha256(JSON.stringify({application: appSymbolicName, type: intention.type, ...intention.qualifier})).substr(0, 7), // use the first 7 digits of the intent hash as intent id
+        id: intentionId,
         appSymbolicName: appSymbolicName,
       },
     };
 
+    // Register the intention.
     this._intentionStore.add(registeredIntention);
-    return registeredIntention.metadata!.id;
+    return intentionId;
   }
 
   private unregisterIntention(appSymbolicName: string, filter: ManifestObjectFilter): void {
@@ -292,4 +297,51 @@ function assertIntentionRegisterApiEnabled(appSymbolicName: string): void {
   if (Beans.get(ApplicationRegistry).isIntentionRegisterApiDisabled(appSymbolicName)) {
     throw Error(`[IntentionRegisterError] The 'Intention Registration API' is disabled for the application '${appSymbolicName}'. Contact the platform administrator to enable this API.`);
   }
+}
+
+function coerceCapabilityParamDefinitions(capability: Capability, appSymbolicName: string): ParamDefinition[] {
+  const params: ParamDefinition[] = [];
+
+  capability.requiredParams?.forEach(name => {
+    params.push({name, required: true});
+    const migration = `{ params: [{name: '${name}', required: true}] }`;
+    Beans.get(Logger).warn(`[DEPRECATION WARNING] The '${appSymbolicName}' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, capability);
+  });
+  capability.optionalParams?.forEach(name => {
+    params.push({name, required: false});
+    const migration = `{ params: [{name: '${name}', required: false}] }`;
+    Beans.get(Logger).warn(`[DEPRECATION WARNING] The '${appSymbolicName}' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, capability);
+  });
+  capability.params?.forEach(param => {
+    params.push(param);
+  });
+
+  assertCapabilityParamDefinitions(params);
+  return params;
+}
+
+/**
+ * Asserts given parameter definitions to be valid.
+ */
+function assertCapabilityParamDefinitions(params: ParamDefinition[]): void {
+  const validSubstitutes = params.filter(param => !param.deprecated).map(param => param.name);
+
+  params.forEach(param => {
+    if (param.required === undefined) {
+      throw Error(`[CapabilityParamError] Parameter '${param.name}' must be explicitly defined as required or optional.`);
+    }
+
+    if (param.deprecated !== undefined) {
+      // Ensure deprecated param to be optional
+      if (param.required) {
+        throw Error(`[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='${param.name}']`);
+      }
+
+      // Ensure existing substitute
+      if (typeof param.deprecated === 'object' && param.deprecated.useInstead && !validSubstitutes.includes(param.deprecated.useInstead)) {
+        throw Error(`[CapabilityParamError] The deprecated parameter '${param.name}' defines an invalid substitute '${param.deprecated.useInstead}'. Valid substitutes are: [${validSubstitutes}]`);
+      }
+    }
+    return param;
+  });
 }

@@ -13,11 +13,10 @@ import { ConnectableObservable, noop, Observable, Subject, throwError } from 'rx
 import { IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage } from '../../messaging.model';
 import { MessageClient, takeUntilUnsubscribe } from './message-client';
 import { IntentClient } from './intent-client';
-import { Logger } from '../../logger';
 import { ManifestRegistry } from '../../host/manifest-registry/manifest-registry';
 import { ApplicationConfig } from '../../host/platform-config';
 import { PLATFORM_SYMBOLIC_NAME } from '../../host/platform.constants';
-import { expectEmissions, expectPromise, serveManifest, waitForCondition } from '../../spec.util.spec';
+import { expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, serveManifest, waitForCondition } from '../../spec.util.spec';
 import { MicrofrontendPlatform } from '../../microfrontend-platform';
 import { Defined, Objects } from '@scion/toolkit/util';
 import { ClientRegistry } from '../../host/message-broker/client.registry';
@@ -41,7 +40,10 @@ const capabilityIdExtractFn = <T>(msg: IntentMessage<T>): string => msg.capabili
  */
 describe('Messaging', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
+  beforeEach(async () => {
+    await MicrofrontendPlatform.destroy();
+    installLoggerSpies();
+  });
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
   it('should allow publishing messages to a topic', async () => {
@@ -442,16 +444,13 @@ describe('Messaging', () => {
   });
 
   it('should reject a client connect attempt if the app is not registered', async () => {
-    const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'warn', 'info']);
-    const readLoggedWarnings = (): string[] => loggerSpy.warn.calls.all().map(callData => callData.args[0]);
-    Beans.register(Logger, {useValue: loggerSpy});
     await MicrofrontendPlatform.startHost([]); // no app is registered
 
     const badClient = mountBadClientAndConnect({symbolicName: 'bad-client'});
     try {
       const expectedLogMessage = `[WARNING] Client connect attempt rejected by the message broker: Unknown client. [app='bad-client']`;
-      await waitForCondition(() => readLoggedWarnings().some(warning => warning === expectedLogMessage), 1000).catch(noop);
-      expect(readLoggedWarnings()).toEqual(jasmine.arrayContaining([expectedLogMessage]));
+      await waitForCondition(() => readConsoleLog('warn').some(warning => warning === expectedLogMessage), 1000).catch(noop);
+      expect(readConsoleLog('warn')).toEqual(jasmine.arrayContaining([expectedLogMessage]));
     }
     finally {
       badClient.dispose();
@@ -460,10 +459,6 @@ describe('Messaging', () => {
   });
 
   it('should reject a client connect attempt if the client\'s origin is different to the registered app origin', async () => {
-    const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'warn', 'info']);
-    const readLoggedWarnings = (): string[] => loggerSpy.warn.calls.all().map(callData => callData.args[0]);
-    Beans.register(Logger, {useValue: loggerSpy});
-
     const manifestUrl = serveManifest({name: 'Client', baseUrl: 'http://app-origin'});
     const registeredApps: ApplicationConfig[] = [{symbolicName: 'client', manifestUrl: manifestUrl}];
     await MicrofrontendPlatform.startHost(registeredApps);
@@ -471,8 +466,8 @@ describe('Messaging', () => {
     const badClient = mountBadClientAndConnect({symbolicName: 'client'}); // bad client connects under karma test runner origin (window.origin)
     try {
       const expectedLogMessage = `[WARNING] Client connect attempt blocked by the message broker: Wrong origin [actual='${window.origin}', expected='http://app-origin', app='client']`;
-      await waitForCondition(() => readLoggedWarnings().some(warning => warning === expectedLogMessage), 1000).catch(noop);
-      expect(readLoggedWarnings()).toEqual(jasmine.arrayContaining([expectedLogMessage]));
+      await waitForCondition(() => readConsoleLog('warn').some(warning => warning === expectedLogMessage), 1000).catch(noop);
+      expect(readConsoleLog('warn')).toEqual(jasmine.arrayContaining([expectedLogMessage]));
     }
     finally {
       badClient.dispose();
@@ -480,16 +475,16 @@ describe('Messaging', () => {
   });
 
   it('should reject startup promise if the message broker cannot be discovered', async () => {
-    const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'info', 'warn']);
-    Beans.register(Logger, {useValue: loggerSpy});
-
+    const loggerSpy = getLoggerSpy('error');
     const startup = MicrofrontendPlatform.connectToHost({symbolicName: 'client-app', messaging: {brokerDiscoverTimeout: 250}});
     await expectPromise(startup).toReject(/PlatformStartupError/);
 
-    expect(loggerSpy.error).toHaveBeenCalledWith('[BrokerDiscoverTimeoutError] Message broker not discovered within the 250ms timeout. Messages cannot be published or received.');
+    await expect(loggerSpy).toHaveBeenCalledWith('[BrokerDiscoverTimeoutError] Message broker not discovered within the 250ms timeout. Messages cannot be published or received.');
   });
 
+
   it('should not error with `BrokerDiscoverTimeoutError` when starting the platform host and initializers in runlevel 0 take a long time to complete, e.g., when fetching manifests', async () => {
+    const loggerSpy = getLoggerSpy('error');
     const brokerDiscoverTimeout = 250;
     const initializerDuration = 1000;
 
@@ -503,20 +498,17 @@ describe('Messaging', () => {
       runlevel: 0,
     });
 
-    // Mock the logger
-    const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'info', 'warn']);
-    Beans.register(Logger, {useValue: loggerSpy});
-
     const manifestUrl = serveManifest({name: 'Host Application'});
     const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
     const startup = MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout}});
 
     await expectPromise(startup).toResolve();
     expect(initializerCompleted).toBeTrue();
-    expect(loggerSpy.error).not.toHaveBeenCalled();
+    expect(loggerSpy).not.toHaveBeenCalled();
   });
 
   it('should not error with `BrokerDiscoverTimeoutError` when publishing a message in runlevel 0 and runlevel 0 takes a long time to complete (messaging only enabled in runlevel 2)', async () => {
+    const loggerSpy = getLoggerSpy('error');
     const brokerDiscoverTimeout = 250;
     const initializerDuration = 1000;
 
@@ -537,10 +529,6 @@ describe('Messaging', () => {
       runlevel: 0,
     });
 
-    // Mock the logger
-    const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'info', 'warn']);
-    Beans.register(Logger, {useValue: loggerSpy});
-
     // Start the host
     const manifestUrl = serveManifest({name: 'Host Application'});
     const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
@@ -548,7 +536,7 @@ describe('Messaging', () => {
 
     // Expect the startup not to error
     await expectPromise(startup).toResolve();
-    expect(loggerSpy.error).not.toHaveBeenCalled();
+    expect(loggerSpy).not.toHaveBeenCalled();
 
     // Expect the message to be published
     const messageCaptor = new ObserveCaptor(bodyExtractFn);
@@ -1190,94 +1178,187 @@ describe('Messaging', () => {
 
     it('should allow issuing an intent with parameters', async () => {
       const manifestUrl = serveManifest({
-        name: 'Host Application', capabilities: [
-          {type: 'some-capability-1', requiredParams: ['param']},
-          {type: 'some-capability-2', requiredParams: ['param']},
-        ],
+        name: 'Host Application', capabilities: [{
+          type: 'capability',
+          params: [{name: 'param1', required: true}],
+          requiredParams: ['param2'], // legacy notation
+        }],
       });
       const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
       await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
-
-      // request-reply
-      Beans.get(IntentClient).observe$<string>({type: 'some-capability-1'}).subscribe(intent => {
-        const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-        Beans.get(MessageClient).publish(replyTo, intent.intent.params.get('param'));
-      });
-      const replyCaptor = new ObserveCaptor(bodyExtractFn);
-      await Beans.get(IntentClient).request$({type: 'some-capability-1', params: new Map<string, any>().set('param', 'value')}, 'payload').subscribe(replyCaptor);
-      await expectEmissions(replyCaptor).toEqual(['value']);
 
       // publish
       const observeCaptor = new ObserveCaptor(paramsExtractFn);
-      Beans.get(IntentClient).observe$<string>({type: 'some-capability-2'}).subscribe(observeCaptor);
-      await Beans.get(IntentClient).publish({type: 'some-capability-2', params: new Map<string, any>().set('param', 'value')}, 'payload');
-      await expectEmissions(observeCaptor).toEqual(new Map<string, any>().set('param', 'value'));
+      Beans.get(IntentClient).observe$<string>({type: 'capability'}).subscribe(observeCaptor);
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1').set('param2', 'value2')});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param1', 'value1').set('param2', 'value2'));
     });
 
-    it('should allow issuing an intent without optional parameters', async () => {
+    it('should allow issuing an intent without passing optional parameters', async () => {
       const manifestUrl = serveManifest({
-        name: 'Host Application', capabilities: [
-          {type: 'some-capability-1', optionalParams: ['param']},
-          {type: 'some-capability-2', optionalParams: ['param']},
-        ],
+        name: 'Host Application', capabilities: [{
+          type: 'capability',
+          params: [{name: 'param1', required: false}],
+          optionalParams: ['param2'], // legacy notation
+        }],
       });
       const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
       await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
-      // request-reply
-      Beans.get(IntentClient).observe$<string>({type: 'some-capability-1'}).subscribe(intent => {
-        const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-        Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
-      });
-      const replyCaptor = new ObserveCaptor(bodyExtractFn);
-      await Beans.get(IntentClient).request$({type: 'some-capability-1'}, 'payload').subscribe(replyCaptor);
-      await expectEmissions(replyCaptor).toEqual(['PAYLOAD']);
-
       // publish
-      const observeCaptor = new ObserveCaptor(bodyExtractFn);
-      Beans.get(IntentClient).observe$<string>({type: 'some-capability-2'}).subscribe(observeCaptor);
-      await Beans.get(IntentClient).publish({type: 'some-capability-2'}, 'payload');
-      await expectEmissions(observeCaptor).toEqual(['payload']);
+      const observeCaptor = new ObserveCaptor(paramsExtractFn);
+      Beans.get(IntentClient).observe$<string>({type: 'capability'}).subscribe(observeCaptor);
+      await Beans.get(IntentClient).publish({type: 'capability'});
+      await expectEmissions(observeCaptor).toEqual(new Map());
     });
 
     it('should reject an intent if parameters are missing', async () => {
       const manifestUrl = serveManifest({
-        name: 'Host Application', capabilities: [
-          {type: 'some-type-1', requiredParams: ['param1', 'param2']},
-          {type: 'some-type-2', requiredParams: ['param1', 'param2']},
-        ],
+        name: 'Host Application', capabilities: [{
+          type: 'capability',
+          params: [{name: 'param1', required: true}],
+          requiredParams: ['param2'], // legacy notation
+        }],
       });
       const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
       await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
-      // request-reply
-      const replyCaptor = new ObserveCaptor();
-      await Beans.get(IntentClient).request$({type: 'some-type-1', params: new Map<string, any>().set('param1', 'value1')}, 'ping').subscribe(replyCaptor);
-      await replyCaptor.waitUntilCompletedOrErrored();
-      expect(replyCaptor.getError()).toMatch(/\[ParamMismatchError].*missingRequiredParams=\[param2]/);
-
       // publish
-      await expectPromise(Beans.get(IntentClient).publish({type: 'some-type-2', params: new Map<string, any>().set('param1', 'value1')}, 'ping')).toReject(/ParamMismatchError/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')})).toReject(/\[ParamMismatchError].*missingParams=\[param2]/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param2', 'value2')})).toReject(/\[ParamMismatchError].*missingParams=\[param1]/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1').set('param2', 'value2')})).toResolve();
     });
 
     it('should reject an intent if it includes non-specified parameter', async () => {
       const manifestUrl = serveManifest({
-        name: 'Host Application', capabilities: [
-          {type: 'some-type-1', requiredParams: ['param1']},
-          {type: 'some-type-2', requiredParams: ['param1']},
-        ],
+        name: 'Host Application', capabilities: [{
+          type: 'capability',
+          params: [{name: 'param1', required: false}],
+        }],
       });
       const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
       await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
-      // request-reply
-      const replyCaptor = new ObserveCaptor();
-      await Beans.get(IntentClient).request$({type: 'some-type-1', params: new Map<string, any>().set('param1', 'value1').set('param2', 'value2')}, 'ping').subscribe(replyCaptor);
-      await replyCaptor.waitUntilCompletedOrErrored();
-      expect(replyCaptor.getError()).toMatch(/\[ParamMismatchError].*unexpectedParams=\[param2]/);
+      // publish
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1').set('param2', 'value2')})).toReject(/\[ParamMismatchError].*unexpectedParams=\[param2]/);
+    });
+
+    it('should map deprecated params to their substitutes, if declared', async () => {
+      const manifestUrl = serveManifest({
+        name: 'Host Application', capabilities: [{
+          type: 'capability',
+          params: [
+            {name: 'param1', required: false, deprecated: {useInstead: 'param2'}},
+            {name: 'param2', required: true},
+          ],
+        }],
+      });
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
       // publish
-      await expectPromise(Beans.get(IntentClient).publish({type: 'some-type-2', params: new Map<string, any>().set('param1', 'value1').set('param2', 'value2')}, 'ping')).toReject(/ParamMismatchError/);
+      const observeCaptor = new ObserveCaptor(paramsExtractFn);
+      Beans.get(IntentClient).observe$<string>({type: 'capability'}).subscribe(observeCaptor);
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param2', 'value1'));
+
+      // assert the deprecation warning
+      const expectedLogMessage = `[ParamDeprecationWarning] Application 'host-app' passes a deprecated parameter in the intent: 'param1'. Pass parameter 'param2' instead.`;
+      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual(jasmine.arrayContaining([expectedLogMessage]));
+    });
+
+    it('should make deprecated params optional', async () => {
+      const manifestUrl = serveManifest({
+        name: 'Host Application', capabilities: [{
+          type: 'capability',
+          params: [
+            {name: 'param1', required: false, deprecated: true},
+            {name: 'param2', required: false, deprecated: {useInstead: 'param3'}},
+            {name: 'param3', required: true},
+          ],
+        }],
+      });
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+      const observeCaptor = new ObserveCaptor(paramsExtractFn);
+      Beans.get(IntentClient).observe$<string>({type: 'capability'}).subscribe(observeCaptor);
+
+      // publish without params
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability'})).toReject(/\[ParamMismatchError].*missingParams=\[param3]/);
+
+      // publish with param1
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')})).toReject(/\[ParamMismatchError].*missingParams=\[param3]/);
+
+      // publish with param2
+      observeCaptor.reset();
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param2', 'value2')})).toResolve();
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param3', 'value2'));
+
+      // publish with param3
+      observeCaptor.reset();
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param3', 'value3')})).toResolve();
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param3', 'value3'));
+    });
+
+    it('should log deprecation warning when passing deprecated params in an intent', async () => {
+      const manifestUrl = serveManifest({
+        name: 'Host Application', capabilities: [{
+          type: 'capability',
+          params: [
+            {name: 'param1', required: false, deprecated: {message: 'DEPRECATION NOTICE'}},
+            {name: 'param2', required: false, deprecated: {message: 'DEPRECATION NOTICE', useInstead: 'param5'}},
+            {name: 'param3', required: false, deprecated: {useInstead: 'param5'}},
+            {name: 'param4', required: false, deprecated: true},
+            {name: 'param5', required: false},
+          ],
+        }],
+      });
+      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
+      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+      const observeCaptor = new ObserveCaptor(paramsExtractFn);
+      Beans.get(IntentClient).observe$<string>({type: 'capability'}).subscribe(observeCaptor);
+
+      // publish without params
+      await Beans.get(IntentClient).publish({type: 'capability'});
+      await expectEmissions(observeCaptor).toEqual(new Map());
+      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual([]);
+
+      // publish with deprecated param 'param1'
+      observeCaptor.reset();
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param1', 'value1'));
+      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual([
+        `[ParamDeprecationWarning] Application 'host-app' passes a deprecated parameter in the intent: 'param1'. DEPRECATION NOTICE`,
+      ]);
+
+      // publish with deprecated param 'param2'
+      observeCaptor.reset();
+      resetLoggerSpy('warn');
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param2', 'value2')});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param5', 'value2'));
+      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual([
+        `[ParamDeprecationWarning] Application 'host-app' passes a deprecated parameter in the intent: 'param2'. Pass parameter 'param5' instead. DEPRECATION NOTICE`,
+      ]);
+
+      // publish with deprecated param 'param3'
+      observeCaptor.reset();
+      resetLoggerSpy('warn');
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param3', 'value3')});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param5', 'value3'));
+      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual([
+        `[ParamDeprecationWarning] Application 'host-app' passes a deprecated parameter in the intent: 'param3'. Pass parameter 'param5' instead.`,
+      ]);
+
+      // publish with deprecated param 'param4'
+      observeCaptor.reset();
+      resetLoggerSpy('warn');
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param4', 'value4')});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param4', 'value4'));
+      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual([
+        `[ParamDeprecationWarning] Application 'host-app' passes a deprecated parameter in the intent: 'param4'.`,
+      ]);
     });
   });
 });

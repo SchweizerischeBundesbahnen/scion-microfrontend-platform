@@ -577,13 +577,13 @@ export namespace IntendBasedMessagingSpecs {
     await intentionManagerPO_app1.registerIntention({type: 'testing'});
 
     // register the capability
-    // app-3: requiredParams: ['param']
-    // app-4: optionalParams: ['param']
+    // app-3: required params: 'param'
+    // app-4: optional params: 'param'
     const capabilityManagerPO_app3 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3});
-    await capabilityManagerPO_app3.registerCapability({type: 'testing', requiredParams: ['param'], private: false});
+    await capabilityManagerPO_app3.registerCapability({type: 'testing', params: [{name: 'param', required: true}], private: false});
 
     const capabilityManagerPO_app4 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_4});
-    await capabilityManagerPO_app4.registerCapability({type: 'testing', optionalParams: ['param'], private: false});
+    await capabilityManagerPO_app4.registerCapability({type: 'testing', params: [{name: 'param', required: false}], private: false});
 
     // receive the intent in app-3
     const receiverPO_app3 = pagePOs.get<ReceiveMessagePagePO>('receiver_app3');
@@ -641,7 +641,7 @@ export namespace IntendBasedMessagingSpecs {
 
     // register the capability
     const capabilityManagerPO_app4 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_4});
-    await capabilityManagerPO_app4.registerCapability({type: 'testing', requiredParams: ['param1'], optionalParams: ['param2'], private: false});
+    await capabilityManagerPO_app4.registerCapability({type: 'testing', params: [{name: 'param1', required: true}, {name: 'param2', required: false}], private: false});
 
     // receive the intent
     const receiverPO_app4 = pagePOs.get<ReceiveMessagePagePO>('receiver_app4');

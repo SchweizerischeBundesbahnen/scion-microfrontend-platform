@@ -11,6 +11,9 @@
 import { ApplicationManifest } from './platform.model';
 import { Arrays } from '@scion/toolkit/util';
 import { ObserveCaptor } from '@scion/toolkit/testing';
+import { ConsoleLogger, Logger } from './logger';
+import { Beans } from '@scion/toolkit/bean-manager';
+import CallInfo = jasmine.CallInfo;
 
 /**
  * Expects the given Promise to either resolve or reject.
@@ -116,4 +119,36 @@ export function expectEmissions<T = any, R = T>(captor: ObserveCaptor<T, R>): { 
       return expect(captor.getValues()).toEqual(expectedValues);
     },
   };
+}
+
+export function installLoggerSpies(): void {
+  const logger = new ConsoleLogger();
+  spyOn(logger, 'info').and.callThrough();
+  spyOn(logger, 'warn').and.callThrough();
+  spyOn(logger, 'error').and.callThrough();
+  Beans.register(Logger, {useValue: logger});
+}
+
+export function readConsoleLog(severity: 'info' | 'warn' | 'error', options?: { filter?: RegExp, projectFn?: (call: CallInfo<any>) => string }): string[] {
+  return getLoggerSpy(severity).calls
+    .all()
+    .map(call => options?.projectFn ? options.projectFn(call) : call.args[0])
+    .filter(msg => options?.filter ? msg.match(options.filter) !== null : true);
+}
+
+export function getLoggerSpy(severity: 'info' | 'warn' | 'error'): jasmine.Spy {
+  switch (severity) {
+    case 'info':
+      return Beans.get(Logger).info as jasmine.Spy;
+    case 'warn':
+      return Beans.get(Logger).warn as jasmine.Spy;
+    case 'error':
+      return Beans.get(Logger).error as jasmine.Spy;
+    default:
+      throw Error(`[SpecError] Unsupported severity for logger spy. Expected one of ['info', 'warn', 'error'], but was '${severity}'.`);
+  }
+}
+
+export function resetLoggerSpy(severity: 'info' | 'warn' | 'error'): void {
+  getLoggerSpy(severity).calls.reset();
 }

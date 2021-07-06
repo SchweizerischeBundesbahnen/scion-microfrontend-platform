@@ -14,6 +14,7 @@ import { Urls } from '../url.util';
 import { ApplicationConfig, PlatformConfig } from './platform-config';
 import { ManifestRegistry } from './manifest-registry/manifest-registry';
 import { Beans } from '@scion/toolkit/bean-manager';
+import { Logger } from '../logger';
 
 /**
  * Registry with all registered applications.
@@ -57,8 +58,23 @@ export class ApplicationRegistry {
       intentionRegisterApiDisabled: Defined.orElse(applicationConfig.intentionRegisterApiDisabled, true),
     });
 
-    manifest.capabilities && manifest.capabilities.forEach(capability => Beans.get(ManifestRegistry).registerCapability(capability, applicationConfig.symbolicName));
-    manifest.intentions && manifest.intentions.forEach(intention => Beans.get(ManifestRegistry).registerIntention(intention, applicationConfig.symbolicName));
+    manifest.capabilities?.forEach(capability => {
+      try {
+        Beans.get(ManifestRegistry).registerCapability(capability, applicationConfig.symbolicName);
+      }
+      catch (error) {
+        Beans.get(Logger).error(`[CapabilityRegisterError] Failed to register capability for application '${applicationConfig.symbolicName}'.`, error);
+      }
+    });
+
+    manifest.intentions?.forEach(intention => {
+      try {
+        Beans.get(ManifestRegistry).registerIntention(intention, applicationConfig.symbolicName);
+      }
+      catch (error) {
+        Beans.get(Logger).error(`[IntentionRegisterError] Failed to register intention for application '${applicationConfig.symbolicName}'.`, error);
+      }
+    });
   }
 
   public getApplication(symbolicName: string): Application | undefined {
