@@ -1,3 +1,20 @@
+# [1.0.0-beta.17](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.16...1.0.0-beta.17) (2021-07-12)
+
+
+### Bug Fixes
+
+* **devtools:** resolve dependent app also if declaring a wildcard intention ([f321c5b](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/f321c5b2789a50efe84b6e7a8340a1067beb67c1))
+
+
+### Features
+
+* **devtools:** activate a dependency's counterpart tab when navigating to the dependent application ([10dda73](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/10dda73bb10038f57fb74890d467fef9e996cebe))
+* **devtools:** allow for quick filtering of capabilities ([85abd52](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/85abd527b4bfee78cd3b7f416a492b98c70c7af5))
+* **devtools:** use larger initial width for the main display area ([f96e826](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/f96e8265732d67cf8d4aefd81bbe094eec34817a))
+* **platform:** allow associating metadata with a capability param ([05952bc](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/05952bcb1ccb6b581c1862ebf7d013eafcf20712)), closes [#77](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/77)
+
+
+
 # [1.0.0-beta.16](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.15...1.0.0-beta.16) (2021-07-02)
 
 
