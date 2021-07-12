@@ -11,11 +11,11 @@ Web frontends are becoming more and more common, even for complex business appli
   <a href="https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/raw/master/docs/adoc/microfrontend-platform-developer-guide/images/microfrontend-architecture.svg"><img src="/docs/adoc/microfrontend-platform-developer-guide/images/microfrontend-architecture.svg" alt="Microfrontend Architecture"></a>
 </p>
 
-The microservice and microfrontend architecture design approach enables us to form development teams full-stack in line with the business functionality, resulting in independent so-called micro applications. A micro application deals with well-defined business functionality. Its backend services are collectively referred to as microservice and its user-facing parts as microfrontend.
+The microservice and microfrontend architecture design approach enables us to form development teams full-stack in line with the business functionality, resulting in independent so-called micro applications. A micro application deals with well-defined business functionality. Its backend services are collectively referred to as microservice and its user-facing parts are provided as one or multiple microfrontends sharing the same origin.
 
 ***
 
-A microfrontend is a term of the microfrontend architecture design approach to developing frontend applications as a composition of small, self-contained components, so-called microfrontends. Each microfrontend focuses on a single business functionality, breaking up hard-to-handle monoliths into parts by allowing independent development, autonomous lifecycles, true code splitting, and the use of different stacks. Microfrontends should be as independent and isolated as possible so that a change in one microfrontend has no impact on other microfrontends.
+Each microfrontend is a self-contained component and should focus on a single business functionality. This allows for breaking up hard-to-handle monoliths into parts by allowing independent development, autonomous lifecycles, true code splitting, and the use of different stacks. Microfrontends should be as independent and isolated as possible so that a change in one microfrontend has no impact on other microfrontends.
 
 ***
 
