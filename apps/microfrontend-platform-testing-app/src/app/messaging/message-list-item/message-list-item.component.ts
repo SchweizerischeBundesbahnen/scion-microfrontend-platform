@@ -7,8 +7,8 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Component, HostBinding, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { IntentMessage, MessageHeaders, TopicMessage } from '@scion/microfrontend-platform';
+import {Component, HostBinding, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {IntentMessage, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
 
 @Component({
   selector: 'app-message-list-item',

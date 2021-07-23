@@ -7,9 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Component, HostListener, OnDestroy } from '@angular/core';
-import { ContextService, MicrofrontendPlatform, OUTLET_CONTEXT, OutletContext } from '@scion/microfrontend-platform';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {Component, HostListener, OnDestroy} from '@angular/core';
+import {ContextService, MicrofrontendPlatform, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 @Component({
   selector: 'app-root',
@@ -28,7 +28,7 @@ export class AppComponent implements OnDestroy {
     // only log "real", aka trusted events and ignore synthetic events, e.g. keyboard events propagated across iframe boundaries.
     if (event.isTrusted) {
       const outletContextName = (await this._outletContext)?.name ?? 'n/a';
-      console.debug(`[AppComponent::document:onkeydown] [TRUSTED] [outletContext=${outletContextName}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}, defaultPrevented=${event.defaultPrevented}]`); // tslint:disable-line:no-console
+      console.debug(`[AppComponent::document:onkeydown] [TRUSTED] [outletContext=${outletContextName}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}, defaultPrevented=${event.defaultPrevented}]`);
     }
   }
 
@@ -38,7 +38,7 @@ export class AppComponent implements OnDestroy {
     // only log propagated keyboard events, i.e., keyboard events propagated across iframe boundaries.
     if (!event.isTrusted && (event.target as Element).tagName === 'SCI-ROUTER-OUTLET') {
       const outletContextName = (await this._outletContext)?.name ?? 'n/a';
-      console.debug(`[AppComponent::document:on${event.type}] [SYNTHETIC] [outletContext=${outletContextName}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}]`); // tslint:disable-line:no-console
+      console.debug(`[AppComponent::document:on${event.type}] [SYNTHETIC] [outletContext=${outletContextName}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}]`);
     }
   }
 

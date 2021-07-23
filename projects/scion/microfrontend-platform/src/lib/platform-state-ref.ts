@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { PlatformState } from './platform-state';
+import {PlatformState} from './platform-state';
 
 /**
  * Provides access to the platform state.

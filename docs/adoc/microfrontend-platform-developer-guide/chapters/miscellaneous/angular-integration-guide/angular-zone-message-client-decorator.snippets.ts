@@ -5,8 +5,6 @@ import { HttpPlatformConfigLoader } from './start-platform-via-initializer.snipp
 import { BeanDecorator, Beans } from '@scion/toolkit/bean-manager';
 import { observeInside, subscribeInside } from '@scion/toolkit/operators';
 
-// tslint:disable:new-parens
-
 // tag::message-client-decorator[]
 /**
  * Synchronizes Observable emissions of the {@link MessageClient} with the Angular zone.

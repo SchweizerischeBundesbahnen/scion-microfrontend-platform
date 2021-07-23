@@ -7,16 +7,16 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { TestingAppOrigins, TestingAppPO } from '../testing-app.po';
-import { MessagingFlavor, PublishMessagePagePO } from './publish-message-page.po';
-import { ReceiveMessagePagePO } from './receive-message-page.po';
-import { RegisterIntentionPagePO } from '../manifest/register-intention-page.po';
-import { RegisterCapabilityPagePO } from '../manifest/register-capability-page.po';
-import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
-import { expectToBeRejectedWithError } from '../spec.util';
-import { MessageListItemPO } from './message-list-item.po';
-import { Capability, IntentMessage } from '@scion/microfrontend-platform';
-import { LookupCapabilityPagePO } from '../manifest/lookup-capability-page.po';
+import {TestingAppOrigins, TestingAppPO} from '../testing-app.po';
+import {MessagingFlavor, PublishMessagePagePO} from './publish-message-page.po';
+import {ReceiveMessagePagePO} from './receive-message-page.po';
+import {RegisterIntentionPagePO} from '../manifest/register-intention-page.po';
+import {RegisterCapabilityPagePO} from '../manifest/register-capability-page.po';
+import {BrowserOutletPO} from '../browser-outlet/browser-outlet.po';
+import {expectToBeRejectedWithError} from '../spec.util';
+import {MessageListItemPO} from './message-list-item.po';
+import {Capability, IntentMessage} from '@scion/microfrontend-platform';
+import {LookupCapabilityPagePO} from '../manifest/lookup-capability-page.po';
 
 const anyCapability: Capability = {} as any;
 
@@ -969,7 +969,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Expects the intent to equal the expected intent with its headers to contain at minimum the given map entries.
    */
-  function expectIntent(actual: Promise<MessageListItemPO>): { toEqual: (expected: IntentMessage) => void } {
+  function expectIntent(actual: Promise<MessageListItemPO>): {toEqual: (expected: IntentMessage) => void} {
     return {
       toEqual: async (expected: IntentMessage): Promise<void> => {
         const actualMessage = await actual;

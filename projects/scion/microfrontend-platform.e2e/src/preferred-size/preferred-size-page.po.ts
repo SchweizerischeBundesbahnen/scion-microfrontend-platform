@@ -7,11 +7,11 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { $ } from 'protractor';
-import { enterText } from '../spec.util';
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
-import { SciCheckboxPO } from '@scion/toolkit.internal/widgets.po';
-import { ISize } from 'selenium-webdriver';
+import {$} from 'protractor';
+import {enterText} from '../spec.util';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+import {SciCheckboxPO} from '@scion/toolkit.internal/widgets.po';
+import {ISize} from 'selenium-webdriver';
 
 export class PreferredSizePagePO {
 

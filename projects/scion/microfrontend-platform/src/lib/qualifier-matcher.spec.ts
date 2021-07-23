@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { assertExactQualifier, QualifierMatcher } from './qualifier-matcher';
+import {assertExactQualifier, QualifierMatcher} from './qualifier-matcher';
 
 describe('QualifierTester', () => {
 

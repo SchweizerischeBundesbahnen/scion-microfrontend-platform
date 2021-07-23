@@ -9,7 +9,7 @@
  */
 
 import packageInfo from 'package.json';
-import { ApplicationConfig } from '@scion/microfrontend-platform';
+import {ApplicationConfig} from '@scion/microfrontend-platform';
 
 const version = packageInfo.version.replace(/\./g, '-');
 const devtools: ApplicationConfig = {

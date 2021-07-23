@@ -8,10 +8,10 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Pipe, PipeTransform } from '@angular/core';
-import { MessageClient } from '@scion/microfrontend-platform';
-import { Observable, of } from 'rxjs';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {Pipe, PipeTransform} from '@angular/core';
+import {MessageClient} from '@scion/microfrontend-platform';
+import {Observable, of} from 'rxjs';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
  * Observes the number of subscribers on a topic.

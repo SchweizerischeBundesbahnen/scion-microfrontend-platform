@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Message } from './messaging.model';
+import {Message} from './messaging.model';
 
 /**
  * Declares the message transports.

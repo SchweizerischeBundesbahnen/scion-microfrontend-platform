@@ -7,12 +7,12 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Component } from '@angular/core';
-import { Observable } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
-import { map } from 'rxjs/operators';
-import { coerceNumberProperty } from '@angular/cdk/coercion';
-import { UUID } from '@scion/toolkit/uuid';
+import {Component} from '@angular/core';
+import {Observable} from 'rxjs';
+import {ActivatedRoute} from '@angular/router';
+import {map} from 'rxjs/operators';
+import {coerceNumberProperty} from '@angular/cdk/coercion';
+import {UUID} from '@scion/toolkit/uuid';
 
 @Component({
   selector: 'app-browser-outlets',

@@ -8,5 +8,5 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-export { PreferredSizeService } from './preferred-size-service';
-export { PreferredSize } from './preferred-size';
+export {PreferredSizeService} from './preferred-size-service';
+export {PreferredSize} from './preferred-size';

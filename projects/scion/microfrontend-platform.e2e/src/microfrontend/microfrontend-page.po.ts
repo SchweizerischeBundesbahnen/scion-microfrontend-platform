@@ -7,11 +7,11 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { $ } from 'protractor';
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
-import { getInputValue, waitUntilLocation } from '../spec.util';
-import { SciPropertyPO } from '@scion/toolkit.internal/widgets.po';
-import { TestingAppPO } from '../testing-app.po';
+import {$} from 'protractor';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+import {getInputValue, waitUntilLocation} from '../spec.util';
+import {SciPropertyPO} from '@scion/toolkit.internal/widgets.po';
+import {TestingAppPO} from '../testing-app.po';
 
 export abstract class MicrofrontendPagePO {
 

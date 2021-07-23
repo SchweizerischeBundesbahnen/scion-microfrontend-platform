@@ -7,8 +7,8 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { BehaviorSubject, combineLatest, OperatorFunction, Subject } from 'rxjs';
-import { distinctUntilChanged, map, takeUntil, takeWhile } from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, OperatorFunction, Subject} from 'rxjs';
+import {distinctUntilChanged, map, takeUntil, takeWhile} from 'rxjs/operators';
 
 /**
  * Represents a monitor to track the progress of some work.

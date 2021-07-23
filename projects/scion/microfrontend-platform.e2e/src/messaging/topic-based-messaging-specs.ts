@@ -7,13 +7,13 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Outlets, TestingAppOrigins, TestingAppPO } from '../testing-app.po';
-import { MessagingFlavor, PublishMessagePagePO } from './publish-message-page.po';
-import { ReceiveMessagePagePO } from './receive-message-page.po';
-import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
-import { expectToBeRejectedWithError } from '../spec.util';
-import { MessageListItemPO } from './message-list-item.po';
-import { TopicMessage } from '@scion/microfrontend-platform';
+import {Outlets, TestingAppOrigins, TestingAppPO} from '../testing-app.po';
+import {MessagingFlavor, PublishMessagePagePO} from './publish-message-page.po';
+import {ReceiveMessagePagePO} from './receive-message-page.po';
+import {BrowserOutletPO} from '../browser-outlet/browser-outlet.po';
+import {expectToBeRejectedWithError} from '../spec.util';
+import {MessageListItemPO} from './message-list-item.po';
+import {TopicMessage} from '@scion/microfrontend-platform';
 
 /**
  * Contains Specs for topic-based messaging.
@@ -724,7 +724,7 @@ export namespace TopicBasedMessagingSpecs {
   /**
    * Expects the message to equal the expected message with its headers to contain at minimum the given map entries.
    */
-  function expectMessage(actual: Promise<MessageListItemPO>): { toEqual: (expected: TopicMessage) => void } {
+  function expectMessage(actual: Promise<MessageListItemPO>): {toEqual: (expected: TopicMessage) => void} {
     return {
       toEqual: async (expected: TopicMessage): Promise<void> => {
         const actualMessage = await actual;

@@ -7,16 +7,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Capability } from '@scion/microfrontend-platform';
-import { Router } from '@angular/router';
-import { Observable, ReplaySubject } from 'rxjs';
-import { expand, map, mapTo, switchMap, take } from 'rxjs/operators';
-import { filterManifestObjects } from '../manifest-object-filter.utils';
-import { DevToolsManifestService } from '../dev-tools-manifest.service';
-import { FormControl } from '@angular/forms';
-import { Maps } from '@scion/toolkit/util';
-import { KeyValue } from '@angular/common';
+import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Capability} from '@scion/microfrontend-platform';
+import {Router} from '@angular/router';
+import {Observable, ReplaySubject} from 'rxjs';
+import {expand, map, mapTo, switchMap, take} from 'rxjs/operators';
+import {filterManifestObjects} from '../manifest-object-filter.utils';
+import {DevToolsManifestService} from '../dev-tools-manifest.service';
+import {FormControl} from '@angular/forms';
+import {Maps} from '@scion/toolkit/util';
+import {KeyValue} from '@angular/common';
 
 @Component({
   selector: 'devtools-required-capabilities',

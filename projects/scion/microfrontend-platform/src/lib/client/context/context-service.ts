@@ -7,14 +7,14 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { concat, EMPTY, NEVER, Observable, Observer, of, Subject, TeardownLogic } from 'rxjs';
-import { filter, map, mergeMapTo, startWith, switchMapTo, take, takeUntil } from 'rxjs/operators';
-import { UUID } from '@scion/toolkit/uuid';
-import { MessageClient } from '../messaging/message-client';
-import { mapToBody, MessageHeaders, ResponseStatusCodes } from '../../messaging.model';
-import { ContextLookupOptions, Contexts } from './context.model';
-import { IS_PLATFORM_HOST } from '../../platform.model';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
+import {concat, EMPTY, NEVER, Observable, Observer, of, Subject, TeardownLogic} from 'rxjs';
+import {filter, map, mergeMapTo, startWith, switchMapTo, take, takeUntil} from 'rxjs/operators';
+import {UUID} from '@scion/toolkit/uuid';
+import {MessageClient} from '../messaging/message-client';
+import {mapToBody, MessageHeaders, ResponseStatusCodes} from '../../messaging.model';
+import {ContextLookupOptions, Contexts} from './context.model';
+import {IS_PLATFORM_HOST} from '../../platform.model';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 
 /**
  * Allows looking up contextual data set on a {@link SciRouterOutletElement `<sci-router-outlet>`} at any parent level.
@@ -62,7 +62,7 @@ export class ContextService implements PreDestroy {
    *         Upon subscription, the Observable emits the currently associated value, and then continuously when it changes, at any level
    *         in the context tree. It never completes.
    */
-  public observe$<T>(name: string, options?: ContextLookupOptions & { collect: false }): Observable<T | null>;
+  public observe$<T>(name: string, options?: ContextLookupOptions & {collect: false}): Observable<T | null>;
   /**
    * Observes the context values associated with the given name.
    *
@@ -80,7 +80,7 @@ export class ContextService implements PreDestroy {
    *         It never completes. Collected values are emitted as array in context-descending order, i.e., more specific
    *         context values precede others, in other words, values of child contexts precede values of parent contexts.
    */
-  public observe$<T>(name: string, options: ContextLookupOptions & { collect: true }): Observable<T[]>;
+  public observe$<T>(name: string, options: ContextLookupOptions & {collect: true}): Observable<T[]>;
 
   public observe$<T>(name: string, options?: ContextLookupOptions): Observable<T | T[] | null> {
     if (Beans.get(IS_PLATFORM_HOST)) {
@@ -109,7 +109,7 @@ export class ContextService implements PreDestroy {
    * @param  options - Instructs how to look up the context value.
    * @return A Promise that resolves to the value associated with the given name, or `null` if not finding a value.
    */
-  public lookup<T>(name: string, options?: ContextLookupOptions & { collect: false }): Promise<T | null>;
+  public lookup<T>(name: string, options?: ContextLookupOptions & {collect: false}): Promise<T | null>;
   /**
    * Looks up context values associated with the given name.
    *
@@ -126,7 +126,7 @@ export class ContextService implements PreDestroy {
    *         Collected values are sorted in context-descending order, i.e., more specific context values precede others, in
    *         other words, values of child contexts precede values of parent contexts.
    */
-  public lookup<T>(name: string, options: ContextLookupOptions & { collect: true }): Promise<T[]>;
+  public lookup<T>(name: string, options: ContextLookupOptions & {collect: true}): Promise<T[]>;
 
   public lookup<T>(name: string, options?: ContextLookupOptions): Promise<T | T[] | null> {
     return this.observe$<T>(name, options as any).pipe(take(1)).toPromise();
@@ -138,7 +138,7 @@ export class ContextService implements PreDestroy {
    * @param name - The name of the context value to check if present.
    * @return A Promise that resolves to `true` if a context value is associated with the given name, or that resolves to `false` otherwise.
    */
-  public isPresent<T>(name: string): Promise<boolean> {
+  public isPresent(name: string): Promise<boolean> {
     return this.lookup(name).then(value => value !== null);
   }
 

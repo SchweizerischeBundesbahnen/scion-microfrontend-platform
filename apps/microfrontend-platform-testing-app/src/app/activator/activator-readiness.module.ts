@@ -8,11 +8,11 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { NgModule } from '@angular/core';
-import { ACTIVATION_CONTEXT, ActivationContext, ContextService, MessageClient, MessageHeaders, MicroApplicationConfig } from '@scion/microfrontend-platform';
-import { TestingAppTopics } from '../testing-app.topics';
-import { RouterModule } from '@angular/router';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {NgModule} from '@angular/core';
+import {ACTIVATION_CONTEXT, ActivationContext, ContextService, MessageClient, MessageHeaders, MicroApplicationConfig} from '@scion/microfrontend-platform';
+import {TestingAppTopics} from '../testing-app.topics';
+import {RouterModule} from '@angular/router';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
  * Module which operates as activator.

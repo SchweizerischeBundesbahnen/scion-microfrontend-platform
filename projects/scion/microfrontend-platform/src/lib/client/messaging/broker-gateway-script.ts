@@ -7,8 +7,8 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { ConnackMessage, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics } from '../../ɵmessaging.model';
-import { MessageHeaders, TopicMessage } from '../../messaging.model';
+import {ConnackMessage, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics} from '../../ɵmessaging.model';
+import {MessageHeaders, TopicMessage} from '../../messaging.model';
 
 /**
  * Returns the JavaScript for the gateway to connect to the message broker.
@@ -59,7 +59,7 @@ export function getGatewayJavaScript(config: GatewayConfig): string {
  * @ignore
  */
 function initGateway(config: GatewayConfig, constants: Constants): void {
-  const noop = (): void => {
+  const noop = (): void => { // eslint-disable-line @typescript-eslint/no-empty-function
   };
   const whenUnload: Promise<void> = createPageUnloadPromise();
   const whenConnected: Promise<BrokerInfo> = discoverBrokerAndConnect();
@@ -173,7 +173,7 @@ function initGateway(config: GatewayConfig, constants: Constants): void {
     const replyTo = randomUUID();
     const disposables: (() => void)[] = [];
 
-    const connectPromise = new Promise<BrokerInfo>((resolve, reject) => { // tslint:disable-line:typedef
+    const connectPromise = new Promise<BrokerInfo>((resolve, reject) => {
       onSuccessResolve(resolve, reject);
       onTimeoutReject(reject);
     });
@@ -245,7 +245,7 @@ function initGateway(config: GatewayConfig, constants: Constants): void {
   }
 
   function createPageUnloadPromise(): Promise<void> {
-    return new Promise<void>(resolve => window.addEventListener('unload', () => resolve(), {once: true})); // tslint:disable-line:typedef
+    return new Promise<void>(resolve => window.addEventListener('unload', () => resolve(), {once: true}));
   }
 
   /**
@@ -258,9 +258,9 @@ function initGateway(config: GatewayConfig, constants: Constants): void {
     }
 
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, char => {
-      const random = (now + Math.random() * 16) % 16 | 0; // tslint:disable-line:no-bitwise
+      const random = (now + Math.random() * 16) % 16 | 0;
       now = Math.floor(now / 16);
-      return (char === 'x' ? random : (random & 0x3 | 0x8)).toString(16); // tslint:disable-line:no-bitwise
+      return (char === 'x' ? random : (random & 0x3 | 0x8)).toString(16);
     });
   }
 }

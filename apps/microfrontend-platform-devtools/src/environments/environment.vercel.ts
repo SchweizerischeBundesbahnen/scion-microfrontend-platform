@@ -12,5 +12,5 @@
  * Environment used when packaging the app for Vercel.
  */
 export const environment = {
-  production: true
+  production: true,
 };

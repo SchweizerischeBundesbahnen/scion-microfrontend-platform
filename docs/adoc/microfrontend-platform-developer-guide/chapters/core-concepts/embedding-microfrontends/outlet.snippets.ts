@@ -1,7 +1,6 @@
 import { ContextService, MessageClient, OutletRouter, PreferredSizeService, SciRouterOutletElement } from '@scion/microfrontend-platform';
 import { UUID } from '@scion/toolkit/uuid';
 import { Beans } from '@scion/toolkit/bean-manager';
-// tslint:disable:no-unused-expression
 
 {
   `

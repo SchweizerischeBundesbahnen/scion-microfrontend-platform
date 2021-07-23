@@ -8,9 +8,9 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { MicrofrontendPlatform } from '../../microfrontend-platform';
-import { ContextService } from './context-service';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {ContextService} from './context-service';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 describe('Context', () => {
 
@@ -20,7 +20,7 @@ describe('Context', () => {
   it('should not complete the Observable when looking up context values from inside the host app (no context)', async () => {
     await MicrofrontendPlatform.startHost([]);
 
-    let next = undefined; // tslint:disable-line:no-unnecessary-initializer
+    let next = undefined;
     let error = false;
     let complete = false;
 
@@ -35,7 +35,7 @@ describe('Context', () => {
   it('should not complete the Observable when looking up the names of context values from inside the host app (no context)', async () => {
     await MicrofrontendPlatform.startHost([]);
 
-    let next = undefined; // tslint:disable-line:no-unnecessary-initializer
+    let next = undefined;
     let error = false;
     let complete = false;
 

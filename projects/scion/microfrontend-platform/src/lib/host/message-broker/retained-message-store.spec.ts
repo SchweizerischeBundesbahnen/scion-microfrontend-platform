@@ -7,8 +7,8 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { RetainedMessageStore } from './retained-message-store';
-import { MessageHeaders, TopicMessage } from '../../messaging.model';
+import {RetainedMessageStore} from './retained-message-store';
+import {MessageHeaders, TopicMessage} from '../../messaging.model';
 
 describe('RetainedMessageStore', () => {
 
@@ -87,7 +87,7 @@ describe('RetainedMessageStore', () => {
     expect(retainedMessageStore.findMostRecentRetainedMessage(':building/:room/:measurement')).toEqual(message2);
   });
 
-  function newTopicMessage(topic: string, msg: { body?: any, timestamp: number }): TopicMessage {
+  function newTopicMessage(topic: string, msg: {body?: any, timestamp: number}): TopicMessage {
     return {
       topic: topic,
       body: msg.body,

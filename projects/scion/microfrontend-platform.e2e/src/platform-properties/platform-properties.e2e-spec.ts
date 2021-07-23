@@ -7,9 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { TestingAppPO } from '../testing-app.po';
-import { PlatformPropertiesPagePO } from './platform-properties-page.po';
-import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
+import {TestingAppPO} from '../testing-app.po';
+import {PlatformPropertiesPagePO} from './platform-properties-page.po';
+import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
 
 describe('PlatformProperties', () => {
 

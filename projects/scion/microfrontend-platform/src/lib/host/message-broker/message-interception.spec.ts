@@ -8,9 +8,9 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { chainInterceptors, Handler, IntentInterceptor, MessageInterceptor, PublishInterceptorChain } from './message-interception';
-import { IntentMessage, TopicMessage } from '../../messaging.model';
-import { noop } from 'rxjs';
+import {chainInterceptors, Handler, IntentInterceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
+import {IntentMessage, TopicMessage} from '../../messaging.model';
+import {noop} from 'rxjs';
 import any = jasmine.any;
 import createSpyObj = jasmine.createSpyObj;
 import createSpy = jasmine.createSpy;
@@ -99,17 +99,17 @@ describe('Message Interception', () => {
   });
 
   it('should allow to modify a message', async () => {
-    interceptor1.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => { // tslint:disable-line:no-shadowed-variable
+    interceptor1.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => {
       message.headers.set('HEADER_INTERCEPTOR_1', true);
       message.body.push('INTERCEPTOR_1');
       next.handle(message);
     });
-    interceptor2.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => { // tslint:disable-line:no-shadowed-variable
+    interceptor2.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => {
       message.headers.set('HEADER_INTERCEPTOR_2', true);
       message.body.push('INTERCEPTOR_2');
       next.handle(message);
     });
-    interceptor3.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => { // tslint:disable-line:no-shadowed-variable
+    interceptor3.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => {
       message.headers.set('HEADER_INTERCEPTOR_3', true);
       message.body.push('INTERCEPTOR_3');
       next.handle(message);
@@ -213,17 +213,17 @@ describe('Intent Interception', () => {
   });
 
   it('should allow to modify an intent', async () => {
-    interceptor1.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => { // tslint:disable-line:no-shadowed-variable
+    interceptor1.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => {
       intent.headers.set('HEADER_INTERCEPTOR_1', true);
       intent.body.push('INTERCEPTOR_1');
       next.handle(intent);
     });
-    interceptor2.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => { // tslint:disable-line:no-shadowed-variable
+    interceptor2.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => {
       intent.headers.set('HEADER_INTERCEPTOR_2', true);
       intent.body.push('INTERCEPTOR_2');
       next.handle(intent);
     });
-    interceptor3.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => { // tslint:disable-line:no-shadowed-variable
+    interceptor3.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => {
       intent.headers.set('HEADER_INTERCEPTOR_3', true);
       intent.body.push('INTERCEPTOR_3');
       next.handle(intent);

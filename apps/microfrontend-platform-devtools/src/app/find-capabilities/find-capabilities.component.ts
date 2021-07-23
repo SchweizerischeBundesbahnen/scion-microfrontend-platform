@@ -7,14 +7,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { KeyValuePair, LogicalOperator } from './filter-field/filter-field';
-import { CapabilityFilterSession } from './capability-filter-session.service';
-import { Observable } from 'rxjs';
-import { DevToolsManifestService } from '../dev-tools-manifest.service';
-import { ShellService } from '../shell.service';
-import { map } from 'rxjs/operators';
-import { sortArray, distinctArray } from '@scion/toolkit/operators';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {KeyValuePair, LogicalOperator} from './filter-field/filter-field';
+import {CapabilityFilterSession} from './capability-filter-session.service';
+import {Observable} from 'rxjs';
+import {DevToolsManifestService} from '../dev-tools-manifest.service';
+import {ShellService} from '../shell.service';
+import {map} from 'rxjs/operators';
+import {distinctArray, sortArray} from '@scion/toolkit/operators';
 
 @Component({
   selector: 'devtools-find-capabilities',

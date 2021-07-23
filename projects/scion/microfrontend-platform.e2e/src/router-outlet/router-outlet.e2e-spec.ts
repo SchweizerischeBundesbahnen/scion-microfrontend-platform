@@ -7,16 +7,16 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { browserNavigateBack, consumeBrowserLog, expectMap, waitUntilLocation } from '../spec.util';
-import { TestingAppOrigins, TestingAppPO } from '../testing-app.po';
-import { browser, logging } from 'protractor';
-import { OutletRouterPagePO } from './outlet-router-page.po';
-import { ContextPagePO } from '../context/context-page.po';
-import { RouterOutletPagePO } from './router-outlet-page.po';
-import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
-import { Microfrontend1PagePO } from '../microfrontend/microfrontend-1-page.po';
-import { Microfrontend2PagePO } from '../microfrontend/microfrontend-2-page.po';
-import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
+import {browserNavigateBack, consumeBrowserLog, expectMap, waitUntilLocation} from '../spec.util';
+import {TestingAppOrigins, TestingAppPO} from '../testing-app.po';
+import {browser, logging} from 'protractor';
+import {OutletRouterPagePO} from './outlet-router-page.po';
+import {ContextPagePO} from '../context/context-page.po';
+import {RouterOutletPagePO} from './router-outlet-page.po';
+import {BrowserOutletPO} from '../browser-outlet/browser-outlet.po';
+import {Microfrontend1PagePO} from '../microfrontend/microfrontend-1-page.po';
+import {Microfrontend2PagePO} from '../microfrontend/microfrontend-2-page.po';
+import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
 import Level = logging.Level;
 
 describe('RouterOutlet', () => {
@@ -1135,7 +1135,7 @@ describe('RouterOutlet', () => {
   });
 });
 
-async function getPageUrl(parts: { origin: string, path: string }): Promise<string> {
+async function getPageUrl(parts: {origin: string, path: string}): Promise<string> {
   const origin = new URL(await browser.getCurrentUrl()).origin;
   const url = new URL(`/#/${parts.path}`, origin);
   url.port = new URL(parts.origin).port;
@@ -1145,7 +1145,7 @@ async function getPageUrl(parts: { origin: string, path: string }): Promise<stri
 /**
  * Expects the given router outlet to display content of the given URL. This expectation fails if not entering that location within 5 seconds.
  */
-function expectRouterOutletUrl(routerOutletPO: RouterOutletPagePO): { toEqual: (expected: string | Promise<string>) => Promise<void> } {
+function expectRouterOutletUrl(routerOutletPO: RouterOutletPagePO): {toEqual: (expected: string | Promise<string>) => Promise<void>} {
   return {
     toEqual: async (expected: string | Promise<string>): Promise<void> => {
       const expectedLocation = await expected;

@@ -7,12 +7,12 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { $, browser, WebElement } from 'protractor';
-import { enterText, getUrlOfCurrentWebDriverExecutionContext, isCssClassPresent, switchToIframe } from '../spec.util';
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
-import { RouterOutletContextPO } from '../context/router-outlet-context.po';
-import { ISize } from 'selenium-webdriver';
-import { RouterOutletSettingsPO } from '../settings/router-outlet-settings.po';
+import {$, browser, WebElement} from 'protractor';
+import {enterText, getUrlOfCurrentWebDriverExecutionContext, isCssClassPresent, switchToIframe} from '../spec.util';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+import {RouterOutletContextPO} from '../context/router-outlet-context.po';
+import {ISize} from 'selenium-webdriver';
+import {RouterOutletSettingsPO} from '../settings/router-outlet-settings.po';
 
 export class RouterOutletPagePO {
 

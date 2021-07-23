@@ -7,11 +7,11 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { UUID } from '@scion/toolkit/uuid';
-import { TestingAppService } from '../testing-app.service';
-import { ActivatedRoute, Params } from '@angular/router';
-import { Observable } from 'rxjs';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {UUID} from '@scion/toolkit/uuid';
+import {TestingAppService} from '../testing-app.service';
+import {ActivatedRoute, Params} from '@angular/router';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-microfrontend',

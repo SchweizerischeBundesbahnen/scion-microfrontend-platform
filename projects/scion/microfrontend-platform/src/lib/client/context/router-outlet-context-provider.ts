@@ -7,17 +7,17 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { BehaviorSubject, fromEvent, Observable, Subject } from 'rxjs';
-import { filter, share, takeUntil } from 'rxjs/operators';
-import { filterByChannel, filterByTopic, filterByTransport, pluckEnvelope } from '../../operators';
-import { MessageEnvelope, MessagingChannel, MessagingTransport } from '../../ɵmessaging.model';
-import { TopicMatcher } from '../../topic-matcher.util';
-import { MessageHeaders, ResponseStatusCodes, TopicMessage } from '../../messaging.model';
-import { MessageClient, takeUntilUnsubscribe } from '../messaging/message-client';
-import { CONTEXT_LOOKUP_OPTIONS, Contexts } from './context.model';
-import { runSafe } from '../../safe-runner';
-import { IS_PLATFORM_HOST } from '../../platform.model';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {BehaviorSubject, fromEvent, Observable, Subject} from 'rxjs';
+import {filter, share, takeUntil} from 'rxjs/operators';
+import {filterByChannel, filterByTopic, filterByTransport, pluckEnvelope} from '../../operators';
+import {MessageEnvelope, MessagingChannel, MessagingTransport} from '../../ɵmessaging.model';
+import {TopicMatcher} from '../../topic-matcher.util';
+import {MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
+import {MessageClient, takeUntilUnsubscribe} from '../messaging/message-client';
+import {CONTEXT_LOOKUP_OPTIONS, Contexts} from './context.model';
+import {runSafe} from '../../safe-runner';
+import {IS_PLATFORM_HOST} from '../../platform.model';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
  * Provides a context to the {@link SciRouterOutletElement} allowing the outlet to associate values with that context.
@@ -199,10 +199,10 @@ export class RouterOutletContextProvider {
 
         this._entryChange$
           .pipe(
-            takeUntil(this._outletDisconnect$),
             takeUntilUnsubscribe(replyTo),
+            takeUntil(this._outletDisconnect$),
           )
-          .subscribe((event: Contexts.ContextTreeChangeEvent) => { // tslint:disable-line:rxjs-no-nested-subscribe
+          .subscribe((event: Contexts.ContextTreeChangeEvent) => { // eslint-disable-line rxjs/no-nested-subscribe
             Beans.get(MessageClient).publish<Contexts.ContextTreeChangeEvent>(replyTo, event);
           });
 

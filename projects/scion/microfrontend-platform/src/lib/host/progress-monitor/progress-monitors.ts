@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { ProgressMonitor } from './progress-monitor';
+import {ProgressMonitor} from './progress-monitor';
 
 /**
  * Tracks the progress of loading application manifests.

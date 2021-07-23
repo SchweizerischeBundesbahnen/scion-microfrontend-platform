@@ -7,8 +7,8 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Logger } from './logger';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {Logger} from './logger';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
  * Runs the given function. Errors are caught and logged.

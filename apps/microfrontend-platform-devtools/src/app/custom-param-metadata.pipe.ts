@@ -8,9 +8,9 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Pipe, PipeTransform } from '@angular/core';
-import { ParamDefinition } from '@scion/microfrontend-platform';
-import { Dictionary } from '@scion/toolkit/util';
+import {Pipe, PipeTransform} from '@angular/core';
+import {ParamDefinition} from '@scion/microfrontend-platform';
+import {Dictionary} from '@scion/toolkit/util';
 
 /**
  * Extracts custom metadata associated with a param, if any, otherwise, returns `null`.

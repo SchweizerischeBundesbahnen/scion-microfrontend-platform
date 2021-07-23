@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { IntentClient } from '../client/messaging/intent-client';
+import {IntentClient} from '../client/messaging/intent-client';
 
 /**
  * Allows interacting with the Intention API on behalf of the platform app {@link PLATFORM_SYMBOLIC_NAME}.

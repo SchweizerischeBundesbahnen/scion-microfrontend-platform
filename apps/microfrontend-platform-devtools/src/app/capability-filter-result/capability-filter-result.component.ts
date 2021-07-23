@@ -7,14 +7,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Capability } from '@scion/microfrontend-platform';
-import { CapabilityFilterSession } from '../find-capabilities/capability-filter-session.service';
-import { ShellService } from '../shell.service';
-import { FormControl } from '@angular/forms';
-import { expand, map, mapTo, take } from 'rxjs/operators';
-import { filterManifestObjects } from '../manifest-object-filter.utils';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {Observable} from 'rxjs';
+import {Capability} from '@scion/microfrontend-platform';
+import {CapabilityFilterSession} from '../find-capabilities/capability-filter-session.service';
+import {ShellService} from '../shell.service';
+import {FormControl} from '@angular/forms';
+import {expand, map, mapTo, take} from 'rxjs/operators';
+import {filterManifestObjects} from '../manifest-object-filter.utils';
 
 @Component({
   selector: 'devtools-capability-filter-result',

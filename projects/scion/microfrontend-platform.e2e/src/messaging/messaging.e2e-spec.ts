@@ -7,10 +7,10 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { TestingAppOrigins } from '../testing-app.po';
-import { TopicBasedMessagingSpecs } from './topic-based-messaging-specs';
-import { IntendBasedMessagingSpecs } from './intent-based-messaging-specs';
-import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
+import {TestingAppOrigins} from '../testing-app.po';
+import {TopicBasedMessagingSpecs} from './topic-based-messaging-specs';
+import {IntendBasedMessagingSpecs} from './intent-based-messaging-specs';
+import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
 
 describe('Messaging', () => {
 

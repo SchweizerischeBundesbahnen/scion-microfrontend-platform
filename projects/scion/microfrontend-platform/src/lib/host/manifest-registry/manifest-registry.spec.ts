@@ -7,14 +7,14 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { MicrofrontendPlatform } from '../../microfrontend-platform';
-import { expectEmissions, installLoggerSpies, readConsoleLog, serveManifest } from '../../spec.util.spec';
-import { ApplicationConfig } from '../platform-config';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { ManifestRegistry } from './manifest-registry';
-import { Capability } from '../../platform.model';
-import { ManifestService } from '../../client/manifest-registry/manifest-service';
-import { ObserveCaptor } from '@scion/toolkit/testing';
+import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {expectEmissions, installLoggerSpies, readConsoleLog, serveManifest} from '../../spec.util.spec';
+import {ApplicationConfig} from '../platform-config';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {ManifestRegistry} from './manifest-registry';
+import {Capability} from '../../platform.model';
+import {ManifestService} from '../../client/manifest-registry/manifest-service';
+import {ObserveCaptor} from '@scion/toolkit/testing';
 import CallInfo = jasmine.CallInfo;
 
 const capabilityIdExtractFn = (capability: Capability): string => capability.metadata.id;

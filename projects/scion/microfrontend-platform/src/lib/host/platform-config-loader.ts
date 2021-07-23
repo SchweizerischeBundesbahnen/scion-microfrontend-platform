@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { PlatformConfig } from './platform-config';
+import {PlatformConfig} from './platform-config';
 
 /**
  * Allows loading the config of applications running in the platform and platform properties asynchronously, e.g. from a backend.

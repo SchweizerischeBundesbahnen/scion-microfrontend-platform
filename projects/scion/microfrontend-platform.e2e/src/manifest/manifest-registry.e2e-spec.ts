@@ -7,13 +7,13 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { expectToBeRejectedWithError } from '../spec.util';
-import { TestingAppOrigins, TestingAppPO } from '../testing-app.po';
-import { RegisterCapabilityPagePO } from './register-capability-page.po';
-import { LookupCapabilityPagePO } from './lookup-capability-page.po';
-import { RegisterIntentionPagePO } from './register-intention-page.po';
-import { LookupIntentionPagePO } from './lookup-intention-page.po';
-import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
+import {expectToBeRejectedWithError} from '../spec.util';
+import {TestingAppOrigins, TestingAppPO} from '../testing-app.po';
+import {RegisterCapabilityPagePO} from './register-capability-page.po';
+import {LookupCapabilityPagePO} from './lookup-capability-page.po';
+import {RegisterIntentionPagePO} from './register-intention-page.po';
+import {LookupIntentionPagePO} from './lookup-intention-page.po';
+import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
 
 describe('Manifest Registry', () => {
 

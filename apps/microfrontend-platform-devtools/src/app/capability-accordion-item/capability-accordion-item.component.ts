@@ -7,10 +7,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Clipboard } from '@angular/cdk/clipboard';
-import { Capability } from '@scion/microfrontend-platform';
-import { Router } from '@angular/router';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {Clipboard} from '@angular/cdk/clipboard';
+import {Capability} from '@scion/microfrontend-platform';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'devtools-capability-accordion-item',

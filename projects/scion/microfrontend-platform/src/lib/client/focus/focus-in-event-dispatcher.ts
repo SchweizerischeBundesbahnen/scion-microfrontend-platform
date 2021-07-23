@@ -7,14 +7,14 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { fromEvent, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { MessageClient } from '../messaging/message-client';
-import { PlatformTopics } from '../../ɵmessaging.model';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
-import { FocusMonitor } from './focus-monitor';
-import { OUTLET_CONTEXT, OutletContext, RouterOutlets } from '../router-outlet/router-outlet.element';
-import { ContextService } from '../context/context-service';
+import {fromEvent, Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+import {MessageClient} from '../messaging/message-client';
+import {PlatformTopics} from '../../ɵmessaging.model';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {FocusMonitor} from './focus-monitor';
+import {OUTLET_CONTEXT, OutletContext, RouterOutlets} from '../router-outlet/router-outlet.element';
+import {ContextService} from '../context/context-service';
 
 /**
  * Sends a 'focusin' event to the topic {@link PlatformTopics.FocusIn} when this document gains focus.

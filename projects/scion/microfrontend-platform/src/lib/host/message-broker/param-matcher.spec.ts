@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ParamMatcher } from './param-matcher';
+import {ParamMatcher} from './param-matcher';
 
 describe('ParamMatcher', () => {
 

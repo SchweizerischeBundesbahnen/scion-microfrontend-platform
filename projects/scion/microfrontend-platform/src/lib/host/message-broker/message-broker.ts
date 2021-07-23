@@ -7,27 +7,27 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { EMPTY, fromEvent, MonoTypeOperatorFunction, Observable, of, OperatorFunction, pipe, Subject } from 'rxjs';
-import { catchError, filter, mergeMap, share, takeUntil } from 'rxjs/operators';
-import { IntentMessage, Message, MessageHeaders, TopicMessage } from '../../messaging.model';
-import { ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand } from '../../ɵmessaging.model';
-import { ApplicationRegistry } from '../application-registry';
-import { ManifestRegistry } from '../manifest-registry/manifest-registry';
-import { Defined } from '@scion/toolkit/util';
-import { UUID } from '@scion/toolkit/uuid';
-import { Logger } from '../../logger';
-import { runSafe } from '../../safe-runner';
-import { PLATFORM_SYMBOLIC_NAME } from '../platform.constants';
-import { TopicSubscriptionRegistry } from './topic-subscription.registry';
-import { Client, ClientRegistry } from './client.registry';
-import { RetainedMessageStore } from './retained-message-store';
-import { TopicMatcher } from '../../topic-matcher.util';
-import { chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain } from './message-interception';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
-import { Runlevel } from '../../platform-state';
-import { Capability, ParamDefinition } from '../../platform.model';
-import { bufferUntil } from '@scion/toolkit/operators';
-import { ParamMatcher } from './param-matcher';
+import {EMPTY, fromEvent, MonoTypeOperatorFunction, Observable, of, OperatorFunction, pipe, Subject} from 'rxjs';
+import {catchError, filter, mergeMap, share, takeUntil} from 'rxjs/operators';
+import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
+import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
+import {ApplicationRegistry} from '../application-registry';
+import {ManifestRegistry} from '../manifest-registry/manifest-registry';
+import {Defined} from '@scion/toolkit/util';
+import {UUID} from '@scion/toolkit/uuid';
+import {Logger} from '../../logger';
+import {runSafe} from '../../safe-runner';
+import {PLATFORM_SYMBOLIC_NAME} from '../platform.constants';
+import {TopicSubscriptionRegistry} from './topic-subscription.registry';
+import {Client, ClientRegistry} from './client.registry';
+import {RetainedMessageStore} from './retained-message-store';
+import {TopicMatcher} from '../../topic-matcher.util';
+import {chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {Runlevel} from '../../platform-state';
+import {Capability, ParamDefinition} from '../../platform.model';
+import {bufferUntil} from '@scion/toolkit/operators';
+import {ParamMatcher} from './param-matcher';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -259,7 +259,7 @@ export class MessageBroker implements PreDestroy {
 
         this._topicSubscriptionRegistry.subscriptionCount$(topic)
           .pipe(takeUntil(this._topicSubscriptionRegistry.subscriptionCount$(replyTo).pipe(filter(count => count === 0))))
-          .subscribe((count: number) => runSafe(() => { // tslint:disable-line:rxjs-no-nested-subscribe
+          .subscribe((count: number) => runSafe(() => { // eslint-disable-line rxjs/no-nested-subscribe
             this.dispatchTopicMessage({
               topic: replyTo,
               body: count,
@@ -454,7 +454,7 @@ export class MessageBroker implements PreDestroy {
 }
 
 /** @ignore */
-function filterMessage<M>(transport: MessagingTransport, channel?: MessagingChannel): MonoTypeOperatorFunction<MessageEvent> {
+function filterMessage(transport: MessagingTransport, channel?: MessagingChannel): MonoTypeOperatorFunction<MessageEvent> {
   return filter((messageEvent: MessageEvent): boolean => {
     const envelope: MessageEnvelope = messageEvent.data;
     if (!envelope) {
@@ -486,7 +486,7 @@ function filterByChannel(channel: MessagingChannel): MonoTypeOperatorFunction<Cl
  *
  * @ignore
  */
-function checkOriginTrusted<MSG extends Message>(clientRegistry: ClientRegistry, rejectConfig: { transport: MessagingTransport }): OperatorFunction<MessageEvent, ClientMessage<MSG>> {
+function checkOriginTrusted<MSG extends Message>(clientRegistry: ClientRegistry, rejectConfig: {transport: MessagingTransport}): OperatorFunction<MessageEvent, ClientMessage<MSG>> {
   return mergeMap((event: MessageEvent): Observable<ClientMessage> => {
     const envelope: MessageEnvelope = event.data;
     const senderGatewayWindow = event.source as Window;
@@ -534,7 +534,7 @@ export function filterByTransportAndTopic(transport: MessagingTransport, topic: 
 }
 
 /** @ignore */
-function sendDeliveryStatusSuccess(recipient: { gatewayWindow: Window; origin: string } | Client, destination: { transport: MessagingTransport, topic: string }): void {
+function sendDeliveryStatusSuccess(recipient: {gatewayWindow: Window; origin: string} | Client, destination: {transport: MessagingTransport, topic: string}): void {
   sendTopicMessage<MessageDeliveryStatus>(recipient, destination.transport, {
     topic: destination.topic,
     body: {ok: true},
@@ -543,7 +543,7 @@ function sendDeliveryStatusSuccess(recipient: { gatewayWindow: Window; origin: s
 }
 
 /** @ignore */
-function sendDeliveryStatusError(recipient: { gatewayWindow: Window; origin: string } | Client, destination: { transport: MessagingTransport, topic: string }, error: string): void {
+function sendDeliveryStatusError(recipient: {gatewayWindow: Window; origin: string} | Client, destination: {transport: MessagingTransport, topic: string}, error: string): void {
   sendTopicMessage<MessageDeliveryStatus>(recipient, destination.transport, {
     topic: destination.topic,
     body: {ok: false, details: error},
@@ -552,7 +552,7 @@ function sendDeliveryStatusError(recipient: { gatewayWindow: Window; origin: str
 }
 
 /** @ignore */
-function sendTopicMessage<T>(recipient: { gatewayWindow: Window; origin: string } | Client, transport: MessagingTransport, message: TopicMessage<T>): void {
+function sendTopicMessage<T>(recipient: {gatewayWindow: Window; origin: string} | Client, transport: MessagingTransport, message: TopicMessage<T>): void {
   const envelope: MessageEnvelope<TopicMessage<T>> = {
     transport: transport,
     channel: MessagingChannel.Topic,
@@ -596,7 +596,7 @@ function catchErrorAndRetry<T>(): MonoTypeOperatorFunction<T> {
   });
 }
 
-function constructDeprecatedParamWarning(param: ParamDefinition, metadata: { appSymbolicName: string }): string {
+function constructDeprecatedParamWarning(param: ParamDefinition, metadata: {appSymbolicName: string}): string {
   const deprecation = param.deprecated!;
   const useInstead = typeof deprecation === 'object' && deprecation.useInstead || undefined;
   const message = typeof deprecation === 'object' && deprecation.message || undefined;

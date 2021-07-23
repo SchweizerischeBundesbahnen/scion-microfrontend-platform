@@ -7,10 +7,10 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { consumeBrowserLog } from '../spec.util';
-import { TestingAppPO } from '../testing-app.po';
-import { logging } from 'protractor';
-import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
+import {consumeBrowserLog} from '../spec.util';
+import {TestingAppPO} from '../testing-app.po';
+import {logging} from 'protractor';
+import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
 import Level = logging.Level;
 
 /**

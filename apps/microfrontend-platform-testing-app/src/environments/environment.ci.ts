@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { ApplicationConfig } from '@scion/microfrontend-platform';
+import {ApplicationConfig} from '@scion/microfrontend-platform';
 
 const devtools: ApplicationConfig = null;
 

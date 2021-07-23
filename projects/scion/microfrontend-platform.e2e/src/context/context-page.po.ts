@@ -7,9 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { $ } from 'protractor';
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
-import { ContextListPO } from './context-list.po';
+import {$} from 'protractor';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+import {ContextListPO} from './context-list.po';
 
 export class ContextPagePO {
 

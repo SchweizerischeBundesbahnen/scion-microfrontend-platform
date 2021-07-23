@@ -7,16 +7,16 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { PlatformMessageClient } from '../platform-message-client';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
-import { takeUntilUnsubscribe } from '../../client/messaging/message-client';
-import { MessageHeaders, TopicMessage } from '../../messaging.model';
-import { runSafe } from '../../safe-runner';
-import { PlatformTopics } from '../../ɵmessaging.model';
-import { Client, ClientRegistry } from '../message-broker/client.registry';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
-import { Defined } from '@scion/toolkit/util';
+import {PlatformMessageClient} from '../platform-message-client';
+import {BehaviorSubject, Subject} from 'rxjs';
+import {distinctUntilChanged, map, takeUntil} from 'rxjs/operators';
+import {takeUntilUnsubscribe} from '../../client/messaging/message-client';
+import {MessageHeaders, TopicMessage} from '../../messaging.model';
+import {runSafe} from '../../safe-runner';
+import {PlatformTopics} from '../../ɵmessaging.model';
+import {Client, ClientRegistry} from '../message-broker/client.registry';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {Defined} from '@scion/toolkit/util';
 
 /**
  * Tracks the focus across microfrontends and answers {@link PlatformTopics.IsFocusWithin} requests.
@@ -67,7 +67,7 @@ export class FocusTracker implements PreDestroy {
             takeUntilUnsubscribe(replyTo, PlatformMessageClient),
             takeUntil(this._destroy$),
           )
-          .subscribe((isFocusWithin: boolean) => { // tslint:disable-line:rxjs-no-nested-subscribe
+          .subscribe((isFocusWithin: boolean) => { // eslint-disable-line rxjs/no-nested-subscribe
             Beans.get(PlatformMessageClient).publish(replyTo, isFocusWithin);
           });
       }));

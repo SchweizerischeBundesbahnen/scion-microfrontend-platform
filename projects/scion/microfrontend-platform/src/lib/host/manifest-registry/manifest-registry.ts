@@ -8,8 +8,8 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Capability, Intention } from '../../platform.model';
-import { Intent } from '../../messaging.model';
+import {Capability, Intention} from '../../platform.model';
+import {Intent} from '../../messaging.model';
 
 /**
  * Central point for looking up or managing capabilities or intentions available in the platform.

@@ -7,11 +7,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Intention } from '@scion/microfrontend-platform';
-import { DevToolsManifestService } from '../dev-tools-manifest.service';
-import { map } from 'rxjs/operators';
+import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Observable} from 'rxjs';
+import {Intention} from '@scion/microfrontend-platform';
+import {DevToolsManifestService} from '../dev-tools-manifest.service';
+import {map} from 'rxjs/operators';
 
 @Component({
   selector: 'devtools-intention-accordion-item',

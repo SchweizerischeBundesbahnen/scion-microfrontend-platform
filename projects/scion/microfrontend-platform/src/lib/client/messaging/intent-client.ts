@@ -8,9 +8,9 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Observable, Subscription } from 'rxjs';
-import { Intent, IntentMessage, TopicMessage } from '../../messaging.model';
-import { Qualifier } from '../../platform.model';
+import {Observable, Subscription} from 'rxjs';
+import {Intent, IntentMessage, TopicMessage} from '../../messaging.model';
+import {Qualifier} from '../../platform.model';
 
 /**
  * Intent client for sending and receiving intents between microfrontends across origins.

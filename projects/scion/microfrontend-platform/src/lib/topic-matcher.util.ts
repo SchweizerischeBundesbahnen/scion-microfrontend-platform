@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Arrays } from '@scion/toolkit/util';
+import {Arrays} from '@scion/toolkit/util';
 
 /**
  * Allows testing whether an exact topic matches a pattern topic. The pattern topic may contain wildcard segments.

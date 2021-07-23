@@ -8,15 +8,15 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { MicrofrontendPlatform } from './microfrontend-platform';
-import { MessageClient } from './client/messaging/message-client';
-import { ApplicationConfig } from './host/platform-config';
-import { expectPromise, serveManifest, waitFor } from './spec.util.spec';
-import { PlatformMessageClient } from './host/platform-message-client';
-import { PlatformState } from './platform-state';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { PlatformPropertyService } from './platform-property-service';
-import { ObserveCaptor } from '@scion/toolkit/testing';
+import {MicrofrontendPlatform} from './microfrontend-platform';
+import {MessageClient} from './client/messaging/message-client';
+import {ApplicationConfig} from './host/platform-config';
+import {expectPromise, serveManifest, waitFor} from './spec.util.spec';
+import {PlatformMessageClient} from './host/platform-message-client';
+import {PlatformState} from './platform-state';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {PlatformPropertyService} from './platform-property-service';
+import {ObserveCaptor} from '@scion/toolkit/testing';
 
 describe('MicrofrontendPlatform', () => {
 

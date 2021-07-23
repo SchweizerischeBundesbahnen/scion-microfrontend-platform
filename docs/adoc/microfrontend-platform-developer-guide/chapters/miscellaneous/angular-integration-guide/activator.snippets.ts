@@ -2,8 +2,6 @@ import { Inject, Injectable, InjectionToken, Injector, NgModule, Optional } from
 import { RouterModule, Routes } from '@angular/router';
 import { MicrofrontendPlatform, PlatformState } from '@scion/microfrontend-platform';
 
-// tslint:disable:no-unused-expression
-
 `
 // tag::activator-capability[]
 "capabilities": [

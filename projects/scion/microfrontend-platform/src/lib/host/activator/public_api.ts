@@ -11,4 +11,4 @@
 /**
  * Entry point for all public APIs of this package.
  */
-export { ACTIVATION_CONTEXT, ActivationContext } from './activator-installer';
+export {ACTIVATION_CONTEXT, ActivationContext} from './activator-installer';

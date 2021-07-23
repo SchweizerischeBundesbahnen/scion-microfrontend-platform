@@ -8,24 +8,24 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Capability, Intention, ParamDefinition } from '../../platform.model';
-import { sha256 } from 'js-sha256';
-import { ManifestObjectFilter, ManifestObjectStore } from './manifest-object-store';
-import { defer, merge, of, Subject } from 'rxjs';
-import { distinctUntilChanged, expand, mergeMapTo, take, takeUntil } from 'rxjs/operators';
-import { PlatformMessageClient } from '../platform-message-client';
-import { Intent, MessageHeaders, ResponseStatusCodes, TopicMessage } from '../../messaging.model';
-import { takeUntilUnsubscribe } from '../../client/messaging/message-client';
-import { ApplicationRegistry } from '../application-registry';
-import { runSafe } from '../../safe-runner';
-import { filterArray } from '@scion/toolkit/operators';
-import { ManifestRegistry } from './manifest-registry';
-import { assertExactQualifier, QualifierMatcher } from '../../qualifier-matcher';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
-import { stringifyError } from '../../error.util';
-import { Logger } from '../../logger';
+import {Capability, Intention, ParamDefinition} from '../../platform.model';
+import {sha256} from 'js-sha256';
+import {ManifestObjectFilter, ManifestObjectStore} from './manifest-object-store';
+import {defer, merge, of, Subject} from 'rxjs';
+import {distinctUntilChanged, expand, mergeMapTo, take, takeUntil} from 'rxjs/operators';
+import {PlatformMessageClient} from '../platform-message-client';
+import {Intent, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
+import {takeUntilUnsubscribe} from '../../client/messaging/message-client';
+import {ApplicationRegistry} from '../application-registry';
+import {runSafe} from '../../safe-runner';
+import {filterArray} from '@scion/toolkit/operators';
+import {ManifestRegistry} from './manifest-registry';
+import {assertExactQualifier, QualifierMatcher} from '../../qualifier-matcher';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {stringifyError} from '../../error.util';
+import {Logger} from '../../logger';
 
-export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tslint:disable-line:class-name
+export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
   private _capabilityStore: ManifestObjectStore<Capability>;
   private _intentionStore: ManifestObjectStore<Intention>;
@@ -247,7 +247,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
             distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
             takeUntilUnsubscribe(replyTo, PlatformMessageClient),
           )
-          .subscribe(capabilities => { // tslint:disable-line:rxjs-no-nested-subscribe
+          .subscribe(capabilities => { // eslint-disable-line rxjs/no-nested-subscribe
             Beans.get(PlatformMessageClient).publish<Capability[]>(replyTo, capabilities, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
           });
       }));
@@ -267,7 +267,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy { // tsl
             distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
             takeUntilUnsubscribe(replyTo, PlatformMessageClient),
           )
-          .subscribe(intentions => { // tslint:disable-line:rxjs-no-nested-subscribe
+          .subscribe(intentions => { // eslint-disable-line rxjs/no-nested-subscribe
             Beans.get(PlatformMessageClient).publish<Intention[]>(replyTo, intentions, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
           });
       }));

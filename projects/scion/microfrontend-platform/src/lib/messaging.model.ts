@@ -7,9 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Capability, Qualifier } from './platform.model';
-import { MonoTypeOperatorFunction, Observable, of, OperatorFunction, pipe, throwError } from 'rxjs';
-import { filter, map, mergeMap, takeWhile } from 'rxjs/operators';
+import {Capability, Qualifier} from './platform.model';
+import {MonoTypeOperatorFunction, Observable, of, OperatorFunction, pipe, throwError} from 'rxjs';
+import {filter, map, mergeMap, takeWhile} from 'rxjs/operators';
 
 /**
  * Represents a message with headers to transport additional information with a message.

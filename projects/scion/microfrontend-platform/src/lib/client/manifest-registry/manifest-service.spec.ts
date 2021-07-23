@@ -7,14 +7,14 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { MicrofrontendPlatform } from '../../microfrontend-platform';
-import { expectEmissions, serveManifest } from '../../spec.util.spec';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { ManifestService } from '../../client/manifest-registry/manifest-service';
-import { ObserveCaptor } from '@scion/toolkit/testing';
-import { Capability, Intention } from '../../platform.model';
-import { ApplicationConfig } from '../../host/platform-config';
-import { ManifestRegistry } from '../../host/manifest-registry/manifest-registry';
+import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {expectEmissions, serveManifest} from '../../spec.util.spec';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {ManifestService} from '../../client/manifest-registry/manifest-service';
+import {ObserveCaptor} from '@scion/toolkit/testing';
+import {Capability, Intention} from '../../platform.model';
+import {ApplicationConfig} from '../../host/platform-config';
+import {ManifestRegistry} from '../../host/manifest-registry/manifest-registry';
 
 const manifestObjectIdsExtractFn = (manifestObjects: Array<Capability | Intention>): string[] => manifestObjects.map(manifestObject => manifestObject.metadata.id);
 

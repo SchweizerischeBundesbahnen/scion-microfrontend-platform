@@ -8,11 +8,11 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { ApplicationManifest } from './platform.model';
-import { Arrays } from '@scion/toolkit/util';
-import { ObserveCaptor } from '@scion/toolkit/testing';
-import { ConsoleLogger, Logger } from './logger';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {ApplicationManifest} from './platform.model';
+import {Arrays} from '@scion/toolkit/util';
+import {ObserveCaptor} from '@scion/toolkit/testing';
+import {ConsoleLogger, Logger} from './logger';
+import {Beans} from '@scion/toolkit/bean-manager';
 import CallInfo = jasmine.CallInfo;
 
 /**
@@ -83,14 +83,14 @@ export function serveManifest(manifest: Partial<ApplicationManifest>): string {
  * Returns a Promise that resolves after the given millis elapses.
  */
 export function waitFor(millis: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, millis)); // tslint:disable-line:typedef
+  return new Promise(resolve => setTimeout(resolve, millis));
 }
 
 /**
  * Returns a Promise that resolves when the condition returns `true` or that rejects when the timeout expires.
  */
 export function waitForCondition(condition: () => boolean | Promise<boolean>, timeout: number = 5000): Promise<void> {
-  return new Promise((resolve, reject) => {  // tslint:disable-line:typedef
+  return new Promise((resolve, reject) => {
     const expiryDate = Date.now() + timeout;
     const periodicConditionCheckerFn = async (): Promise<void> => {
       if (await condition()) {
@@ -111,7 +111,7 @@ export function waitForCondition(condition: () => boolean | Promise<boolean>, ti
  * Expects the {@link ObserveCaptor} to capture given emissions. This expectation waits a maximum of 5 seconds until the expected element count
  * is captured.
  */
-export function expectEmissions<T = any, R = T>(captor: ObserveCaptor<T, R>): { toEqual: (expected: R | R[]) => Promise<boolean> } {
+export function expectEmissions<T = any, R = T>(captor: ObserveCaptor<T, R>): {toEqual: (expected: R | R[]) => Promise<boolean>} {
   return {
     toEqual: async (expected: R | R[]): Promise<boolean> => {
       const expectedValues = Arrays.coerce(expected);
@@ -129,7 +129,7 @@ export function installLoggerSpies(): void {
   Beans.register(Logger, {useValue: logger});
 }
 
-export function readConsoleLog(severity: 'info' | 'warn' | 'error', options?: { filter?: RegExp, projectFn?: (call: CallInfo<any>) => string }): string[] {
+export function readConsoleLog(severity: 'info' | 'warn' | 'error', options?: {filter?: RegExp, projectFn?: (call: CallInfo<any>) => string}): string[] {
   return getLoggerSpy(severity).calls
     .all()
     .map(call => options?.projectFn ? options.projectFn(call) : call.args[0])

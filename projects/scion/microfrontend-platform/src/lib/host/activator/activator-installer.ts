@@ -7,24 +7,24 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Activator, PlatformCapabilityTypes } from '../../platform.model';
-import { PlatformManifestService } from '../../client/manifest-registry/platform-manifest-service';
-import { catchError, filter, mergeMapTo, take } from 'rxjs/operators';
-import { ApplicationRegistry } from '../application-registry';
-import { OutletRouter } from '../../client/router-outlet/outlet-router';
-import { SciRouterOutletElement } from '../../client/router-outlet/router-outlet.element';
-import { Arrays, Maps } from '@scion/toolkit/util';
-import { UUID } from '@scion/toolkit/uuid';
-import { Logger } from '../../logger';
-import { PlatformMessageClient } from '../platform-message-client';
-import { MessageHeaders } from '../../messaging.model';
-import { EMPTY } from 'rxjs';
-import { PlatformState } from '../../platform-state';
-import { Beans, Initializer } from '@scion/toolkit/bean-manager';
-import { PlatformStateRef } from '../../platform-state-ref';
-import { ProgressMonitor } from '../progress-monitor/progress-monitor';
-import { ActivatorLoadProgressMonitor } from '../progress-monitor/progress-monitors';
-import { timeoutIfPresent } from '../../operators';
+import {Activator, PlatformCapabilityTypes} from '../../platform.model';
+import {PlatformManifestService} from '../../client/manifest-registry/platform-manifest-service';
+import {catchError, filter, mergeMapTo, take} from 'rxjs/operators';
+import {ApplicationRegistry} from '../application-registry';
+import {OutletRouter} from '../../client/router-outlet/outlet-router';
+import {SciRouterOutletElement} from '../../client/router-outlet/router-outlet.element';
+import {Arrays, Maps} from '@scion/toolkit/util';
+import {UUID} from '@scion/toolkit/uuid';
+import {Logger} from '../../logger';
+import {PlatformMessageClient} from '../platform-message-client';
+import {MessageHeaders} from '../../messaging.model';
+import {EMPTY} from 'rxjs';
+import {PlatformState} from '../../platform-state';
+import {Beans, Initializer} from '@scion/toolkit/bean-manager';
+import {PlatformStateRef} from '../../platform-state-ref';
+import {ProgressMonitor} from '../progress-monitor/progress-monitor';
+import {ActivatorLoadProgressMonitor} from '../progress-monitor/progress-monitors';
+import {timeoutIfPresent} from '../../operators';
 
 /**
  * Activates micro applications which provide an activator capability.

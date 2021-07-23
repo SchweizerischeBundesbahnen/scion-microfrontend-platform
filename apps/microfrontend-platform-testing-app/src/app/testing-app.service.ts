@@ -7,8 +7,8 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { UUID } from '@scion/toolkit/uuid';
-import { Injectable } from '@angular/core';
+import {UUID} from '@scion/toolkit/uuid';
+import {Injectable} from '@angular/core';
 
 @Injectable({providedIn: 'root'})
 export class TestingAppService {

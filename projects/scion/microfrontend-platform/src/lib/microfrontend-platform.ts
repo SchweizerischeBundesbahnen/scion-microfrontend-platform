@@ -7,51 +7,51 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { MessageClient } from './client/messaging/message-client';
-import { IntentClient } from './client/messaging/intent-client';
-import { PlatformIntentClient } from './host/platform-intent-client';
-import { ManifestRegistry } from './host/manifest-registry/manifest-registry';
-import { ApplicationRegistry } from './host/application-registry';
-import { PlatformConfigLoader } from './host/platform-config-loader';
-import { BehaviorSubject, from, Observable, Subject } from 'rxjs';
-import { MicroApplicationConfig } from './client/micro-application-config';
-import { ApplicationConfig, PlatformConfig } from './host/platform-config';
-import { PlatformPropertyService } from './platform-property-service';
-import { ConsoleLogger, Logger } from './logger';
-import { HttpClient } from './host/http-client';
-import { ManifestCollector } from './host/manifest-collector';
-import { PlatformMessageClient } from './host/platform-message-client';
-import { PLATFORM_SYMBOLIC_NAME } from './host/platform.constants';
-import { Defined } from '@scion/toolkit/util';
-import { MessageBroker } from './host/message-broker/message-broker';
-import { filter, take, takeUntil } from 'rxjs/operators';
-import { OutletRouter } from './client/router-outlet/outlet-router';
-import { SciRouterOutletElement } from './client/router-outlet/router-outlet.element';
-import { FocusInEventDispatcher } from './client/focus/focus-in-event-dispatcher';
-import { FocusMonitor } from './client/focus/focus-monitor';
-import { ContextService } from './client/context/context-service';
-import { RouterOutletUrlAssigner } from './client/router-outlet/router-outlet-url-assigner';
-import { IS_PLATFORM_HOST } from './platform.model';
-import { RelativePathResolver } from './client/router-outlet/relative-path-resolver';
-import { ClientRegistry } from './host/message-broker/client.registry';
-import { FocusTracker } from './host/focus/focus-tracker';
-import { PreferredSizeService } from './client/preferred-size/preferred-size-service';
-import { MouseMoveEventDispatcher } from './client/mouse-event/mouse-move-event-dispatcher';
-import { MouseUpEventDispatcher } from './client/mouse-event/mouse-up-event-dispatcher';
-import { HostPlatformAppProvider } from './host/host-platform-app-provider';
-import { KeyboardEventDispatcher } from './client/keyboard-event/keyboard-event-dispatcher';
-import { ManifestService } from './client/manifest-registry/manifest-service';
-import { ɵManifestRegistry } from './host/manifest-registry/ɵmanifest-registry';
-import { PlatformManifestService } from './client/manifest-registry/platform-manifest-service';
-import { ActivatorInstaller } from './host/activator/activator-installer';
-import { BrokerGateway, NullBrokerGateway, ɵBrokerGateway } from './client/messaging/broker-gateway';
-import { PlatformState, Runlevel } from './platform-state';
-import { AbstractType, BeanInstanceConstructInstructions, Beans, Type } from '@scion/toolkit/bean-manager';
-import { ɵIntentClient } from './client/messaging/ɵintent-client';
-import { ɵMessageClient } from './client/messaging/ɵmessage-client';
-import { PlatformStateRef } from './platform-state-ref';
-import { ProgressMonitor } from './host/progress-monitor/progress-monitor';
-import { ActivatorLoadProgressMonitor, ManifestLoadProgressMonitor } from './host/progress-monitor/progress-monitors';
+import {MessageClient} from './client/messaging/message-client';
+import {IntentClient} from './client/messaging/intent-client';
+import {PlatformIntentClient} from './host/platform-intent-client';
+import {ManifestRegistry} from './host/manifest-registry/manifest-registry';
+import {ApplicationRegistry} from './host/application-registry';
+import {PlatformConfigLoader} from './host/platform-config-loader';
+import {BehaviorSubject, from, Observable, Subject} from 'rxjs';
+import {MicroApplicationConfig} from './client/micro-application-config';
+import {ApplicationConfig, PlatformConfig} from './host/platform-config';
+import {PlatformPropertyService} from './platform-property-service';
+import {ConsoleLogger, Logger} from './logger';
+import {HttpClient} from './host/http-client';
+import {ManifestCollector} from './host/manifest-collector';
+import {PlatformMessageClient} from './host/platform-message-client';
+import {PLATFORM_SYMBOLIC_NAME} from './host/platform.constants';
+import {Defined} from '@scion/toolkit/util';
+import {MessageBroker} from './host/message-broker/message-broker';
+import {filter, take, takeUntil} from 'rxjs/operators';
+import {OutletRouter} from './client/router-outlet/outlet-router';
+import {SciRouterOutletElement} from './client/router-outlet/router-outlet.element';
+import {FocusInEventDispatcher} from './client/focus/focus-in-event-dispatcher';
+import {FocusMonitor} from './client/focus/focus-monitor';
+import {ContextService} from './client/context/context-service';
+import {RouterOutletUrlAssigner} from './client/router-outlet/router-outlet-url-assigner';
+import {IS_PLATFORM_HOST} from './platform.model';
+import {RelativePathResolver} from './client/router-outlet/relative-path-resolver';
+import {ClientRegistry} from './host/message-broker/client.registry';
+import {FocusTracker} from './host/focus/focus-tracker';
+import {PreferredSizeService} from './client/preferred-size/preferred-size-service';
+import {MouseMoveEventDispatcher} from './client/mouse-event/mouse-move-event-dispatcher';
+import {MouseUpEventDispatcher} from './client/mouse-event/mouse-up-event-dispatcher';
+import {HostPlatformAppProvider} from './host/host-platform-app-provider';
+import {KeyboardEventDispatcher} from './client/keyboard-event/keyboard-event-dispatcher';
+import {ManifestService} from './client/manifest-registry/manifest-service';
+import {ɵManifestRegistry} from './host/manifest-registry/ɵmanifest-registry';
+import {PlatformManifestService} from './client/manifest-registry/platform-manifest-service';
+import {ActivatorInstaller} from './host/activator/activator-installer';
+import {BrokerGateway, NullBrokerGateway, ɵBrokerGateway} from './client/messaging/broker-gateway';
+import {PlatformState, Runlevel} from './platform-state';
+import {AbstractType, BeanInstanceConstructInstructions, Beans, Type} from '@scion/toolkit/bean-manager';
+import {ɵIntentClient} from './client/messaging/ɵintent-client';
+import {ɵMessageClient} from './client/messaging/ɵmessage-client';
+import {PlatformStateRef} from './platform-state-ref';
+import {ProgressMonitor} from './host/progress-monitor/progress-monitor';
+import {ActivatorLoadProgressMonitor, ManifestLoadProgressMonitor} from './host/progress-monitor/progress-monitors';
 
 window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {once: true});
 
@@ -426,7 +426,7 @@ function createConfigLoaderBeanDescriptor(config: ApplicationConfig[] | Platform
 }
 
 /** @ignore */
-function provideBrokerGateway(clientAppName: string, config?: { enabled?: boolean, brokerDiscoverTimeout?: number, deliveryTimeout?: number }): BeanInstanceConstructInstructions {
+function provideBrokerGateway(clientAppName: string, config?: {enabled?: boolean, brokerDiscoverTimeout?: number, deliveryTimeout?: number}): BeanInstanceConstructInstructions {
   if (!Defined.orElse(config?.enabled, true)) {
     return {useClass: NullBrokerGateway};
   }

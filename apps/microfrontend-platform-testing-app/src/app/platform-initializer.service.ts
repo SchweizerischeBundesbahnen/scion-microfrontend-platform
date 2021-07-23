@@ -7,16 +7,16 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { coerceBooleanProperty } from '@angular/cdk/coercion';
-import { Injectable, NgZone, OnDestroy } from '@angular/core';
-import { ApplicationConfig, Handler, IntentClient, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatform, PlatformState, TopicMessage } from '@scion/microfrontend-platform';
-import { environment } from '../environments/environment';
-import { HashLocationStrategy, LocationStrategy } from '@angular/common';
-import { TestingAppTopics } from './testing-app.topics';
-import { takeUntil } from 'rxjs/operators';
-import { noop, Subject } from 'rxjs';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { NgZoneIntentClientDecorator, NgZoneMessageClientDecorator } from './ng-zone-decorators';
+import {coerceBooleanProperty} from '@angular/cdk/coercion';
+import {Injectable, NgZone, OnDestroy} from '@angular/core';
+import {ApplicationConfig, Handler, IntentClient, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatform, PlatformState, TopicMessage} from '@scion/microfrontend-platform';
+import {environment} from '../environments/environment';
+import {HashLocationStrategy, LocationStrategy} from '@angular/common';
+import {TestingAppTopics} from './testing-app.topics';
+import {takeUntil} from 'rxjs/operators';
+import {noop, Subject} from 'rxjs';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {NgZoneIntentClientDecorator, NgZoneMessageClientDecorator} from './ng-zone-decorators';
 
 /**
  * Initializes the SCION Microfrontend Platform.
@@ -78,11 +78,11 @@ export class PlatformInitializer implements OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe(
         progress => {
-          console.debug(`[PlatformInitializer::host:progress] ${progress}%`); // tslint:disable-line:no-console
+          console.debug(`[PlatformInitializer::host:progress] ${progress}%`);
         },
         noop,
         () => {
-          console.debug(`[PlatformInitializer::host:progress] startup completed`); // tslint:disable-line:no-console
+          console.debug(`[PlatformInitializer::host:progress] startup completed`);
         });
 
     // Run the microfrontend platform as host app
@@ -101,7 +101,7 @@ export class PlatformInitializer implements OnDestroy {
       Beans.get(MessageClient).request$<string>(TestingAppTopics.ActivatorPing)
         .pipe(takeUntil(this._destroy$))
         .subscribe(reply => {
-          console.debug(`[PlatformInitializer::activator:onactivate] [app=${reply.headers.get(MessageHeaders.AppSymbolicName)}, pingReply=${reply.body}]`); // tslint:disable-line:no-console
+          console.debug(`[PlatformInitializer::activator:onactivate] [app=${reply.headers.get(MessageHeaders.AppSymbolicName)}, pingReply=${reply.body}]`);
         });
     }
   }
@@ -121,7 +121,7 @@ export class PlatformInitializer implements OnDestroy {
     const queryParams = this._queryParams;
 
     if (queryParams.has('intercept-message:reject')) {
-      const interceptor = new class implements MessageInterceptor { // tslint:disable-line:new-parens
+      const interceptor = new class implements MessageInterceptor {
         public intercept(message: TopicMessage, next: Handler<TopicMessage>): void {
           if (message.topic === queryParams.get('intercept-message:reject')) {
             throw Error('Message rejected by interceptor');
@@ -133,7 +133,7 @@ export class PlatformInitializer implements OnDestroy {
     }
 
     if (queryParams.has('intercept-message:swallow')) {
-      const interceptor = new class implements MessageInterceptor { // tslint:disable-line:new-parens
+      const interceptor = new class implements MessageInterceptor {
         public intercept(message: TopicMessage, next: Handler<TopicMessage>): void {
           if (message.topic === queryParams.get('intercept-message:swallow')) {
             return;
@@ -145,7 +145,7 @@ export class PlatformInitializer implements OnDestroy {
     }
 
     if (queryParams.has('intercept-message:uppercase')) {
-      const interceptor = new class implements MessageInterceptor { // tslint:disable-line:new-parens
+      const interceptor = new class implements MessageInterceptor {
         public intercept(message: TopicMessage<string>, next: Handler<TopicMessage<string>>): void {
           if (message.topic === queryParams.get('intercept-message:uppercase')) {
             next.handle({...message, body: message.body.toUpperCase()});
@@ -162,7 +162,7 @@ export class PlatformInitializer implements OnDestroy {
   private installIntentInterceptors(): void {
     const queryParams = this._queryParams;
     if (queryParams.has('intercept-intent:reject')) {
-      const interceptor = new class implements IntentInterceptor { // tslint:disable-line:new-parens
+      const interceptor = new class implements IntentInterceptor {
         public intercept(message: IntentMessage, next: Handler<IntentMessage>): void {
           if (message.intent.type === queryParams.get('intercept-intent:reject')) {
             throw Error('Intent rejected by interceptor');
@@ -173,7 +173,7 @@ export class PlatformInitializer implements OnDestroy {
       Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
     }
     if (queryParams.has('intercept-intent:swallow')) {
-      const interceptor = new class implements IntentInterceptor { // tslint:disable-line:new-parens
+      const interceptor = new class implements IntentInterceptor {
         public intercept(message: IntentMessage, next: Handler<IntentMessage>): void {
           if (message.intent.type === queryParams.get('intercept-intent:swallow')) {
             return;
@@ -185,7 +185,7 @@ export class PlatformInitializer implements OnDestroy {
     }
     // Continues the interceptor chain with the message body put into uppercase.
     if (queryParams.has('intercept-intent:uppercase')) {
-      const interceptor = new class implements IntentInterceptor { // tslint:disable-line:new-parens
+      const interceptor = new class implements IntentInterceptor {
         public intercept(message: IntentMessage<string>, next: Handler<IntentMessage<string>>): void {
           if (message.intent.type === queryParams.get('intercept-intent:uppercase')) {
             next.handle({...message, body: message.body.toUpperCase()});
@@ -199,7 +199,7 @@ export class PlatformInitializer implements OnDestroy {
     }
     // Continues the interceptor chain with the message body replaced with the stringified capability.
     if (queryParams.has('intercept-intent:capability-present')) {
-      const interceptor = new class implements IntentInterceptor { // tslint:disable-line:new-parens
+      const interceptor = new class implements IntentInterceptor {
         public intercept(message: IntentMessage<string>, next: Handler<IntentMessage<string>>): void {
           if (message.intent.type === queryParams.get('intercept-intent:capability-present')) {
             next.handle({...message, body: JSON.stringify(message.capability)});

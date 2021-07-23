@@ -7,14 +7,14 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { fromDimension$ } from '@scion/toolkit/observable';
-import { take, takeUntil } from 'rxjs/operators';
-import { merge, noop, Subject } from 'rxjs';
-import { ContextService } from '../context/context-service';
-import { OUTLET_CONTEXT, OutletContext, RouterOutlets } from '../router-outlet/router-outlet.element';
-import { MessageClient } from '../messaging/message-client';
-import { PreferredSize } from './preferred-size';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
+import {fromDimension$} from '@scion/toolkit/observable';
+import {take, takeUntil} from 'rxjs/operators';
+import {merge, noop, Subject} from 'rxjs';
+import {ContextService} from '../context/context-service';
+import {OUTLET_CONTEXT, OutletContext, RouterOutlets} from '../router-outlet/router-outlet.element';
+import {MessageClient} from '../messaging/message-client';
+import {PreferredSize} from './preferred-size';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 
 /**
  * Allows web content displayed in a {@link SciRouterOutletElement `<sci-router-outlet>`} to define its preferred size.

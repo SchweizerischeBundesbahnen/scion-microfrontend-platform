@@ -7,9 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { runSafe } from '../../safe-runner';
-import { Navigation } from './metadata';
-import { Urls } from '../../url.util';
+import {runSafe} from '../../safe-runner';
+import {Navigation} from './metadata';
+import {Urls} from '../../url.util';
 
 /** @ignore */
 const BLANK_URL = Urls.newUrl('about:blank');

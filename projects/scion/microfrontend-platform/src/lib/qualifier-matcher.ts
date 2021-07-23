@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Qualifier } from './platform.model';
+import {Qualifier} from './platform.model';
 
 /**
  * Allows testing whether a qualifier matches a qualifier pattern.

@@ -7,12 +7,12 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { consumeBrowserLog, sendKeys } from '../spec.util';
-import { TestingAppPO } from '../testing-app.po';
-import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
-import { Microfrontend1PagePO } from '../microfrontend/microfrontend-1-page.po';
-import { Key, logging } from 'protractor';
-import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
+import {consumeBrowserLog, sendKeys} from '../spec.util';
+import {TestingAppPO} from '../testing-app.po';
+import {BrowserOutletPO} from '../browser-outlet/browser-outlet.po';
+import {Microfrontend1PagePO} from '../microfrontend/microfrontend-1-page.po';
+import {Key, logging} from 'protractor';
+import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
 import Level = logging.Level;
 
 describe('KeyboardEvent', () => {
@@ -590,7 +590,7 @@ describe('KeyboardEvent', () => {
  * 3. Registers the passed keystroke for propagation on the outlet
  * 4. Presses passed keys in the embedded microfrontend
  */
-async function setupAndPressKeystroke(instructions: { keystrokeToRegister: string, keysToPress: string[] }): Promise<void> {
+async function setupAndPressKeystroke(instructions: {keystrokeToRegister: string, keysToPress: string[]}): Promise<void> {
   const testingAppPO = new TestingAppPO();
   const pagePOs = await testingAppPO.navigateTo({
     microfrontend: Microfrontend1PagePO,

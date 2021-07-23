@@ -8,11 +8,11 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Defined } from '@scion/toolkit/util';
-import { TopicMatcher } from '../../topic-matcher.util';
-import { Observable, Subject } from 'rxjs';
-import { distinctUntilChanged, filter, map, startWith } from 'rxjs/operators';
-import { Client } from './client.registry';
+import {Defined} from '@scion/toolkit/util';
+import {TopicMatcher} from '../../topic-matcher.util';
+import {Observable, Subject} from 'rxjs';
+import {distinctUntilChanged, filter, map, startWith} from 'rxjs/operators';
+import {Client} from './client.registry';
 
 /**
  * Central point for managing topic subscriptions.

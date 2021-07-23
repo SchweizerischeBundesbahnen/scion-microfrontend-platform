@@ -8,9 +8,9 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Subject } from 'rxjs';
-import { MessageHeaders, ResponseStatusCodes, throwOnErrorStatus, TopicMessage } from './messaging.model';
-import { ObserveCaptor } from '@scion/toolkit/testing';
+import {Subject} from 'rxjs';
+import {MessageHeaders, ResponseStatusCodes, throwOnErrorStatus, TopicMessage} from './messaging.model';
+import {ObserveCaptor} from '@scion/toolkit/testing';
 
 describe('Messaging', () => {
 
@@ -126,7 +126,7 @@ describe('Messaging', () => {
   });
 });
 
-function newTopicMessage(template?: { body?: any, statusCode?: number }): TopicMessage {
+function newTopicMessage(template?: {body?: any, statusCode?: number}): TopicMessage {
   const topicMessage: TopicMessage = {
     topic: 'test-topic',
     headers: new Map(),

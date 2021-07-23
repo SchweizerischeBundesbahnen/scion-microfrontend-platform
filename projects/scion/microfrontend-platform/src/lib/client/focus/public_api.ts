@@ -8,5 +8,5 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-export { FocusMonitor } from './focus-monitor';
+export {FocusMonitor} from './focus-monitor';
 

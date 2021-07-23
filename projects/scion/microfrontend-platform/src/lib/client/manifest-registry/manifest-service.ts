@@ -8,15 +8,15 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { EMPTY, Observable, Subject } from 'rxjs';
-import { MessageClient } from '../messaging/message-client';
-import { Application, Capability, Intention } from '../../platform.model';
-import { mergeMapTo, take, takeUntil } from 'rxjs/operators';
-import { PlatformTopics } from '../../ɵmessaging.model';
-import { ManifestRegistryTopics } from '../../host/manifest-registry/ɵmanifest-registry';
-import { ManifestObjectFilter } from '../../host/manifest-registry/manifest-object-store';
-import { mapToBody } from '../../messaging.model';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
+import {EMPTY, Observable, Subject} from 'rxjs';
+import {MessageClient} from '../messaging/message-client';
+import {Application, Capability, Intention} from '../../platform.model';
+import {mergeMapTo, take, takeUntil} from 'rxjs/operators';
+import {PlatformTopics} from '../../ɵmessaging.model';
+import {ManifestRegistryTopics} from '../../host/manifest-registry/ɵmanifest-registry';
+import {ManifestObjectFilter} from '../../host/manifest-registry/manifest-object-store';
+import {mapToBody} from '../../messaging.model';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 
 /**
  * Allows looking up capabilities available to the current app and managing the capabilities it provides.

@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ParamDefinition } from '../../platform.model';
+import {ParamDefinition} from '../../platform.model';
 
 /**
  * Allows testing whether params match the param definitions.

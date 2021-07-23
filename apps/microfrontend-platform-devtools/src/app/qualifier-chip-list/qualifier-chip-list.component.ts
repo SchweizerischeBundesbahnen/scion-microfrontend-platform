@@ -8,9 +8,9 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { ChangeDetectionStrategy, Component, HostBinding, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { KeyValue } from '@angular/common';
-import { Qualifier } from '@scion/microfrontend-platform';
+import {ChangeDetectionStrategy, Component, HostBinding, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {KeyValue} from '@angular/common';
+import {Qualifier} from '@scion/microfrontend-platform';
 
 @Component({
   selector: 'devtools-qualifier-chip-list',

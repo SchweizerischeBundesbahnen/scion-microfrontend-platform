@@ -7,16 +7,16 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { defer, Observable, Subscription } from 'rxjs';
-import { IntentMessage, mapToBody, throwOnErrorStatus, TopicMessage } from '../../messaging.model';
-import { BrokerGateway } from './broker-gateway';
-import { MessagingChannel, PlatformTopics } from '../../ɵmessaging.model';
-import { TopicMatcher } from '../../topic-matcher.util';
-import { MessageClient, PublishOptions, RequestOptions } from './message-client';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { MessageHandler } from './message-handler';
+import {defer, Observable, Subscription} from 'rxjs';
+import {IntentMessage, mapToBody, throwOnErrorStatus, TopicMessage} from '../../messaging.model';
+import {BrokerGateway} from './broker-gateway';
+import {MessagingChannel, PlatformTopics} from '../../ɵmessaging.model';
+import {TopicMatcher} from '../../topic-matcher.util';
+import {MessageClient, PublishOptions, RequestOptions} from './message-client';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {MessageHandler} from './message-handler';
 
-export class ɵMessageClient implements MessageClient { // tslint:disable-line:class-name
+export class ɵMessageClient implements MessageClient {
 
   constructor(private readonly _brokerGateway: BrokerGateway) {
   }
@@ -61,7 +61,7 @@ export class ɵMessageClient implements MessageClient { // tslint:disable-line:c
   }
 }
 
-function assertTopic(topic: string, options: { allowWildcardSegments: boolean }): void {
+function assertTopic(topic: string, options: {allowWildcardSegments: boolean}): void {
   if (topic === undefined || topic === null || topic.length === 0) {
     throw Error('[IllegalTopicError] Topic must not be `null`, `undefined` or empty');
   }

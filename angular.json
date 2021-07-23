@@ -34,14 +34,11 @@
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": [
-              "projects/scion/microfrontend-platform/tsconfig.lib.json",
-              "projects/scion/microfrontend-platform/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
+            "lintFilePatterns": [
+              "projects/scion/microfrontend-platform/**/*.ts",
+              "projects/scion/microfrontend-platform/**/*.html"
             ]
           }
         }
@@ -57,15 +54,14 @@
             "protractorConfig": "projects/scion/microfrontend-platform.e2e/protractor.conf.js",
             "webdriverUpdate": false
           },
-          "configurations": {
-          }
+          "configurations": {}
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": "projects/scion/microfrontend-platform.e2e/tsconfig.json",
-            "exclude": [
-              "**/node_modules/**"
+            "lintFilePatterns": [
+              "projects/scion/microfrontend-platform.e2e/**/*.ts",
+              "projects/scion/microfrontend-platform.e2e/**/*.html"
             ]
           }
         }
@@ -154,13 +150,11 @@
           "defaultConfiguration": "development"
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": [
-              "apps/microfrontend-platform-testing-app/tsconfig.app.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
+            "lintFilePatterns": [
+              "apps/microfrontend-platform-testing-app/**/*.ts",
+              "apps/microfrontend-platform-testing-app/**/*.html"
             ]
           }
         }
@@ -247,13 +241,11 @@
           "defaultConfiguration": "development"
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": [
-              "apps/microfrontend-platform-devtools/tsconfig.app.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
+            "lintFilePatterns": [
+              "apps/microfrontend-platform-devtools/**/*.ts",
+              "apps/microfrontend-platform-devtools/**/*.html"
             ]
           }
         }
@@ -268,5 +260,8 @@
       }
     }
   },
-  "defaultProject": "@scion/microfrontend-platform"
+  "defaultProject": "@scion/microfrontend-platform",
+  "cli": {
+    "defaultCollection": "@angular-eslint/schematics"
+  }
 }

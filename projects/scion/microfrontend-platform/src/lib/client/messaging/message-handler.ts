@@ -1,11 +1,11 @@
-import { MessageClient, takeUntilUnsubscribe } from './message-client';
-import { Message, MessageHeaders, ResponseStatusCodes } from '../../messaging.model';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { Observable, Subscription, throwError } from 'rxjs';
-import { Observables } from '@scion/toolkit/util';
-import { runSafe } from '../../safe-runner';
-import { stringifyError } from '../../error.util';
-import { filter, finalize } from 'rxjs/operators';
+import {MessageClient, takeUntilUnsubscribe} from './message-client';
+import {Message, MessageHeaders, ResponseStatusCodes} from '../../messaging.model';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {Observable, Subscription, throwError} from 'rxjs';
+import {Observables} from '@scion/toolkit/util';
+import {runSafe} from '../../safe-runner';
+import {stringifyError} from '../../error.util';
+import {filter, finalize} from 'rxjs/operators';
 
 /**
  * Subscribes to messages, passing each message to the callback.

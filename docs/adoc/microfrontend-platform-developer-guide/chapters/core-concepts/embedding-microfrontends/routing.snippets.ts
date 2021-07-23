@@ -1,6 +1,5 @@
 import { IntentClient, IntentMessage, IntentSelector, MessageClient, OutletRouter, PRIMARY_OUTLET } from '@scion/microfrontend-platform';
 import { Beans } from '@scion/toolkit/bean-manager';
-// tslint:disable:no-unused-expression
 
 {
   `

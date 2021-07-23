@@ -8,17 +8,17 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { MicrofrontendPlatform } from '../../microfrontend-platform';
-import { take } from 'rxjs/operators';
-import { PlatformMessageClient } from '../../host/platform-message-client';
-import { RouterOutlets } from './router-outlet.element';
-import { OutletRouter } from './outlet-router';
-import { NavigationOptions } from './metadata';
-import { ApplicationConfig } from '../../host/platform-config';
-import { expectPromise, serveManifest } from '../../spec.util.spec';
-import { UUID } from '@scion/toolkit/uuid';
-import { mapToBody } from '../../messaging.model';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {take} from 'rxjs/operators';
+import {PlatformMessageClient} from '../../host/platform-message-client';
+import {RouterOutlets} from './router-outlet.element';
+import {OutletRouter} from './outlet-router';
+import {NavigationOptions} from './metadata';
+import {ApplicationConfig} from '../../host/platform-config';
+import {expectPromise, serveManifest} from '../../spec.util.spec';
+import {UUID} from '@scion/toolkit/uuid';
+import {mapToBody} from '../../messaging.model';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 describe('OutletRouter', () => {
 
@@ -36,7 +36,7 @@ describe('OutletRouter', () => {
     describe('relative URL (hash-based routing)', () => testSubstitution('/', {expectedBasePath: 'http://localhost:4200/#/', relativeTo: 'http://localhost:4200/#/a/b/c'}));
     describe('relative URL (push-based routing)', () => testSubstitution('/', {expectedBasePath: 'http://localhost:4200/', relativeTo: 'http://localhost:4200/a/b/c'}));
 
-    function testSubstitution(basePath: string, options: { relativeTo?: string, expectedBasePath: string }): void {
+    function testSubstitution(basePath: string, options: {relativeTo?: string, expectedBasePath: string}): void {
       it('should substitute a named path param', async () => {
         const url = navigate(`${basePath}order/:id`, {
           params: new Map().set('id', 123),

@@ -7,13 +7,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Application } from '@scion/microfrontend-platform';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { DevToolsManifestService } from '../dev-tools-manifest.service';
-import { sortArray } from '@scion/toolkit/operators';
-import { ShellService } from '../shell.service';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {Application} from '@scion/microfrontend-platform';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {DevToolsManifestService} from '../dev-tools-manifest.service';
+import {sortArray} from '@scion/toolkit/operators';
+import {ShellService} from '../shell.service';
 
 @Component({
   selector: 'devtools-app-list',
