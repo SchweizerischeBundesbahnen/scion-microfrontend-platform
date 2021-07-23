@@ -10,7 +10,7 @@
         "readinessTopics": "activator/ready"
       }
     }
-   ],
+  ],
   "intentions": [
   ]
 }

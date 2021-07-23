@@ -7,18 +7,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
-import { BehaviorSubject, MonoTypeOperatorFunction, Observable, Subject } from 'rxjs';
-import { Application, Capability, Intention } from '@scion/microfrontend-platform';
-import { distinctUntilChanged, expand, filter, map, mapTo, switchMap, take, takeUntil } from 'rxjs/operators';
-import { DevToolsManifestService } from '../dev-tools-manifest.service';
-import { ActivatedRoute, NavigationEnd, Router, UrlSegmentGroup } from '@angular/router';
-import { filterManifestObjects } from '../manifest-object-filter.utils';
-import { ShellService } from '../shell.service';
-import { FormControl } from '@angular/forms';
-import { SciTabbarComponent } from '@scion/toolkit.internal/widgets';
-import { Arrays } from '@scion/toolkit/util';
-import { bufferUntil } from '@scion/toolkit/operators';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild} from '@angular/core';
+import {BehaviorSubject, MonoTypeOperatorFunction, Observable, Subject} from 'rxjs';
+import {Application, Capability, Intention} from '@scion/microfrontend-platform';
+import {distinctUntilChanged, expand, filter, map, mapTo, switchMap, take, takeUntil} from 'rxjs/operators';
+import {DevToolsManifestService} from '../dev-tools-manifest.service';
+import {ActivatedRoute, NavigationEnd, Router, UrlSegmentGroup} from '@angular/router';
+import {filterManifestObjects} from '../manifest-object-filter.utils';
+import {ShellService} from '../shell.service';
+import {FormControl} from '@angular/forms';
+import {SciTabbarComponent} from '@scion/toolkit.internal/widgets';
+import {Arrays} from '@scion/toolkit/util';
+import {bufferUntil} from '@scion/toolkit/operators';
 
 /**
  * Instruction passed with a navigation to specify the tab to be activated.

@@ -7,10 +7,10 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
-import { SciListItemPO, SciPropertyPO } from '@scion/toolkit.internal/widgets.po';
-import { ElementFinder } from 'protractor';
-import { Capability, Qualifier } from '@scion/microfrontend-platform';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+import {SciListItemPO, SciPropertyPO} from '@scion/toolkit.internal/widgets.po';
+import {ElementFinder} from 'protractor';
+import {Capability, Qualifier} from '@scion/microfrontend-platform';
 
 export class MessageListItemPO {
 

@@ -7,13 +7,13 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { TestingAppPO } from '../testing-app.po';
-import { ContextPagePO } from './context-page.po';
-import { BrowserOutletPO } from '../browser-outlet/browser-outlet.po';
-import { consumeBrowserLog, expectMap } from '../spec.util';
-import { browser } from 'protractor';
-import { LookupContextValuePagePO } from './lookup-context-value-page.po';
-import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
+import {TestingAppPO} from '../testing-app.po';
+import {ContextPagePO} from './context-page.po';
+import {BrowserOutletPO} from '../browser-outlet/browser-outlet.po';
+import {consumeBrowserLog, expectMap} from '../spec.util';
+import {browser} from 'protractor';
+import {LookupContextValuePagePO} from './lookup-context-value-page.po';
+import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
 
 describe('Context', () => {
 

@@ -7,9 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { ManifestService } from './manifest-service';
-import { PlatformMessageClient } from '../../host/platform-message-client';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {ManifestService} from './manifest-service';
+import {PlatformMessageClient} from '../../host/platform-message-client';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
  * Manifest service used by the platform to interact with the manifest registry.

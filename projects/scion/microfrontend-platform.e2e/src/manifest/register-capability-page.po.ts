@@ -7,11 +7,11 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { $, browser, protractor } from 'protractor';
-import { enterText } from '../spec.util';
-import { ManifestObjectFilter, ParamDefinition, Qualifier } from '@scion/microfrontend-platform';
-import { SciCheckboxPO, SciParamsEnterPO } from '@scion/toolkit.internal/widgets.po';
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
+import {$, browser, protractor} from 'protractor';
+import {enterText} from '../spec.util';
+import {ManifestObjectFilter, ParamDefinition, Qualifier} from '@scion/microfrontend-platform';
+import {SciCheckboxPO, SciParamsEnterPO} from '@scion/toolkit.internal/widgets.po';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
 
 const EC = protractor.ExpectedConditions;
 
@@ -31,7 +31,7 @@ export class RegisterCapabilityPagePO {
    *
    * Returns a Promise that resolves to the capability ID upon successful registration, or that rejects on registration error.
    */
-  public async registerCapability(capability: { type: string, qualifier?: Qualifier, params?: ParamDefinition[], private: boolean }): Promise<string> {
+  public async registerCapability(capability: {type: string, qualifier?: Qualifier, params?: ParamDefinition[], private: boolean}): Promise<string> {
     await this._switchToIframeFn();
     await enterText(capability.type, this._registerSectionFinder.$('input.e2e-type'));
     if (capability.qualifier) {

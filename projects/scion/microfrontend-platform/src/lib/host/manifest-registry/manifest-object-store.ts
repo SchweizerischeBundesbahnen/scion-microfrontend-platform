@@ -8,10 +8,10 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { QualifierMatcher } from '../../qualifier-matcher';
-import { Observable, Subject } from 'rxjs';
-import { Arrays, Maps } from '@scion/toolkit/util';
-import { Qualifier } from '../../platform.model';
+import {QualifierMatcher} from '../../qualifier-matcher';
+import {Observable, Subject} from 'rxjs';
+import {Arrays, Maps} from '@scion/toolkit/util';
+import {Qualifier} from '../../platform.model';
 
 /**
  * Provides an in-memory store for provided capabilities and registered intentions.

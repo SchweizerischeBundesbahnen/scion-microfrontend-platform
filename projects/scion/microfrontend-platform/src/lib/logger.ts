@@ -77,7 +77,7 @@ export class ConsoleLogger implements Logger {
  *
  * @ignore
  */
-export const NULL_LOGGER = new class extends Logger { // tslint:disable-line:new-parens
+export const NULL_LOGGER = new class extends Logger {
 
   public info(message?: any, ...args: any[]): void {
     // NOOP

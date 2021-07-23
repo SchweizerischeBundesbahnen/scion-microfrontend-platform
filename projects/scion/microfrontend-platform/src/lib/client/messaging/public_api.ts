@@ -8,5 +8,5 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-export { MessageClient, PublishOptions, RequestOptions, takeUntilUnsubscribe } from './message-client';
-export { IntentClient, IntentOptions, IntentSelector } from './intent-client';
+export {MessageClient, PublishOptions, RequestOptions, takeUntilUnsubscribe} from './message-client';
+export {IntentClient, IntentOptions, IntentSelector} from './intent-client';

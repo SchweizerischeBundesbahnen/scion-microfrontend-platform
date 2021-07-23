@@ -1,19 +1,20 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { NavigationEnd, PRIMARY_OUTLET, Router } from '@angular/router';
-import { filter, map } from 'rxjs/operators';
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {NavigationEnd, PRIMARY_OUTLET, Router} from '@angular/router';
+import {filter, map} from 'rxjs/operators';
 
 const BLANK_TITLE = '';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ShellService {
 
   private _primaryTitle$ = new BehaviorSubject(BLANK_TITLE);
   private _detailsTitle$ = new BehaviorSubject(BLANK_TITLE);
 
-  constructor(private _router: Router) { }
+  constructor(private _router: Router) {
+  }
 
   public set primaryTitle(title: string) {
     this._primaryTitle$.next(title);

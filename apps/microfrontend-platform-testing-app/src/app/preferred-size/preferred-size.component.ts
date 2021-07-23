@@ -7,12 +7,12 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { PreferredSizeService } from '@scion/microfrontend-platform';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy} from '@angular/core';
+import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {PreferredSizeService} from '@scion/microfrontend-platform';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 export const CSS_SIZE = 'cssSize';
 export const PREFERRED_SIZE = 'preferredSize';

@@ -7,11 +7,11 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Observable } from 'rxjs';
-import { PlatformTopics } from '../../ɵmessaging.model';
-import { MessageClient } from '../messaging/message-client';
-import { mapToBody } from '../../messaging.model';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {Observable} from 'rxjs';
+import {PlatformTopics} from '../../ɵmessaging.model';
+import {MessageClient} from '../messaging/message-client';
+import {mapToBody} from '../../messaging.model';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
  * Allows observing if the current microfrontend has received focus or contains embedded web content that has received focus.

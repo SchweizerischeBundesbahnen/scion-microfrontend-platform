@@ -7,14 +7,14 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, Injector, Input, ViewChild } from '@angular/core';
-import { ManifestService, OutletRouter, SciRouterOutletElement } from '@scion/microfrontend-platform';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Overlay } from '@angular/cdk/overlay';
-import { RouterOutletContextComponent } from '../router-outlet-context/router-outlet-context.component';
-import { RouterOutletSettingsComponent } from '../router-outlet-settings/router-outlet-settings.component';
-import { ActivatedRoute } from '@angular/router';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, Injector, Input, ViewChild} from '@angular/core';
+import {ManifestService, OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
+import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {Overlay} from '@angular/cdk/overlay';
+import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
+import {RouterOutletSettingsComponent} from '../router-outlet-settings/router-outlet-settings.component';
+import {ActivatedRoute} from '@angular/router';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 export const URL = 'url';
 
@@ -90,15 +90,15 @@ export class BrowserOutletComponent {
   }
 
   public onActivate(event: Event): void {
-    console.debug(`[BrowserOutletComponent::sci-router-outlet:onactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
+    console.debug(`[BrowserOutletComponent::sci-router-outlet:onactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`);
   }
 
   public onDeactivate(event: Event): void {
-    console.debug(`[BrowserOutletComponent::sci-router-outlet:ondeactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
+    console.debug(`[BrowserOutletComponent::sci-router-outlet:ondeactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`);
   }
 
   public onFocusWithin(event: Event): void {
-    console.debug(`[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`); // tslint:disable-line:no-console
+    console.debug(`[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`);
   }
 
   private readAppEntryPoints(): AppEndpoint[] {

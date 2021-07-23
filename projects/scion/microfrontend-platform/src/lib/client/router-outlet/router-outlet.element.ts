@@ -7,19 +7,19 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { RouterOutletContextProvider } from '../context/router-outlet-context-provider';
-import { runSafe } from '../../safe-runner';
-import { distinctUntilChanged, map, pairwise, skipWhile, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
-import { RouterOutletUrlAssigner } from './router-outlet-url-assigner';
-import { MessageClient } from '../messaging/message-client';
-import { Defined } from '@scion/toolkit/util';
-import { UUID } from '@scion/toolkit/uuid';
-import { mapToBody, TopicMessage } from '../../messaging.model';
-import { Keystroke } from '../keyboard-event/keystroke';
-import { PreferredSize } from '../preferred-size/preferred-size';
-import { Navigation, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER } from './metadata';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {RouterOutletContextProvider} from '../context/router-outlet-context-provider';
+import {runSafe} from '../../safe-runner';
+import {distinctUntilChanged, map, pairwise, skipWhile, startWith, switchMap, takeUntil, tap} from 'rxjs/operators';
+import {RouterOutletUrlAssigner} from './router-outlet-url-assigner';
+import {MessageClient} from '../messaging/message-client';
+import {Defined} from '@scion/toolkit/util';
+import {UUID} from '@scion/toolkit/uuid';
+import {mapToBody, TopicMessage} from '../../messaging.model';
+import {Keystroke} from '../keyboard-event/keystroke';
+import {PreferredSize} from '../preferred-size/preferred-size';
+import {Navigation, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER} from './metadata';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 /** @ignore */
 const ELEMENT_NAME = 'sci-router-outlet';
@@ -388,8 +388,8 @@ export class SciRouterOutletElement extends HTMLElement {
   private installPreferredSizeListener(): void {
     Beans.get(MessageClient).observe$<PreferredSize>(RouterOutlets.preferredSizeTopic(this._uid))
       .pipe(
-        takeUntil(this._disconnect$),
         mapToBody(),
+        takeUntil(this._disconnect$),
       )
       .subscribe((preferredSize: PreferredSize | undefined) => {
         setStyle(this, {
@@ -494,7 +494,7 @@ export class SciRouterOutletElement extends HTMLElement {
    * @see https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements#Using_the_lifecycle_callbacks
    * @internal
    */
-  public static observedAttributes = [ATTR_NAME, ATTR_SCROLLABLE, ATTR_KEYSTROKES]; // tslint:disable-line:member-ordering
+  public static observedAttributes = [ATTR_NAME, ATTR_SCROLLABLE, ATTR_KEYSTROKES]; // eslint-disable-line @typescript-eslint/member-ordering
 
   /**
    * Lifecycle callback of the 'Custom element' Web Component standard.
@@ -673,6 +673,6 @@ function outletNavigate$(outlet: string): Observable<Navigation> {
  *
  * @ignore
  */
-function setStyle(element: HTMLElement, style: { [style: string]: any | null }): void {
+function setStyle(element: HTMLElement, style: {[style: string]: any | null}): void {
   Object.keys(style).forEach(key => element.style.setProperty(key, style[key]));
 }

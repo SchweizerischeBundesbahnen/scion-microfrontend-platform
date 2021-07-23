@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Pipe, PipeTransform } from '@angular/core';
-import { DevToolsManifestService } from './dev-tools-manifest.service';
+import {Pipe, PipeTransform} from '@angular/core';
+import {DevToolsManifestService} from './dev-tools-manifest.service';
 
 /**
  * Resolves to the name of an application's symbolic name.

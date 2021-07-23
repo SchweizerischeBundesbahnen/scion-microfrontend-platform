@@ -7,12 +7,12 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { $ } from 'protractor';
-import { enterText, selectOption } from '../spec.util';
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
-import { Qualifier } from '@scion/microfrontend-platform';
-import { SciCheckboxPO, SciListPO, SciParamsEnterPO, WaitUntil } from '@scion/toolkit.internal/widgets.po';
-import { MessageListItemPO } from './message-list-item.po';
+import {$} from 'protractor';
+import {enterText, selectOption} from '../spec.util';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+import {Qualifier} from '@scion/microfrontend-platform';
+import {SciCheckboxPO, SciListPO, SciParamsEnterPO, WaitUntil} from '@scion/toolkit.internal/widgets.po';
+import {MessageListItemPO} from './message-list-item.po';
 
 export enum MessagingFlavor {
   Topic = 'Topic', Intent = 'Intent',

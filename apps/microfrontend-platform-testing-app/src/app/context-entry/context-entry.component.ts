@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
 @Component({
   selector: 'app-context-entry',
@@ -22,7 +22,7 @@ export class ContextEntryComponent {
   @Input()
   public name: string;
 
-  @Input('value')  // tslint:disable-line:no-input-rename
+  @Input('value')  // eslint-disable-line @angular-eslint/no-input-rename
   public set setValue(value: any) {
     if (typeof value === 'object') {
       this.value = JSON.stringify(value);

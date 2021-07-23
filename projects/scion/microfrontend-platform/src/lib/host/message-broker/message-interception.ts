@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { IntentMessage, TopicMessage } from '../../messaging.model';
+import {IntentMessage, TopicMessage} from '../../messaging.model';
 
 /**
  * Allows intercepting messages before their publication.
@@ -143,19 +143,19 @@ export interface PublishInterceptorChain<T> {
  * @internal
  */
 export function chainInterceptors<T>(interceptors: Interceptor<T, Handler<T>>[], publisher: (message: T) => void): PublishInterceptorChain<T> {
-  const terminalHandler = new class extends Handler<T> {// tslint:disable-line:new-parens
+  const terminalHandler = new class extends Handler<T> {
     public handle(message: T): void {
       publisher(message);
     }
   };
 
-  const handlerChain = interceptors.reduceRight((next, interceptor) => new class extends Handler<T> { // tslint:disable-line:new-parens
+  const handlerChain = interceptors.reduceRight((next, interceptor) => new class extends Handler<T> {
     public handle(element: T): void {
       interceptor.intercept(element, next);
     }
   }, terminalHandler);
 
-  return new class implements PublishInterceptorChain<T> { // tslint:disable-line:new-parens
+  return new class implements PublishInterceptorChain<T> {
     public publish(element: T): void {
       handlerChain.handle(element);
     }

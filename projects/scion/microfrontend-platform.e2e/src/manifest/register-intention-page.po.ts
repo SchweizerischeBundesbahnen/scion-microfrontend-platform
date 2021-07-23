@@ -7,11 +7,11 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { $, browser, protractor } from 'protractor';
-import { enterText } from '../spec.util';
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
-import { ManifestObjectFilter, Qualifier } from '@scion/microfrontend-platform';
-import { SciCheckboxPO, SciParamsEnterPO } from '@scion/toolkit.internal/widgets.po';
+import {$, browser, protractor} from 'protractor';
+import {enterText} from '../spec.util';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+import {ManifestObjectFilter, Qualifier} from '@scion/microfrontend-platform';
+import {SciCheckboxPO, SciParamsEnterPO} from '@scion/toolkit.internal/widgets.po';
 
 const EC = protractor.ExpectedConditions;
 
@@ -31,7 +31,7 @@ export class RegisterIntentionPagePO {
    *
    * Returns a Promise that resolves to the intention ID upon successful registration, or that rejects on registration error.
    */
-  public async registerIntention(intention: { type: string, qualifier?: Qualifier }): Promise<string> {
+  public async registerIntention(intention: {type: string, qualifier?: Qualifier}): Promise<string> {
     await this._switchToIframeFn();
 
     await enterText(intention.type, this._registerSectionFinder.$('input.e2e-type'));

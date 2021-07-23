@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { $, browser, ElementFinder, Key, logging, protractor, WebElement } from 'protractor';
+import {$, browser, ElementFinder, Key, logging, protractor, WebElement} from 'protractor';
 import Level = logging.Level;
 
 /**
@@ -153,7 +153,7 @@ export function expectToBeRejectedWithError(promise: Promise<any>, expected?: Re
  *
  * Jasmine 3.5 provides 'mapContaining' matcher.
  */
-export function expectMap(actual: Promise<Map<any, any>>): ToContainMatcher & { not: ToContainMatcher } {
+export function expectMap(actual: Promise<Map<any, any>>): ToContainMatcher & {not: ToContainMatcher} {
   return {
     toContain: async (expected: Map<any, any>): Promise<void> => {
       const expectedTuples = [...expected];

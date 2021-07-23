@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { TopicMatcher } from './topic-matcher.util';
+import {TopicMatcher} from './topic-matcher.util';
 
 describe('TopicMatcher', () => {
 

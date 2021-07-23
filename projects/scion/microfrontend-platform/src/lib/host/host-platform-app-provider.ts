@@ -8,10 +8,10 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { ApplicationManifest, Intention, PlatformCapabilityTypes } from '../platform.model';
-import { ApplicationConfig, PlatformFlags } from './platform-config';
-import { PLATFORM_SYMBOLIC_NAME } from './platform.constants';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
+import {ApplicationManifest, Intention, PlatformCapabilityTypes} from '../platform.model';
+import {ApplicationConfig, PlatformFlags} from './platform-config';
+import {PLATFORM_SYMBOLIC_NAME} from './platform.constants';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 
 /**
  * Provides the {@link ApplicationConfig} for the platform app running in the platform host.

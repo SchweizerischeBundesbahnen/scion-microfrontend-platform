@@ -11,7 +11,7 @@
 /**
  * Entry point for all public APIs of this package.
  */
-export { MicroApplicationConfig } from './micro-application-config';
+export {MicroApplicationConfig} from './micro-application-config';
 export * from './router-outlet/public_api';
 export * from './context/public_api';
 export * from './focus/public_api';

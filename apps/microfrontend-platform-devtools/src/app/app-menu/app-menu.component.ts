@@ -7,8 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
+import {ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output} from '@angular/core';
+import {animate, style, transition, trigger} from '@angular/animations';
 
 @Component({
   selector: 'devtools-app-menu',
@@ -28,9 +28,8 @@ import { animate, style, transition, trigger } from '@angular/animations';
 })
 export class AppMenuComponent {
 
-  // tslint:disable-next-line:no-output-native
   @Output()
-  public close = new EventEmitter<void>();
+  public close = new EventEmitter<void>();  // eslint-disable-line @angular-eslint/no-output-native
 
   @HostListener('document:keydown.escape')
   public onBackdropClick(): void {

@@ -7,12 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { AppListComponent } from './app-list/app-list.component';
-import { FindCapabilitiesComponent } from './find-capabilities/find-capabilities.component';
-import { AppDetailsComponent } from './app-details/app-details.component';
-import { CapabilityFilterResultComponent } from './capability-filter-result/capability-filter-result.component';
+import {NgModule} from '@angular/core';
+import {RouterModule, Routes} from '@angular/router';
+import {AppListComponent} from './app-list/app-list.component';
+import {FindCapabilitiesComponent} from './find-capabilities/find-capabilities.component';
+import {AppDetailsComponent} from './app-details/app-details.component';
+import {CapabilityFilterResultComponent} from './capability-filter-result/capability-filter-result.component';
 
 const routes: Routes = [
   {path: '', redirectTo: 'apps', pathMatch: 'full'},
@@ -20,20 +20,21 @@ const routes: Routes = [
     path: 'find-capabilities',
     children: [
       {path: '', component: FindCapabilitiesComponent},
-      {path: 'filter-results', component: CapabilityFilterResultComponent, outlet: 'details'}
-    ]
+      {path: 'filter-results', component: CapabilityFilterResultComponent, outlet: 'details'},
+    ],
   },
   {
     path: 'apps',
     children: [
       {path: '', component: AppListComponent},
       {path: ':appSymbolicName', component: AppDetailsComponent, outlet: 'details'},
-    ]
-  }
+    ],
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, {useHash: true})],
   exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {
+}

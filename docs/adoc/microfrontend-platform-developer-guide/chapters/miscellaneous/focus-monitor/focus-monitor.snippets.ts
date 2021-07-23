@@ -1,7 +1,6 @@
 import { FocusMonitor } from '@scion/microfrontend-platform';
 import { filter } from 'rxjs/operators';
 import { Beans } from '@scion/toolkit/bean-manager';
-// tslint:disable:no-unused-expression
 
 {
   // tag::focus-monitor[]

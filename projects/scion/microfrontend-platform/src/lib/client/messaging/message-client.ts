@@ -7,10 +7,10 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { MonoTypeOperatorFunction, Observable, Subscription } from 'rxjs';
-import { TopicMessage } from '../../messaging.model';
-import { first, takeUntil } from 'rxjs/operators';
-import { AbstractType, Beans, Type } from '@scion/toolkit/bean-manager';
+import {MonoTypeOperatorFunction, Observable, Subscription} from 'rxjs';
+import {TopicMessage} from '../../messaging.model';
+import {first, takeUntil} from 'rxjs/operators';
+import {AbstractType, Beans, Type} from '@scion/toolkit/bean-manager';
 
 /**
  * Message client for sending and receiving messages between microfrontends across origins.

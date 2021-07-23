@@ -7,11 +7,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Application, Capability, Intention, ManifestObject, ManifestObjectFilter, ManifestService, QualifierMatcher } from '@scion/microfrontend-platform';
-import { map } from 'rxjs/operators';
-import { combineArray, distinctArray, filterArray, mapArray, sortArray } from '@scion/toolkit/operators';
+import {Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
+import {Application, Capability, Intention, ManifestObject, ManifestObjectFilter, ManifestService, QualifierMatcher} from '@scion/microfrontend-platform';
+import {map} from 'rxjs/operators';
+import {combineArray, distinctArray, filterArray, mapArray, sortArray} from '@scion/toolkit/operators';
 
 @Injectable({providedIn: 'root'})
 export class DevToolsManifestService {

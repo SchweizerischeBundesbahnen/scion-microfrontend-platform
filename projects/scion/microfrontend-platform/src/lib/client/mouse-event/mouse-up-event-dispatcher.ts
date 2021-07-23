@@ -7,12 +7,12 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { fromEvent, Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
-import { MessageClient } from '../messaging/message-client';
-import { UUID } from '@scion/toolkit/uuid';
-import { mapToBody } from '../../messaging.model';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
+import {fromEvent, Subject} from 'rxjs';
+import {filter, takeUntil} from 'rxjs/operators';
+import {MessageClient} from '../messaging/message-client';
+import {UUID} from '@scion/toolkit/uuid';
+import {mapToBody} from '../../messaging.model';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 
 /**
  * Dispatches 'mouseup' events originating from other documents as synthetic 'sci-mouseup' events on the document event bus.

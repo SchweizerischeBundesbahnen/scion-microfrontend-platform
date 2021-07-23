@@ -7,8 +7,8 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { ProgressMonitor } from './progress-monitor';
-import { ObserveCaptor } from '@scion/toolkit/testing';
+import {ProgressMonitor} from './progress-monitor';
+import {ObserveCaptor} from '@scion/toolkit/testing';
 
 describe('ProgressMonitor', () => {
 
@@ -168,7 +168,7 @@ describe('ProgressMonitor', () => {
 
   it('should error when splitting even by non-positive value', () => {
     const monitor = new ProgressMonitor();
-    expect(() =>  monitor.splitEven(0)).toThrowError('[IllegalMonitorArgumentError] Monitor split count must be greater than 0, but was 0.');
-    expect(() =>  monitor.splitEven(-1)).toThrowError('[IllegalMonitorArgumentError] Monitor split count must be greater than 0, but was -1.');
+    expect(() => monitor.splitEven(0)).toThrowError('[IllegalMonitorArgumentError] Monitor split count must be greater than 0, but was 0.');
+    expect(() => monitor.splitEven(-1)).toThrowError('[IllegalMonitorArgumentError] Monitor split count must be greater than 0, but was -1.');
   });
 });

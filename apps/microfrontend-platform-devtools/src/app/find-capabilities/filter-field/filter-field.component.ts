@@ -7,11 +7,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, NgZone, OnInit, Output, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { UUID } from '@scion/toolkit/uuid';
-import { KeyValuePair, LogicalOperator } from './filter-field';
-import { FocusOrigin } from '@angular/cdk/a11y';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, NgZone, OnInit, Output, ViewChild} from '@angular/core';
+import {FormControl} from '@angular/forms';
+import {UUID} from '@scion/toolkit/uuid';
+import {KeyValuePair, LogicalOperator} from './filter-field';
+import {FocusOrigin} from '@angular/cdk/a11y';
 
 @Component({
   selector: 'devtools-filter-field',

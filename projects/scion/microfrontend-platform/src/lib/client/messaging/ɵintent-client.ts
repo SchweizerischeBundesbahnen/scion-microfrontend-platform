@@ -8,18 +8,18 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { defer, Observable, Subscription } from 'rxjs';
-import { Intent, IntentMessage, throwOnErrorStatus, TopicMessage } from '../../messaging.model';
-import { BrokerGateway } from './broker-gateway';
-import { MessagingChannel } from '../../ɵmessaging.model';
-import { filterByChannel, pluckMessage } from '../../operators';
-import { filter } from 'rxjs/operators';
-import { assertExactQualifier, QualifierMatcher } from '../../qualifier-matcher';
-import { IntentClient, IntentOptions, IntentSelector } from './intent-client';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { MessageHandler } from './message-handler';
+import {defer, Observable, Subscription} from 'rxjs';
+import {Intent, IntentMessage, throwOnErrorStatus, TopicMessage} from '../../messaging.model';
+import {BrokerGateway} from './broker-gateway';
+import {MessagingChannel} from '../../ɵmessaging.model';
+import {filterByChannel, pluckMessage} from '../../operators';
+import {filter} from 'rxjs/operators';
+import {assertExactQualifier, QualifierMatcher} from '../../qualifier-matcher';
+import {IntentClient, IntentOptions, IntentSelector} from './intent-client';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {MessageHandler} from './message-handler';
 
-export class ɵIntentClient implements IntentClient { // tslint:disable-line:class-name
+export class ɵIntentClient implements IntentClient {
 
   constructor(private readonly _brokerGateway: BrokerGateway) {
   }

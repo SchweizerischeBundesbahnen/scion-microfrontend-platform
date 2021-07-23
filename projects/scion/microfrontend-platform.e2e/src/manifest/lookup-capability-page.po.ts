@@ -7,11 +7,11 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { $ } from 'protractor';
-import { enterText } from '../spec.util';
-import { Capability, ManifestObjectFilter } from '@scion/microfrontend-platform';
-import { SciCheckboxPO, SciListPO, SciParamsEnterPO, WaitUntil } from '@scion/toolkit.internal/widgets.po';
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
+import {$} from 'protractor';
+import {enterText} from '../spec.util';
+import {Capability, ManifestObjectFilter} from '@scion/microfrontend-platform';
+import {SciCheckboxPO, SciListPO, SciParamsEnterPO, WaitUntil} from '@scion/toolkit.internal/widgets.po';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
 
 export class LookupCapabilityPagePO {
 

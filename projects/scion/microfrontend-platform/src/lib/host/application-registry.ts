@@ -8,13 +8,13 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Application, ApplicationManifest } from '../platform.model';
-import { Defined } from '@scion/toolkit/util';
-import { Urls } from '../url.util';
-import { ApplicationConfig, PlatformConfig } from './platform-config';
-import { ManifestRegistry } from './manifest-registry/manifest-registry';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { Logger } from '../logger';
+import {Application, ApplicationManifest} from '../platform.model';
+import {Defined} from '@scion/toolkit/util';
+import {Urls} from '../url.util';
+import {ApplicationConfig, PlatformConfig} from './platform-config';
+import {ManifestRegistry} from './manifest-registry/manifest-registry';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {Logger} from '../logger';
 
 /**
  * Registry with all registered applications.

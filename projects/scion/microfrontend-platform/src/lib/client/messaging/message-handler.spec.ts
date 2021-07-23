@@ -7,16 +7,16 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { MessageClient } from '../../client/messaging/message-client';
-import { expectPromise, serveManifest, waitFor, waitForCondition } from '../../spec.util.spec';
-import { MicrofrontendPlatform } from '../../microfrontend-platform';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { ApplicationConfig } from '../../host/platform-config';
-import { IntentMessage, TopicMessage } from '../../messaging.model';
-import { AsyncSubject, concat, Observable, of, ReplaySubject, Subject, throwError } from 'rxjs';
-import { finalize } from 'rxjs/operators';
-import { IntentClient } from './intent-client';
-import { ObserveCaptor } from '@scion/toolkit/testing';
+import {MessageClient} from '../../client/messaging/message-client';
+import {expectPromise, serveManifest, waitFor, waitForCondition} from '../../spec.util.spec';
+import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {ApplicationConfig} from '../../host/platform-config';
+import {IntentMessage, TopicMessage} from '../../messaging.model';
+import {AsyncSubject, concat, Observable, of, ReplaySubject, Subject, throwError} from 'rxjs';
+import {finalize} from 'rxjs/operators';
+import {IntentClient} from './intent-client';
+import {ObserveCaptor} from '@scion/toolkit/testing';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
 
@@ -221,7 +221,7 @@ describe('Message Handler', () => {
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         const body = message.body.toUpperCase();
-        const subject = new ReplaySubject();
+        const subject = new ReplaySubject(3);
         subject.next(`${body}-1`);
         subject.next(`${body}-2`);
         subject.next(`${body}-3`);
@@ -742,7 +742,7 @@ describe('Intent Handler', () => {
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         const body = intentMessage.body.toUpperCase();
-        const subject = new ReplaySubject();
+        const subject = new ReplaySubject(3);
         subject.next(`${body}-1`);
         subject.next(`${body}-2`);
         subject.next(`${body}-3`);

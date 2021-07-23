@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ManifestObject } from '@scion/microfrontend-platform';
+import {ManifestObject} from '@scion/microfrontend-platform';
 
 /**
  * Returns manifest objects that match given filter text in the type or qualifier.

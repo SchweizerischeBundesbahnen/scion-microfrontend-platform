@@ -7,10 +7,10 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { ElementFinder } from 'protractor';
-import { SciListPO, WaitUntil } from '@scion/toolkit.internal/widgets.po';
-import { ContextEntryListItemPO } from './context-entry-list-item.po';
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
+import {ElementFinder} from 'protractor';
+import {SciListPO, WaitUntil} from '@scion/toolkit.internal/widgets.po';
+import {ContextEntryListItemPO} from './context-entry-list-item.po';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
 
 export class ContextListPO {
 
@@ -32,7 +32,7 @@ export class ContextListPO {
 
     const map = new Map<string, any>();
     // do not use 'for-of' loop as 'for await...of' doesn't work with async iterators that are not async iterables.
-    for (let i = 0; i < contextListItemPOs.length; i++) { // tslint:disable-line:prefer-for-of
+    for (let i = 0; i < contextListItemPOs.length; i++) {
       const listItemPO = contextListItemPOs[i];
       const key = await listItemPO.getKey();
       const value = this.parseValue(await listItemPO.getValue());

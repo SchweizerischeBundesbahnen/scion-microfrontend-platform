@@ -7,42 +7,42 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { AppComponent } from './app.component';
-import { AppRoutingModule } from './app-routing.module';
-import { PlatformInitializer } from './platform-initializer.service';
-import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BrowserOutletsComponent } from './browser-outlets/browser-outlets.component';
-import { BrowserOutletComponent } from './browser-outlet/browser-outlet.component';
-import { RouterOutletComponent } from './router-outlet/router-outlet.component';
-import { RouterOutletSettingsComponent } from './router-outlet-settings/router-outlet-settings.component';
-import { RouterOutletContextComponent } from './router-outlet-context/router-outlet-context.component';
-import { OutletRouterComponent } from './outlet-router/outlet-router.component';
-import { ContextComponent } from './outlet-context/context/context.component';
-import { ContextEntryComponent } from './context-entry/context-entry.component';
-import { PublishMessageComponent } from './messaging/publish-message/publish-message.component';
-import { ReceiveMessageComponent } from './messaging/receive-message/receive-message.component';
-import { MessageListItemComponent } from './messaging/message-list-item/message-list-item.component';
-import { RegisterCapabilityComponent } from './manifest/register-capability/register-capability.component';
-import { RegisterIntentionComponent } from './manifest/register-intention/register-intention.component';
-import { LookupCapabilityComponent } from './manifest/lookup-capability/lookup-capability.component';
-import { LookupIntentionComponent } from './manifest/lookup-intention/lookup-intention.component';
-import { TopicSubscriberCountPipe } from './messaging/topic-subscriber-count.pipe';
-import { MicrofrontendComponent } from './microfrontend/microfrontend.component';
-import { ScrollableMicrofrontendComponent } from './scrollable-microfrontend/scrollable-microfrontend.component';
-import { PreferredSizeComponent } from './preferred-size/preferred-size.component';
-import { PlatformPropertiesComponent } from './platform-properties/platform-properties.component';
-import { SciSashboxModule } from '@scion/toolkit/sashbox';
-import { SciViewportModule } from '@scion/toolkit/viewport';
-import { A11yModule } from '@angular/cdk/a11y';
-import { OverlayModule } from '@angular/cdk/overlay';
-import { SciAccordionModule, SciCheckboxModule, SciFormFieldModule, SciListModule, SciParamsEnterModule, SciPropertyModule, SciQualifierChipListModule } from '@scion/toolkit.internal/widgets';
-import { AppShellComponent } from './app-shell/app-shell.component';
-import { DevToolsComponent } from './devtools/devtools.component';
-import { LookupContextValueComponent } from './outlet-context/lookup-context-value/lookup-context-value.component';
+import {APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA, NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {AppComponent} from './app.component';
+import {AppRoutingModule} from './app-routing.module';
+import {PlatformInitializer} from './platform-initializer.service';
+import {BrowserModule} from '@angular/platform-browser';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {BrowserOutletsComponent} from './browser-outlets/browser-outlets.component';
+import {BrowserOutletComponent} from './browser-outlet/browser-outlet.component';
+import {RouterOutletComponent} from './router-outlet/router-outlet.component';
+import {RouterOutletSettingsComponent} from './router-outlet-settings/router-outlet-settings.component';
+import {RouterOutletContextComponent} from './router-outlet-context/router-outlet-context.component';
+import {OutletRouterComponent} from './outlet-router/outlet-router.component';
+import {ContextComponent} from './outlet-context/context/context.component';
+import {ContextEntryComponent} from './context-entry/context-entry.component';
+import {PublishMessageComponent} from './messaging/publish-message/publish-message.component';
+import {ReceiveMessageComponent} from './messaging/receive-message/receive-message.component';
+import {MessageListItemComponent} from './messaging/message-list-item/message-list-item.component';
+import {RegisterCapabilityComponent} from './manifest/register-capability/register-capability.component';
+import {RegisterIntentionComponent} from './manifest/register-intention/register-intention.component';
+import {LookupCapabilityComponent} from './manifest/lookup-capability/lookup-capability.component';
+import {LookupIntentionComponent} from './manifest/lookup-intention/lookup-intention.component';
+import {TopicSubscriberCountPipe} from './messaging/topic-subscriber-count.pipe';
+import {MicrofrontendComponent} from './microfrontend/microfrontend.component';
+import {ScrollableMicrofrontendComponent} from './scrollable-microfrontend/scrollable-microfrontend.component';
+import {PreferredSizeComponent} from './preferred-size/preferred-size.component';
+import {PlatformPropertiesComponent} from './platform-properties/platform-properties.component';
+import {SciSashboxModule} from '@scion/toolkit/sashbox';
+import {SciViewportModule} from '@scion/toolkit/viewport';
+import {A11yModule} from '@angular/cdk/a11y';
+import {OverlayModule} from '@angular/cdk/overlay';
+import {SciAccordionModule, SciCheckboxModule, SciFormFieldModule, SciListModule, SciParamsEnterModule, SciPropertyModule, SciQualifierChipListModule} from '@scion/toolkit.internal/widgets';
+import {AppShellComponent} from './app-shell/app-shell.component';
+import {DevToolsComponent} from './devtools/devtools.component';
+import {LookupContextValueComponent} from './outlet-context/lookup-context-value/lookup-context-value.component';
 
 @NgModule({
   declarations: [

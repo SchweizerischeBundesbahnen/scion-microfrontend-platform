@@ -7,12 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Application, Intention } from '@scion/microfrontend-platform';
-import { DevToolsManifestService } from '../dev-tools-manifest.service';
-import { ACTIVE_TAB_ROUTER_STATE } from '../app-details/app-details.component';
-import { Router } from '@angular/router';
+import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {Observable} from 'rxjs';
+import {Application, Intention} from '@scion/microfrontend-platform';
+import {DevToolsManifestService} from '../dev-tools-manifest.service';
+import {ACTIVE_TAB_ROUTER_STATE} from '../app-details/app-details.component';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'devtools-intention-accordion-panel',

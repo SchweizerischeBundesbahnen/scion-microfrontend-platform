@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Urls } from './url.util';
+import {Urls} from './url.util';
 
 describe('Urls', () => {
 

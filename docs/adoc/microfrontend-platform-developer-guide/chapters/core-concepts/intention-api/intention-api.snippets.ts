@@ -1,7 +1,6 @@
 import { IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatform } from '@scion/microfrontend-platform';
 import { Beans } from '@scion/toolkit/bean-manager';
 
-// tslint:disable:no-unused-expression
 `
 // tag::manifest[]
 {

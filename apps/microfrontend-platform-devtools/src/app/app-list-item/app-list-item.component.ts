@@ -7,11 +7,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { Application } from '@scion/microfrontend-platform';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { DevToolsManifestService } from '../dev-tools-manifest.service';
+import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {Application} from '@scion/microfrontend-platform';
+import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {DevToolsManifestService} from '../dev-tools-manifest.service';
 
 @Component({
   selector: 'devtools-app-list-item',

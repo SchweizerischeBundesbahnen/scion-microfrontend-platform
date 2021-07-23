@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { MessageClient } from '../client/messaging/message-client';
+import {MessageClient} from '../client/messaging/message-client';
 
 /**
  * Message client used by the platform to send and receive messages.

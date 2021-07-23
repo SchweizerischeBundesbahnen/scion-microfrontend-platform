@@ -7,13 +7,13 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Component } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { Intention, ManifestObjectFilter, ManifestService } from '@scion/microfrontend-platform';
-import { SciParamsEnterComponent } from '@scion/toolkit.internal/widgets';
-import { Observable } from 'rxjs';
-import { finalize } from 'rxjs/operators';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {Component} from '@angular/core';
+import {FormArray, FormBuilder, FormControl, FormGroup} from '@angular/forms';
+import {Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
+import {SciParamsEnterComponent} from '@scion/toolkit.internal/widgets';
+import {Observable} from 'rxjs';
+import {finalize} from 'rxjs/operators';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 const ID = 'id';
 const TYPE = 'type';

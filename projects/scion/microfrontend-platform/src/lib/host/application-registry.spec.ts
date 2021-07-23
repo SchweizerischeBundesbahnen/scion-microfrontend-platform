@@ -7,15 +7,15 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { ApplicationRegistry } from './application-registry';
-import { MicrofrontendPlatform } from '../microfrontend-platform';
-import { ManifestRegistry } from './manifest-registry/manifest-registry';
-import { PlatformMessageClient } from './platform-message-client';
-import { ɵMessageClient } from '../client/messaging/ɵmessage-client';
-import { ɵManifestRegistry } from './manifest-registry/ɵmanifest-registry';
-import { NullBrokerGateway } from '../client/messaging/broker-gateway';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { PlatformConfig } from './platform-config';
+import {ApplicationRegistry} from './application-registry';
+import {MicrofrontendPlatform} from '../microfrontend-platform';
+import {ManifestRegistry} from './manifest-registry/manifest-registry';
+import {PlatformMessageClient} from './platform-message-client';
+import {ɵMessageClient} from '../client/messaging/ɵmessage-client';
+import {ɵManifestRegistry} from './manifest-registry/ɵmanifest-registry';
+import {NullBrokerGateway} from '../client/messaging/broker-gateway';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {PlatformConfig} from './platform-config';
 
 describe('ApplicationRegistry', () => {
 
@@ -147,7 +147,7 @@ describe('ApplicationRegistry', () => {
       expect(registry.getApplication('app-7').manifestUrl).toEqual(window.origin + '/assets/manifest.json');
     });
 
-    function registerApp(app: { symbolicName: string; manifestUrl: string; baseUrl?: string }): void {
+    function registerApp(app: {symbolicName: string; manifestUrl: string; baseUrl?: string}): void {
       registry.registerApplication({symbolicName: app.symbolicName, manifestUrl: app.manifestUrl}, {
         name: app.symbolicName,
         capabilities: [],
@@ -175,7 +175,7 @@ describe('ApplicationRegistry', () => {
       expect(() => registerApp({symbolicName: 'app?1'})).toThrowError(/ApplicationRegistrationError/);
     });
 
-    function registerApp(app: { symbolicName: string }): void {
+    function registerApp(app: {symbolicName: string}): void {
       registry.registerApplication({symbolicName: app.symbolicName, manifestUrl: 'http://www.some-origin.com'}, {
         name: app.symbolicName,
         capabilities: [],

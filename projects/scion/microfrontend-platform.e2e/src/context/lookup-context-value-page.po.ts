@@ -8,10 +8,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { $, browser, protractor } from 'protractor';
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
-import { SciCheckboxPO } from '@scion/toolkit.internal/widgets.po';
-import { enterText } from '../spec.util';
+import {$, browser, protractor} from 'protractor';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+import {SciCheckboxPO} from '@scion/toolkit.internal/widgets.po';
+import {enterText} from '../spec.util';
 
 const EC = protractor.ExpectedConditions;
 
@@ -76,7 +76,7 @@ export class LookupContextValuePagePO {
   /**
    * This method exists as a convenience method to not have to enter all fields separately.
    */
-  public async lookupValue<T>(key: string, options?: { collect: boolean }): Promise<T> {
+  public async lookupValue<T>(key: string, options?: {collect: boolean}): Promise<T> {
     await this._switchToIframeFn();
 
     await this.enterKey(key);

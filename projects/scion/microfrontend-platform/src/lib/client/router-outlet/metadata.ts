@@ -1,5 +1,5 @@
-import { Dictionary } from '@scion/toolkit/util';
-import { MessageClient } from '../messaging/message-client';
+import {Dictionary} from '@scion/toolkit/util';
+import {MessageClient} from '../messaging/message-client';
 
 /**
  * Options to control outlet navigation.

@@ -7,9 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { MessageEnvelope, MessagingChannel, MessagingTransport } from '../../ɵmessaging.model';
-import { UUID } from '@scion/toolkit/uuid';
-import { MessageHeaders, TopicMessage } from '../../messaging.model';
+import {MessageEnvelope, MessagingChannel, MessagingTransport} from '../../ɵmessaging.model';
+import {UUID} from '@scion/toolkit/uuid';
+import {MessageHeaders, TopicMessage} from '../../messaging.model';
 
 /**
  * Context lookup options header to control if values should be collected.

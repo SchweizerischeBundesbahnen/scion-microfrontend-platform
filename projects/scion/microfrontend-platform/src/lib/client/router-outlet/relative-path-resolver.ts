@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Urls } from '../../url.util';
+import {Urls} from '../../url.util';
 
 /**
  * Used by {@link OutletRouter} to convert relative paths to absolute paths.
@@ -27,7 +27,7 @@ export class RelativePathResolver {
    * @param  options - Specifies to which url the given path is relative to.
    * @return the absolute path.
    */
-  public resolve(path: string, options: { relativeTo: string }): string {
+  public resolve(path: string, options: {relativeTo: string}): string {
     const relativeTo = Urls.newUrl(options.relativeTo);
 
     // Check if hash-based routing is used

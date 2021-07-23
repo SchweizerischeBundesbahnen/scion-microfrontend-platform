@@ -7,24 +7,24 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { PlatformMessageClient } from '../../host/platform-message-client';
-import { first, publishReplay, timeoutWith } from 'rxjs/operators';
-import { ConnectableObservable, noop, Observable, Subject, throwError } from 'rxjs';
-import { IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage } from '../../messaging.model';
-import { MessageClient, takeUntilUnsubscribe } from './message-client';
-import { IntentClient } from './intent-client';
-import { ManifestRegistry } from '../../host/manifest-registry/manifest-registry';
-import { ApplicationConfig } from '../../host/platform-config';
-import { PLATFORM_SYMBOLIC_NAME } from '../../host/platform.constants';
-import { expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, serveManifest, waitForCondition } from '../../spec.util.spec';
-import { MicrofrontendPlatform } from '../../microfrontend-platform';
-import { Defined, Objects } from '@scion/toolkit/util';
-import { ClientRegistry } from '../../host/message-broker/client.registry';
-import { MessageEnvelope } from '../../ɵmessaging.model';
-import { PlatformIntentClient } from '../../host/platform-intent-client';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { ManifestService } from '../manifest-registry/manifest-service';
-import { ObserveCaptor } from '@scion/toolkit/testing';
+import {PlatformMessageClient} from '../../host/platform-message-client';
+import {first, publishReplay, timeoutWith} from 'rxjs/operators';
+import {ConnectableObservable, noop, Observable, Subject, throwError} from 'rxjs';
+import {IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
+import {MessageClient, takeUntilUnsubscribe} from './message-client';
+import {IntentClient} from './intent-client';
+import {ManifestRegistry} from '../../host/manifest-registry/manifest-registry';
+import {ApplicationConfig} from '../../host/platform-config';
+import {PLATFORM_SYMBOLIC_NAME} from '../../host/platform.constants';
+import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, serveManifest, waitForCondition} from '../../spec.util.spec';
+import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {Defined, Objects} from '@scion/toolkit/util';
+import {ClientRegistry} from '../../host/message-broker/client.registry';
+import {MessageEnvelope} from '../../ɵmessaging.model';
+import {PlatformIntentClient} from '../../host/platform-intent-client';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {ManifestService} from '../manifest-registry/manifest-service';
+import {ObserveCaptor} from '@scion/toolkit/testing';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
 const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<string, any> => msg.headers;
@@ -481,7 +481,6 @@ describe('Messaging', () => {
 
     await expect(loggerSpy).toHaveBeenCalledWith('[BrokerDiscoverTimeoutError] Message broker not discovered within the 250ms timeout. Messages cannot be published or received.');
   });
-
 
   it('should not error with `BrokerDiscoverTimeoutError` when starting the platform host and initializers in runlevel 0 take a long time to complete, e.g., when fetching manifests', async () => {
     const loggerSpy = getLoggerSpy('error');
@@ -1366,7 +1365,7 @@ describe('Messaging', () => {
 /**
  * Mounts an iframe that tries to connect to the platform.
  */
-function mountBadClientAndConnect(badClientConfig: { symbolicName: string }): { dispose(): void } {
+function mountBadClientAndConnect(badClientConfig: {symbolicName: string}): {dispose(): void} {
   // Note: DO NOT USE CODE FROM OTHER MODULES BECAUSE SOLELY THE 'TO-STRING' REPRESENTATION OF FOLLOWING FUNCTION
   //       IS LOADED INTO THE IFRAME. THE ONLY EXCEPTION ARE REFERENCES TO INTERFACE TYPES AS NOT TRANSPILED INTO
   //       JAVASCRIPT.
@@ -1400,7 +1399,7 @@ function mountBadClientAndConnect(badClientConfig: { symbolicName: string }): { 
 /**
  * Expects the message to equal the expected message with its headers to contain at minimum the given map entries (because the platform adds platform-specific headers as well).
  */
-function expectMessage(actual: TopicMessage): { toMatch: (expected: TopicMessage) => void } {
+function expectMessage(actual: TopicMessage): {toMatch: (expected: TopicMessage) => void} {
   return {
     toMatch: (expected: TopicMessage): void => {
       expect(actual).toEqual(jasmine.objectContaining({
@@ -1414,7 +1413,7 @@ function expectMessage(actual: TopicMessage): { toMatch: (expected: TopicMessage
 /**
  * Waits until the given number of subscribers are subscribed to the given topic, or throws an error otherwise.
  */
-async function waitUntilSubscriberCount(topic: string, expectedCount: number, options?: { timeout?: number }): Promise<void> {
+async function waitUntilSubscriberCount(topic: string, expectedCount: number, options?: {timeout?: number}): Promise<void> {
   const timeout = Defined.orElse(options && options.timeout, 1000);
   await Beans.opt(PlatformMessageClient).subscriberCount$(topic)
     .pipe(
@@ -1427,7 +1426,7 @@ async function waitUntilSubscriberCount(topic: string, expectedCount: number, op
 /**
  * Waits until a message with the given body is received.
  */
-async function waitUntilMessageReceived(observable$: Observable<TopicMessage | IntentMessage>, waitUntil: { body: any, timeout?: number }): Promise<void> {
+async function waitUntilMessageReceived(observable$: Observable<TopicMessage | IntentMessage>, waitUntil: {body: any, timeout?: number}): Promise<void> {
   const timeout = Defined.orElse(waitUntil.timeout, 250);
   await observable$
     .pipe(

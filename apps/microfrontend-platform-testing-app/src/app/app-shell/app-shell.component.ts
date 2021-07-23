@@ -7,14 +7,14 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Component, HostBinding, OnDestroy } from '@angular/core';
-import { asapScheduler, Subject } from 'rxjs';
-import { ContextService, FocusMonitor, IS_PLATFORM_HOST, MicroApplicationConfig, OUTLET_CONTEXT, OutletContext } from '@scion/microfrontend-platform';
-import { switchMapTo, takeUntil } from 'rxjs/operators';
-import { ActivatedRoute } from '@angular/router';
-import { Defined } from '@scion/toolkit/util';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { environment } from '../../environments/environment';
+import {Component, HostBinding, OnDestroy} from '@angular/core';
+import {asapScheduler, Subject} from 'rxjs';
+import {ContextService, FocusMonitor, IS_PLATFORM_HOST, MicroApplicationConfig, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
+import {switchMapTo, takeUntil} from 'rxjs/operators';
+import {ActivatedRoute} from '@angular/router';
+import {Defined} from '@scion/toolkit/util';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {environment} from '../../environments/environment';
 
 @Component({
   selector: 'app-shell',
@@ -48,7 +48,7 @@ export class AppShellComponent implements OnDestroy {
       )
       .subscribe(outletContext => {
         const context = outletContext?.name ?? 'n/a';
-        console.debug(`[AppShellComponent::router-outlet:onactivate] [app=${this.appSymbolicName}, location=${window.location.href}, outletContext=${context}]]`); // tslint:disable-line:no-console
+        console.debug(`[AppShellComponent::router-outlet:onactivate] [app=${this.appSymbolicName}, location=${window.location.href}, outletContext=${context}]]`);
       });
   }
 

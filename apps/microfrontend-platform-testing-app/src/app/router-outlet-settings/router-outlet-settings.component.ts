@@ -7,13 +7,13 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Component, ElementRef, HostListener, Injector, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { PreferredSize, SciRouterOutletElement } from '@scion/microfrontend-platform';
-import { ConnectedPosition, Overlay, OverlayConfig, OverlayRef } from '@angular/cdk/overlay';
-import { ComponentPortal } from '@angular/cdk/portal';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { CdkTrapFocus, FocusTrap } from '@angular/cdk/a11y';
+import {Component, ElementRef, HostListener, Injector, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {PreferredSize, SciRouterOutletElement} from '@scion/microfrontend-platform';
+import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
+import {ComponentPortal} from '@angular/cdk/portal';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+import {CdkTrapFocus, FocusTrap} from '@angular/cdk/a11y';
 
 const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top'};
 
@@ -82,7 +82,7 @@ export class RouterOutletSettingsComponent implements OnInit, OnDestroy {
     this._destroy$.next();
   }
 
-  public static openAsOverlay(config: { anchor: HTMLElement, routerOutlet: SciRouterOutletElement, overlay: Overlay, injector: Injector }): void {
+  public static openAsOverlay(config: {anchor: HTMLElement, routerOutlet: SciRouterOutletElement, overlay: Overlay, injector: Injector}): void {
     const {anchor, routerOutlet, overlay, injector} = config;
 
     const positionStrategy = overlay.position()

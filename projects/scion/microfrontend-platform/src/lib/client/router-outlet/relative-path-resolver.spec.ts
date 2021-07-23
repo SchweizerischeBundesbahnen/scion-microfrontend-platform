@@ -8,9 +8,9 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { RelativePathResolver } from './relative-path-resolver';
-import { MicrofrontendPlatform } from '../../microfrontend-platform';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {RelativePathResolver} from './relative-path-resolver';
+import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 describe('RelativePathResolver', () => {
 

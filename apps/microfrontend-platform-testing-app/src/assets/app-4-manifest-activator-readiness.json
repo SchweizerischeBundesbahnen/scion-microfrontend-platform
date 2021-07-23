@@ -11,7 +11,7 @@
         "readinessTopics": "activator/ready"
       }
     }
-   ],
+  ],
   "intentions": [
   ]
 }

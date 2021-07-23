@@ -8,4 +8,4 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-export { ManifestService } from './manifest-service';
+export {ManifestService} from './manifest-service';

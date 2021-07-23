@@ -7,9 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { $, browser } from 'protractor';
-import { BrowserOutletPO, OutletDescriptorTypes, OutletPageObjectClass, OutletPageObjectDescriptor, SwitchToIframeFn } from './browser-outlet/browser-outlet.po';
-import { isCssClassPresent, runOutsideAngularSynchronization, waitUntilTestingAppInteractableElseNoop } from './spec.util';
+import {$, browser} from 'protractor';
+import {BrowserOutletPO, OutletDescriptorTypes, OutletPageObjectClass, OutletPageObjectDescriptor, SwitchToIframeFn} from './browser-outlet/browser-outlet.po';
+import {isCssClassPresent, runOutsideAngularSynchronization, waitUntilTestingAppInteractableElseNoop} from './spec.util';
 
 /**
  * The central page object of the testing app to perform the initial navigation.
@@ -94,7 +94,7 @@ export class TestingAppPO {
    * @param options controls the navigation
    * @return `OutletPageObjectMap` to get the page object for an outlet.
    */
-  public async navigateTo(outlets: Outlets, options?: { queryParams?: Map<string, string> }): Promise<OutletPageObjectMap> {
+  public async navigateTo(outlets: Outlets, options?: {queryParams?: Map<string, string>}): Promise<OutletPageObjectMap> {
     // Navigate to the 'about:blank' page before setting up the test case to have a clean application state.
     await browser.driver.switchTo().defaultContent();
     await browser.driver.get('about:blank');
@@ -105,7 +105,7 @@ export class TestingAppPO {
     return outletPageObjectMap;
   }
 
-  private async configureTestingApp(outlets: Outlets, options?: { parentOutletPO?: BrowserOutletPO, queryParams?: Map<string, string> }): Promise<OutletPageObjectMap> {
+  private async configureTestingApp(outlets: Outlets, options?: {parentOutletPO?: BrowserOutletPO, queryParams?: Map<string, string>}): Promise<OutletPageObjectMap> {
     const parentOutletPO = options && options.parentOutletPO;
     const queryParams = options && options.queryParams || new Map<string, string>();
 
@@ -125,7 +125,7 @@ export class TestingAppPO {
     await waitUntilTestingAppInteractableElseNoop();
 
     const browserOutletPOs = outletNames.map(outletName => new BrowserOutletPO(outletName, parentOutletPO));
-    const pageObjectMap = new Map<string, object>();
+    const pageObjectMap = new Map<string, any>();
 
     // Load the microfrontend of every outlet.
     for (const browserOutletPO of browserOutletPOs) {
@@ -153,13 +153,13 @@ export class TestingAppPO {
       }
     }
 
-    return new class implements OutletPageObjectMap { // tslint:disable-line:new-parens
+    return new class implements OutletPageObjectMap {
 
       public outlets(): string[] {
         return Array.from(pageObjectMap.keys());
       }
 
-      public get<T extends object>(outlet: string): T {
+      public get<T>(outlet: string): T {
         const pageObject = pageObjectMap.get(outlet) as T;
         if (!pageObject) {
           throw Error(`[OutletNotFoundError] No outlet found with the given name '${outlet}'.`);
@@ -194,7 +194,7 @@ export class TestingAppPO {
   }
 }
 
-function putIfAbsentOrElseThrow(map: Map<string, object>, outletName: string, pageObject: object): void {
+function putIfAbsentOrElseThrow(map: Map<string, any>, outletName: string, pageObject: any): void {
   if (map.has(outletName)) {
     throw Error(`[OutletUniqueError] Another outlet already registered under the same name. [outlet=${outletName}]`);
   }
@@ -224,7 +224,7 @@ export interface OutletPageObjectMap {
   /**
    * Returns the page object for the given outlet, or throws an error if not found.
    */
-  get<T extends object>(outlet: string): T;
+  get<T>(outlet: string): T;
 }
 
 /**

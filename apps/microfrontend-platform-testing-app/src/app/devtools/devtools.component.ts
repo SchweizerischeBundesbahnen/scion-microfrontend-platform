@@ -7,10 +7,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { Component } from '@angular/core';
-import { OutletRouter } from '@scion/microfrontend-platform';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { environment } from '../../environments/environment';
+import {Component} from '@angular/core';
+import {OutletRouter} from '@scion/microfrontend-platform';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {environment} from '../../environments/environment';
 
 @Component({
   selector: 'app-devtools',

@@ -7,13 +7,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-import { Capability, Qualifier } from '@scion/microfrontend-platform';
-import { expand, map, mapTo, take } from 'rxjs/operators';
-import { KeyValuePair, LogicalOperator } from './filter-field/filter-field';
-import { DevToolsManifestService } from '../dev-tools-manifest.service';
-import { Arrays } from '@scion/toolkit/util';
+import {Injectable} from '@angular/core';
+import {Observable, Subject} from 'rxjs';
+import {Capability, Qualifier} from '@scion/microfrontend-platform';
+import {expand, map, mapTo, take} from 'rxjs/operators';
+import {KeyValuePair, LogicalOperator} from './filter-field/filter-field';
+import {DevToolsManifestService} from '../dev-tools-manifest.service';
+import {Arrays} from '@scion/toolkit/util';
 
 @Injectable({
   providedIn: 'root',

@@ -7,15 +7,15 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { fromEvent, merge, MonoTypeOperatorFunction, noop, Observable, OperatorFunction, Subject } from 'rxjs';
-import { filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
-import { MessageClient } from '../messaging/message-client';
-import { ContextService } from '../context/context-service';
-import { KEYSTROKE_CONTEXT_NAME_PREFIX, OUTLET_CONTEXT, OutletContext, RouterOutlets } from '../router-outlet/router-outlet.element';
-import { Keystroke, KeystrokeFlags } from './keystroke';
-import { runSafe } from '../../safe-runner';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
-import { filterArray, mapArray } from '@scion/toolkit/operators';
+import {fromEvent, merge, MonoTypeOperatorFunction, noop, Observable, OperatorFunction, Subject} from 'rxjs';
+import {filter, map, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {MessageClient} from '../messaging/message-client';
+import {ContextService} from '../context/context-service';
+import {KEYSTROKE_CONTEXT_NAME_PREFIX, OUTLET_CONTEXT, OutletContext, RouterOutlets} from '../router-outlet/router-outlet.element';
+import {Keystroke, KeystrokeFlags} from './keystroke';
+import {runSafe} from '../../safe-runner';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {filterArray, mapArray} from '@scion/toolkit/operators';
 
 /**
  * Propagates keyboard events for keystrokes registered in the current context or any parent contexts.

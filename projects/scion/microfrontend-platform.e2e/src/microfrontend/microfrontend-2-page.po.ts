@@ -7,8 +7,8 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
-import { MicrofrontendPagePO } from './microfrontend-page.po';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+import {MicrofrontendPagePO} from './microfrontend-page.po';
 
 export class Microfrontend2PagePO extends MicrofrontendPagePO {
 

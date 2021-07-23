@@ -8,11 +8,13 @@ SCION Microfrontend Platform enables you to successfully implement a framework-a
 You can continue using the frameworks you love since the platform integrates microfrontends via iframes. Iframes by nature provide maximum isolation and allow the integration of any web application without complex adaptation. The platform aims to shield developers from iframe specifics and the low-level messaging mechanism to focus instead on integrating microfrontends.
 
 #### Cross-microfrontend communication
+
 The platform adds a pub/sub layer on top of the native `postMessage` mechanism to allow microfrontends to communicate with each other easily across origins. Communication comes in two flavors: topic-based and intent-based. Both models feature the request-response message exchange pattern, let you include message headers, and support message interception to implement cross-cutting messaging concerns.
 
 Topic-based messaging enables you to publish messages to multiple subscribers via a common topic. Publishers can mark any message they send as 'to be retained', helping new subscribers get the last message published on a topic. Inspired by the Android platform, intent-based communication focuses on controlled collaboration between applications, meaning that applications can provide functionality which other apps can look up or invoke. For applications to interact with each other, the platform requires them to declare an intention in their application manifest, which, as a nice side effect, allows the analysis of dependencies between applications.
 
 #### Microfrontend Integration and Routing
+
 The platform makes it easy to integrate microfrontends through its router-outlet. The router-outlet is a web component that wraps an iframe. It solves many of the cumbersome quirks of iframes and helps to overcome iframe restrictions. For example, it can adapt its size to the preferred size of embedded content, supports keyboard event propagation, or allows you to pass contextual data to embedded content. Using the router, you control which web content to display in an outlet. Multiple outlets can display different content, determined by different outlet names, all at the same time. Routing works across application boundaries and enables features such as persistent navigation.
 
 ***

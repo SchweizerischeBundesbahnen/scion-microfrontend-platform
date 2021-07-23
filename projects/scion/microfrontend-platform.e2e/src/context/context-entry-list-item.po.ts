@@ -7,9 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { SwitchToIframeFn } from '../browser-outlet/browser-outlet.po';
-import { SciListItemPO } from '@scion/toolkit.internal/widgets.po';
-import { ElementFinder } from 'protractor';
+import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+import {SciListItemPO} from '@scion/toolkit.internal/widgets.po';
+import {ElementFinder} from 'protractor';
 
 export class ContextEntryListItemPO {
 

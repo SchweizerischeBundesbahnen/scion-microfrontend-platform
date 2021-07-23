@@ -8,14 +8,14 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { HttpClient } from './http-client';
-import { MicrofrontendPlatform } from '../microfrontend-platform';
-import { ApplicationManifest } from '../platform.model';
-import { ApplicationRegistry } from './application-registry';
-import { Logger } from '../logger';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { ManifestService } from '../client/manifest-registry/manifest-service';
-import { serveManifest } from '../spec.util.spec';
+import {HttpClient} from './http-client';
+import {MicrofrontendPlatform} from '../microfrontend-platform';
+import {ApplicationManifest} from '../platform.model';
+import {ApplicationRegistry} from './application-registry';
+import {Logger} from '../logger';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {ManifestService} from '../client/manifest-registry/manifest-service';
+import {serveManifest} from '../spec.util.spec';
 
 describe('ManifestCollector', () => {
 
@@ -125,22 +125,22 @@ describe('ManifestCollector', () => {
   });
 });
 
-function okAnswer(answer: { body: ApplicationManifest, delay: number }): Promise<Partial<Response>> {
+function okAnswer(answer: {body: ApplicationManifest, delay: number}): Promise<Partial<Response>> {
   const response: Partial<Response> = {
     ok: true,
     json: (): Promise<any> => Promise.resolve(answer.body),
   };
-  return new Promise(resolve => { // tslint:disable-line:typedef
+  return new Promise(resolve => {
     setTimeout(() => resolve(response), answer.delay);
   });
 }
 
-function nokAnswer(answer: { status: number, delay: number }): Promise<Partial<Response>> {
+function nokAnswer(answer: {status: number, delay: number}): Promise<Partial<Response>> {
   const response: Partial<Response> = {
     ok: false,
     status: answer.status,
   };
-  return new Promise(resolve => { // tslint:disable-line:typedef
+  return new Promise(resolve => {
     setTimeout(() => resolve(response), answer.delay);
   });
 }

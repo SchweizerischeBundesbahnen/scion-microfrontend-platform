@@ -8,9 +8,9 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { MessageHeaders, TopicMessage } from '../../messaging.model';
-import { TopicMatcher } from '../../topic-matcher.util';
-import { Defined } from '@scion/toolkit/util';
+import {MessageHeaders, TopicMessage} from '../../messaging.model';
+import {TopicMatcher} from '../../topic-matcher.util';
+import {Defined} from '@scion/toolkit/util';
 
 /**
  * Central point for persisting and looking up retained messages sent to a topic.

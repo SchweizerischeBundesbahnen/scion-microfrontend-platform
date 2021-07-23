@@ -8,21 +8,21 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { PlatformConfigLoader } from './platform-config-loader';
-import { Defined } from '@scion/toolkit/util';
-import { ApplicationConfig, PlatformConfig, PlatformFlags } from './platform-config';
-import { ApplicationRegistry } from './application-registry';
-import { HttpClient } from './http-client';
-import { Logger } from '../logger';
-import { HostPlatformAppProvider } from './host-platform-app-provider';
-import { PlatformMessageClient } from '../host/platform-message-client';
-import { PlatformTopics } from '../ɵmessaging.model';
-import { Beans, Initializer } from '@scion/toolkit/bean-manager';
-import { Runlevel } from '../platform-state';
-import { ProgressMonitor } from './progress-monitor/progress-monitor';
-import { ManifestLoadProgressMonitor } from './progress-monitor/progress-monitors';
-import { from } from 'rxjs';
-import { timeoutIfPresent } from '../operators';
+import {PlatformConfigLoader} from './platform-config-loader';
+import {Defined} from '@scion/toolkit/util';
+import {ApplicationConfig, PlatformConfig, PlatformFlags} from './platform-config';
+import {ApplicationRegistry} from './application-registry';
+import {HttpClient} from './http-client';
+import {Logger} from '../logger';
+import {HostPlatformAppProvider} from './host-platform-app-provider';
+import {PlatformMessageClient} from '../host/platform-message-client';
+import {PlatformTopics} from '../ɵmessaging.model';
+import {Beans, Initializer} from '@scion/toolkit/bean-manager';
+import {Runlevel} from '../platform-state';
+import {ProgressMonitor} from './progress-monitor/progress-monitor';
+import {ManifestLoadProgressMonitor} from './progress-monitor/progress-monitors';
+import {from} from 'rxjs';
+import {timeoutIfPresent} from '../operators';
 
 /**
  * Collects manifests of registered applications.

@@ -7,24 +7,24 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { BrowserOutletsComponent } from './browser-outlets/browser-outlets.component';
-import { ReceiveMessageComponent } from './messaging/receive-message/receive-message.component';
-import { RegisterCapabilityComponent } from './manifest/register-capability/register-capability.component';
-import { RegisterIntentionComponent } from './manifest/register-intention/register-intention.component';
-import { ContextComponent } from './outlet-context/context/context.component';
-import { OutletRouterComponent } from './outlet-router/outlet-router.component';
-import { PublishMessageComponent } from './messaging/publish-message/publish-message.component';
-import { RouterOutletComponent } from './router-outlet/router-outlet.component';
-import { MicrofrontendComponent } from './microfrontend/microfrontend.component';
-import { ScrollableMicrofrontendComponent } from './scrollable-microfrontend/scrollable-microfrontend.component';
-import { PreferredSizeComponent } from './preferred-size/preferred-size.component';
-import { PlatformPropertiesComponent } from './platform-properties/platform-properties.component';
-import { LookupCapabilityComponent } from './manifest/lookup-capability/lookup-capability.component';
-import { LookupIntentionComponent } from './manifest/lookup-intention/lookup-intention.component';
-import { AppShellComponent } from './app-shell/app-shell.component';
-import { LookupContextValueComponent } from './outlet-context/lookup-context-value/lookup-context-value.component';
+import {NgModule} from '@angular/core';
+import {RouterModule, Routes} from '@angular/router';
+import {BrowserOutletsComponent} from './browser-outlets/browser-outlets.component';
+import {ReceiveMessageComponent} from './messaging/receive-message/receive-message.component';
+import {RegisterCapabilityComponent} from './manifest/register-capability/register-capability.component';
+import {RegisterIntentionComponent} from './manifest/register-intention/register-intention.component';
+import {ContextComponent} from './outlet-context/context/context.component';
+import {OutletRouterComponent} from './outlet-router/outlet-router.component';
+import {PublishMessageComponent} from './messaging/publish-message/publish-message.component';
+import {RouterOutletComponent} from './router-outlet/router-outlet.component';
+import {MicrofrontendComponent} from './microfrontend/microfrontend.component';
+import {ScrollableMicrofrontendComponent} from './scrollable-microfrontend/scrollable-microfrontend.component';
+import {PreferredSizeComponent} from './preferred-size/preferred-size.component';
+import {PlatformPropertiesComponent} from './platform-properties/platform-properties.component';
+import {LookupCapabilityComponent} from './manifest/lookup-capability/lookup-capability.component';
+import {LookupIntentionComponent} from './manifest/lookup-intention/lookup-intention.component';
+import {AppShellComponent} from './app-shell/app-shell.component';
+import {LookupContextValueComponent} from './outlet-context/lookup-context-value/lookup-context-value.component';
 
 const routes: Routes = [
   {path: 'activator/readiness', loadChildren: (): any => import('./activator/activator-readiness.module').then(m => m.ActivatorReadinessModule)},

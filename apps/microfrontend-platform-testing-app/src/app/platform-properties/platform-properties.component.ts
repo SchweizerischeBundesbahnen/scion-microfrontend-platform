@@ -7,9 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { Component } from '@angular/core';
-import { PlatformPropertyService } from '@scion/microfrontend-platform';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {Component} from '@angular/core';
+import {PlatformPropertyService} from '@scion/microfrontend-platform';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 @Component({
   selector: 'app-platform-properties',

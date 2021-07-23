@@ -7,11 +7,11 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { TopicSubscriptionRegistry } from './topic-subscription.registry';
-import { Client } from './client.registry';
-import { take } from 'rxjs/operators';
-import { expectEmissions } from '../../spec.util.spec';
-import { ObserveCaptor } from '@scion/toolkit/testing';
+import {TopicSubscriptionRegistry} from './topic-subscription.registry';
+import {Client} from './client.registry';
+import {take} from 'rxjs/operators';
+import {expectEmissions} from '../../spec.util.spec';
+import {ObserveCaptor} from '@scion/toolkit/testing';
 
 describe('TopicSubscriptionRegistry', () => {
 
@@ -456,7 +456,7 @@ describe('TopicSubscriptionRegistry', () => {
     });
   });
 
-  function expectSubscriptionCount(topic: string): { toBe: (expected: number) => Promise<void> } {
+  function expectSubscriptionCount(topic: string): {toBe: (expected: number) => Promise<void>} {
     return {
       toBe: async (expected: any): Promise<void> => {
         await expect(await subscriptionRegistry.subscriptionCount$(topic).pipe(take(1)).toPromise()).withContext(`topic: ${topic}`).toBe(expected);

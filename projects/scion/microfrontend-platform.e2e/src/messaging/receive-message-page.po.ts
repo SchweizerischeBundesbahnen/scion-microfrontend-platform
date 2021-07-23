@@ -7,12 +7,12 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { enterText, selectOption } from '../spec.util';
-import { MessagingFlavor } from './publish-message-page.po';
-import { $ } from 'protractor';
-import { Qualifier } from '@scion/microfrontend-platform';
-import { SciListPO, SciParamsEnterPO, WaitUntil } from '@scion/toolkit.internal/widgets.po';
-import { MessageListItemPO } from './message-list-item.po';
+import {enterText, selectOption} from '../spec.util';
+import {MessagingFlavor} from './publish-message-page.po';
+import {$} from 'protractor';
+import {Qualifier} from '@scion/microfrontend-platform';
+import {SciListPO, SciParamsEnterPO, WaitUntil} from '@scion/toolkit.internal/widgets.po';
+import {MessageListItemPO} from './message-list-item.po';
 
 export class ReceiveMessagePagePO {
 

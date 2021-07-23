@@ -8,8 +8,8 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Beans } from '@scion/toolkit/bean-manager';
-import { Logger } from '../../logger';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {Logger} from '../../logger';
 
 /**
  * Describes a user interaction with the keyboard.
@@ -28,7 +28,7 @@ export class Keystroke {
    */
   public flags?: KeystrokeFlags;
 
-  constructor(public readonly eventType: string, key: string, modifiers?: { control?: boolean, shift?: boolean, alt?: boolean, meta?: boolean }, flags?: KeystrokeFlags) {
+  constructor(public readonly eventType: string, key: string, modifiers?: {control?: boolean, shift?: boolean, alt?: boolean, meta?: boolean}, flags?: KeystrokeFlags) {
     const parts = [];
     parts.push(eventType);
     if (modifiers) {

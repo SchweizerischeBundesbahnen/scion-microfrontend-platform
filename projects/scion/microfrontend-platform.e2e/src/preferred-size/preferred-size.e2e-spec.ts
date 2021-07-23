@@ -7,13 +7,13 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { OutletPageObjectMap, TestingAppPO } from '../testing-app.po';
-import { consumeBrowserLog } from '../spec.util';
-import { OutletRouterPagePO } from '../router-outlet/outlet-router-page.po';
-import { RouterOutletPagePO } from '../router-outlet/router-outlet-page.po';
-import { PreferredSizePagePO } from './preferred-size-page.po';
-import { browser } from 'protractor';
-import { installSeleniumWebDriverClickFix } from '../selenium-webdriver-click-fix';
+import {OutletPageObjectMap, TestingAppPO} from '../testing-app.po';
+import {consumeBrowserLog} from '../spec.util';
+import {OutletRouterPagePO} from '../router-outlet/outlet-router-page.po';
+import {RouterOutletPagePO} from '../router-outlet/router-outlet-page.po';
+import {PreferredSizePagePO} from './preferred-size-page.po';
+import {browser} from 'protractor';
+import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
 import objectContaining = jasmine.objectContaining;
 
 describe('RouterOutlet', () => {

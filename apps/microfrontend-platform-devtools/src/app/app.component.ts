@@ -7,11 +7,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { animate, style, transition, trigger } from '@angular/animations';
-import { ShellService } from './shell.service';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy} from '@angular/core';
+import {Observable, Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+import {animate, style, transition, trigger} from '@angular/animations';
+import {ShellService} from './shell.service';
 
 export function isRunningStandalone(): boolean {
   return window.parent === window;

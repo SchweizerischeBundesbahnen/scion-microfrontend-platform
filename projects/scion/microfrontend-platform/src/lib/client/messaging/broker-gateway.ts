@@ -7,18 +7,18 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import { EMPTY, from, fromEvent, merge, NEVER, noop, Observable, Observer, of, Subject, TeardownLogic, throwError } from 'rxjs';
-import { MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand } from '../../ɵmessaging.model';
-import { finalize, first, map, mergeMap, share, switchMap, take, takeUntil, timeoutWith } from 'rxjs/operators';
-import { filterByChannel, filterByHeader, filterByOrigin, filterByTopic, filterByTransport, pluckEnvelope, pluckMessage } from '../../operators';
-import { UUID } from '@scion/toolkit/uuid';
-import { IntentMessage, Message, MessageHeaders, TopicMessage } from '../../messaging.model';
-import { GatewayInfoResponse, getGatewayJavaScript } from './broker-gateway-script';
-import { Logger, NULL_LOGGER } from '../../logger';
-import { Dictionaries } from '@scion/toolkit/util';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
-import { IS_PLATFORM_HOST } from '../../platform.model';
-import { Runlevel } from '../../platform-state';
+import {EMPTY, from, fromEvent, merge, NEVER, noop, Observable, Observer, of, Subject, TeardownLogic, throwError} from 'rxjs';
+import {MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
+import {finalize, first, map, mergeMap, share, switchMap, take, takeUntil, timeoutWith} from 'rxjs/operators';
+import {filterByChannel, filterByHeader, filterByOrigin, filterByTopic, filterByTransport, pluckEnvelope, pluckMessage} from '../../operators';
+import {UUID} from '@scion/toolkit/uuid';
+import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
+import {GatewayInfoResponse, getGatewayJavaScript} from './broker-gateway-script';
+import {Logger, NULL_LOGGER} from '../../logger';
+import {Dictionaries} from '@scion/toolkit/util';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {IS_PLATFORM_HOST} from '../../platform.model';
+import {Runlevel} from '../../platform-state';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.
@@ -88,7 +88,7 @@ export abstract class BrokerGateway {
  */
 export class NullBrokerGateway implements BrokerGateway {
 
-  public constructor() {
+  constructor() {
     console.log('[NullBrokerGateway] Using \'NullBrokerGateway\'. Messages cannot be sent or received.');
   }
 
@@ -120,14 +120,14 @@ export class NullBrokerGateway implements BrokerGateway {
 /**
  * @ignore
  */
-export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:disable-line:class-name
+export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
 
   private _destroy$ = new Subject<void>();
   private _whenDestroy = this._destroy$.pipe(first()).toPromise();
   private _message$: Observable<MessageEnvelope>;
   private _whenGatewayInfo: Promise<GatewayInfo>;
 
-  constructor(private _clientAppName: string, private _config: { discoveryTimeout: number, deliveryTimeout: number }) {
+  constructor(private _clientAppName: string, private _config: {discoveryTimeout: number, deliveryTimeout: number}) {
     // Get the JavaScript to discover the message broker and dispatch messages.
     const gatewayJavaScript = getGatewayJavaScript({clientAppName: this._clientAppName, clientOrigin: window.origin, discoverTimeout: this._config.discoveryTimeout});
 
@@ -191,8 +191,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:di
         filterByTopic<MessageDeliveryStatus>(messageId),
         first(),
         timeoutWith(new Date(Date.now() + this._config.deliveryTimeout), throwError(`[MessageDispatchError] Broker did not report message delivery state within the ${this._config.deliveryTimeout}ms timeout. [envelope=${stringifyEnvelope(envelope)}]`)),
-        takeUntil(this._destroy$),
         mergeMap(statusMessage => statusMessage.body!.ok ? EMPTY : throwError(statusMessage.body!.details)),
+        takeUntil(this._destroy$),
       )
       .toPromise();
 
@@ -306,7 +306,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy { // tslint:di
    * @return A Promise that resolves to information about the gateway and the broker, or rejects
    *         if not receiving information within the specified timeout.
    */
-  private requestGatewayInfo(gatewayWindow: Window, options: { brokerDiscoveryTimeout: number }): Promise<GatewayInfo> {
+  private requestGatewayInfo(gatewayWindow: Window, options: {brokerDiscoveryTimeout: number}): Promise<GatewayInfo> {
     const replyToTopic = UUID.randomUUID();
     const request: MessageEnvelope<TopicMessage> = {
       transport: MessagingTransport.ClientToGateway,
@@ -359,7 +359,7 @@ export interface GatewayInfo {
 /**
  * Adds headers to the message to identify the sending app.
  */
-function addSenderHeadersToEnvelope(envelope: MessageEnvelope, sender: { clientAppName: string, clientId?: string }): void {
+function addSenderHeadersToEnvelope(envelope: MessageEnvelope, sender: {clientAppName: string, clientId?: string}): void {
   const headers = envelope.message.headers;
 
   headers.set(MessageHeaders.Timestamp, Date.now());

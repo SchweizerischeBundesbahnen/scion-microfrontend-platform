@@ -251,7 +251,7 @@ export interface Intention {
  *
  * @category Platform
  */
-export abstract class IS_PLATFORM_HOST { // tslint:disable-line:class-name
+export abstract class IS_PLATFORM_HOST {
 }
 
 /**
@@ -372,7 +372,8 @@ export interface ParamDefinition {
    * which parameter to use instead. At runtime, this will map the parameter to the specified replacement, allowing for
    * straightforward migration on the provider side.
    */
-  deprecated?: true | { message?: string; useInstead?: string; };
+  deprecated?: true | {message?: string; useInstead?: string;};
+
   /**
    * Allows the declaration of additional metadata that can be interpreted in an interceptor, for example.
    */

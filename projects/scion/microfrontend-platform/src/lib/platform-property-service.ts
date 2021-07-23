@@ -8,13 +8,13 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { MessageClient } from './client/messaging/message-client';
-import { PlatformTopics } from './ɵmessaging.model';
-import { map, take, takeUntil } from 'rxjs/operators';
-import { Dictionary, Maps } from '@scion/toolkit/util';
-import { Subject } from 'rxjs';
-import { mapToBody } from './messaging.model';
-import { Beans, PreDestroy } from '@scion/toolkit/bean-manager';
+import {MessageClient} from './client/messaging/message-client';
+import {PlatformTopics} from './ɵmessaging.model';
+import {map, take, takeUntil} from 'rxjs/operators';
+import {Dictionary, Maps} from '@scion/toolkit/util';
+import {Subject} from 'rxjs';
+import {mapToBody} from './messaging.model';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 
 /**
  * Allows looking up properties defined on the platform host.

@@ -8,9 +8,9 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import { Keystroke } from './keystroke';
-import { Logger } from '../../logger';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {Keystroke} from './keystroke';
+import {Logger} from '../../logger';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 describe('Keystroke', () => {
 
