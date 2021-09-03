@@ -302,12 +302,12 @@ function assertIntentionRegisterApiEnabled(appSymbolicName: string): void {
 function coerceCapabilityParamDefinitions(capability: Capability, appSymbolicName: string): ParamDefinition[] {
   const params: ParamDefinition[] = [];
 
-  capability.requiredParams?.forEach(name => {
+  capability.requiredParams?.forEach(name => { // eslint-disable-line deprecation/deprecation
     params.push({name, required: true});
     const migration = `{ params: [{name: '${name}', required: true}] }`;
     Beans.get(Logger).warn(`[DEPRECATION WARNING] The '${appSymbolicName}' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, capability);
   });
-  capability.optionalParams?.forEach(name => {
+  capability.optionalParams?.forEach(name => { // eslint-disable-line deprecation/deprecation
     params.push({name, required: false});
     const migration = `{ params: [{name: '${name}', required: false}] }`;
     Beans.get(Logger).warn(`[DEPRECATION WARNING] The '${appSymbolicName}' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, capability);
