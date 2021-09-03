@@ -20,6 +20,9 @@
         "plugin:@angular-eslint/template/process-inline-templates",
         "plugin:rxjs/recommended"
       ],
+      "plugins": [
+        "deprecation"
+      ],
       "rules": {
         "@typescript-eslint/ban-types": [
           "error",
@@ -89,6 +92,7 @@
           "error",
           "stroustrup"
         ],
+        "deprecation/deprecation": "warn",
         "object-curly-spacing": [
           "error"
         ],
