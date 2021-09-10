@@ -25,6 +25,7 @@ import {PlatformIntentClient} from '../../host/platform-intent-client';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestService} from '../manifest-registry/manifest-service';
 import {ObserveCaptor} from '@scion/toolkit/testing';
+import {Handler, IntentInterceptor, MessageInterceptor} from '../../host/message-broker/message-interception';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
 const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<string, any> => msg.headers;
@@ -430,6 +431,69 @@ describe('Messaging', () => {
     await Beans.get(IntentClient).request$({type: 'some-type'}, 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
     expect(replyCaptor.getError()).toEqual('[RequestReplyError] No client is currently running which could answer the intent \'{type=some-type, qualifier=undefined}\'.');
+  });
+
+  it('should reject a \'request-response\' topic message if no replier is found', async () => {
+    await MicrofrontendPlatform.startHost([]);
+
+    const replyCaptor = new ObserveCaptor();
+    Beans.get(PlatformMessageClient).request$('some-topic').subscribe(replyCaptor);
+    await replyCaptor.waitUntilCompletedOrErrored();
+    expect(replyCaptor.getValues()).toEqual([]);
+    expect(replyCaptor.hasCompleted()).toBeFalse();
+    expect(replyCaptor.hasErrored()).toBeTrue();
+    expect(replyCaptor.getError()).toEqual('[RequestReplyError] No client is currently running which could answer the request sent to the topic \'some-topic\'.');
+  });
+
+  it('should allow an interceptor to handle a \'request-response\' intent message if no replier is running', async () => {
+    // create an interceptor which handles intents of a given type and then swallows the message
+    const interceptor = new class implements IntentInterceptor {
+      public intercept(message: IntentMessage, next: Handler<IntentMessage>): void {
+        if (message.intent.type === 'some-capability') {
+          const replyTo = message.headers.get(MessageHeaders.ReplyTo);
+          const body = message.body;
+          Beans.get(PlatformMessageClient).publish(replyTo, body.toUpperCase());
+        }
+        else {
+          next.handle(message);
+        }
+      }
+    };
+    Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
+    const manifestUrl = serveManifest({name: 'Host Application', intentions: [{type: 'some-capability'}]});
+    const clientManifestUrl = serveManifest({name: 'Client Application', capabilities: [{type: 'some-capability', private: false}]});
+    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}, {symbolicName: 'client-app', manifestUrl: clientManifestUrl}];
+    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    await expectEmissions(replyCaptor).toEqual(['PING']);
+    expect(replyCaptor.hasCompleted()).toBeFalse();
+    expect(replyCaptor.hasErrored()).toBeFalse();
+  });
+
+  it('should allow an interceptor to handle a \'request-response\' topic message if no replier is running', async () => {
+    // create an interceptor which handles messages of a given topic and then swallows the message
+    const interceptor = new class implements MessageInterceptor {
+      public intercept(message: TopicMessage, next: Handler<TopicMessage>): void {
+        if (message.topic === 'some-topic') {
+          const replyTo = message.headers.get(MessageHeaders.ReplyTo);
+          const body = message.body;
+          Beans.get(PlatformMessageClient).publish(replyTo, body.toUpperCase());
+        }
+        else {
+          next.handle(message);
+        }
+      }
+    };
+    Beans.register(MessageInterceptor, {useValue: interceptor, multi: true});
+    await MicrofrontendPlatform.startHost([]);
+
+    const replyCaptor = new ObserveCaptor(bodyExtractFn);
+    Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    await expectEmissions(replyCaptor).toEqual(['PING']);
+    expect(replyCaptor.hasCompleted()).toBeFalse();
+    expect(replyCaptor.hasErrored()).toBeFalse();
   });
 
   it('should reject an intent if no application provides a satisfying capability', async () => {

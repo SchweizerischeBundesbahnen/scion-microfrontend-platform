@@ -356,13 +356,6 @@ export class MessageBroker implements PreDestroy {
           }
         }
 
-        // If request-reply communication, send an error if no replier is running to reply to the intent.
-        if (intentMessage.headers.has(MessageHeaders.ReplyTo) && !this.existsClient(capabilities)) {
-          const error = `[RequestReplyError] No client is currently running which could answer the intent '{type=${intentMessage.intent.type}, qualifier=${JSON.stringify(intentMessage.intent.qualifier)}}'.`;
-          sendDeliveryStatusError(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, error);
-          return;
-        }
-
         try {
           capabilities.forEach(capability => this._intentPublisher.publish({...intentMessage, capability}));
           sendDeliveryStatusSuccess(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId});
@@ -400,6 +393,11 @@ export class MessageBroker implements PreDestroy {
     return chainInterceptors(Beans.all(IntentInterceptor), (message: IntentMessage): void => {
       const capability = Defined.orElseThrow(message.capability, () => Error(`[IllegalStateError] Missing target capability on intent message: ${JSON.stringify(message)}`));
       const clients = this._clientRegistry.getByApplication(capability.metadata!.appSymbolicName);
+
+      // If request-reply communication, send an error if no replier is running to reply to the intent.
+      if (message.headers.has(MessageHeaders.ReplyTo) && !this.existsClient(capability)) {
+        throw Error(`[RequestReplyError] No client is currently running which could answer the intent '{type=${message.intent.type}, qualifier=${JSON.stringify(message.intent.qualifier)}}'.`);
+      }
 
       clients.forEach(client => {
         const envelope: MessageEnvelope<IntentMessage> = {
@@ -442,10 +440,10 @@ export class MessageBroker implements PreDestroy {
   }
 
   /**
-   * Tests if at least one client is running that can handle one of the specified capabilities.
+   * Tests if at least one client is running that can handle the specified capability.
    */
-  private existsClient(capabilities: Capability[]): boolean {
-    return capabilities.some(capability => this._clientRegistry.getByApplication(capability.metadata!.appSymbolicName).length > 0);
+  private existsClient(capability: Capability): boolean {
+    return this._clientRegistry.getByApplication(capability.metadata!.appSymbolicName).length > 0;
   }
 
   public preDestroy(): void {

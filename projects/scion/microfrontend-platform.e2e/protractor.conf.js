@@ -26,9 +26,6 @@ require('tsconfig-paths/register');
  */
 exports.config = {
   allScriptsTimeout: 11000,
-  specs: [
-    './src/**/*.e2e-spec.ts',
-  ],
   suites: {
     activator: [
       './src/**/activator-readiness.e2e-spec.ts',
