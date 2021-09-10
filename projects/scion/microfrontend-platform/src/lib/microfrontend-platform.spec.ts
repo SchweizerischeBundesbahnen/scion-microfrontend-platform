@@ -274,7 +274,7 @@ describe('MicrofrontendPlatform', () => {
     const captor2 = new ObserveCaptor<number>();
 
     // Expect no emission if the platform is not yet started
-    await MicrofrontendPlatform.startupProgress$.subscribe(captor1);
+    MicrofrontendPlatform.startupProgress$.subscribe(captor1);
     expect(captor1.getValues()).toEqual([]); // no emission
 
     await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
@@ -286,7 +286,7 @@ describe('MicrofrontendPlatform', () => {
     await MicrofrontendPlatform.destroy();
 
     // Expect no emission if the platform is not yet started
-    await MicrofrontendPlatform.startupProgress$.subscribe(captor2);
+    MicrofrontendPlatform.startupProgress$.subscribe(captor2);
     expect(captor2.getValues()).toEqual([]); // no emission
 
     await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
@@ -301,7 +301,7 @@ describe('MicrofrontendPlatform', () => {
     const captor2 = new ObserveCaptor<number>();
 
     // Expect no emission if the platform is not yet started
-    await MicrofrontendPlatform.startupProgress$.subscribe(captor1);
+    MicrofrontendPlatform.startupProgress$.subscribe(captor1);
     expect(captor1.getValues()).toEqual([]); // no emission
 
     // start the platform
@@ -314,7 +314,7 @@ describe('MicrofrontendPlatform', () => {
     await MicrofrontendPlatform.destroy();
 
     // Expect no emission if the platform is not yet started
-    await MicrofrontendPlatform.startupProgress$.subscribe(captor2);
+    MicrofrontendPlatform.startupProgress$.subscribe(captor2);
     expect(captor2.getValues()).toEqual([]); // no emission
 
     await MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}});

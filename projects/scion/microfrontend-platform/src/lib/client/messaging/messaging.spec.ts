@@ -97,7 +97,7 @@ describe('Messaging', () => {
     const messageCaptor = new ObserveCaptor();
 
     // Subscribe to 'myhome/:room/temperature'
-    await Beans.get(PlatformMessageClient).observe$<string>('myhome/:room/temperature').subscribe(messageCaptor);
+    Beans.get(PlatformMessageClient).observe$<string>('myhome/:room/temperature').subscribe(messageCaptor);
 
     // Publish messages
     await Beans.get(PlatformMessageClient).publish('myhome/livingroom/temperature', '25°C');
@@ -146,7 +146,7 @@ describe('Messaging', () => {
     await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
     const headerCaptor = new ObserveCaptor(headersExtractFn);
-    await Beans.get(IntentClient).observe$().subscribe(headerCaptor);
+    Beans.get(IntentClient).observe$().subscribe(headerCaptor);
 
     await Beans.get(IntentClient).publish({type: 'some-capability'}, undefined, {headers: new Map().set('header1', 'value').set('header2', 42)});
     await headerCaptor.waitUntilEmitCount(1);
@@ -157,7 +157,7 @@ describe('Messaging', () => {
     await MicrofrontendPlatform.startHost([]);
 
     const headerCaptor = new ObserveCaptor(headersExtractFn);
-    await Beans.get(PlatformMessageClient).observe$('some-topic').subscribe(headerCaptor);
+    Beans.get(PlatformMessageClient).observe$('some-topic').subscribe(headerCaptor);
 
     await Beans.get(PlatformMessageClient).publish('some-topic', 'payload');
     await headerCaptor.waitUntilEmitCount(1);
@@ -173,7 +173,7 @@ describe('Messaging', () => {
     });
 
     const replyHeaderCaptor = new ObserveCaptor(headersExtractFn);
-    await Beans.get(PlatformMessageClient).request$('some-topic', undefined, {headers: new Map().set('request-header', 'ping')}).subscribe(replyHeaderCaptor);
+    Beans.get(PlatformMessageClient).request$('some-topic', undefined, {headers: new Map().set('request-header', 'ping')}).subscribe(replyHeaderCaptor);
     await replyHeaderCaptor.waitUntilEmitCount(1);
     await expect(replyHeaderCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('reply-header', 'PING')));
   });
@@ -189,7 +189,7 @@ describe('Messaging', () => {
     });
 
     const replyHeaderCaptor = new ObserveCaptor(headersExtractFn);
-    await Beans.get(IntentClient).request$({type: 'some-capability'}, undefined, {headers: new Map().set('request-header', 'ping')}).subscribe(replyHeaderCaptor);
+    Beans.get(IntentClient).request$({type: 'some-capability'}, undefined, {headers: new Map().set('request-header', 'ping')}).subscribe(replyHeaderCaptor);
     await replyHeaderCaptor.waitUntilEmitCount(1);
     await expect(replyHeaderCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('reply-header', 'PING')));
   });
@@ -226,7 +226,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
     expect(replyCaptor.hasCompleted()).toBeFalse();
     expect(replyCaptor.hasErrored()).toBeFalse();
@@ -241,7 +241,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
     expect(replyCaptor.hasCompleted()).toBeFalse();
     expect(replyCaptor.hasErrored()).toBeFalse();
@@ -258,7 +258,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
     expect(replyCaptor.hasCompleted()).toBeFalse();
     expect(replyCaptor.hasErrored()).toBeFalse();
@@ -273,7 +273,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
     expect(replyCaptor.hasCompleted()).toBeTrue();
     expect(replyCaptor.hasErrored()).toBeFalse();
@@ -290,7 +290,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
     expect(replyCaptor.hasCompleted()).toBeTrue();
     expect(replyCaptor.hasErrored()).toBeFalse();
@@ -305,7 +305,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
+    Beans.get(PlatformMessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
     expect(replyCaptor.getValues()).toEqual([]);
     expect(replyCaptor.hasCompleted()).toBeFalse();
@@ -324,7 +324,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
     expect(replyCaptor.hasCompleted()).toBeFalse();
     expect(replyCaptor.hasErrored()).toBeFalse();
@@ -341,7 +341,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
     expect(replyCaptor.hasCompleted()).toBeFalse();
     expect(replyCaptor.hasErrored()).toBeFalse();
@@ -360,7 +360,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
     expect(replyCaptor.hasCompleted()).toBeFalse();
     expect(replyCaptor.hasErrored()).toBeFalse();
@@ -377,7 +377,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
     expect(replyCaptor.hasCompleted()).toBeTrue();
     expect(replyCaptor.hasErrored()).toBeFalse();
@@ -396,7 +396,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
     expect(replyCaptor.hasCompleted()).toBeTrue();
     expect(replyCaptor.hasErrored()).toBeFalse();
@@ -413,7 +413,7 @@ describe('Messaging', () => {
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
-    await Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
+    Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
     expect(replyCaptor.getValues()).toEqual([]);
     expect(replyCaptor.hasCompleted()).toBeFalse();
@@ -428,7 +428,7 @@ describe('Messaging', () => {
     await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
     const replyCaptor = new ObserveCaptor();
-    await Beans.get(IntentClient).request$({type: 'some-type'}, 'ping').subscribe(replyCaptor);
+    Beans.get(IntentClient).request$({type: 'some-type'}, 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
     expect(replyCaptor.getError()).toEqual('[RequestReplyError] No client is currently running which could answer the intent \'{type=some-type, qualifier=undefined}\'.');
   });
@@ -502,7 +502,7 @@ describe('Messaging', () => {
     await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
 
     const replyCaptor = new ObserveCaptor();
-    await Beans.get(IntentClient).request$({type: 'some-type'}, 'ping').subscribe(replyCaptor);
+    Beans.get(IntentClient).request$({type: 'some-type'}, 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
     expect(replyCaptor.getError()).toEqual('[NullProviderError] No application found to provide a capability of the type \'some-type\' and qualifiers \'{}\'. Maybe, the capability is not public API or the providing application not available.');
   });
