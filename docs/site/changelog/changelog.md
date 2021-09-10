@@ -5,6 +5,15 @@
 
 ## Changelog
 
+# [1.0.0-beta.18](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.17...1.0.0-beta.18) (2021-09-10)
+
+
+### Bug Fixes
+
+* **platform:** allow interceptors to reply to requests if no consumer is running ([f22c947](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/f22c947caa359e8096c988e5d933101078602047))
+
+
+
 # [1.0.0-beta.17](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.16...1.0.0-beta.17) (2021-07-12)
 
 
