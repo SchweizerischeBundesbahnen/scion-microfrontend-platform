@@ -532,7 +532,7 @@ export function filterByTransportAndTopic(transport: MessagingTransport, topic: 
 }
 
 /** @ignore */
-function sendDeliveryStatusSuccess(recipient: {gatewayWindow: Window; origin: string} | Client, destination: {transport: MessagingTransport, topic: string}): void {
+function sendDeliveryStatusSuccess(recipient: {gatewayWindow: Window; origin: string} | Client, destination: {transport: MessagingTransport; topic: string}): void {
   sendTopicMessage<MessageDeliveryStatus>(recipient, destination.transport, {
     topic: destination.topic,
     body: {ok: true},
@@ -541,7 +541,7 @@ function sendDeliveryStatusSuccess(recipient: {gatewayWindow: Window; origin: st
 }
 
 /** @ignore */
-function sendDeliveryStatusError(recipient: {gatewayWindow: Window; origin: string} | Client, destination: {transport: MessagingTransport, topic: string}, error: string): void {
+function sendDeliveryStatusError(recipient: {gatewayWindow: Window; origin: string} | Client, destination: {transport: MessagingTransport; topic: string}, error: string): void {
   sendTopicMessage<MessageDeliveryStatus>(recipient, destination.transport, {
     topic: destination.topic,
     body: {ok: false, details: error},

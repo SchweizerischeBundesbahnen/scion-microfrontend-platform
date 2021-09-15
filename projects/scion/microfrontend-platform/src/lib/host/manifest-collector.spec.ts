@@ -125,7 +125,7 @@ describe('ManifestCollector', () => {
   });
 });
 
-function okAnswer(answer: {body: ApplicationManifest, delay: number}): Promise<Partial<Response>> {
+function okAnswer(answer: {body: ApplicationManifest; delay: number}): Promise<Partial<Response>> {
   const response: Partial<Response> = {
     ok: true,
     json: (): Promise<any> => Promise.resolve(answer.body),
@@ -135,7 +135,7 @@ function okAnswer(answer: {body: ApplicationManifest, delay: number}): Promise<P
   });
 }
 
-function nokAnswer(answer: {status: number, delay: number}): Promise<Partial<Response>> {
+function nokAnswer(answer: {status: number; delay: number}): Promise<Partial<Response>> {
   const response: Partial<Response> = {
     ok: false,
     status: answer.status,

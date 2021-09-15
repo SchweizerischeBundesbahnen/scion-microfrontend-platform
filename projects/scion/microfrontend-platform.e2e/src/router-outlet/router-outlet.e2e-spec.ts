@@ -1135,7 +1135,7 @@ describe('RouterOutlet', () => {
   });
 });
 
-async function getPageUrl(parts: {origin: string, path: string}): Promise<string> {
+async function getPageUrl(parts: {origin: string; path: string}): Promise<string> {
   const origin = new URL(await browser.getCurrentUrl()).origin;
   const url = new URL(`/#/${parts.path}`, origin);
   url.port = new URL(parts.origin).port;

@@ -590,7 +590,7 @@ describe('KeyboardEvent', () => {
  * 3. Registers the passed keystroke for propagation on the outlet
  * 4. Presses passed keys in the embedded microfrontend
  */
-async function setupAndPressKeystroke(instructions: {keystrokeToRegister: string, keysToPress: string[]}): Promise<void> {
+async function setupAndPressKeystroke(instructions: {keystrokeToRegister: string; keysToPress: string[]}): Promise<void> {
   const testingAppPO = new TestingAppPO();
   const pagePOs = await testingAppPO.navigateTo({
     microfrontend: Microfrontend1PagePO,

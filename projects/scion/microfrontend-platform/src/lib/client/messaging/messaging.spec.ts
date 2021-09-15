@@ -1490,7 +1490,7 @@ async function waitUntilSubscriberCount(topic: string, expectedCount: number, op
 /**
  * Waits until a message with the given body is received.
  */
-async function waitUntilMessageReceived(observable$: Observable<TopicMessage | IntentMessage>, waitUntil: {body: any, timeout?: number}): Promise<void> {
+async function waitUntilMessageReceived(observable$: Observable<TopicMessage | IntentMessage>, waitUntil: {body: any; timeout?: number}): Promise<void> {
   const timeout = Defined.orElse(waitUntil.timeout, 250);
   await observable$
     .pipe(

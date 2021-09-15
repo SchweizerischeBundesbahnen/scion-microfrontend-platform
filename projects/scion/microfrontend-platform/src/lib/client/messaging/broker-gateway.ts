@@ -127,7 +127,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
   private _message$: Observable<MessageEnvelope>;
   private _whenGatewayInfo: Promise<GatewayInfo>;
 
-  constructor(private _clientAppName: string, private _config: {discoveryTimeout: number, deliveryTimeout: number}) {
+  constructor(private _clientAppName: string, private _config: {discoveryTimeout: number; deliveryTimeout: number}) {
     // Get the JavaScript to discover the message broker and dispatch messages.
     const gatewayJavaScript = getGatewayJavaScript({clientAppName: this._clientAppName, clientOrigin: window.origin, discoverTimeout: this._config.discoveryTimeout});
 
@@ -359,7 +359,7 @@ export interface GatewayInfo {
 /**
  * Adds headers to the message to identify the sending app.
  */
-function addSenderHeadersToEnvelope(envelope: MessageEnvelope, sender: {clientAppName: string, clientId?: string}): void {
+function addSenderHeadersToEnvelope(envelope: MessageEnvelope, sender: {clientAppName: string; clientId?: string}): void {
   const headers = envelope.message.headers;
 
   headers.set(MessageHeaders.Timestamp, Date.now());

@@ -57,7 +57,7 @@ export function filterByOrigin(origin: string): MonoTypeOperatorFunction<Message
 }
 
 /** @ignore */
-export function filterByHeader<T extends Message>(header: {key: string, value: any}): MonoTypeOperatorFunction<T> {
+export function filterByHeader<T extends Message>(header: {key: string; value: any}): MonoTypeOperatorFunction<T> {
   return filter((message: T): boolean => {
     return message.headers.has(header.key) && message.headers.get(header.key) === header.value;
   });

@@ -426,7 +426,7 @@ function createConfigLoaderBeanDescriptor(config: ApplicationConfig[] | Platform
 }
 
 /** @ignore */
-function provideBrokerGateway(clientAppName: string, config?: {enabled?: boolean, brokerDiscoverTimeout?: number, deliveryTimeout?: number}): BeanInstanceConstructInstructions {
+function provideBrokerGateway(clientAppName: string, config?: {enabled?: boolean; brokerDiscoverTimeout?: number; deliveryTimeout?: number}): BeanInstanceConstructInstructions {
   if (!Defined.orElse(config?.enabled, true)) {
     return {useClass: NullBrokerGateway};
   }

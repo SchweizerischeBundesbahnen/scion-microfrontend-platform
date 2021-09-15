@@ -87,7 +87,7 @@ describe('RetainedMessageStore', () => {
     expect(retainedMessageStore.findMostRecentRetainedMessage(':building/:room/:measurement')).toEqual(message2);
   });
 
-  function newTopicMessage(topic: string, msg: {body?: any, timestamp: number}): TopicMessage {
+  function newTopicMessage(topic: string, msg: {body?: any; timestamp: number}): TopicMessage {
     return {
       topic: topic,
       body: msg.body,
