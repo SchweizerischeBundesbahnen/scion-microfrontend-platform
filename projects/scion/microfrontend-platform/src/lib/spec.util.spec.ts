@@ -129,7 +129,7 @@ export function installLoggerSpies(): void {
   Beans.register(Logger, {useValue: logger});
 }
 
-export function readConsoleLog(severity: 'info' | 'warn' | 'error', options?: {filter?: RegExp, projectFn?: (call: CallInfo<any>) => string}): string[] {
+export function readConsoleLog(severity: 'info' | 'warn' | 'error', options?: {filter?: RegExp; projectFn?: (call: CallInfo<any>) => string}): string[] {
   return getLoggerSpy(severity).calls
     .all()
     .map(call => options?.projectFn ? options.projectFn(call) : call.args[0])

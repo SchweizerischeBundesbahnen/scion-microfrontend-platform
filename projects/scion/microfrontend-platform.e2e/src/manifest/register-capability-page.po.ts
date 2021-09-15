@@ -31,7 +31,7 @@ export class RegisterCapabilityPagePO {
    *
    * Returns a Promise that resolves to the capability ID upon successful registration, or that rejects on registration error.
    */
-  public async registerCapability(capability: {type: string, qualifier?: Qualifier, params?: ParamDefinition[], private: boolean}): Promise<string> {
+  public async registerCapability(capability: {type: string; qualifier?: Qualifier; params?: ParamDefinition[]; private: boolean}): Promise<string> {
     await this._switchToIframeFn();
     await enterText(capability.type, this._registerSectionFinder.$('input.e2e-type'));
     if (capability.qualifier) {

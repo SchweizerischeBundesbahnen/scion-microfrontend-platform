@@ -31,7 +31,7 @@ export class RegisterIntentionPagePO {
    *
    * Returns a Promise that resolves to the intention ID upon successful registration, or that rejects on registration error.
    */
-  public async registerIntention(intention: {type: string, qualifier?: Qualifier}): Promise<string> {
+  public async registerIntention(intention: {type: string; qualifier?: Qualifier}): Promise<string> {
     await this._switchToIframeFn();
 
     await enterText(intention.type, this._registerSectionFinder.$('input.e2e-type'));

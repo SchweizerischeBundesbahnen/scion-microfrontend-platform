@@ -105,7 +105,7 @@ export class TestingAppPO {
     return outletPageObjectMap;
   }
 
-  private async configureTestingApp(outlets: Outlets, options?: {parentOutletPO?: BrowserOutletPO, queryParams?: Map<string, string>}): Promise<OutletPageObjectMap> {
+  private async configureTestingApp(outlets: Outlets, options?: {parentOutletPO?: BrowserOutletPO; queryParams?: Map<string, string>}): Promise<OutletPageObjectMap> {
     const parentOutletPO = options && options.parentOutletPO;
     const queryParams = options && options.queryParams || new Map<string, string>();
 

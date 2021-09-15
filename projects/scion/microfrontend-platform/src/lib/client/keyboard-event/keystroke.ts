@@ -28,7 +28,7 @@ export class Keystroke {
    */
   public flags?: KeystrokeFlags;
 
-  constructor(public readonly eventType: string, key: string, modifiers?: {control?: boolean, shift?: boolean, alt?: boolean, meta?: boolean}, flags?: KeystrokeFlags) {
+  constructor(public readonly eventType: string, key: string, modifiers?: {control?: boolean; shift?: boolean; alt?: boolean; meta?: boolean}, flags?: KeystrokeFlags) {
     const parts = [];
     parts.push(eventType);
     if (modifiers) {

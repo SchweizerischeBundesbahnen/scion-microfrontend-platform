@@ -306,24 +306,24 @@ interface BrokerInfo {
  */
 interface Constants {
   transports: {
-    ClientToBroker: MessagingTransport,
-    ClientToGateway: MessagingTransport,
-    GatewayToClient: MessagingTransport,
-    GatewayToBroker: MessagingTransport,
-    BrokerToGateway: MessagingTransport,
+    ClientToBroker: MessagingTransport;
+    ClientToGateway: MessagingTransport;
+    GatewayToClient: MessagingTransport;
+    GatewayToBroker: MessagingTransport;
+    BrokerToGateway: MessagingTransport;
   };
   channels: {
-    Topic: MessagingChannel,
+    Topic: MessagingChannel;
   };
   topics: {
-    ClientConnect: string,
-    ClientDisconnect: string,
-    RequestGatewayInfo: string,
+    ClientConnect: string;
+    ClientDisconnect: string;
+    RequestGatewayInfo: string;
   };
   headers: {
-    MessageId: string,
-    ReplyTo: string,
-    ClientId: string,
-    AppSymbolicName: string,
+    MessageId: string;
+    ReplyTo: string;
+    ClientId: string;
+    AppSymbolicName: string;
   };
 }

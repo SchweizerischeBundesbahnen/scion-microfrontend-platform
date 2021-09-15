@@ -36,7 +36,7 @@ describe('OutletRouter', () => {
     describe('relative URL (hash-based routing)', () => testSubstitution('/', {expectedBasePath: 'http://localhost:4200/#/', relativeTo: 'http://localhost:4200/#/a/b/c'}));
     describe('relative URL (push-based routing)', () => testSubstitution('/', {expectedBasePath: 'http://localhost:4200/', relativeTo: 'http://localhost:4200/a/b/c'}));
 
-    function testSubstitution(basePath: string, options: {relativeTo?: string, expectedBasePath: string}): void {
+    function testSubstitution(basePath: string, options: {relativeTo?: string; expectedBasePath: string}): void {
       it('should substitute a named path param', async () => {
         const url = navigate(`${basePath}order/:id`, {
           params: new Map().set('id', 123),
