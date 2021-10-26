@@ -213,7 +213,7 @@ We have added two router outlets to the HTML template of the host application fo
   <head>
     <title>Webshop</title>
     <link rel="stylesheet" type="text/css" href="styles.scss">
-    <script defer src="./host-controller.ts"></script>
+    <script type="module" src="./host-controller.ts"></script>
   </head>
   <body>
     <nav>
