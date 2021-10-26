@@ -192,7 +192,7 @@ Let us register an activator:
    <html lang="en">
      <head>
        <title>Shopping Cart Activator</title>
-       <script defer src="./activator.ts"></script>
+       <script type="module" src="./activator.ts"></script>
      </head>
      <body></body>
    </html>
@@ -349,7 +349,7 @@ In this chapter, we have implemented the `shopping cart` micro application. When
   <head>
     <title>Shopping Cart</title>
     <link rel="stylesheet" type="text/css" href="styles.scss">
-    <script defer src="./shopping-cart-controller.ts"></script>
+    <script type="module" src="./shopping-cart-controller.ts"></script>
   </head>
   <body>
     <h1>Shopping Cart</h1>
@@ -401,7 +401,7 @@ new ShoppingCartController().init();
 <html lang="en">
   <head>
     <title>Shopping Cart Activator</title>
-    <script defer src="./activator.ts"></script>
+    <script type="module" src="./activator.ts"></script>
   </head>
   <body></body>
 </html>
