@@ -207,82 +207,191 @@ describe('ManifestRegistry', () => {
       expect(() => Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app')).toThrowError(/IllegalQualifierError/);
     });
 
-    it('should resolve to a capability having an exact qualifier', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-        {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+    describe('implicit intention', () => {
 
-      // Register capability
-      const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1');
+      it('should resolve to own private capability having an exact qualifier', async () => {
+        const registeredApps: ApplicationConfig[] = [
+          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ];
+        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
 
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '999'}}, 'app-1')).toEqual([]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toEqual([]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toEqual([]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toEqual([]);
+        // Register capability
+        const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1');
 
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '999'}}, 'app-1')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toEqual([]);
+
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toEqual([]);
+      });
+
+      it('should resolve to own private capability having an asterisk wildcard (*) in the qualifier', async () => {
+        const registeredApps: ApplicationConfig[] = [
+          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ];
+        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+        // Register capability
+        const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
+
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '999'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toEqual([]);
+
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toEqual([]);
+      });
+
+      it('should resolve to own private capability having an optional wildcard (?) in the qualifier', async () => {
+        const registeredApps: ApplicationConfig[] = [
+          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ];
+        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+        // Register capability
+        const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'app-1');
+
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '999'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toEqual([]);
+
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toEqual([]);
+      });
+
+      it('should not resolve to private capabilities of other applications', async () => {
+        const registeredApps: ApplicationConfig[] = [
+          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ];
+        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+        // Register capabilities of app-1
+        Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id1'}, private: true}, 'app-1');
+        Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id2'}, private: true}, 'app-1');
+        Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id3'}, private: true}, 'app-1');
+
+        // Register capabilities of app-2 (public, private, implicit-private)
+        const capabilityId1 = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id1'}, private: false}, 'app-2');
+        const capabilityId2 = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id2'}, private: true}, 'app-2');
+        const capabilityId3 = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id3'}}, 'app-2');
+
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id1'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId1]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id2'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId2]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id3'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId3]);
+      });
+
+      it('should not resolve to public capabilities of other applications', async () => {
+        const registeredApps: ApplicationConfig[] = [
+          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ];
+        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+        // Register capabilities of app-1
+        Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id1'}, private: false}, 'app-1');
+        Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id2'}, private: false}, 'app-1');
+        Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id3'}, private: false}, 'app-1');
+
+        // Register capabilities of app-2 (public, private, implicit-private)
+        const capabilityId1 = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id1'}, private: false}, 'app-2');
+        const capabilityId2 = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id2'}, private: true}, 'app-2');
+        const capabilityId3 = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id3'}}, 'app-2');
+
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id1'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId1]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id2'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId2]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id3'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId3]);
+      });
     });
 
-    it('should resolve to a capability having an asterisk wildcard (*) in the qualifier', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-        {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+    describe('explicit intention', () => {
 
-      // Register capability
-      const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
+      it('should resolve to public foreign capability having an exact qualifier', async () => {
+        const registeredApps: ApplicationConfig[] = [
+          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ];
+        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
 
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '999'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toEqual([]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toEqual([]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toEqual([]);
+        // Register capability of app-1
+        const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '5'}, private: false}, 'app-1');
 
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toEqual([]);
-    });
+        // Register intention of app-2
+        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2');
 
-    it('should resolve to a capability having an optional wildcard (?) in the qualifier', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-        {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+      });
 
-      // Register capability
-      const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'app-1');
+      it('should resolve to public foreign capability having an asterisk wildcard (*) in the qualifier', async () => {
+        const registeredApps: ApplicationConfig[] = [
+          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ];
+        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
 
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '999'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toEqual([]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toEqual([]);
+        // Register capability of app-1
+        const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
 
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toEqual([]);
-    });
+        // Register intention of app-2
+        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-2');
 
-    it('should resolve to public (and not private) capabilities of other apps', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-        {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+      });
 
-      // Register capability
-      const publicCapabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'public'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'private'}, private: true}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'implicit-private'}}, 'app-1');
+      it('should resolve to public foreign capability having an optional wildcard (?) in the qualifier', async () => {
+        const registeredApps: ApplicationConfig[] = [
+          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ];
+        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
 
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'public'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([publicCapabilityId]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'private'}}, 'app-2')).toEqual([]);
-      expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'implicit-private'}}, 'app-2')).toEqual([]);
+        // Register capability of app-1
+        const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
+
+        // Register intention of app-2
+        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'app-2');
+
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+      });
+
+      it('should resolve to public (but not private) capabilities of other apps', async () => {
+        const registeredApps: ApplicationConfig[] = [
+          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ];
+        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+
+        // Register capabilities of app-1
+        const publicCapabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'public'}, private: false}, 'app-1');
+        Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'private'}, private: true}, 'app-1');
+        Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'implicit-private'}}, 'app-1');
+
+        // Register intentions of app-2
+        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: 'public'}}, 'app-2');
+        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: 'private'}}, 'app-2');
+        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: 'implicit-private'}}, 'app-2');
+
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'public'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([publicCapabilityId]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'private'}}, 'app-2')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'implicit-private'}}, 'app-2')).toEqual([]);
+      });
     });
   });
 

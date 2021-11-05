@@ -69,7 +69,8 @@ export namespace IntendBasedMessagingSpecs {
   }
 
   /**
-   * Tests that an application can issue intents to its private capabilities.
+   * Tests that an application can issue intents to its private capabilities without registering an intention.
+   * However, because not explicitly registered an intention, the intent should not be transported to other applications which provide a matching, public capability.
    */
   export async function dispatchToOwnPrivateCapabilitiesSpec(): Promise<void> {
     const testingAppPO = new TestingAppPO();
@@ -78,21 +79,32 @@ export namespace IntendBasedMessagingSpecs {
       managerOutlet: 'about:blank',
       publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_3},
       receiver_app3: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_3},
+      receiver_app4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
     });
 
     const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // do not register intention, an application can always issue intents to its private capabilities
 
-    // register the capability
+    // register the capability of app-3
     const capabilityManager_app3 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3});
     await capabilityManager_app3.registerCapability({type: 'testing', qualifier: {key: 'value'}, private: true});
 
-    // receive the intent
+    // register the capability of app-4
+    const capabilityManager_app4 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_4});
+    await capabilityManager_app4.registerCapability({type: 'testing', qualifier: {key: 'value'}, private: false});
+
+    // receive the intent in app-3
     const receiverPO_app3 = pagePOs.get<ReceiveMessagePagePO>('receiver_app3');
     await receiverPO_app3.selectFlavor(MessagingFlavor.Intent);
     await receiverPO_app3.enterIntentSelector('testing', {key: 'value'});
     await receiverPO_app3.clickSubscribe();
+
+    // receive the intent in app-4
+    const receiverPO_app4 = pagePOs.get<ReceiveMessagePagePO>('receiver_app4');
+    await receiverPO_app4.selectFlavor(MessagingFlavor.Intent);
+    await receiverPO_app4.enterIntentSelector('testing', {key: 'value'});
+    await receiverPO_app4.clickSubscribe();
 
     // issue the intent
     const publisherPO_app3 = pagePOs.get<PublishMessagePagePO>('publisher_app3');
@@ -103,12 +115,15 @@ export namespace IntendBasedMessagingSpecs {
 
     await expect(publisherPO_app3.getPublishError()).toBeNull();
 
-    // assert intent to be received
+    // assert intent to be received in app-3
     const intent = await receiverPO_app3.getFirstMessageOrElseReject();
     await expect(await intent.getIntentType()).toEqual('testing');
     await expect(await intent.getBody()).toEqual('some payload');
     await expect(await intent.getIntentQualifier()).toEqual({key: 'value'});
     await expect(await intent.getReplyTo()).toBeUndefined();
+
+    // assert intent not to be received in app-4
+    await expect(await receiverPO_app4.getMessages()).toEqual([]);
   }
 
   /**
@@ -154,7 +169,8 @@ export namespace IntendBasedMessagingSpecs {
   }
 
   /**
-   * Tests that an application can issue intents to its public capabilities.
+   * Tests that an application can issue intents to its public capabilities without registering an intention.
+   * However, because not explicitly registered an intention, the intent should not be transported to other applications which provide a matching, public capability.
    */
   export async function dispatchToOwnPublicCapabilitiesSpec(): Promise<void> {
     const testingAppPO = new TestingAppPO();
@@ -163,21 +179,32 @@ export namespace IntendBasedMessagingSpecs {
       managerOutlet: 'about:blank',
       publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_3},
       receiver_app3: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_3},
+      receiver_app4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
     });
 
     const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
 
     // do not register intention, an application can always issue intents to its public capabilities
 
-    // register the capability
+    // register the capability of app-3
     const capabilityManagerPO_app3 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3});
     await capabilityManagerPO_app3.registerCapability({type: 'testing', qualifier: {key: 'value'}, private: false});
 
-    // receive the intent
+    // register the capability of app-4
+    const capabilityManager_app4 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_4});
+    await capabilityManager_app4.registerCapability({type: 'testing', qualifier: {key: 'value'}, private: false});
+
+    // receive the intent in app-3
     const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver_app3');
     await receiverPO.selectFlavor(MessagingFlavor.Intent);
     await receiverPO.enterIntentSelector('testing', {key: 'value'});
     await receiverPO.clickSubscribe();
+
+    // receive the intent in app-4
+    const receiverPO_app4 = pagePOs.get<ReceiveMessagePagePO>('receiver_app4');
+    await receiverPO_app4.selectFlavor(MessagingFlavor.Intent);
+    await receiverPO_app4.enterIntentSelector('testing', {key: 'value'});
+    await receiverPO_app4.clickSubscribe();
 
     // issue the intent
     const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher_app3');
@@ -188,12 +215,15 @@ export namespace IntendBasedMessagingSpecs {
 
     await expect(publisherPO.getPublishError()).toBeNull();
 
-    // assert intent to be received
+    // assert intent to be received in app-3
     const intent = await receiverPO.getFirstMessageOrElseReject();
     await expect(await intent.getIntentType()).toEqual('testing');
     await expect(await intent.getBody()).toEqual('some payload');
     await expect(await intent.getIntentQualifier()).toEqual({key: 'value'});
     await expect(await intent.getReplyTo()).toBeUndefined();
+
+    // assert intent not to be received in app-4
+    await expect(await receiverPO_app4.getMessages()).toEqual([]);
   }
 
   /**
