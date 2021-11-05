@@ -116,11 +116,11 @@ describe('Messaging', () => {
         await IntendBasedMessagingSpecs.intentNotFulfilledSpec();
       });
 
-      it('allows issuing intents to own private capabilities', async () => {
+      it('allows issuing intents to own private capabilities with implicit intention', async () => {
         await IntendBasedMessagingSpecs.dispatchToOwnPrivateCapabilitiesSpec();
       });
 
-      it('allows issuing intents to own public capabilities', async () => {
+      it('allows issuing intents to own public capabilities with implicit intention', async () => {
         await IntendBasedMessagingSpecs.dispatchToOwnPublicCapabilitiesSpec();
       });
 

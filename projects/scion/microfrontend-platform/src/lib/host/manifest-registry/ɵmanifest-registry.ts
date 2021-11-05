@@ -52,7 +52,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     assertExactQualifier(intent.qualifier);
     const filter: ManifestObjectFilter = {type: intent.type, qualifier: intent.qualifier || {}};
     return this._capabilityStore.find(filter, capabilityQualifier => new QualifierMatcher(capabilityQualifier, {evalAsterisk: true, evalOptional: true}).matches(intent.qualifier))
-      .filter(capability => this.isCapabilityVisibleToMicroApplication(capability, appSymbolicName));
+      .filter(capability => this.isApplicationQualifiedForCapability(appSymbolicName, capability));
   }
 
   /**
@@ -69,32 +69,28 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   /**
-   * Tests whether the given app has declared a satisfying intention for the given capability, or whether the app provides the capability itself,
-   * or 'intention check' is disabled for the app.
+   * Tests whether the given micro app is qualified for the given capability. This is true in two cases:
+   *   - The micro app provides the capability itself.
+   *   - The capability has public visibility and the micro app has declared an intention for it.
+   *     If 'scope check' is disabled for the given micro app, it also qualifies for capabilities with private visibility.
+   *     If 'intention check' is disabled for the given micro app, it also qualifies for capabilities for which it has not declared a respective intention.
    */
-  private hasIntentionForCapability(appSymbolicName: string, capability: Capability): boolean {
-    if (Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName)) {
-      return true;
-    }
-
+  private isApplicationQualifiedForCapability(appSymbolicName: string, capability: Capability): boolean {
     if (capability.metadata!.appSymbolicName === appSymbolicName) {
       return true;
     }
-
-    const filter: ManifestObjectFilter = {appSymbolicName, type: capability.type, qualifier: capability.qualifier};
-    return this._intentionStore.find(filter, intentionQualifier => new QualifierMatcher(intentionQualifier, {evalAsterisk: true, evalOptional: true}).matches(capability.qualifier)).length > 0;
+    const isCapabilityPublic = !capability.private;
+    const isScopeCheckDisabled = Beans.get(ApplicationRegistry).isScopeCheckDisabled(appSymbolicName);
+    const isIntentionCheckDisabled = Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName);
+    return (isScopeCheckDisabled || isCapabilityPublic) && (isIntentionCheckDisabled || this.hasIntentionForCapability(appSymbolicName, capability));
   }
 
   /**
-   * Tests whether the given micro app can see the given capability, i.e. the app provides the capability itself, or the capability has public visibility,
-   * or 'scope check' is disabled for the requesting micro app.
+   * Tests whether the given app has declared a satisfying intention for the given capability.
    */
-  private isCapabilityVisibleToMicroApplication(capability: Capability, appSymbolicName: string): boolean {
-    return (
-      Beans.get(ApplicationRegistry).isScopeCheckDisabled(appSymbolicName) ||
-      !capability.private ||
-      capability.metadata!.appSymbolicName === appSymbolicName
-    );
+  private hasIntentionForCapability(appSymbolicName: string, capability: Capability): boolean {
+    const filter: ManifestObjectFilter = {appSymbolicName, type: capability.type, qualifier: capability.qualifier};
+    return this._intentionStore.find(filter, intentionQualifier => new QualifierMatcher(intentionQualifier, {evalAsterisk: true, evalOptional: true}).matches(capability.qualifier)).length > 0;
   }
 
   public registerCapability(capability: Capability, appSymbolicName: string): string {
@@ -242,8 +238,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
         return finder$
           .pipe(
             expand(() => registryChange$.pipe(take(1), mergeMapTo(finder$))),
-            filterArray(capability => this.isCapabilityVisibleToMicroApplication(capability, appSymbolicName)),
-            filterArray(capability => this.hasIntentionForCapability(appSymbolicName, capability)),
+            filterArray(capability => this.isApplicationQualifiedForCapability(appSymbolicName, capability)),
             distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
             takeUntilUnsubscribe(replyTo, PlatformMessageClient),
           )
