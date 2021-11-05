@@ -1,3 +1,12 @@
+# [1.0.0-beta.19](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.18...1.0.0-beta.19) (2021-11-05)
+
+
+### Bug Fixes
+
+* **platform:** do not transport intents to other applications if not declaring a respective intention ([24681e3](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/24681e37dcd06527b241825db413a99ec5a62716))
+
+
+
 # [1.0.0-beta.18](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.17...1.0.0-beta.18) (2021-09-10)
 
 
