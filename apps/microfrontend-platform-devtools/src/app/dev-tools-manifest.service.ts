@@ -103,10 +103,10 @@ export class DevToolsManifestService {
   private findFulfillingIntentions$(capability: Capability): Observable<Intention[]> {
     return this._manifestService.lookupIntentions$({type: capability.type})
       .pipe(
-        filterArray(intention =>
+        filterArray(intention => (
           new QualifierMatcher(intention.qualifier, {evalAsterisk: true, evalOptional: true}).matches(capability.qualifier) ||
-          new QualifierMatcher(capability.qualifier, {evalAsterisk: true, evalOptional: true}).matches(intention.qualifier),
-        ),
+          new QualifierMatcher(capability.qualifier, {evalAsterisk: true, evalOptional: true}).matches(intention.qualifier)
+        )),
         filterArray(intention => isCapabilityVisibleToApplication(capability, intention.metadata.appSymbolicName)),
       );
   }
@@ -114,10 +114,10 @@ export class DevToolsManifestService {
   private findFulfillingCapabilities$(intention: Intention): Observable<Intention[]> {
     return this._manifestService.lookupCapabilities$({type: intention.type})
       .pipe(
-        filterArray(capability =>
+        filterArray(capability => (
           new QualifierMatcher(intention.qualifier, {evalAsterisk: true, evalOptional: true}).matches(capability.qualifier) ||
-          new QualifierMatcher(capability.qualifier, {evalAsterisk: true, evalOptional: true}).matches(intention.qualifier),
-        ),
+          new QualifierMatcher(capability.qualifier, {evalAsterisk: true, evalOptional: true}).matches(intention.qualifier)
+        )),
         filterArray(capability => isCapabilityVisibleToApplication(capability, intention.metadata.appSymbolicName)),
       );
   }

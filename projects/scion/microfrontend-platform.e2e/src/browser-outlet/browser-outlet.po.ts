@@ -116,12 +116,12 @@ export class BrowserOutletPO {
    */
   public async switchToOutletIframe(trace: boolean = true): Promise<void> {
     // Do not wait for Angular as the page must not necessarily be an Angular page, e.g. 'about:blank'.
-    await runOutsideAngularSynchronization(async () => {
+    await runOutsideAngularSynchronization(async (): Promise<void> => {
       // Check if the WebDriver execution context for this document is already active.
       if (this._webdriverExecutionContextId
         && this._webdriverExecutionContextId === await $('body').getAttribute(BrowserOutletPO.ATTR_WEBDRIVER_EXECUTION_CONTEXT_ID)
         && this._url === await getUrlOfCurrentWebDriverExecutionContext()) {
-        return Promise.resolve();
+        return;
       }
 
       // In order to activate this iframe's WebDriver execution context, its parent iframe execution contexts must be activated first,
