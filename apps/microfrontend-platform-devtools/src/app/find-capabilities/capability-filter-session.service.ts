@@ -181,7 +181,7 @@ export class CapabilityFilterSession {
   }
 }
 
-const capabilityComparator = (capability1: Capability, capability2: Capability) => {
+const capabilityComparator = (capability1: Capability, capability2: Capability): number => {
   return capability1.metadata.appSymbolicName.localeCompare(capability2.metadata.appSymbolicName) ||
     capability1.type.localeCompare(capability2.type);
 };

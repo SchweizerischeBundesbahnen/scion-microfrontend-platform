@@ -312,6 +312,7 @@ export class MicrofrontendPlatform {
 
       await Beans.start({eagerBeanConstructRunlevel: Runlevel.One, initializerDefaultRunlevel: Runlevel.Two});
       await MicrofrontendPlatform.enterState(PlatformState.Started);
+      return Promise.resolve();
     }
     catch (error) {
       Beans.destroy();

@@ -568,7 +568,7 @@ export interface OutletContext {
  * @ignore
  */
 function coerceBooleanProperty(value: any): boolean {
-  return value != null && `${value}` !== 'false';
+  return value !== null && value !== undefined && `${value}` !== 'false';
 }
 
 /**

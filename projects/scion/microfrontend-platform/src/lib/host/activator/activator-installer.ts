@@ -106,7 +106,7 @@ export class ActivatorInstaller implements Initializer {
 
     if (!readinessPromises.length) {
       monitor.done();
-      return Promise.resolve();
+      return;
     }
 
     await Promise.all(readinessPromises);
