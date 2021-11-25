@@ -4,15 +4,15 @@
       <li [routerLink]="['/apps']" routerLinkActive="active" (click)="onMenuItemClick()">
         <span class="material-icons">apps</span>
         <section>
-          <header>Micro Applications</header>
-          <span class="description">Shows registered micro applications.</span>
+          <header>Applications</header>
+          <span class="description">Lists registered micro applications.</span>
         </section>
       </li>
       <li [routerLink]="['/find-capabilities', {outlets: {details: ['filter-results']}}]" routerLinkActive="active" (click)="onMenuItemClick()">
         <span class="material-icons">extension</span>
         <section>
-          <header>Capabilities</header>
-          <span class="description">Lists capabilities of registered micro applications.</span>
+          <header>Capability Browser</header>
+          <span class="description">Allows browsing the catalog of capabilities.</span>
         </section>
       </li>
     </ul>

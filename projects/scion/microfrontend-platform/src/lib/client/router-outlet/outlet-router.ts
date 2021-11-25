@@ -64,12 +64,14 @@ import {Beans} from '@scion/toolkit/bean-manager';
  * thus, they can be captured and persisted. When starting the application, you can then replay persisted navigations using the router.
  *
  * #### Named URL Parameters
- * The URL passing to the router can contain named parameters which the router replaces with values of the provided params object. Parameter substitution
- * is useful if reading the URL from a capability to display a microfrontend. You can then pass the qualifier of the intent as the params object to
- * replace named path segments with values of the intent qualifier.
+ * The URL being passed to the router can contain named parameters which the router replaces with values of the provided params object.
+ * A named parameter begins with a colon (`:`) and is allowed in path segments, query parameters, matrix parameters and the fragment part,
+ * e.g., `product/:id` or `product;id=:id` or `products?id=:id`.
  *
- * A named parameter begins with a colon (`:`) and is allowed in path segments, query parameters, matrix parameters and the fragment part, e.g., `product/:id`
- * or `product;id=:id` or `products?id=:id`.
+ * Parameter substitution is useful if reading the URL from a capability to display a microfrontend. You can then pass the params of the intent as the params
+ * object to replace named path segments with actual values from the intent params.
+ *
+ * See chapter https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:activator:routing-in-the-activator for an example.
  *
  * #### Unloading Outlet Content
  * To unload an outlet’s content, use null as the URL when routing, as follows:

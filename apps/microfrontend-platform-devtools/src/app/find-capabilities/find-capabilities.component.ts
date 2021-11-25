@@ -30,7 +30,7 @@ export class FindCapabilitiesComponent {
   public qualifierValues$: Observable<string[]>;
 
   constructor(shellService: ShellService, public capabilityFilterSession: CapabilityFilterSession, manifestService: DevToolsManifestService) {
-    shellService.primaryTitle = 'Filter';
+    shellService.primaryTitle = 'Capability Browser';
     this.capabilityTypes$ = manifestService.capabilityTypes$();
     this.appSymbolicNames = manifestService.applications.map(app => app.symbolicName).sort();
     this.qualifierKeys$ = manifestService.capabilities$()

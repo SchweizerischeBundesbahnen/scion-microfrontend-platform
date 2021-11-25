@@ -82,29 +82,20 @@ include::routing.snippets.ts[tags=persistent-navigation:replay]
 [[chapter:outlet-router:named-url-parameters]]
 [discrete]
 === Named URL Parameters
-The URL passing to the router can contain named parameters which the router replaces with values of the provided params object. Parameter substitution is useful if reading the URL from a capability to display a microfrontend. You can then pass the qualifier of the intent as the params object to replace named path segments with values of the intent qualifier.
+The URL being passed to the router can contain named parameters which the router replaces with values of the passed params object. A named parameter begins with a colon (`:`) and is allowed in path segments, query parameters, matrix parameters and the fragment part, e.g., `product/:id` or `product;id=:id` or `products?id=:id`.
 
-A named parameter begins with a colon (`:`) and is allowed in path segments, query parameters, matrix parameters and the fragment part, e.g., `product/:id` or `product;id=:id` or `products?id=:id`.
-
-For illustrative purposes, the code snippet below declares a _microfrontend_ capability to display a microfrontend. The path to the microfrontend contains the named path segment `:id`.
-
-[source,json]
-----
-include::routing.snippets.ts[tags=named-url-parameter:capability]
-----
-<1> Requires the caller to provide the product id (`id`) in the qualifier.
-<2> Requires the caller to provide the readonly flag (`readonly`) in the params.
-<3> Uses the product id (`:id`) and the readonly flag (`:readonly`) as named path segments.
-
-When receiving an intent for the capability, you can pass the qualifier of the intent as params object to the router.
+The following example illustrates how to pass params to the router to substitute named path segments.
 
 [source,typescript]
 ----
-include::routing.snippets.ts[tags=named-url-parameter:handle-intent]
+include::routing.snippets.ts[tags=named-url-parameter]
 ----
-<1> Reads the path to the microfrontend from the capability.
-<2> Passes the path to the router. The path contains the product id (`:id`) as named path segment.
-<3> Passes the qualifier and params of the intent as params object to the router for replacing named URL segments.
+<1> Instructs the outlet router to load the page '/products/:id'. If not specifying an absolute URL, the path is relative to the base URL of the micro application as specified in the manifest.
+<2> Specifies in which router outlet to display the page.
+<3> Passes params for the router to substitute named path segments in the URL. In this example, the URL contains the named path segment `:id`, which the router replaces with `500f3dba-a638-4d1c-a73c-d9c1b6a8f812`.
+
+Parameter substitution is useful if reading the URL from a capability to display a microfrontend. You can then pass the params of the intent as the params object to replace named path segments with actual values from the intent params. See chapter <<chapter:activator:routing-in-the-activator>> for an example.
+
 
 [[chapter:outlet-router:unloading-outlet-content]]
 [discrete]

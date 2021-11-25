@@ -11,7 +11,7 @@ You can continue using the frameworks you love since the platform integrates mic
 
 The platform adds a pub/sub layer on top of the native `postMessage` mechanism to allow microfrontends to communicate with each other easily across origins. Communication comes in two flavors: topic-based and intent-based. Both models feature the request-response message exchange pattern, let you include message headers, and support message interception to implement cross-cutting messaging concerns.
 
-Topic-based messaging enables you to publish messages to multiple subscribers via a common topic. Publishers can mark any message they send as 'to be retained', helping new subscribers get the last message published on a topic. Inspired by the Android platform, intent-based communication focuses on controlled collaboration between applications, meaning that applications can provide functionality which other apps can look up or invoke. For applications to interact with each other, the platform requires them to declare an intention in their application manifest, which, as a nice side effect, allows the analysis of dependencies between applications.
+Topic-based messaging enables you to publish messages to multiple subscribers via a common topic. Intent-based communication focuses on controlled collaboration between applications. To collaborate, an application must express an intention. Manifesting intentions allows us to see dependencies between applications down to the functional level.
 
 #### Microfrontend Integration and Routing
 

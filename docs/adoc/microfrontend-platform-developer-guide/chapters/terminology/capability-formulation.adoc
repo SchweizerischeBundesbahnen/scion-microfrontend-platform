@@ -1,3 +1,0 @@
---
-A capability is formulated in an abstract way, having assigned a _type_, and optionally a <<terminology:qualifier,qualifier>>. This information is required for interacting with the capability, i.e., for formulating the <<terminology:intent,intent>>. Think of it as a form of capability addressing. The _type_ categorizes a capability in terms of its functional semantics (e.g., `microfrontend` if providing a <<terminology:microfrontend,microfrontend>>). It can be an arbitrary `string` literal and has no meaning to the platform. Multiple capabilities can be of the same _type_; thus, a capability may also define a <<terminology:qualifier,qualifier>> to differentiate the different capabilities. A qualifier is a dictionary of arbitrary key-value pairs.
---

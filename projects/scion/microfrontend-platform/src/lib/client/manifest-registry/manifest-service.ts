@@ -20,16 +20,17 @@ import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {BrokerGateway, NullBrokerGateway} from '../messaging/broker-gateway';
 
 /**
- * Allows looking up capabilities available to the current app and managing the capabilities it provides.
+ * Allows browsing the catalog of capabilities and managing the capabilities of the application.
  *
- * The app can query all capabilities which are visible to it, i.e., for which the app has declared an intention
- * and which are also publicly available. Capabilities that the app provides itself are always visible to the app.
+ * The app can browse only capabilities which are visible to it, i.e., for which the app has declared an intention and
+ * which are also publicly available. Capabilities that the app provides itself are always visible to the app.
  *
- * The app can also provide new capabilities to the platform or remove self-provided ones. If the *Intention Registration API*
- * is enabled for the app, the app can also manage its intentions, which, however, is strongly discouraged. Instead, apps should
+ * The app can also provide new capabilities or remove existing ones. If the *Intention Registration API* is enabled
+ * for the app, the app can also manage its intentions, which, however, is strongly discouraged. Instead, apps should
  * declare the required functionality in their manifests using wildcard intentions.
  *
  * @category Manifest
+ * @category Intention API
  */
 export class ManifestService implements PreDestroy {
 
@@ -71,14 +72,14 @@ export class ManifestService implements PreDestroy {
   }
 
   /**
-   * Allows to lookup capabilities that match the given filter.
+   * Allows browsing the catalog of capabilities that match the given filter.
    *
    * <strong>
-   * The app can query all capabilities which are visible to it, i.e., for which the app has declared an intention and which are also
-   * publicly available. Capabilities that the app provides itself are always visible to the app.
+   * You can only browse capabilities that are visible to your application, that is, capabilities that you provide yourself or that are
+   * publicly available and for which you have declared an intention in your manifest.
    * </strong>
    *
-   * @param  filter - Control which capabilities to return. If no or an empty filter is given, all capabilities visible to the requesting
+   * @param  filter - Control which capabilities to browse. If no or an empty filter is given, all capabilities visible to the requesting
    *         app are returned. Specified filter criteria are "AND"ed together.\
    *         <p>
    *         If specifying a qualifier filter, the capabilities must match that filter exactly. The filter supports the asterisk wildcard
@@ -93,7 +94,7 @@ export class ManifestService implements PreDestroy {
   }
 
   /**
-   * Allows to lookup any intentions that match the given filter.
+   * Allows browsing the catalog of intentions that match the given filter.
    *
    * @param  filter - Control which intentions to return. If no or an empty filter is given, no filtering takes place. Specified filter
    *         criteria are "AND"ed together.\
@@ -110,7 +111,7 @@ export class ManifestService implements PreDestroy {
   }
 
   /**
-   * Registers the current app as provider for the given capability.
+   * Registers given capability. If the capability has public visiblity, other applications can browse the capability and interact with it.
    *
    * @return A Promise that resolves to the identity of the registered capability,
    *         or that rejects if the registration failed.
@@ -122,9 +123,9 @@ export class ManifestService implements PreDestroy {
   }
 
   /**
-   * Unregisters the current app as provider for capabilities matching the given filter.
+   * Unregisters capabilities matching the given filter.
    *
-   * <strong>The app can only unregister capabilities it provides itself.</strong>
+   * <strong>You can only unregister capabilities of your application.</strong>
    *
    * @param  filter - Control which capabilities to unregister by specifying filter criteria which are "AND"ed together. If not passing a filter,
    *         all capabilities of the requesting app are unregistered.\
@@ -144,9 +145,11 @@ export class ManifestService implements PreDestroy {
   }
 
   /**
-   * Registers the given intention for the requesting application.
+   * Registers the given intention, allowing the application to interact with public capabilities matching the intention.
    *
-   * <strong>This operation requires that the 'Intention Registration API' is enabled for the requesting application.</strong>
+   * The intention can match multiple capabilities by using wildcards (such as `*` or `?`) in the qualifier.
+   *
+   * <strong>This operation requires that the 'Intention Registration API' is enabled for your application.</strong>
    *
    * @return A Promise that resolves to the identity of the registered intention,
    *         or that rejects if the registration failed.
@@ -158,9 +161,10 @@ export class ManifestService implements PreDestroy {
   }
 
   /**
-   * Unregisters intentions of the requesting application which match the given filter.
+   * Unregisters intentions matching the given filter.
    *
-   * <strong>This operation requires that the 'Intention Registration API' is enabled for the requesting application.</strong>
+   * <strong>You can only unregister intentions of your application.</strong>
+   * <strong>This operation requires that the 'Intention Registration API' is enabled for your application.</strong>
    *
    * @param  filter - Control which intentions to unregister by specifying filter criteria which are "AND"ed together. If not passing a filter,
    *         all intentions of the requesting app are unregistered.\

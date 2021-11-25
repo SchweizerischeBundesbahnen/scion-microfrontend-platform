@@ -1,7 +1,7 @@
-import { Intent, IntentClient, IntentMessage, IntentSelector, MessageClient, MessageHeaders, OutletRouter, PRIMARY_OUTLET, ResponseStatusCodes, takeUntilUnsubscribe, TopicMessage } from '@scion/microfrontend-platform';
-import { Subject } from 'rxjs';
-import { Beans } from '@scion/toolkit/bean-manager';
-import { map, take } from 'rxjs/operators';
+import {Intent, IntentClient, IntentMessage, IntentSelector, MessageClient, MessageHeaders, OutletRouter, PRIMARY_OUTLET, ResponseStatusCodes, takeUntilUnsubscribe, TopicMessage} from '@scion/microfrontend-platform';
+import {Subject} from 'rxjs';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {map, take} from 'rxjs/operators';
 
 `
 // tag::intention-declaration[]
@@ -10,8 +10,7 @@ import { map, take } from 'rxjs/operators';
     {
       "type": "microfrontend", // <2>
       "qualifier": {
-        "entity": "product",
-        "id": "*"
+        "entity": "product"
       }
     }
   ]
@@ -24,15 +23,18 @@ import { map, take } from 'rxjs/operators';
 {
   "capabilities": [ // <1>
     {
-      "description": "Shows a product.", // <2>
+      "description": "Opens the product microfrontend.", // <2>
       "type": "microfrontend", // <3>
       "qualifier": { // <4>
-        "entity": "product",
-        "id": "*",
+        "entity": "product"
       },
-      "private": false, // <5>
+      "params": [ // <5>
+        {"name": "productId", "required": true, "description": "Identifies the product to display."},
+        {"name": "outlet", "required": false, "description": "Controls in which router outlet to display the microfrontend."},
+      ],
+      "private": false, // <6>
       "properties": {
-        "path": "/products/:id", // <6>
+        "path": "/products/:productId", // <7>
       }
     }
   ]
@@ -44,7 +46,7 @@ import { map, take } from 'rxjs/operators';
 // tag::handle-intent[]
   const selector: IntentSelector = { // <1>
     type: 'microfrontend',
-    qualifier: {entity: 'product', id: '*'},
+    qualifier: {entity: 'product'},
   };
 
   Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => { // <2>
@@ -52,8 +54,8 @@ import { map, take } from 'rxjs/operators';
 
     // Instruct the router to display the microfrontend in an outlet.
     Beans.get(OutletRouter).navigate(microfrontendPath, { // <4>
-      outlet: message.body, // <5>
-      params: message.intent.qualifier, // <6>
+      outlet: message.intent.params.get('outlet'), // <5>
+      params: message.intent.params, // <6>
     });
   });
 // end::handle-intent[]
@@ -63,47 +65,14 @@ import { map, take } from 'rxjs/operators';
 // tag::issue-intent[]
   const intent: Intent = { // <1>
     type: 'microfrontend',
-    qualifier: {
-      entity: 'product',
-      id: '3bca695e-411f-4e0e-908d-9568f1c61556',
-    },
+    qualifier: {entity: 'product'},
+    params: new Map()
+      .set('productId', '500f3dba-a638-4d1c-a73c-d9c1b6a8f812') // <2>
+      .set('outlet', 'primary'), // <3>
   };
-  const transferData = PRIMARY_OUTLET; // <2>
 
-  Beans.get(IntentClient).publish(intent, transferData); // <3>
+  Beans.get(IntentClient).publish(intent); // <4>
 // end::issue-intent[]
-}
-
-{
-  // tag::issue-intent-with-headers[]
-  const headers = new Map().set('outlet', PRIMARY_OUTLET); // <1>
-  const intent: Intent = {
-    type: 'microfrontend',
-    qualifier: {entity: 'product', id: '3bca695e-411f-4e0e-908d-9568f1c61556'},
-  };
-
-  Beans.get(IntentClient).publish(intent, null, {headers: headers});
-  // end::issue-intent-with-headers[]
-}
-
-{
-  // tag::handle-intent-with-headers[]
-  const selector: IntentSelector = {
-    type: 'microfrontend',
-    qualifier: {entity: 'product', id: '*'},
-  };
-
-  Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => {
-    const outlet = message.headers.get('outlet');  // <1>
-    const microfrontendPath = message.capability.properties.path;
-
-    // Instruct the router to display the microfrontend in an outlet.
-    Beans.get(OutletRouter).navigate(microfrontendPath, {
-      outlet: outlet, // <2>
-      params: message.intent.qualifier,
-    });
-  });
-  // end::handle-intent-with-headers[]
 }
 
 {
