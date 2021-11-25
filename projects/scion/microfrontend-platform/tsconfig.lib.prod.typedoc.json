@@ -32,6 +32,7 @@
     ],
     "categoryOrder": [
       "Platform",
+      "Intention API",
       "Messaging",
       "Routing"
     ],

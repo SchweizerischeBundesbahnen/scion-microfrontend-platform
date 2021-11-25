@@ -26,16 +26,18 @@ In this Chapter
 [[chapter:intention-api:concepts-and-usage]]
 [discrete]
 === Concepts and Usage
-The Intention API enables controlled collaboration between micro applications. It is inspired by the Android platform where an application can start an _Activity_ via an _Intent_ (such as sending an email).
+The Intention API enables controlled collaboration between micro applications. It is inspired by the Android platform where an application can start an activity via an _Intent_ (such as sending an email).
+
+To collaborate, an application must express an <<terminology:intention,intention>>. An intention refers to one or more <<terminology:capability,capabilities>>, or activity, in the Android platform. Capabilities can be browsed similar to a catalog and invoked by issuing an <<terminology:intent,intent>>. Manifesting intentions allows us to see dependencies between applications down to the functional level.
 
 ====
-A micro application can make functionality available to micro applications in the form of capabilities. For a micro application to look up or invoke a capability, the micro application must declare an intention in its manifest. To invoke a capability, a micro application issues an intent.
+A micro application can make functionality available to micro applications in the form of capabilities. For a micro application to browse or invoke a capability, the micro application must declare an intention in its manifest. To invoke a capability, a micro application issues an intent.
 
 [.text-center]
 image::intention-api.svg[]
 ====
 
-Both capabilities and intentions need to be declared in the manifest. The enforced declaration allows analyzing which micro applications depend on each other and to see, which capability is used by which micro application. Declared capabilities can be looked up in the manifest registry to create dynamic page content, such as a toolbar, menu or portal, with items and tiles contributed via capabilities. When the user clicks an item or tile, the integrating application can issue an intent, which the platform transports to the application providing the capability.
+Both capabilities and intentions need to be declared in the manifest. For example, capabilities can be browsed to create dynamic page content, such as a toolbar with items contributed via capabilities. When the user clicks an item of the toolbar, the application can issue an intent, which the platform transports to the application providing the capability.
 
 [[chapter:intention-api:manifest]]
 [discrete]
@@ -80,17 +82,19 @@ a| `<<objects::intention,Intention>>[]`
 [[chapter:intention-api:capability]]
 [discrete]
 === What is a Capability?
-A micro application can provide functionality to micro applications by declaring a capability in its manifest. Micro applications can then look up the capability, or invoke it via intent. When a micro application invokes the capability, the platform transports the intent to the providing micro application.
+A capability can be thought of as an API that an application provides that can be invoked via intent, browsed via the DevTools or programmatically via the Intention API. Capabilities must be registered in the manifest.
 
-A capability is formulated in an abstract way, having assigned a _type_, and optionally a qualifier. This information is required for interacting with the capability, i.e., for formulating the intent. Think of it as a form of capability addressing. The _type_ categorizes a capability in terms of its functional semantics (e.g., `microfrontend` if providing a microfrontend). It can be an arbitrary `string` literal and has no meaning to the platform. Multiple capabilities can be of the same _type_; thus, a capability may also define a qualifier to differentiate the different capabilities. A qualifier is a dictionary of arbitrary key-value pairs.
+A capability is formulated in an abstract way consisting of a _type_ and optionally a qualifier. The _type_ categorizes a capability in terms of its functional semantics (e.g., `microfrontend` if providing a microfrontend). It can be an arbitrary `string` literal and has no meaning to the platform. Multiple capabilities can be of the same _type_; thus, a capability may also define a qualifier to differentiate the different capabilities. A qualifier is a dictionary of arbitrary key-value pairs.
 
 TIP: Data ownership is an important rule to follow when implementing a microservices/microfrontend architecture. Therefore, adding the domain entity name to the qualifier is an easy way to uniquely address capabilities.
 
 TIP: To have consistency among the qualifiers in the entire <<terminology:application,application>>, we recommend defining guidelines how to name qualifier entries.
 
-Metadata can be associated with a capability in its `properties` section. For example, if providing a microfrontend, the URL to the microfrontend can be added as property, or if the capability contributes an item to a menu, its label to be displayed.
+A capability can have _private_ or _public_ visibility. If _private_, which is by default, the capability is not visible to other micro applications; thus, it can only be invoked or browsed by the providing micro application.
 
-A capability can have _private_ or _public_ visibility. If _private_, which is by default, the capability is not visible to other micro applications; thus, it can only be invoked or looked up by the providing micro application.
+A capability can specify parameters which the intent issuer can/must pass along with the intent. Parameters are part of the contract between the intent publisher and the capability provider. They do not affect the intent routing, unlike the qualifier.
+
+Metadata can be associated with a capability in its `properties` section. For example, if providing a microfrontend, the URL to the microfrontend can be added as property, or if the capability contributes an item to a menu, its label to be displayed. Properties are not evaluated by the platform.
 
 The following code snippet shows an example of how to declare a capability in the manifest of an application.
 
@@ -130,12 +134,12 @@ a|
 Specifies parameters which the intent issuer can/must pass along with the intent.
 
 Parameters are part of the contract between the intent publisher and the capability provider. They do not affect the intent routing, unlike the qualifier.
-A parameter needs to declare its name and whether it is required or optional, as follows: `"{"name":"param","required":true}"`. Optionally, a description and deprecation notes can be specified, or additional metadata to be interpreted in an interceptor.
+A parameter needs to declare its name and whether it is required or optional, as follows: `{"name":"param","required": true}`. Optionally, a description and deprecation notes can be specified, or additional metadata to be interpreted in an interceptor.
 
 | private
 a| `boolean`
 | no
-| Controls if this capability is visible to other micro applications. If _private_, which is by default, the capability is not visible to other micro applications; thus, it can only be invoked or looked up by the providing micro application.
+| Controls if this capability is visible to other micro applications. If _private_, which is by default, the capability is not visible to other micro applications; thus, it can only be invoked or browsed by the providing micro application.
 
 | description
 a| `string`
@@ -164,9 +168,7 @@ For more information about handling an intent, see the chapter <<chapter:intent-
 [[chapter:intention-api:intention]]
 [discrete]
 === What is an Intention?
-A micro application must declare an intention in its manifest when using functionality provided via a capability. The enforced declaration allows analyzing which micro applications depend on each other and to see, which capability is used by which micro application.
-
-An intention is formulated in an abstract way, having assigned a _type_, and optionally a qualifier. The qualifier of an intention allows using wildcards (such as `{asterisk}` or `?`) to match multiple capabilities simultaneously.
+An intention refers to one or more capabilities that an application wants to interact with. Intentions are declared in the application's manifest and are formulated in an abstract way, consisting of a _type_ and optionally a qualifier. The qualifier is used to differentiate capabilities of the same type.
 
 NOTE: If providing a capability, the providing application is implicitly qualified to interact with its capability, thus needs not to declare an intention.
 
@@ -210,13 +212,11 @@ Matches capabilities even if having additional properties. Use it like this: `{'
 [[chapter:intention-api:intent]]
 [discrete]
 === What is an Intent?
-The intent is the message that a micro application passes to interact with functionality that is available in the form of a capability.
+The intent is the message that a micro application sends to interact with functionality that is available in the form of a capability.
 
-The platform transports the intent to the micro applications that provide the requested capability. A micro application can issue an intent only if having declared an intention in its manifest. Otherwise, the platform rejects the intent.
+An intent consists of a type and optionally a qualifier, which are used by the platform to identify the capability(s) to which to transport the intent. A micro application can issue an intent only if having declared a respective intention in its manifest. Along with the intent, you can pass transfer data, either as payload, message headers or parameters. Passed data must be serializable with the Structured Clone Algorithm.
 
-An intent is formulated in an abstract way, having assigned a _type_, and optionally a qualifier. This information is used for resolving the capability; thus, it can be thought of as a form of capability addressing.
-
-The following code snippet shows an example of how to issue an intent.
+The following code snippet illustrates of how to issue an intent.
 
 [source,typescript]
 ----
@@ -227,13 +227,13 @@ For more information about issuing an intent, see the chapter <<chapter:intent-b
 
 [[chapter:intention-api:capability-lookup]]
 [discrete]
-=== Looking up Capabilities
-A micro application can look up and observe capabilities using the `ManifestService`.
+=== Browsing Capabilities
+A micro application can browse and observe capabilities using the `ManifestService`.
 
 [.text-center]
 image::lookup-capabilities.svg[]
 
-Looking up capabilities allows the flexible composition of web content, such as populating a toolbar with items provided in the form of capabilities. A micro application can look up its own capabilities and public capabilities for which it has declared an intention.
+Browsing the catalog of capabilities allows the flexible composition of web content, such as populating a toolbar with items provided in the form of capabilities. A micro application can look up its own capabilities and public capabilities for which it has declared an intention.
 
 In below example, a toolbar is composed of toolbar items contributed by micro applications in the form of capabilities. When the user clicks a toolbar item, the integrating app issues an intent, which the platform then transports to the providing micro application.
 
@@ -287,10 +287,10 @@ a| `string`
 
 [[chapter:intention-api:intention-lookup]]
 [discrete]
-=== Looking up Intentions
-The platform allows you to look up and observe intentions. Unlike when <<chapter:intention-api:capability-lookup,looking up capabilities>>, an application can look up the intentions of all micro applications. The use case for looking up intentions is somewhat technical, e.g., used by the _DevTools_ to list intentions declared by micro applications.
+=== Browsing Intentions
+The platform allows you to browse and observe intentions. Unlike <<chapter:intention-api:capability-lookup,browsing capabilities>>, an application can browse the intentions of all micro applications. The use case for browsing intentions is somewhat technical, e.g., used by the _DevTools_ to list intentions declared by micro applications.
 
-You can look up intentions using the `ManifestService.lookupIntentions$` method. By passing a `ManifestObjectFilter` to the `lookupIntentions$` method, you can control which intentions to observe. Specified filter criteria are "AND"ed together. If not passing a filter, all intentions are observed. When subscribing to the Observable, it emits the requested intentions. The Observable never completes and emits continuously when satisfying intentions are registered or unregistered.
+You can browse intentions using the `ManifestService.lookupIntentions$` method. By passing a `ManifestObjectFilter` to the `lookupIntentions$` method, you can control which intentions to observe. Specified filter criteria are "AND"ed together. If not passing a filter, all intentions are observed. When subscribing to the Observable, it emits the requested intentions. The Observable never completes and emits continuously when satisfying intentions are registered or unregistered.
 
 .Properties of `ManifestObjectFilter` to filter intentions
 [cols="1,2,1,8"]

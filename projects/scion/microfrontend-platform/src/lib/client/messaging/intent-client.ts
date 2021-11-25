@@ -13,13 +13,14 @@ import {Intent, IntentMessage, TopicMessage} from '../../messaging.model';
 import {Qualifier} from '../../platform.model';
 
 /**
- * Intent client for sending and receiving intents between microfrontends across origins.
+ * Allows sending and receiving intents between microfrontends across origins.
+ * This client is part of the Intention API of the SCION Microfrontend Platform.
  *
  * Intent-based messaging enables controlled collaboration between micro applications, a mechanism known from Android development
  * where an application can start an activity via an intent (such as sending an email).
  *
  * Like topic-based communication, intent-based communication implements the pub/sub (publish/subscribe) messaging pattern, but is,
- * in contrast, stricter when sending messages. Sending messages is also referred to as issuing intents. It requires the sending
+ * in contrast, more restrictive when sending messages. Sending messages is also referred to as issuing intents. It requires the sending
  * application to declare an intention in its manifest. Intents can only be issued if there is at least one fulfilling capability
  * present in the platform to handle the intent. The platform transports intents exclusively to micro applications that provide a
  * fulfilling capability via their manifest.
@@ -40,15 +41,17 @@ import {Qualifier} from '../../platform.model';
  * @see {@link MessageHeaders}
  *
  * @category Messaging
+ * @category Intention API
  */
 export abstract class IntentClient {
 
   /**
-   * Issues an intent. The platform transports the intent to micro applications that provide a fulfilling capability that is visible
-   * to the sending micro application. The intent must be exact, thus not contain wildcards. Optionally, you can pass transfer data
-   * along with the intent, or set message headers. Transfer data and headers must be serializable with the Structured Clone Algorithm.
+   * Issues an intent.
    *
-   * To publish the intent, this micro application must declare an intention in its manifest; otherwise, the intent is rejected.
+   * A micro application can issue intents for intentions declared in its manifest. The platform transports the intent to micro applications
+   * that provide a fulfilling capability. Along with the intent, you can pass transfer data, either as payload, message headers or parameters.
+   * Passed data must be serializable with the Structured Clone Algorithm.
+   *
    * A micro application is implicitly qualified to interact with capabilities that it provides; thus, it must not declare an intention.
    *
    * @param  intent - Describes the intent. The qualifier, if any, must be exact, thus not contain wildcards.
@@ -61,12 +64,12 @@ export abstract class IntentClient {
   public abstract publish<T = any>(intent: Intent, body?: T, options?: IntentOptions): Promise<void>;
 
   /**
-   * Issues an intent and receives one or more replies. The platform transports the intent to micro applications that provide a
-   * fulfilling capability that is visible to the sending micro application. The intent must be exact, thus not contain wildcards.
-   * Optionally, you can pass transfer data along with the intent, or set message headers. Transfer data and headers must be serializable
-   * with the Structured Clone Algorithm.
+   * Issues an intent and receives one or more replies.
    *
-   * To publish the intent, this micro application must declare an intention in its manifest; otherwise, the intent is rejected.
+   * A micro application can issue intents for intentions declared in its manifest. The platform transports the intent to micro applications
+   * that provide a fulfilling capability. Along with the intent, you can pass transfer data, either as payload, message headers or parameters.
+   * Passed data must be serializable with the Structured Clone Algorithm.
+   *
    * A micro application is implicitly qualified to interact with capabilities that it provides; thus, it must not declare an intention.
    *
    * @param  intent - Describes the intent. The qualifier, if any, must be exact, thus not contain wildcards.
@@ -81,29 +84,12 @@ export abstract class IntentClient {
   public abstract request$<T>(intent: Intent, body?: any, options?: IntentOptions): Observable<TopicMessage<T>>;
 
   /**
-   * Receives an intent when some micro application wants to use functionality of this micro application.
+   * Receives an intent when some micro application wants to collaborate with this micro application.
    *
    * Intents are typically handled in an activator. Refer to {@link Activator} for more information.
    *
    * The micro application receives only intents for which it provides a fulfilling capability through its manifest.
-   * You can filter received intents by passing a selector. As with declaring capabilities, the selector supports the use
-   * of wildcards.
-   *
-   * ```typescript
-   * const selector: IntentSelector = {
-   *   type: 'microfrontend',
-   *   qualifier: {entity: 'product', id: '*'},
-   * };
-   *
-   * Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => {
-   *   const microfrontendPath = message.capability.properties.path;
-   *   // Instruct the router to display the microfrontend in an outlet.
-   *   Beans.get(OutletRouter).navigate(microfrontendPath, {
-   *     outlet: message.body,
-   *     params: message.intent.qualifier,
-   *   });
-   * });
-   * ```
+   * You can filter received intents by passing a selector. The selector supports the use of wildcards.
    *
    * If the received intent has the {@link MessageHeaders.ReplyTo} header field set, the publisher expects the receiver to send one or more
    * replies to that {@link MessageHeaders.ReplyTo ReplyTo} topic. If streaming responses, you can use the {@link takeUntilUnsubscribe}

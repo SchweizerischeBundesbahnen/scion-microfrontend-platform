@@ -1,3 +1,0 @@
---
-The host application, sometimes also called the container application, provides the top-level integration container for <<terminology:microfrontend,microfrontends>>. Typically, it is the web app which the user loads into his browser that provides the main application shell, defining areas to embed <<terminology:microfrontend,microfrontends>>.
---

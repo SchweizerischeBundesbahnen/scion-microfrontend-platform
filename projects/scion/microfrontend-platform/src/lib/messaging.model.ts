@@ -48,15 +48,18 @@ export interface IntentMessage<BODY = any> extends Message {
 }
 
 /**
- * The intent is the message that a micro application passes to interact with functionality that is available in the form of a capability.
+ * The term intention refers to the Intention API of the SCION Microfrontend Platform.
+ *
+ * The intent is the message that a micro application sends to interact with functionality that is available in the form of a capability.
  *
  * The platform transports the intent to the micro applications that provide the requested capability. A micro application can issue an
  * intent only if having declared an intention in its manifest. Otherwise, the platform rejects the intent.
  *
  * An intent is formulated in an abstract way, having assigned a type, and optionally a qualifier. This information is used for resolving
- * the capability; thus, it can be thought of as a form of capability addressing.
+ * the capability; thus, it can be thought of as a form of capability addressing. See the definition of a capability for more information.
  *
  * @category Messaging
+ * @category Intention API
  */
 export interface Intent {
   /**

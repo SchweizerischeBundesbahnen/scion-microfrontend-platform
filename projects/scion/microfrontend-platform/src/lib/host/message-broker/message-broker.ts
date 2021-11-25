@@ -336,7 +336,7 @@ export class MessageBroker implements PreDestroy {
         // If the params of the intent do not match the params of every fulfilling capability, send an error.
         for (const capability of capabilities) {
           // Test params passed with the intent.
-          const paramMatchResult = new ParamMatcher(capability.params! as ParamDefinition[]).match(intentMessage.intent.params);
+          const paramMatchResult = new ParamMatcher(capability.params!).match(intentMessage.intent.params);
           if (!paramMatchResult.matches) {
             const intentStringified = JSON.stringify(intentMessage.intent, (key, value) => (key === 'params') ? undefined : value);
             const error = `[ParamMismatchError] Params of the intent do not match expected params of the resolved capability. Ensure to pass required params and not to include additional params. [intent=${intentStringified}, missingParams=[${paramMatchResult.missingParams.map(param => param.name)}], unexpectedParams=[${paramMatchResult.unexpectedParams}]].`;

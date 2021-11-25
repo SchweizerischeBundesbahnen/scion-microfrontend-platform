@@ -58,7 +58,7 @@ The following figure shows a microfrontend that embeds another microfrontend.
 [.text-center]
 image::nested-router-outlets.svg[]
 
-TIP: If using the <<chapter:intention-api, Intention API>>, you do not need to know the URL of the microfrontend you want to embed. Simply issue an intent for showing the microfrontend, pass the outlet name along with the intent, and let the microfrontend to embed itself. See chapter <<chapter:intent-based-messaging:issuing-an-intent>> for an example.
+TIP: If using the <<chapter:intention-api, Intention API>>, you do not need to know the URL of the microfrontend you want to embed. Simply issue an intent for showing the microfrontend, pass the outlet name along with the intent, and let the microfrontend embed itself. See chapter <<chapter:intent-based-messaging:issuing-an-intent>> for an example.
 
 [[chapter:router-outlet:outlet-size]]
 [discrete]

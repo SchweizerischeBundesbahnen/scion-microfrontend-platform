@@ -37,7 +37,7 @@ As with micro applications, you can provide a manifest for the host, allowing th
 ----
 include::starting-the-platform.snippets.ts[tags=startHost2]
 ----
-<1> Specifies the host manifest. Alternatively, you can pass an URL to the manifest for loading it over the network.
+<1> Specifies the host manifest. Alternatively, you can pass a URL to the manifest for loading it over the network.
 <2> Lists the micro applications able to connect to the platform to interact with other micro applications.
 
 When starting the platform, it loads the manifests of registered micro applications and installs activator microfrontends, if any. The method for starting the platform host returns a `Promise` that resolves once platform startup completed. You should wait for the Promise to resolve before interacting with the platform.
@@ -46,7 +46,7 @@ When starting the platform, it loads the manifests of registered micro applicati
 [discrete]
 === Connecting to the Platform from a Micro Application
 
-A micro application connects to the platform host by invoking the method `MicrofrontendPlatform.connectToHost` and passing its identity as argument. The host does check whether the connecting micro application is qualified to connect, i.e., is registered in the host application under that origin; otherwise, the host will reject the connection attempt.
+A micro application connects to the platform host by invoking the method `MicrofrontendPlatform.connectToHost` and passing its identity as argument. The host checks whether the connecting micro application is qualified to connect, i.e., is registered in the host application under that origin; otherwise, the host will reject the connection attempt.
 
 The following code snippet illustrates how to connect to the platform in a micro application.
 
@@ -155,7 +155,7 @@ a| `boolean`
 a| `false`
 | Controls whether the host can interact with private capabilities of other micro applications.
 
-By default, scope check is enabled. Disabling scope check is discouraged.
+By default, scope check is enabled. Disabling scope check is strongly discouraged.
 
 | intentionCheckDisabled
 a| `boolean`
@@ -176,7 +176,7 @@ By default, this API is disabled. Enabling this API is strongly discouraged.
 | messageDeliveryTimeout
 a| `number`
 | no
-a| `10s`
+a| `10'000ms`
 | Maximum time (in milliseconds) that the platform waits to receive dispatch confirmation for messages sent by the host until rejecting the publishing Promise.
 
 |===
@@ -233,7 +233,7 @@ a| `boolean`
 a| `false`
 | Controls whether this micro application can interact with private capabilities of other micro applications.
 
-By default, scope check is enabled. Disabling scope check is discouraged.
+By default, scope check is enabled. Disabling scope check is strongly discouraged.
 
 | intentionCheckDisabled
 a| `boolean`

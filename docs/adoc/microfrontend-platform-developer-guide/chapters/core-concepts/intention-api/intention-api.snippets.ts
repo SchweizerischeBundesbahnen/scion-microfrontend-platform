@@ -1,5 +1,5 @@
-import { IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatform } from '@scion/microfrontend-platform';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatform} from '@scion/microfrontend-platform';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 `
 // tag::manifest[]
@@ -18,14 +18,16 @@ import { Beans } from '@scion/toolkit/bean-manager';
       }
     },
     {
-      "description": "Shows the product detail microfrontend.",
+      "description": "Opens the product microfrontend.",
       "type": "microfrontend",
       "qualifier": {
-        "entity": "product",
-        "id": "*",
+        "entity": "product"
       }
+      "params": [
+        {"name":"productId", "required": true},
+      ],
       "properties": {
-        "path": "/products/:id",
+        "path": "/products/:productId",
       }
     }
   ],
@@ -33,8 +35,7 @@ import { Beans } from '@scion/toolkit/bean-manager';
     {
       "type": "microfrontend",
       "qualifier": {
-        "entity": "customer-review",
-        "productId": "*"
+        "entity": "customer-review"
       }
     }
   ]
@@ -48,11 +49,13 @@ import { Beans } from '@scion/toolkit/bean-manager';
   "description": "Shows the product microfrontend.",
   "type": "microfrontend",
   "qualifier": {
-    "entity": "product",
-    "id": "*",
+    "entity": "product"
   },
+  "params": [
+    {"name":"productId", "required": true},
+  ],
   "properties": {
-    "path": "/products/:id",
+    "path": "/products/:productId",
   }
 }
 // end::capability-declaration[]
@@ -63,8 +66,7 @@ import { Beans } from '@scion/toolkit/bean-manager';
 {
   "type": "microfrontend",
   "qualifier": {
-    "entity": "product",
-    "id": "*"
+    "entity": "product"
   }
 }
 // end::intention-declaration[]
@@ -74,7 +76,7 @@ import { Beans } from '@scion/toolkit/bean-manager';
 // tag::intent-handling[]
   const selector: IntentSelector = {
     type: 'microfrontend',
-    qualifier: {entity: 'product', id: '*'},
+    qualifier: {entity: 'product'},
   };
 
   Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => {
@@ -87,10 +89,8 @@ import { Beans } from '@scion/toolkit/bean-manager';
 // tag::issue-intent[]
   Beans.get(IntentClient).publish({
     type: 'microfrontend',
-    qualifier: {
-      entity: 'product',
-      productId: '500f3dba-a638-4d1c-a73c-d9c1b6a8f812',
-    },
+    qualifier: {entity: 'product'},
+    params: new Map().set('productId', '500f3dba-a638-4d1c-a73c-d9c1b6a8f812'),
   });
 // end::issue-intent[]
 }

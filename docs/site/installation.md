@@ -83,7 +83,7 @@ This short manual helps to install the SCION Microfrontend Platform and describe
      }
      ```
 
-     A micro application connects to the platform host by invoking the method `MicrofrontendPlatform.connectToHost` and passing its identity as argument. The host does check whether the connecting micro application is qualified to connect, i.e., is registered in the host application under that origin; otherwise, the host will reject the connection attempt.
+     A micro application connects to the platform host by invoking the method `MicrofrontendPlatform.connectToHost` and passing its identity as argument. The host checks whether the connecting micro application is qualified to connect, i.e., is registered in the host application under that origin; otherwise, the host will reject the connection attempt.
 
      ```ts
      await MicrofrontendPlatform.connectToHost('products-app');

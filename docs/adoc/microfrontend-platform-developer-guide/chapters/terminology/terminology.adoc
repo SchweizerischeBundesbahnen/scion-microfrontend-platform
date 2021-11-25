@@ -12,19 +12,23 @@ In the broadest sense, an activator is a kind of <<terminology:microfrontend,mic
 
 [#terminology:application]
 Application::
-This term is used throughout this guide to refer to the entire application as presented to the user, also implying <<terminology:microfrontend,microfrontends>> provided by <<terminology:micro-application,micro applications>>.
+This term is used throughout this guide to refer to the entire application as presented to the user.
 
 [#terminology:bean-manager]
 Bean Manager::
-The bean manager is the central point to obtain bean instances.
+The bean manager is the central point to get references to platform services, such as the `MessageClient`, `IntentClient` or `OutletRouter`. The bean manager is provided by `@scion/toolkit` NPM package.
 
 [#terminology:capability]
 Capability::
-A <<terminology:micro-application,micro application>> can provide functionality to micro applications by declaring a capability in its <<terminology:manifest,manifest>>. Micro applications can then look up the capability, or invoke it via <<terminology:intent,intent>>. When a micro application invokes the capability, the platform transports the intent to the providing micro application.
+The term `capability` refers to the <<terminology:intention-api,Intention API>> of the SCION Microfrontend Platform.
 +
-include::capability-formulation.adoc[]
+A capability represents some functionality of a <<terminology:micro-application,micro application>> that is available to qualified micro applications through the <<terminology:intention-api,Intention API>>. A micro application declares its capabilities in its <<terminology:manifest,manifest>>. Qualified micro applications can then browse the capabilities, or interact with provided capabilities via <<terminology:intent,intent>>.
 +
-Arbitrary metadata can be associated with a capability. A capability can have _private_ or _public_ visibility. If _private_, the capability is not visible to other <<terminology:micro-application,micro applications>>.
+A capability is formulated in an abstract way consisting of a _type_ and optionally a _qualifier_. The _type_ categorizes a capability in terms of its functional semantics. A capability may also define a _qualifier_ to differentiate different capabilities of the same _type_.
++
+A capability can have private or public visibility. If private, the capability is not visible to other micro applications.
++
+A capability can specify parameters which the intent issuer can/must pass along with the intent. Parameters are part of the contract between the intent publisher and the capability provider. They do not affect the intent routing, unlike the qualifier.
 
 [#terminology:cross-origin-messaging]
 Cross-Origin Messaging::
@@ -33,13 +37,15 @@ Cross-origin messaging means the communication between web content loaded from d
 [#terminology:host-app]
 Host Application::
 +
-include::host-application.adoc[]
+The host application, sometimes also called the container application, provides the top-level integration container for <<terminology:microfrontend,microfrontends>>. Typically, it is the web app which the user loads into his browser that provides the main application shell, defining areas to embed <<terminology:microfrontend,microfrontends>>.
 +
-The host app starts the <<terminology:platform,platform>> host and registers <<terminology:micro-application,micro applications>>. As with micro applications, the host can provide a manifest to contribute behavior.
+The host app starts the <<terminology:platform,platform>> host and registers <<terminology:micro-application,micro applications>>. As with micro applications, the host can provide a manifest to interact with other micro applications and contribute behavior in the form of <<terminology:capability,capabilities>>.
 
 [#terminology:intent]
 Intent::
-The intent is the message that a <<terminology:micro-application,micro application>> passes to interact with functionality that is available in the form of a <<terminology:capability,capability>>.
+The term `intent` refers to the <<terminology:intention-api,Intention API>> of the SCION Microfrontend Platform.
++
+The intent is the message that a <<terminology:micro-application,micro application>> sends to interact with functionality that is available in the form of a <<terminology:capability,capability>>.
 +
 The platform transports the intent to the <<terminology:micro-application,micro applications>> that provide the requested <<terminology:capability,capability>>. A micro application can issue an intent only if having declared an <<terminology:intention,intention>> in its <<terminology:manifest,manifest>>. Otherwise, the platform rejects the intent.
 +
@@ -47,18 +53,17 @@ An intent is formulated in an abstract way, having assigned a _type_, and option
 
 [#terminology:intention]
 Intention::
-A <<terminology:micro-application,micro application>> must declare an intention in its <<terminology:manifest,manifest>> when using functionality provided via a <<terminology:capability,capability>>.
+The term `intention` refers to the <<terminology:intention-api,Intention API>> of the SCION Microfrontend Platform.
 +
-include::intention-declaration.adoc[]
+An intention refers to one or more <<terminology:capability,capabilities>> that a <<terminology:micro-application,micro application>> wants to interact with.
 +
-An intention is formulated in an abstract way, having assigned a _type_, and optionally a <<terminology:qualifier,qualifier>>.
-The qualifier of an <<terminology:intention,intention>> allows using wildcards (such as `{asterisk}` or `?`) to match multiple <<terminology:capability,capabilities>> simultaneously. See the definition of a <<terminology:qualifier,qualifier>> for more information.
+Intentions are declared in the application's <<terminology:manifest,manifest>> and are formulated in an abstract way, consisting of a _type_ and optionally a qualifier. The qualifier is used to differentiate capabilities of the same type.
 
 [#terminology:intention-api]
 Intention API::
-The Intention API allows controlled collaboration between <<terminology:micro-application,micro applications>>. It is inspired by the Android platform where an application can start an _Activity_ via an _Intent_ (such as sending an email).
+The Intention API enables controlled collaboration between <<terminology:micro-application,micro applications>>. It is inspired by the Android platform where an application can start an activity via an _Intent_ (such as sending an email).
 +
-A <<terminology:micro-application,micro application>> can make functionality available to micro applications in the form of <<terminology:capability,capabilities>>. For a micro application to read or invoke a capability, the micro application must declare an <<terminology:intention,intention>> in its <<terminology:manifest,manifest>>. To invoke a capability, a micro application issues an <<terminology:intent,intent>>.
+To collaborate, an application must express an <<terminology:intention,intention>>. An intention refers to one or more <<terminology:capability,capabilities>>, or activity, in the Android platform. Capabilities can be browsed similar to a catalog and invoked by issuing an <<terminology:intent,intent>>. Manifesting intentions allows us to see dependencies between applications down to the functional level.
 
 [#terminology:manifest]
 Manifest::

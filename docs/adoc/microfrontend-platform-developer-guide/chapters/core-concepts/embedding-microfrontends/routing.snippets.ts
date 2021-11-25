@@ -1,5 +1,5 @@
-import { IntentClient, IntentMessage, IntentSelector, MessageClient, OutletRouter, PRIMARY_OUTLET } from '@scion/microfrontend-platform';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {IntentClient, IntentMessage, IntentSelector, MessageClient, OutletRouter, PRIMARY_OUTLET} from '@scion/microfrontend-platform';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 {
   `
@@ -57,42 +57,13 @@ import { Beans } from '@scion/toolkit/bean-manager';
   }
 }
 
-`
-// tag::named-url-parameter:capability[]
 {
-  "description": "Shows the product microfrontend.",
-  "type": "microfrontend",
-  "qualifier": {
-    "entity": "product",
-    "id": "*", // <1>
-  },
-  "params": [
-    {"name":"readonly", "required":true}, // <2>
-  ],
-  "properties": {
-    "path": "/products/:id?readonly=:readonly", // <3>
-  }
-}
-// end::named-url-parameter:capability[]
-`;
-
-{
-// tag::named-url-parameter:handle-intent[]
-  const selector: IntentSelector = {
-    type: 'microfrontend',
-    qualifier: {entity: 'product', id: '*'},
-  };
-
-  Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => {
-    const microfrontendPath = message.capability.properties.path; // <1>
-
-    // Instruct the router to display the microfrontend in an outlet.
-    Beans.get(OutletRouter).navigate(microfrontendPath, { // <2>
-      outlet: PRIMARY_OUTLET,
-      params: new Map([...Object.entries(message.intent.qualifier), ...message.intent.params]), // <3>
-    });
+// tag::named-url-parameter[]
+  Beans.get(OutletRouter).navigate('/products/:id', { // <1>
+    outlet: 'aside', // <2>
+    params: new Map().set('id', '500f3dba-a638-4d1c-a73c-d9c1b6a8f812'), // <3>
   });
-// end::named-url-parameter:handle-intent[]
+// end::named-url-parameter[]
 }
 
 {

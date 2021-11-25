@@ -106,15 +106,18 @@ import { Beans } from '@scion/toolkit/bean-manager';
 // tag::microfrontend-capability[]
   "capabilities": [
     {
-      "description": "Shows the product microfrontend.",
+      "description": "Opens the product microfrontend.",
       "type": "microfrontend", // <1>
-      "qualifier": {
-        "entity": "product",
-        "id": "*" // <2>
+      "qualifier": { // <2>
+        "entity": "product"
       },
-      "private": false, // <3>
+      "params": [ // <3>
+        {"name": "productId", "required": true, "description": "Identifies the product to display."},
+        {"name": "outlet", "required": false, "description": "Controls in which router outlet to display the microfrontend."},
+      ],      
+      "private": false, // <4>
       "properties": {
-        "path": "/products/:id" // <4>
+        "path": "/products/:productId" // <5>
       }
     }
   ]
@@ -123,19 +126,18 @@ import { Beans } from '@scion/toolkit/bean-manager';
 
 {
   // tag::microfrontend-routing[]
-  const selector: IntentSelector = {
+  const selector: IntentSelector = { // <1>
     type: 'microfrontend',
-    qualifier: {entity: 'product', id: '*'},
+    qualifier: {entity: 'product'},
   };
 
   Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => {
-    const outlet = message.headers.get('outlet');  // <1>
     const microfrontendPath = message.capability.properties.path; // <2>
 
-    // Instruct the target outlet to display the microfrontend.
-    Beans.get(OutletRouter).navigate(microfrontendPath, {
-      outlet: outlet, // <3>
-      params: message.intent.qualifier, // <4>
+    // Instruct the router to display the microfrontend in an outlet.
+    Beans.get(OutletRouter).navigate(microfrontendPath, { // <3>
+      outlet: message.intent.params.get('outlet'), // <4>
+      params: message.intent.params, // <5>
     });
   });
   // end::microfrontend-routing[]
@@ -145,10 +147,12 @@ import { Beans } from '@scion/toolkit/bean-manager';
   // tag::issue-microfrontend-intent[]
   const intent: Intent = { // <1>
     type: 'microfrontend',
-    qualifier: {entity: 'product', id: '123'},
+    qualifier: {entity: 'product'},
+    params: new Map()
+      .set('productId', '500f3dba-a638-4d1c-a73c-d9c1b6a8f812') // <2>
+      .set('outlet', 'aside'), // <3>
   };
-  const headers = new Map().set('outlet', 'aside'); // <2>
 
-  Beans.get(IntentClient).publish(intent, null, {headers}); // <3>
+  Beans.get(IntentClient).publish(intent); // <4>
   // end::issue-microfrontend-intent[]
 }

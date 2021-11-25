@@ -106,23 +106,31 @@ export interface Application {
 }
 
 /**
- * A micro application can provide functionality to micro applications by declaring a capability in its manifest.
+ * The term capability refers to the Intention API of the SCION Microfrontend Platform.
  *
- * Micro applications can then look up the capability, or invoke it via intent. When a micro application invokes the capability, the platform transports the
- * intent to the providing micro application. A capability is formulated in an abstract way, having assigned a type, and optionally a qualifier. This information
- * is required for interacting with the capability, i.e., for formulating the intent. Think of it as a form of capability addressing. The type categorizes a
- * capability in terms of its functional semantics (e.g., microfrontend if providing a microfrontend). It can be an arbitrary `string` literal and has no meaning
- * to the platform. Multiple capabilities can be of the same type; thus, a capability may also define a qualifier to differentiate the different capabilities.
- * A qualifier is a dictionary of arbitrary key-value pairs.
+ * A capability represents some functionality of a micro application that is available to qualified micro applications through the Intention API.
+ * A micro application declares its capabilities in its manifest. Qualified micro applications can then browse the capabilities, or interact with
+ * provided capabilities via intent.
  *
- * Arbitrary metadata can be associated with a capability. A capability can have private or public visibility. If private, the capability is not visible to other
- * micro applications.
+ * A capability is formulated in an abstract way consisting of a type and optionally a qualifier. The type categorizes a capability in terms of its
+ * functional semantics. A capability may also define a qualifier to differentiate different capabilities of the same type.
+ *
+ * A capability can have private or public visibility. If private, which is by default, the capability is not visible to other micro
+ * applications; thus, it can only be invoked or browsed by the providing micro application itself.
+ *
+ * A capability can specify parameters which the intent issuer can/must pass along with the intent. Parameters are part of the contract between
+ * the intent publisher and the capability provider. They do not affect the intent routing, unlike the qualifier.
+ *
+ * Metadata can be associated with a capability in its properties section. For example, if providing a microfrontend, the URL to the
+ * microfrontend can be added as property, or if the capability contributes an item to a menu, its label to be displayed.
  *
  * @category Platform
+ * @category Intention API
  */
 export interface Capability {
   /**
    * Categorizes the capability in terms of its functional semantics (e.g., `microfrontend` if providing a microfrontend).
+   * It can be an arbitrary `string` literal and has no meaning to the platform.
    */
   type: string;
   /**
@@ -193,15 +201,15 @@ export interface Capability {
 }
 
 /**
- * A micro application must declare an intention in its manifest when using functionality provided via a capability.
+ * The term intention refers to the Intention API of the SCION Microfrontend Platform.
  *
- * Interacting with a capability requires the declaration of an intention in the manifest of the micro application. The enforced declaration
- * allows analyzing which micro applications depend on each other and to see, which capability is used by which micro application.
+ * An intention refers to one or more capabilities that a micro application wants to interact with.
  *
- * An intention is formulated in an abstract way, having assigned a type, and optionally a qualifier. The qualifier of an intention allows using
- * wildcards (such as * or ?) to match multiple capabilities simultaneously.
+ * Intentions are declared in the application’s manifest and are formulated in an abstract way, consisting of a type
+ * and optionally a qualifier. The qualifier is used to differentiate capabilities of the same type.
  *
  * @category Platform
+ * @category Intention API
  */
 export interface Intention {
   /**

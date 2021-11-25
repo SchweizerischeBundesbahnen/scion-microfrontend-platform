@@ -16,9 +16,9 @@ The platform enables you to successfully implement a framework-agnostic microfro
 #### Cross-microfrontend communication
 The platform adds a pub/sub layer on top of the native `postMessage` mechanism to allow microfrontends to communicate with each other easily across origins. Communication comes in two flavors: topic-based and intent-based. Both models feature the request-response message exchange pattern, let you include message headers, and support message interception to implement cross-cutting messaging concerns.
 
-Topic-based messaging enables you to publish messages to multiple subscribers via a common topic. Publishers can mark any message they send as 'to be retained', helping new subscribers get the last message published on a topic. Inspired by the Android platform, intent-based communication focuses on controlled collaboration between applications, meaning that applications can provide functionality which other apps can look up or invoke. For applications to interact with each other, the platform requires them to declare an intention in their application manifest, which, as a nice side effect, allows the analysis of dependencies between applications.
+Topic-based messaging enables you to publish messages to multiple subscribers via a common topic. Intent-based communication focuses on controlled collaboration between applications. To collaborate, an application must express an intention. Manifesting intentions allows us to see dependencies between applications down to the functional level.
 
-For more information, see chapter [Cross Application Communication][link-developer-guide#cross-application-communication] in the SCION Microfrontend Platform Developer Guide.
+For more information, see chapters [Cross Application Communication][link-developer-guide#cross-application-communication] and [Intention API][link-developer-guide#intention-api] in the SCION Microfrontend Platform Developer Guide.
 
 #### Microfrontend Integration and Routing
 The platform makes it easy to integrate microfrontends through its router-outlet. The router-outlet is a web component that wraps an iframe. It solves many of the cumbersome quirks of iframes and helps to overcome iframe restrictions. For example, it can adapt its size to the preferred size of embedded content, supports keyboard event propagation, or allows you to pass contextual data to embedded content. Using the router, you control which web content to display in an outlet. Multiple outlets can display different content, determined by different outlet names, all at the same time. Routing works across application boundaries and enables features such as persistent navigation.
@@ -36,4 +36,5 @@ A microfrontend architecture can be achieved in many different ways, each with i
 [menu-sponsoring]: /docs/site/sponsoring.md
 
 [link-developer-guide#cross-application-communication]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:cross-application-communication
+[link-developer-guide#intention-api]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:intention-api
 [link-developer-guide#embedding-microfrontends]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:embedding-microfrontends

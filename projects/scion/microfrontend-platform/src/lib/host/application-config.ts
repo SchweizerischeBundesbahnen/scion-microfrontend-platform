@@ -34,7 +34,7 @@ export interface ApplicationConfig {
   /**
    * Controls whether this micro application can interact with private capabilities of other micro applications.
    *
-   * By default, scope check is enabled. Disabling scope check is discouraged.
+   * By default, scope check is enabled. Disabling scope check is strongly discouraged.
    */
   scopeCheckDisabled?: boolean;
   /**

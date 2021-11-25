@@ -113,18 +113,19 @@ For more information about how to register capabilities, refer to chapter <<chap
 === Routing in the Activator
 Using the router, you can control which microfrontend to display in a router outlet. Routing, however, requires knowing the microfrontend URL, which leads to a tight coupling between the micro applications. Instead, consider moving routing to the providing micro application, keeping the microfrontend URL an implementation detail of the micro application that provides the microfrontend.
 
-The idea is as follows: Micro applications provide microfrontends as microfrontend capabilities and listen for microfrontend intents in their activator, initiating routing when receiving a microfrontend intent. The URL of the microfrontend can be added to the properties of the microfrontend capability. Micro applications can then issue a microfrontend intent to display the microfrontend, passing the target outlet as message header along with the intent.
+The idea is as follows: Micro applications provide microfrontends as microfrontend capabilities and listen for microfrontend intents in their activator, initiating routing when receiving a microfrontend intent. The URL of the microfrontend can be added to the properties of the microfrontend capability. Qualified micro applications can then issue a microfrontend intent to display the microfrontend, passing the target outlet as intent parameter along with the intent.
 
-A microfrontend capability is declared as following:
+A microfrontend capability can be declared as following:
 
 [source,json]
 ----
 include::activator.snippets.ts[tags=microfrontend-capability]
 ----
-<1> Uses the name `microfrontend` as the capability type. Note that it can be any name, not necessarily `microfrontend`.
-<2> Requires the caller to provide the product id (`id`) in the qualifier.
-<3> Allows other micro applications to open the microfrontend.
-<4> Path to the microfrontend. The path contains a wildcard segment for the product id (`:id`).
+<1> Classifies the capability as a `microfrontend`. Note that it can be any name, not necessarily `microfrontend`.
+<2> Qualifies the capability as there are almost certainly multiple `microfrontend` capabilities.
+<3> Requires the intent issuer to pass the `productId` as parameter, used to identify the product which to display. Optionally, the intent issuer can also pass the name of the router outlet in which to display the microfrontend.
+<4> Makes this a public capability, allowing other micro applications to invoke it.
+<5> Specifies the path to the microfrontend as property. Note the usage of the named parameter `:productId` in the URL. When handling respective intents, that named parameter is replaced with the actual product id as passed with intent parameters.
 
 In the activator, the micro application installs an intent listener to handle microfrontend intents. Note that a micro application receives only microfrontend intents for which it declared a capability in its manifest.
 
@@ -132,10 +133,11 @@ In the activator, the micro application installs an intent listener to handle mi
 ----
 include::activator.snippets.ts[tags=microfrontend-routing]
 ----
-<1> Reads the target outlet from the message headers.
-<2> Reads the path to the microfrontend from the capability properties.
-<3> Sets the routing target.
-<4> Lets the router substitute named path segments with values from the qualifier.
+<1> Defines the selector to filter `product` microfrontend intents.
+<2> Reads the microfrontend URL from the properties of the resolved capability. In this example, the configured path is as follows: `/products/:productId`.
+<3> Instructs the outlet router to show the given microfrontend.
+<4> Specifies in which router outlet to display the microfrontend. In this example, the outlet name is transported along with the intent as optional parameter.
+<5> Lets the router substitute named URL path segments with values from the params passed along with the intent. In this example, the microfrontend URL contains the named path segment `:productId`, which the router replaces with the product id from the intent's params.
 
 Finally, micro applications can display the microfrontend in a router outlet as following.
 
@@ -144,9 +146,9 @@ Finally, micro applications can display the microfrontend in a router outlet as 
 include::activator.snippets.ts[tags=issue-microfrontend-intent]
 ----
 <1> Constructs the intent to show the product microfrontend.
-<2> Specifies in which outlet to display the microfrontend.
-<3> Issues the microfrontend intent.
+<2> Passes the id of the product which to display as an intent parameter.
+<3> Specifies in which router outlet the microfrontend should be displayed, again as an intent parameter.
+<4> Issues the intent via `IntentClient` obtained from the bean manager.
 
-NOTE: Issuing an intent requires the intending micro application to declare an intention in its manifest. The enforced declaration of intentions allows to identify which micro application depends on which other micro application.
-
+NOTE: Issuing an intent requires the application to express an intention in its manifest. Manifesting intentions allows us to see dependencies between applications down to the functional level.
 
