@@ -5,7 +5,7 @@
 
 ## [SCION Microfrontend Platform][menu-home] > [Getting Started][menu-getting-started] > Host Application
 
-The host application provides the top-level integration container for microfrontends. It is the web app which the user loads into his browser and provides the main application shell, defining areas to embed microfrontends.
+The host application provides the top-level integration container for microfrontends. It is the web app which the user loads into his browser that provides the main application shell, defining areas to embed microfrontends.
 
 ***
 - **Project directory:**\
@@ -44,32 +44,27 @@ Follow the following instructions to get the host application running.
    <summary><strong>Registration of the micro applications</strong></summary>
    <br>
 
-In this section, we will register the `host`, `products`, `shopping cart` and `devtools` as micro applications and start the platform host. Registered micro applications can interact with the platform and other micro applications.
+In this section, we will register the `products`, `shopping cart` and `devtools` web applications as micro applications and start the platform host. Registered micro applications can interact with the platform and other micro applications.
 
 1. Open the TypeScript file `host-controller.ts`.
-1. Configure the micro applications by adding the following content before the constructor:
-   ```ts
-   import { ApplicationConfig } from '@scion/microfrontend-platform';
-
-   private platformConfig: ApplicationConfig[] = [
-     {symbolicName: 'host-app', manifestUrl: '/manifest.json'},
-     {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
-     {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
-     {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
-   ];
-   ```
-   For each micro application, we provide an application config with the application's symbolic name and the URL to its manifest. Symbolic names must be unique and are used by the micro applications to connect to the platform host. The manifest is a JSON file that contains information about a micro application.
-1. Next, start the platform and register the micro applications by adding the following content to the `init` method, as follows:
+2. Start the platform and register the micro applications by adding the following content to the `init` method:
    ```ts
         import { MicrofrontendPlatform } from '@scion/microfrontend-platform';   
    
         public async init(): Promise<void> {
-   [+]    await MicrofrontendPlatform.startHost(this.platformConfig, {symbolicName: 'host-app'});
-        }   
+   [+]    await MicrofrontendPlatform.startHost({
+   [+]      applications: [
+   [+]        {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
+   [+]        {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
+   [+]        {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
+   [+]      ],
+   [+]    });
+        }
    ```
+
    > Lines to be added are preceded by the [+] mark.
-   
-   The second argument is the symbolic name of the micro application starting the platform host. It is optional. If specified, we can interact with the platform and other micro applications, e.g., publish messages or navigate in router outlets.
+
+   As the argument to `MicrofrontendPlatform.startHost` we pass the configuration of the platform, which contains at minimum the web applications to register as micro applications. Registered micro applications can connect to the platform and interact with each other. Each application, we assign a unique symbolic name and specify its manifest. The symbolic name is used by the micro application to connect to the platform. The manifest is a special file that contains information about the micro application, such as capabilities that the application provides or intentions that the application has.
 </details>
 
 <details>
@@ -98,12 +93,18 @@ In this section, we will embed the `products`, `shopping cart` and `devtools` mi
 1. Now, we want to route the primary router outlet to display the `products` microfrontend, as follows:
 
    ```ts
-        import { OutletRouter } from '@scion/microfrontend-platform';   
+        import { MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';   
         import { Beans } from '@scion/toolkit/bean-manager';
    
         public async init(): Promise<void> {
           // Start the platform
-          await MicrofrontendPlatform.startHost(this.platformConfig, {symbolicName: 'host-app'});
+          await MicrofrontendPlatform.startHost({
+            applications: [
+              {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
+              {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
+              {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
+            ],
+          });
  
    [+]    // Display the `products` microfrontend in the primary router outlet
    [+]    Beans.get(OutletRouter).navigate('http://localhost:4201/products.html');
@@ -116,7 +117,8 @@ In this section, we will embed the `products`, `shopping cart` and `devtools` mi
 
    In the constructor, add a click listener to the shopping cart button and invoke the method `onToggleShoppingCart`, as follows:
    ```ts
-   import { MessageClient } from '@scion/microfrontend-platform';
+   import { MessageClient, MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';
+   import { Beans } from '@scion/toolkit/bean-manager';
    
    constructor() {
      document.querySelector('button.shopping-cart').addEventListener('click', () => this.onToggleShoppingCart());
@@ -127,19 +129,25 @@ In this section, we will embed the `products`, `shopping cart` and `devtools` mi
      Beans.get(MessageClient).publish('shopping-cart/toggle-side-panel');
    }
    ```
-   
-   Unlike to embedding the `products` microfrontend, we publish a message to show the `shopping cart` microfrontend. As of now, nothing would happen when the user clicks on that button, because we did not register a message listener yet. It is important to understand that the platform transports that message to all micro applications. Later, when implementing the `shopping cart` micro application, we will subscribe to such messages and navigate accordingly. Of course, we could also use the `OutletRouter` directly. For illustrative purposes, however, we use an alternative approach, which further has the advantage that we do not have to know the URL of the microfrontend to embed it. Instead, we let the providing micro application perform the routing, keeping the microfrontend URL an implementation detail of the micro application that provides the microfrontend.
+
+   For illustration purposes, unlike to embedding the `products` microfrontend, we publish a message to show the `shopping cart` microfrontend. As of now, nothing would happen when the user clicks on that button, because we did not register a message listener yet. It is important to understand that the platform transports that message to all micro applications. Later, when implementing the `shopping cart` micro application, we will subscribe to such messages and navigate accordingly. Of course, we could also use the `OutletRouter` directly. For illustrative purposes, however, we use an alternative approach, which further has the advantage that we do not have to know the URL of the microfrontend to embed it. Instead, we let the providing micro application perform the routing, keeping the microfrontend URL an implementation detail of the micro application that provides the microfrontend.
    
    > Note: It would be even better to use the Intention API for showing a microfrontend, which, however, would go beyond the scope of this Getting Started Guide. For more information, refer to the [Developer Guide][link-developer-guide#routing-in-the-activator].
 1. Finally, we want to route the devtools router outlet to display the `devtools` microfrontend, as follows:
 
    ```ts
-        import { OutletRouter } from '@scion/microfrontend-platform';   
+        import { MessageClient, MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';   
         import { Beans } from '@scion/toolkit/bean-manager';
    
         public async init(): Promise<void> {
           // Start the platform
-          await MicrofrontendPlatform.startHost(this.platformConfig, {symbolicName: 'host-app'});
+          await MicrofrontendPlatform.startHost({
+            applications: [
+              {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
+              {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
+              {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
+            ],
+          });
  
           // Display the `products` microfrontend in the primary router outlet
           Beans.get(OutletRouter).navigate('http://localhost:4201/products.html');
@@ -164,27 +172,6 @@ sci-router-outlet[name="SHOPPING-CART"].sci-empty {
   display: none;
 }
 ```
-</details>
-
-<details>
-   <summary><strong>Provide a manifest file</strong></summary>
-   <br>
-   
-In this step, we finally provide the manifest JSON file that we referenced in the first step. If not providing a manifest file, we could not connect to the platform.
-
-Create the file `manifest.json` in the `src` folder, as follows:
-```json
-{
-  "name": "Host App"
-}
-```
-
-The manifest must declare at least the human-readable name of the application. The name has no meaning to the platform, but is used, for example, by the DevTools to list the micro applications.
-
-To learn more about the manifest, refer to the [Developer Guide][link-developer-guide#manifest].
-
-> This step requires to serve the application anew. 
-
 </details>
 
 <details>
@@ -232,17 +219,10 @@ We have added two router outlets to the HTML template of the host application fo
    <summary>The <code>host-controller.ts</code> looks as following:</summary>
 
 ```ts
-import { ApplicationConfig, MessageClient, MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';
+import { MessageClient, MicrofrontendPlatform, OutletRouter } from '@scion/microfrontend-platform';
 import { Beans } from '@scion/toolkit/bean-manager';
 
 class HostController {
-
-  private platformConfig: ApplicationConfig[] = [
-    {symbolicName: 'host-app', manifestUrl: '/manifest.json'},
-    {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
-    {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
-    {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
-  ];
 
   constructor() {
     document.querySelector('button.shopping-cart').addEventListener('click', () => this.onToggleShoppingCart());
@@ -250,7 +230,13 @@ class HostController {
 
   public async init(): Promise<void> {
     // Start the platform
-    await MicrofrontendPlatform.startHost(this.platformConfig, {symbolicName: 'host-app'});
+    await MicrofrontendPlatform.startHost({
+      applications: [
+        {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
+        {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
+        {symbolicName: 'devtools', manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json', intentionCheckDisabled: true, scopeCheckDisabled: true},
+      ],
+    });
 
     // Display the products microfrontend in the primary router outlet
     Beans.get(OutletRouter).navigate('http://localhost:4201/products.html');
@@ -266,17 +252,6 @@ class HostController {
 }
 
 new HostController().init();
-```
-</details>
-
-<details>
-   <summary>The <code>manifest.json</code> looks as following:</summary>
-
-```json
-{
-  "name": "Host App"
-}
-
 ```
 </details>
 

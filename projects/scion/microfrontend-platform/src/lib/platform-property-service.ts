@@ -15,9 +15,10 @@ import {Dictionary, Maps} from '@scion/toolkit/util';
 import {Subject} from 'rxjs';
 import {mapToBody} from './messaging.model';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {BrokerGateway, NullBrokerGateway} from './client/messaging/broker-gateway';
 
 /**
- * Allows looking up properties defined on the platform host.
+ * Allows looking up properties defined in the platform host.
  *
  * @category Platform
  */
@@ -28,13 +29,15 @@ export class PlatformPropertyService implements PreDestroy {
 
   /**
    * Promise that resolves when loaded the properties from the host.
+   * If messaging is disabled, the Promise resolves immediately.
    *
    * @internal
    */
   public whenPropertiesLoaded: Promise<void>;
 
   constructor() {
-    this.whenPropertiesLoaded = this.loadProperties();
+    const messagingDisabled = Beans.get(BrokerGateway) instanceof NullBrokerGateway;
+    this.whenPropertiesLoaded = messagingDisabled ? Promise.resolve() : this.requestProperties();
   }
 
   /**
@@ -66,7 +69,7 @@ export class PlatformPropertyService implements PreDestroy {
     return this._properties;
   }
 
-  private async loadProperties(): Promise<void> {
+  private async requestProperties(): Promise<void> {
     this._properties = await Beans.get(MessageClient).observe$<Dictionary>(PlatformTopics.PlatformProperties)
       .pipe(
         mapToBody(),

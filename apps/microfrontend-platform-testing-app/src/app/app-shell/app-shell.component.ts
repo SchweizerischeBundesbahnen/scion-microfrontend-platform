@@ -9,7 +9,7 @@
  */
 import {Component, HostBinding, OnDestroy} from '@angular/core';
 import {asapScheduler, Subject} from 'rxjs';
-import {ContextService, FocusMonitor, IS_PLATFORM_HOST, MicroApplicationConfig, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
+import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {switchMapTo, takeUntil} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
 import {Defined} from '@scion/toolkit/util';
@@ -29,12 +29,10 @@ export class AppShellComponent implements OnDestroy {
   public pageTitle: string;
   public isFocusWithin: boolean;
   public isDevToolsOpened = false;
-
-  @HostBinding('class.top-window')
   public isPlatformHost = Beans.get<boolean>(IS_PLATFORM_HOST);
 
   constructor() {
-    this.appSymbolicName = Beans.get(MicroApplicationConfig).symbolicName;
+    this.appSymbolicName = Beans.get<string>(APP_IDENTITY);
 
     this.installFocusWithinListener();
     this.installRouteActivateListener();

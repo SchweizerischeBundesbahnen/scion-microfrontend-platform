@@ -1,9 +1,8 @@
-import { Intent, IntentClient, IntentMessage, IntentOptions, IntentSelector, MessageClient, MicrofrontendPlatform, PlatformState, PublishOptions, RequestOptions, TopicMessage } from '@scion/microfrontend-platform';
-import { Injectable, NgZone } from '@angular/core';
-import { MonoTypeOperatorFunction, Observable, pipe, Subscription } from 'rxjs';
-import { HttpPlatformConfigLoader } from './start-platform-via-initializer.snippets';
-import { BeanDecorator, Beans } from '@scion/toolkit/bean-manager';
-import { observeInside, subscribeInside } from '@scion/toolkit/operators';
+import {Intent, IntentClient, IntentMessage, IntentOptions, IntentSelector, MessageClient, MicrofrontendPlatform, PlatformState, PublishOptions, RequestOptions, TopicMessage} from '@scion/microfrontend-platform';
+import {Injectable, NgZone} from '@angular/core';
+import {MonoTypeOperatorFunction, Observable, pipe, Subscription} from 'rxjs';
+import {BeanDecorator, Beans} from '@scion/toolkit/bean-manager';
+import {observeInside, subscribeInside} from '@scion/toolkit/operators';
 
 // tag::message-client-decorator[]
 /**
@@ -104,7 +103,7 @@ export class PlatformInitializer {
     });
 
     // Start the platform.
-    return this._zone.runOutsideAngular(() => MicrofrontendPlatform.startHost(HttpPlatformConfigLoader));
+    return this._zone.runOutsideAngular(() => MicrofrontendPlatform.startHost(...));
   }
 }
 

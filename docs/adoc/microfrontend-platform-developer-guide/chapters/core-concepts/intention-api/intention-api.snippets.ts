@@ -173,7 +173,7 @@ import { Beans } from '@scion/toolkit/bean-manager';
 {
   // tag::enable-intention-register-api[]
   MicrofrontendPlatform.startHost({
-    apps: [
+    applications: [
       {
         symbolicName: 'product-catalog-app',
         manifestUrl: 'https://product-catalog.webshop.io/manifest.json',

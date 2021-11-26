@@ -8,13 +8,14 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, Injector, Input, ViewChild} from '@angular/core';
-import {ManifestService, OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
+import {OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {Overlay} from '@angular/cdk/overlay';
 import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
 import {RouterOutletSettingsComponent} from '../router-outlet-settings/router-outlet-settings.component';
 import {ActivatedRoute} from '@angular/router';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {environment} from '../../environments/environment';
 
 export const URL = 'url';
 
@@ -102,11 +103,7 @@ export class BrowserOutletComponent {
   }
 
   private readAppEntryPoints(): AppEndpoint[] {
-    const apps = Beans.get(ManifestService).applications;
-    return apps.reduce((endpoints, application) => {
-      const origin = application.origin;
-      const symbolicName = application.symbolicName;
-
+    return Object.values(environment.apps).reduce((endpoints, app) => {
       return endpoints.concat(this._activatedRoute.parent.routeConfig.children
         .filter(route => !!route.data)
         .map(route => {
@@ -115,11 +112,10 @@ export class BrowserOutletComponent {
             .reduce((encoded, paramKey) => encoded.concat(`${paramKey}=${matrixParams.get(paramKey)}`), [])
             .join(';');
           return {
-            url: `${origin}/#/${route.path}${matrixParamsEncoded ? `;${matrixParamsEncoded}` : ''}`,
-            label: `${symbolicName}: ${route.data['pageTitle']}`,
+            url: `${app.url}/#/${route.path}${matrixParamsEncoded ? `;${matrixParamsEncoded}` : ''}`,
+            label: `${app.symbolicName}: ${route.data['pageTitle']}`,
           };
         }));
-
     }, new Array<AppEndpoint>());
   }
 }

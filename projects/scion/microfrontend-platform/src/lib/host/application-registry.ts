@@ -8,13 +8,14 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import {Application, ApplicationManifest} from '../platform.model';
+import {Application, Manifest} from '../platform.model';
 import {Defined} from '@scion/toolkit/util';
 import {Urls} from '../url.util';
-import {ApplicationConfig, PlatformConfig} from './platform-config';
+import {MicrofrontendPlatformConfig} from './microfrontend-platform-config';
 import {ManifestRegistry} from './manifest-registry/manifest-registry';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Logger} from '../logger';
+import {ApplicationConfig} from './application-config';
 
 /**
  * Registry with all registered applications.
@@ -32,7 +33,7 @@ export class ApplicationRegistry {
    *
    * Throws an error if the application's symbolic name is not unique or contains illegal characters.
    */
-  public registerApplication(applicationConfig: ApplicationConfig, manifest: ApplicationManifest): void {
+  public registerApplication(applicationConfig: ApplicationConfig, manifest: Manifest): void {
     Defined.orElseThrow(applicationConfig.symbolicName, () => Error('[ApplicationRegistrationError] Missing symbolic name'));
     Defined.orElseThrow(applicationConfig.manifestUrl, () => Error('[ApplicationRegistrationError] Missing manifest URL'));
 
@@ -50,8 +51,8 @@ export class ApplicationRegistry {
       name: manifest.name,
       baseUrl: this.computeBaseUrl(applicationConfig, manifest),
       manifestUrl: Urls.newUrl(applicationConfig.manifestUrl, Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? applicationConfig.manifestUrl : window.origin).toString(),
-      manifestLoadTimeout: applicationConfig.manifestLoadTimeout ?? Beans.get(PlatformConfig).manifestLoadTimeout,
-      activatorLoadTimeout: applicationConfig.activatorLoadTimeout ?? Beans.get(PlatformConfig).activatorLoadTimeout,
+      manifestLoadTimeout: applicationConfig.manifestLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).manifestLoadTimeout,
+      activatorLoadTimeout: applicationConfig.activatorLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).activatorLoadTimeout,
       origin: Urls.newUrl(this.computeBaseUrl(applicationConfig, manifest)).origin,
       scopeCheckDisabled: Defined.orElse(applicationConfig.scopeCheckDisabled, false),
       intentionCheckDisabled: Defined.orElse(applicationConfig.intentionCheckDisabled, false),
@@ -113,7 +114,7 @@ export class ApplicationRegistry {
    * - if base URL is not specified in the manifest, the origin from 'manifestUrl' is used as the base URL, or the origin from the current window if the 'manifestUrl' is relative
    * - if base URL has no trailing slash, adds a trailing slash
    */
-  private computeBaseUrl(applicationConfig: ApplicationConfig, manifest: ApplicationManifest): string {
+  private computeBaseUrl(applicationConfig: ApplicationConfig, manifest: Manifest): string {
     const manifestURL = Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? Urls.newUrl(applicationConfig.manifestUrl) : Urls.newUrl(applicationConfig.manifestUrl, window.origin);
 
     if (!manifest.baseUrl) {

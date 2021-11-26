@@ -27,6 +27,8 @@ export class FocusInEventDispatcher implements PreDestroy {
   private _destroy$ = new Subject<void>();
 
   constructor() {
+    // IMPORTANT: In Angular applications, the platform should be started outside the Angular zone in order to avoid excessive change detection cycles
+    // of platform-internal subscriptions to global DOM events. For that reason, we subscribe to `window.focus` events in the dispatcher's constructor.
     this.makeWindowFocusable();
     this.dispatchDocumentFocusInEvent();
     this.reportFocusWithinEventToParentOutlet();
@@ -34,10 +36,6 @@ export class FocusInEventDispatcher implements PreDestroy {
 
   /**
    * Installs a listener for `focusin` events.
-   *
-   * IMPORTANT:
-   * Always subscribe to DOM events during event dispatcher construction. Event dispatchers are eagerly created on platform startup.
-   * Frameworks like Angular usually connect to the platform outside their change detection zone in order to avoid triggering change detection for unrelated DOM events.
    */
   private dispatchDocumentFocusInEvent(): void {
     fromEvent<FocusEvent>(window, 'focusin')

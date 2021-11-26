@@ -52,7 +52,7 @@ In this section, we will connect the `shopping cart` micro application to the pl
         import { MicrofrontendPlatform } from '@scion/microfrontend-platform';   
    
         public async init(): Promise<void> {
-   [+]    await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+   [+]    await MicrofrontendPlatform.connectToHost('shopping-cart-app');
         }   
    ```
    > Lines to be added are preceded by the [+] mark.   
@@ -63,7 +63,7 @@ In this section, we will connect the `shopping cart` micro application to the pl
    Create the file `manifest.json` in the `src` folder, as follows:
    ```json
    {
-     "name": "Shopping Cart App"
+     "name": "Shopping Cart Application"
    }
    ```
    
@@ -103,7 +103,7 @@ In this section, we will render the products added to the shopping cart in an un
    
         public async init(): Promise<void> {
           // Connect to the platform host
-          await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+          await MicrofrontendPlatform.connectToHost('shopping-cart-app');
  
    [+]    // Render products added to the shopping cart
    [+]    ShoppingCartService.products$.subscribe(products => {
@@ -204,7 +204,7 @@ Let us register an activator:
 1. Register the activator in your manifest.json file, as following:
    ```ts
        {
-         "name": "Shopping Cart App",
+         "name": "Shopping Cart Application",
    [+]   "capabilities": [{
    [+]     "type": "activator",
    [+]     "private": false,
@@ -232,7 +232,7 @@ Like a regular microfrontend, an activator must connect to the platform host to 
         import { MicrofrontendPlatform } from '@scion/microfrontend-platform';   
    
         public async init(): Promise<void> {
-   [+]    await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+   [+]    await MicrofrontendPlatform.connectToHost('shopping-cart-app');
         }   
    ```
    > Lines to be added are preceded by the [+] mark.   
@@ -257,7 +257,7 @@ In this section, we will listen for messages published to the topic `shopping-ca
            
        public async init(): Promise<void> {
          // Connect to the platform host
-         await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+         await MicrofrontendPlatform.connectToHost('shopping-cart-app');
  
    [+]   // Listener to add a product to the shopping cart
    [+]   Beans.get(MessageClient)
@@ -295,7 +295,7 @@ If we recall the implementation of the host application, we notice that we have 
        
          public async init(): Promise<void> {
            // Connect to the platform host
-           await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+           await MicrofrontendPlatform.connectToHost('shopping-cart-app');
        
            // Listener to add a product to the shopping cart
            Beans.get(MessageClient)
@@ -374,7 +374,7 @@ class ShoppingCartController {
 
   public async init(): Promise<void> {
     // Connect to the platform host
-    await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+    await MicrofrontendPlatform.connectToHost('shopping-cart-app');
 
     // Render products added to the shopping cart
     ShoppingCartService.products$.subscribe(products => {
@@ -421,7 +421,7 @@ class Activator {
 
   public async init(): Promise<void> {
     // Connect to the platform host
-    await MicrofrontendPlatform.connectToHost({symbolicName: 'shopping-cart-app'});
+    await MicrofrontendPlatform.connectToHost('shopping-cart-app');
 
     // Listener to add a product to the shopping cart
     Beans.get(MessageClient)
@@ -457,7 +457,7 @@ new Activator().init();
 
 ```json
 {
-  "name": "Shopping Cart App",
+  "name": "Shopping Cart Application",
   "capabilities": [{
     "type": "activator",
     "private": false,

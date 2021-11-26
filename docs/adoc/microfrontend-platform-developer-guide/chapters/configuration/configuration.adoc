@@ -2,12 +2,254 @@
 include::{basedir}/_common.adoc[]
 
 [[chapter:configuration]]
-== Configuration
+== Configuration and Startup
 
-This chapter describes how to start and configure the SCION Microfrontend Platform.
+This chapter describes how to configure and start the SCION Microfrontend Platform.
 
-:leveloffset: +1
-include::starting-the-platform/starting-the-platform.adoc[]
-include::platform-configuration/platform-configuration.adoc[]
-:leveloffset: -1
+[.chapter-toc]
+****
+[.chapter-title]
+In this Chapter
+
+- <<chapter:configuration:starting-the-platform-in-host-application>>
+- <<chapter:configuration:connecting-to-the-host>>
+- <<chapter:configuration:configuring-the-platform>>
+
+****
+'''
+
+[[chapter:configuration:starting-the-platform-in-host-application]]
+[discrete]
+=== Starting the Platform in the Host Application
+
+The host application starts the platform by calling the `MicrofrontendPlatform.startHost` method and passing the platform's configuration, which contains at minimum the web applications to be registered as micro applications. Registered micro applications can connect to the platform and interact with each other. You can also specify various timeouts and control platform behavior. For a detailed overview of platform and application configuration, see chapter <<chapter:configuration:configuring-the-platform>>.
+
+The following code snippet illustrates how to start the platform in the host application.
+[source,typescript]
+----
+include::starting-the-platform.snippets.ts[tags=startHost1]
+----
+<1> Lists the micro applications able to connect to the platform to interact with other micro applications.
+
+As with micro applications, you can provide a manifest for the host, allowing the host to contribute capabilities and declare intentions. The host manifest can be passed either as an object literal or specified as a URL to load it over the network.
+
+[source,typescript]
+----
+include::starting-the-platform.snippets.ts[tags=startHost2]
+----
+<1> Specifies the host manifest. Alternatively, you can pass an URL to the manifest for loading it over the network.
+<2> Lists the micro applications able to connect to the platform to interact with other micro applications.
+
+When starting the platform, it loads the manifests of registered micro applications and installs activator microfrontends, if any. The method for starting the platform host returns a `Promise` that resolves once platform startup completed. You should wait for the Promise to resolve before interacting with the platform.
+
+[[chapter:configuration:connecting-to-the-host]]
+[discrete]
+=== Connecting to the Platform from a Micro Application
+
+A micro application connects to the platform host by invoking the method `MicrofrontendPlatform.connectToHost` and passing its identity as argument. The host does check whether the connecting micro application is qualified to connect, i.e., is registered in the host application under that origin; otherwise, the host will reject the connection attempt.
+
+The following code snippet illustrates how to connect to the platform in a micro application.
+
+[source,typescript]
+----
+include::starting-the-platform.snippets.ts[tags=connectToHost]
+----
+
+Optionally, you can pass an options object to control how to connect to the platform host. The method returns a `Promise` that resolves when connected to the platform host. You should wait for the Promise to resolve before interacting with the platform.
+
+[[chapter:configuration:configuring-the-platform]]
+[discrete]
+=== Configuring the Platform
+You configure the platform by passing following <<objects::microfrontend-platform-config,config object>> when starting the host platform. Besides listing micro applications qualified to connect to the platform, you can specify the manifest of the host application, control platform behavior, declare user-specific properties available to micro applications, and more.
+
+[[objects::microfrontend-platform-config]]
+.Properties of `MicrofrontendPlatformConfig`
+[cols="1,4,1,1,5"]
+|===
+| Property | Type | Mandatory | Default | Description
+
+| applications
+a| `<<objects::application-config,ApplicationConfig>>[]`
+| yes
+|
+| Lists the micro applications able to connect to the platform to interact with other micro applications.
+
+See <<objects::application-config,ApplicationConfig>> for an overview of the properties.
+
+| host
+a| `<<objects::host-config,HostConfig>>`
+| no
+|
+| Configures the interaction of the host application with the platform.
+
+As with micro applications, you can provide a manifest for the host, allowing the host to contribute capabilities and declare intentions.
+
+See <<objects::host-config,HostConfig>> for an overview of the properties.
+
+| activatorApiDisabled
+a| `boolean`
+| no
+a| `true`
+| Controls whether the Activator API is enabled.
+
+Activating the Activator API enables micro applications to contribute `activator` microfrontends. Activator microfrontends are loaded at platform startup for the entire lifecycle of the platform. An activator is a startup hook for micro applications to initialize or register message or intent handlers to provide functionality.
+
+| [[objects::microfrontend-platform-config:manifestLoadTimeout]]manifestLoadTimeout
+a| `number`
+| no
+|
+| Maximum time (in milliseconds) that the platform waits until the manifest of an application is loaded.
+
+You can set a different timeout per application via <<objects::application-config:manifestLoadTimeout,ApplicationConfig.manifestLoadTimeout>>. If not set, by default, the browser's HTTP fetch timeout applies.
+Consider setting this timeout if, for example, a web application firewall delays the responses of unavailable applications.
+
+| [[objects::microfrontend-platform-config:activatorLoadTimeout]] activatorLoadTimeout
+a| `number`
+| no
+|
+| Maximum time (in milliseconds) for each application to signal readiness.
+
+If specified and activating an application takes longer, the host logs an error and continues startup. Has no effect for applications which provide no activator(s) or are not configured to signal readiness.
+You can set a different timeout per application via <<objects::application-config:activatorLoadTimeout,ApplicationConfig.activatorLoadTimeout>>.
+
+By default, no timeout is set, meaning that if an app fails to signal readiness, e.g., due to an error, that app would block the host startup process indefinitely. It is therefore recommended to specify a timeout accordingly.
+
+| properties
+a| `Dictionary`
+| no
+|
+| Defines user-defined properties which can be read by micro applications via `PlatformPropertyService`.
+
+|===
+
+The `HostConfig` object is used to configure the interaction of the host application with the platform.
+
+[[objects::host-config]]
+.Properties of `HostConfig`
+[cols="1,2,1,1,5"]
+|===
+| Property | Type | Mandatory | Default | Description
+
+| symbolicName
+a| `string`
+| no
+a| `host`
+| Symbolic name of the host.
+
+If not set, `host` is used as the symbolic name of the host. The symbolic name must be unique and contain only lowercase alphanumeric characters and hyphens.
+
+| manifest
+a| `string` \|
+`<<objects::manifest,Manifest>>`
+| no
+|
+| The manifest of the host.
+
+The manifest can be passed either as an object literal or specified as a URL to be loaded over the network. Providing a manifest lets the host contribute capabilities or declare intentions.
+
+See <<objects::manifest,Manifest>> for an overview of the properties of the manifest.
+
+| scopeCheckDisabled
+a| `boolean`
+| no
+a| `false`
+| Controls whether the host can interact with private capabilities of other micro applications.
+
+By default, scope check is enabled. Disabling scope check is discouraged.
+
+| intentionCheckDisabled
+a| `boolean`
+| no
+a| `false`
+| Controls whether the host can interact with the capabilities of other apps without having to declare respective intentions.
+
+By default, intention check is enabled. Disabling intention check is strongly discouraged.
+
+| intentionRegisterApiDisabled
+a| `boolean`
+| no
+a| `true`
+| Controls whether the host can register and unregister intentions dynamically at runtime.
+
+By default, this API is disabled. Enabling this API is strongly discouraged.
+
+| messageDeliveryTimeout
+a| `number`
+| no
+a| `10s`
+| Maximum time (in milliseconds) that the platform waits to receive dispatch confirmation for messages sent by the host until rejecting the publishing Promise.
+
+|===
+
+The `ApplicationConfig` object is used to describe a micro application to be registered as micro application. Registered micro applications can connect to the platform and interact with each other.
+
+[[objects::application-config]]
+.Properties of `ApplicationConfig`
+[cols="1,3,1,1,5"]
+|===
+| Property | Type | Mandatory | Default | Description
+
+| symbolicName
+a| `string`
+| yes
+a|
+| Unique symbolic name of this micro application.
+
+The symbolic name must be unique and contain only lowercase alphanumeric characters and hyphens.
+
+| manifestUrl
+a| `string`
+| yes
+|
+| URL to the application manifest.
+
+See <<objects::manifest,Manifest>> for an overview of the properties of the manifest.
+
+| [[objects::application-config:manifestLoadTimeout]]manifestLoadTimeout
+a| `number`
+| no
+|
+| Maximum time (in milliseconds) that the host waits until the manifest for this application is loaded.
+
+If set, overrides the global timeout as configured in <<objects::microfrontend-platform-config:manifestLoadTimeout,MicrofrontendPlatformConfig.manifestLoadTimeout>>.
+
+| [[objects::application-config:activatorLoadTimeout]]activatorLoadTimeout
+a| `number`
+| no
+|
+| Maximum time (in milliseconds) for this application to signal readiness. If activating this application takes longer, the host logs an error and continues startup.
+
+If set, overrides the global timeout as configured in <<objects::microfrontend-platform-config:activatorLoadTimeout,MicrofrontendPlatformConfig.activatorLoadTimeout>>.
+
+| exclude
+a| `boolean`
+| no
+a| `false`
+| Excludes this micro application from registration, e.g. to not register it in a specific environment.
+
+| scopeCheckDisabled
+a| `boolean`
+| no
+a| `false`
+| Controls whether this micro application can interact with private capabilities of other micro applications.
+
+By default, scope check is enabled. Disabling scope check is discouraged.
+
+| intentionCheckDisabled
+a| `boolean`
+| no
+a| `false`
+| Controls whether this micro application can interact with the capabilities of other apps without having to declare respective intentions.
+
+By default, intention check is enabled. Disabling intention check is strongly discouraged.
+
+| intentionRegisterApiDisabled
+a| `boolean`
+| no
+a| `true`
+| Controls whether this micro application can register and unregister intentions dynamically at runtime.
+
+By default, this API is disabled. Enabling this API is strongly discouraged.
+
+|===
 

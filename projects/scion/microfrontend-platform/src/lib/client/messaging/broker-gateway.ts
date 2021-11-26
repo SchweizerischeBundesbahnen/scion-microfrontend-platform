@@ -17,7 +17,7 @@ import {GatewayInfoResponse, getGatewayJavaScript} from './broker-gateway-script
 import {Logger, NULL_LOGGER} from '../../logger';
 import {Dictionaries} from '@scion/toolkit/util';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
-import {IS_PLATFORM_HOST} from '../../platform.model';
+import {APP_IDENTITY, IS_PLATFORM_HOST} from '../../platform.model';
 import {Runlevel} from '../../platform-state';
 
 /**
@@ -123,13 +123,16 @@ export class NullBrokerGateway implements BrokerGateway {
 export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
 
   private _destroy$ = new Subject<void>();
+  private _appSymbolicName: string;
   private _whenDestroy = this._destroy$.pipe(first()).toPromise();
   private _message$: Observable<MessageEnvelope>;
   private _whenGatewayInfo: Promise<GatewayInfo>;
 
-  constructor(private _clientAppName: string, private _config: {discoveryTimeout: number; deliveryTimeout: number}) {
+  constructor(private _config: {messageDeliveryTimeout: number; brokerDiscoveryTimeout: number}) {
+    this._appSymbolicName = Beans.get<string>(APP_IDENTITY);
+
     // Get the JavaScript to discover the message broker and dispatch messages.
-    const gatewayJavaScript = getGatewayJavaScript({clientAppName: this._clientAppName, clientOrigin: window.origin, discoverTimeout: this._config.discoveryTimeout});
+    const gatewayJavaScript = getGatewayJavaScript({clientAppName: this._appSymbolicName, clientOrigin: window.origin, discoverTimeout: this._config.brokerDiscoveryTimeout});
 
     const isPlatformHost = Beans.get(IS_PLATFORM_HOST);
 
@@ -139,7 +142,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
     // we initiate the connect request to the broker only once entering runlevel 1.
     this._whenGatewayInfo = (isPlatformHost ? Beans.whenRunlevel(Runlevel.One) : Promise.resolve())
       .then(() => this.mountIframeAndLoadScript(gatewayJavaScript)) // Create a hidden iframe and load the gateway script.
-      .then(gatewayWindow => this.requestGatewayInfo(gatewayWindow, {brokerDiscoveryTimeout: this._config.discoveryTimeout}))
+      .then(gatewayWindow => this.requestGatewayInfo(gatewayWindow, {brokerDiscoveryTimeout: this._config.brokerDiscoveryTimeout}))
       .catch(error => {
         Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(error); // Fall back using NULL_LOGGER when the platform is shutting down.
         throw error;
@@ -182,7 +185,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
       message: message,
     };
     envelope.message.headers.set(MessageHeaders.MessageId, messageId);
-    addSenderHeadersToEnvelope(envelope, {clientAppName: this._clientAppName, clientId: gateway.clientId});
+    addSenderHeadersToEnvelope(envelope, {clientAppName: this._appSymbolicName, clientId: gateway.clientId});
 
     // Create Promise waiting for the broker to accept and dispatch the message.
     const postError$ = new Subject<never>();
@@ -190,7 +193,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
       .pipe(
         filterByTopic<MessageDeliveryStatus>(messageId),
         first(),
-        timeoutWith(new Date(Date.now() + this._config.deliveryTimeout), throwError(`[MessageDispatchError] Broker did not report message delivery state within the ${this._config.deliveryTimeout}ms timeout. [envelope=${stringifyEnvelope(envelope)}]`)),
+        timeoutWith(new Date(Date.now() + this._config.messageDeliveryTimeout), throwError(`[MessageDispatchError] Broker did not report message delivery state within the ${this._config.messageDeliveryTimeout}ms timeout. [envelope=${stringifyEnvelope(envelope)}]`)),
         mergeMap(statusMessage => statusMessage.body!.ok ? EMPTY : throwError(statusMessage.body!.details)),
         takeUntil(this._destroy$),
       )
@@ -270,7 +273,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
    * @return A Promise that resolves to the content window of the iframe.
    */
   private mountIframeAndLoadScript(javaScript: string): Promise<Window> {
-    const html = `<html><head><script>${javaScript}</script></head><body>Message Broker Gateway for '${this._clientAppName}'</body></html>`;
+    const html = `<html><head><script>${javaScript}</script></head><body>Message Broker Gateway for '${this._appSymbolicName}'</body></html>`;
     const iframeUrl = URL.createObjectURL(new Blob([html], {type: 'text/html'}));
     const iframe = document.body.appendChild(document.createElement('iframe'));
     iframe.setAttribute('src', iframeUrl);
@@ -335,7 +338,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
       )
       .toPromise();
 
-    addSenderHeadersToEnvelope(request, {clientAppName: this._clientAppName});
+    addSenderHeadersToEnvelope(request, {clientAppName: this._appSymbolicName});
     gatewayWindow.postMessage(request, gatewayWindow.origin);
     return whenReply.then(neverResolveIfUndefined);
   }

@@ -13,6 +13,8 @@
     "exclude": "**/ɵ*.ts",
     "toc": [
       "MicrofrontendPlatform",
+      "Manifest",
+      "MicrofrontendPlatformConfig",
       "MessageClient",
       "IntentClient",
       "OutletRouter",
@@ -24,14 +26,9 @@
       "MessageInterceptor",
       "IntentInterceptor",
       "HostPlatformState",
-      "PlatformConfigLoader",
       "PlatformPropertyService",
       "Beans",
       "Activator",
-      "ApplicationManifest",
-      "ApplicationConfig",
-      "PlatformConfigLoader",
-      "PlatformConfig"
     ],
     "categoryOrder": [
       "Platform",

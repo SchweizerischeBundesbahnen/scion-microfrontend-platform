@@ -58,8 +58,8 @@ export class PlatformInitializer implements OnDestroy {
     this.installMessageInterceptors();
     this.installIntentInterceptors();
 
-    // Read the apps from the environment
-    const apps: ApplicationConfig[] = Object.values(environment.apps).map(app => {
+    // Read testing apps to be registered from the environment
+    const testingAppConfigs: ApplicationConfig[] = Object.values(environment.apps).map(app => {
       return {
         manifestUrl: `${app.url}/assets/${app.symbolicName}-manifest${manifestClassifier}.json`,
         activatorLoadTimeout: app.activatorLoadTimeout,
@@ -68,9 +68,9 @@ export class PlatformInitializer implements OnDestroy {
       };
     });
 
-    // Load the devtools
+    // Register devtools app if enabled for this environment
     if (environment.devtools) {
-      apps.push(environment.devtools);
+      testingAppConfigs.push(environment.devtools);
     }
 
     // Log the startup progress (startup-progress.e2e-spec.ts).
@@ -88,11 +88,11 @@ export class PlatformInitializer implements OnDestroy {
     // Run the microfrontend platform as host app
     await this._zone.runOutsideAngular(() => {
         return MicrofrontendPlatform.startHost({
-          apps: apps,
+          applications: testingAppConfigs,
           activatorLoadTimeout: environment.activatorLoadTimeout,
+          activatorApiDisabled: activatorApiDisabled,
           properties: Array.from(this._queryParams.keys()).reduce((dictionary, key) => ({...dictionary, [key]: this._queryParams.get(key)}), {}),
-          platformFlags: {activatorApiDisabled: activatorApiDisabled},
-        }, {symbolicName: determineAppSymbolicName()});
+        });
       },
     );
 
@@ -114,7 +114,7 @@ export class PlatformInitializer implements OnDestroy {
     });
 
     // Run the microfrontend platform as client app
-    return this._zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost({symbolicName: determineAppSymbolicName()}));
+    return this._zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost(getCurrentTestingAppSymbolicName()));
   }
 
   private installMessageInterceptors(): void {
@@ -236,7 +236,7 @@ export class PlatformInitializer implements OnDestroy {
 /**
  * Identifies the currently running app based on the configured apps in the environment and the current URL.
  */
-function determineAppSymbolicName(): string {
+function getCurrentTestingAppSymbolicName(): string {
   const application = Object.values(environment.apps).find(app => new URL(app.url).host === window.location.host);
   if (!application) {
     throw Error(`[AppError] Application served on wrong URL. Supported URLs are: ${Object.values(environment.apps).map(app => app.url)}`);

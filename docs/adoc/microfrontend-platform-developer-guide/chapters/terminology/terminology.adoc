@@ -6,7 +6,7 @@ include::{basedir}/_common.adoc[]
 
 [#terminology:activator]
 Activator::
-An activator allows a <<terminology:micro-application,micro application>> to initialize and connect to the <<terminology:platform,platform>> when the user loads the <<terminology:host-app,host application>> into his browser.
+An activator is a startup hook for micro applications to initialize or register message or intent handlers to provide functionality. Activator microfrontends are loaded at platform startup for the entire lifecycle of the platform
 +
 In the broadest sense, an activator is a kind of <<terminology:microfrontend,microfrontend>>, i.e. an HTML page that runs in an iframe. In contrast to regular <<terminology:microfrontend,microfrontends>>, however, at platform startup, the <<terminology:platform,platform>> loads activator microfrontends into hidden iframes for the entire platform lifecycle, thus, providing a stateful session to the <<terminology:micro-application,micro application>> on the client-side.
 
@@ -35,7 +35,7 @@ Host Application::
 +
 include::host-application.adoc[]
 +
-The host app starts the <<terminology:platform,platform>> host and registers <<terminology:micro-application,micro applications>>. If the host app wants to interact with either the <<terminology:platform,platform>> or the <<terminology:micro-application,micro applications>>, the host app has to register itself as a <<terminology:micro-application,micro application>>. The host app has no extra privileges compared to other <<terminology:micro-application,micro applications>>.
+The host app starts the <<terminology:platform,platform>> host and registers <<terminology:micro-application,micro applications>>. As with micro applications, the host can provide a manifest to contribute behavior.
 
 [#terminology:intent]
 Intent::

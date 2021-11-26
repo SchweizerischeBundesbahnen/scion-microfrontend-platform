@@ -8,7 +8,7 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 
-import {ApplicationManifest} from './platform.model';
+import {Manifest} from './platform.model';
 import {Arrays} from '@scion/toolkit/util';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {ConsoleLogger, Logger} from './logger';
@@ -75,7 +75,7 @@ export interface PromiseMatcher {
 /***
  * Serves the given manifest and returns the URL where the manifest is served.
  */
-export function serveManifest(manifest: Partial<ApplicationManifest>): string {
+export function serveManifest(manifest: Partial<Manifest>): string {
   return URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
 }
 

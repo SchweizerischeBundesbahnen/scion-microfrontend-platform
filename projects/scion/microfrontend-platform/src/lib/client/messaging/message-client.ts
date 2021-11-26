@@ -10,7 +10,7 @@
 import {MonoTypeOperatorFunction, Observable, Subscription} from 'rxjs';
 import {TopicMessage} from '../../messaging.model';
 import {first, takeUntil} from 'rxjs/operators';
-import {AbstractType, Beans, Type} from '@scion/toolkit/bean-manager';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
  * Message client for sending and receiving messages between microfrontends across origins.
@@ -161,8 +161,8 @@ export abstract class MessageClient {
  *
  * @category Messaging
  */
-export function takeUntilUnsubscribe<T>(topic: string, /* @internal */ messageClientType?: Type<MessageClient> | AbstractType<MessageClient>): MonoTypeOperatorFunction<T> {
-  return takeUntil(Beans.get(messageClientType || MessageClient).subscriberCount$(topic).pipe(first(count => count === 0)));
+export function takeUntilUnsubscribe<T>(topic: string): MonoTypeOperatorFunction<T> {
+  return takeUntil(Beans.get(MessageClient).subscriberCount$(topic).pipe(first(count => count === 0)));
 }
 
 /**

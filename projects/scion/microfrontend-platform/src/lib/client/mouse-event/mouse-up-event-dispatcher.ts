@@ -29,6 +29,8 @@ export class MouseUpEventDispatcher implements PreDestroy {
   private _dispatcherId = UUID.randomUUID();
 
   constructor() {
+    // IMPORTANT: In Angular applications, the platform should be started outside the Angular zone in order to avoid excessive change detection cycles
+    // of platform-internal subscriptions to global DOM events. For that reason, we subscribe to `document.mouseup` events in the dispatcher's constructor.
     this.produceSynthEvents();
     this.consumeSynthEvents();
   }
@@ -36,10 +38,6 @@ export class MouseUpEventDispatcher implements PreDestroy {
   /**
    * Produces synth events from native 'mouseup' events and publishes them on the message bus.
    * It allows event dispatchers in other documents to consume these events and publish them on the document's event bus.
-   *
-   * IMPORTANT:
-   * Always subscribe to DOM events during event dispatcher construction. Event dispatchers are eagerly created on platform startup.
-   * Frameworks like Angular usually connect to the platform outside their change detection zone in order to avoid triggering change detection for unrelated DOM events.
    */
   private produceSynthEvents(): void {
     fromEvent<MouseEvent>(document, 'mouseup')

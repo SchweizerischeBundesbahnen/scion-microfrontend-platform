@@ -1,0 +1,20 @@
+:basedir: ../../..
+
+[[chapter:intercepting-host-manifest]]
+== Intercepting Host Manifest
+When starting the platform in the host application, the host can pass a manifest to express its intentions and provide functionality in the form of capabilities. If integrating the platform in a library, you may need to intercept the manifest of the host in order to introduce library-specific behavior. For this reason, the platform provides a hook to intercept the manifest of the host before it is registered with the platform.
+
+You can register a host manifest interceptor in the bean manager, as following:
+[source,typescript]
+----
+include::intercepting-host-manifest.snippets.ts[tags=register-interceptor]
+----
+
+The following interceptors adds an intention and capability to the host manifest.
+[source,typescript]
+----
+include::intercepting-host-manifest.snippets.ts[tags=interceptor]
+----
+<1> Registers an intention in the host manifest, e.g., an intention to open microfrontends.
+<2> Registers a capability in the host manifest, e.g., a capability for displaying a message box.
+

@@ -11,6 +11,7 @@
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {ContextService} from './context-service';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {ObserveCaptor} from '@scion/toolkit/testing';
 
 describe('Context', () => {
 
@@ -18,32 +19,24 @@ describe('Context', () => {
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
   it('should not complete the Observable when looking up context values from inside the host app (no context)', async () => {
-    await MicrofrontendPlatform.startHost([]);
+    await MicrofrontendPlatform.startHost({applications: []});
 
-    let next = undefined;
-    let error = false;
-    let complete = false;
+    const captor = new ObserveCaptor();
+    Beans.get(ContextService).observe$('some-context').subscribe(captor);
 
-    Beans.get(ContextService).observe$('some-context')
-      .subscribe(value => next = value, () => error = true, () => complete = true);
-
-    expect(next).toBeNull();
-    expect(error).toBeFalse();
-    expect(complete).toBeFalse();
+    expect(captor.getValues()).toEqual([null]);
+    expect(captor.hasErrored()).toBeFalse();
+    expect(captor.hasCompleted()).toBeFalse();
   });
 
   it('should not complete the Observable when looking up the names of context values from inside the host app (no context)', async () => {
-    await MicrofrontendPlatform.startHost([]);
+    await MicrofrontendPlatform.startHost({applications: []});
 
-    let next = undefined;
-    let error = false;
-    let complete = false;
+    const captor = new ObserveCaptor();
+    Beans.get(ContextService).names$().subscribe(captor);
 
-    Beans.get(ContextService).names$()
-      .subscribe(value => next = value, () => error = true, () => complete = true);
-
-    expect(next).toEqual(new Set());
-    expect(error).toBeFalse();
-    expect(complete).toBeFalse();
+    expect(captor.getValues()).toEqual([new Set()]);
+    expect(captor.hasErrored()).toBeFalse();
+    expect(captor.hasCompleted()).toBeFalse();
   });
 });

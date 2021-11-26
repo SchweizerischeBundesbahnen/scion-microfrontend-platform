@@ -10,12 +10,12 @@
 import {ApplicationRegistry} from './application-registry';
 import {MicrofrontendPlatform} from '../microfrontend-platform';
 import {ManifestRegistry} from './manifest-registry/manifest-registry';
-import {PlatformMessageClient} from './platform-message-client';
 import {ɵMessageClient} from '../client/messaging/ɵmessage-client';
 import {ɵManifestRegistry} from './manifest-registry/ɵmanifest-registry';
-import {NullBrokerGateway} from '../client/messaging/broker-gateway';
+import {BrokerGateway, NullBrokerGateway} from '../client/messaging/broker-gateway';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {PlatformConfig} from './platform-config';
+import {MicrofrontendPlatformConfig} from './microfrontend-platform-config';
+import {MessageClient} from '../client/messaging/message-client';
 
 describe('ApplicationRegistry', () => {
 
@@ -23,11 +23,12 @@ describe('ApplicationRegistry', () => {
 
   beforeEach(async () => {
     await MicrofrontendPlatform.destroy();
-    await MicrofrontendPlatform.startPlatform(() => {
-      Beans.register(PlatformConfig);
+    await MicrofrontendPlatform.startPlatform(async () => {
+      Beans.register(MicrofrontendPlatformConfig);
       Beans.register(ApplicationRegistry);
       Beans.register(ManifestRegistry, {useClass: ɵManifestRegistry, eager: true});
-      Beans.register(PlatformMessageClient, {useFactory: () => new ɵMessageClient(new NullBrokerGateway())});
+      Beans.register(BrokerGateway, {useClass: NullBrokerGateway});
+      Beans.register(MessageClient, {useClass: ɵMessageClient});
     });
     registry = Beans.get(ApplicationRegistry);
   });

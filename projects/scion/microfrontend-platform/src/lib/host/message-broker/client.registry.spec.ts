@@ -16,7 +16,7 @@ describe('ClientRegistry', () => {
 
   beforeEach(async () => {
     await MicrofrontendPlatform.destroy();
-    await MicrofrontendPlatform.startPlatform((): void => void (Beans.register(ClientRegistry)));
+    await MicrofrontendPlatform.startPlatform(async () => void (Beans.register(ClientRegistry)));
   });
 
   afterEach(async () => {

@@ -13,7 +13,6 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestService} from '../../client/manifest-registry/manifest-service';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {Capability, Intention} from '../../platform.model';
-import {ApplicationConfig} from '../../host/platform-config';
 import {ManifestRegistry} from '../../host/manifest-registry/manifest-registry';
 
 const manifestObjectIdsExtractFn = (manifestObjects: Array<Capability | Intention>): string[] => manifestObjects.map(manifestObject => manifestObject.metadata.id);
@@ -26,10 +25,7 @@ describe('ManifestService', () => {
   describe('#lookupCapabilities$', () => {
 
     it('should allow looking up own capabilities without declaring an intention (implicit intention)', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({host: {symbolicName: 'host-app'}, applications: []});
 
       // Register capabilities
       const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -102,11 +98,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow looking up public capabilities of another app (intention contains the any-more wildcard (**))', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       // Register intention in host-app: {entity: 'person', '*': '*'}
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {'entity': 'person', '*': '*'}}, 'host-app');
@@ -182,11 +177,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow looking up public capabilities of another app (only any-more wildcard (**) intention)', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       // Register intention in host-app: {'*': '*'}
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {'*': '*'}}, 'host-app');
@@ -262,11 +256,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow looking up public capabilities of another app (intention contains the asterisk wildcard (*))', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       // Register intention in host-app: {entity: 'person', id: '*'}
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -342,11 +335,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow looking up public capabilities of another app (intention is an exact qualifier)', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       // Register intention in host-app: {entity: 'person', id: 'exact'}
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
@@ -422,11 +414,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow looking up public capabilities of another app (intention contains the optional wildcard (?))', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       // Register intention in host-app: {entity: 'person', id: '?'}
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
@@ -502,11 +493,10 @@ describe('ManifestService', () => {
     });
 
     it('should not allow looking up private capabilities of another app', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       // Register intention in host-app: {'*': '*'}
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {'*': '*'}}, 'host-app');
@@ -522,11 +512,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow looking up private capabilities of another app if scope check is disabled', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), scopeCheckDisabled: true},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', scopeCheckDisabled: true},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       // Register intention in host-app: {'*': '*'}
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {'*': '*'}}, 'host-app');
@@ -542,11 +531,10 @@ describe('ManifestService', () => {
     });
 
     it('should not allow looking up public capabilities of another app without matching intention', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       // Register capability
       Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
@@ -559,11 +547,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow looking up public capabilities of another app without matching intention if intention check is disabled', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), intentionCheckDisabled: true},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', intentionCheckDisabled: true},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       // Register capability
       const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
@@ -578,11 +565,10 @@ describe('ManifestService', () => {
 
   describe('#lookupIntentions$', () => {
     it('should allow looking up intentions', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       // Register intentions in host-app
       const asteriskQualifierHostIntention = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -702,10 +688,10 @@ describe('ManifestService', () => {
 
   describe('#removeCapabilities$', () => {
     it('should allow removing capabilities using an exact qualifier', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
 
       // Register capabilities
       const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -741,10 +727,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow removing capabilities using the asterisk wildcard (*) in the qualifier', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
 
       // Register capabilities
       const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -780,10 +766,10 @@ describe('ManifestService', () => {
     });
 
     it('should interpret the question mark (?) as value (and not as wildcard) when removing capabilities', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
 
       // Register capabilities
       const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -819,10 +805,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow removing capabilities using an exact qualifier together with the any-more wildcard (**) ', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
 
       // Register capabilities
       const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -858,10 +844,10 @@ describe('ManifestService', () => {
     });
 
     it('should interpret the question mark (?) as value and not as wildcard when removing capabilities using the any-more wildcard (**)', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
 
       // Register capabilities
       const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -897,10 +883,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow removing capabilities using the asterisk wildcard (*) together with the any-more wildcard (**) ', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
 
       // Register capabilities
       const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -936,10 +922,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow removing all capabilities using the any-more wildcard (**)', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
 
       // Register capabilities
       const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -971,10 +957,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow removing all capabilities by not specifying a qualifier', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
 
       // Register capabilities
       const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -1006,11 +992,10 @@ describe('ManifestService', () => {
     });
 
     it(`should not remove other application's capabilities`, async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), intentionCheckDisabled: true},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', intentionCheckDisabled: true},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       const capabilityIdHostApp = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'host-app');
       const capabilityIdApp1 = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
@@ -1031,10 +1016,10 @@ describe('ManifestService', () => {
 
   describe('#removeIntentions$', () => {
     it('should allow removing intentions using an exact qualifier', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), intentionRegisterApiDisabled: false},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', intentionRegisterApiDisabled: false},
+        applications: [],
+      });
 
       // Register intentions
       const asteriskQualifierIntention = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -1071,10 +1056,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow removing intentions using the asterisk wildcard (*) in the qualifier', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), intentionRegisterApiDisabled: false},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', intentionRegisterApiDisabled: false},
+        applications: [],
+      });
 
       // Register intentions
       const asteriskQualifierIntention = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -1112,10 +1097,10 @@ describe('ManifestService', () => {
     });
 
     it('should interpret the question mark (?) as value and not as wildcard when removing intentions', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), intentionRegisterApiDisabled: false},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', intentionRegisterApiDisabled: false},
+        applications: [],
+      });
 
       // Register intentions
       const asteriskQualifierIntention = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -1152,10 +1137,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow removing intentions using an exact qualifier together with the any-more wildcard (**) ', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), intentionRegisterApiDisabled: false},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', intentionRegisterApiDisabled: false},
+        applications: [],
+      });
 
       // Register intentions
       const asteriskQualifierIntention = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -1192,10 +1177,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow removing intentions using the asterisk wildcard (*) together with the any-more wildcard (**) ', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), intentionRegisterApiDisabled: false},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', intentionRegisterApiDisabled: false},
+        applications: [],
+      });
 
       // Register intentions
       const asteriskQualifierIntention = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -1232,10 +1217,10 @@ describe('ManifestService', () => {
     });
 
     it('should interpret the question mark (?) as value (and not as wildcard) when removing intentions using the any-more wildcard (**)', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), intentionRegisterApiDisabled: false},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', intentionRegisterApiDisabled: false},
+        applications: [],
+      });
 
       // Register intentions
       const asteriskQualifierIntention = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -1272,10 +1257,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow removing all intentions using the any-more wildcard (**)', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), intentionRegisterApiDisabled: false},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', intentionRegisterApiDisabled: false},
+        applications: [],
+      });
 
       // Register intentions
       const asteriskQualifierIntention = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -1308,10 +1293,10 @@ describe('ManifestService', () => {
     });
 
     it('should allow removing all intentions by not specifying a qualifier', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), intentionRegisterApiDisabled: false},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', intentionRegisterApiDisabled: false},
+        applications: [],
+      });
 
       // Register intentions
       const asteriskQualifierIntention = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
@@ -1344,11 +1329,10 @@ describe('ManifestService', () => {
     });
 
     it(`should not remove other application's intentions`, async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'}), intentionRegisterApiDisabled: false, intentionCheckDisabled: true},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app', intentionCheckDisabled: true, intentionRegisterApiDisabled: false},
+        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+      });
 
       const intentionIdHostApp = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
       const intentionIdApp1 = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
@@ -1366,4 +1350,5 @@ describe('ManifestService', () => {
       await expectEmissions(captor).toEqual([[intentionIdApp1]]);
     });
   });
-});
+})
+;
