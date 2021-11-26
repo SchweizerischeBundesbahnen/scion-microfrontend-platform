@@ -17,7 +17,6 @@ import {Defined} from '@scion/toolkit/util';
 import {UUID} from '@scion/toolkit/uuid';
 import {Logger} from '../../logger';
 import {runSafe} from '../../safe-runner';
-import {PLATFORM_SYMBOLIC_NAME} from '../platform.constants';
 import {TopicSubscriptionRegistry} from './topic-subscription.registry';
 import {Client, ClientRegistry} from './client.registry';
 import {RetainedMessageStore} from './retained-message-store';
@@ -25,7 +24,7 @@ import {TopicMatcher} from '../../topic-matcher.util';
 import {chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {Runlevel} from '../../platform-state';
-import {Capability, ParamDefinition} from '../../platform.model';
+import {APP_IDENTITY, Capability, ParamDefinition} from '../../platform.model';
 import {bufferUntil} from '@scion/toolkit/operators';
 import {ParamMatcher} from './param-matcher';
 
@@ -265,7 +264,7 @@ export class MessageBroker implements PreDestroy {
               body: count,
               headers: new Map()
                 .set(MessageHeaders.MessageId, UUID.randomUUID())
-                .set(MessageHeaders.AppSymbolicName, PLATFORM_SYMBOLIC_NAME),
+                .set(MessageHeaders.AppSymbolicName, Beans.get<string>(APP_IDENTITY)),
             });
           }));
       }));
@@ -565,7 +564,7 @@ function sendTopicMessage<T>(recipient: {gatewayWindow: Window; origin: string} 
     headers.set(MessageHeaders.MessageId, UUID.randomUUID());
   }
   if (!headers.has(MessageHeaders.AppSymbolicName)) {
-    headers.set(MessageHeaders.AppSymbolicName, PLATFORM_SYMBOLIC_NAME);
+    headers.set(MessageHeaders.AppSymbolicName, Beans.get<string>(APP_IDENTITY));
   }
 
   const target = recipient instanceof Client ? {gatewayWindow: recipient.gatewayWindow, origin: recipient.application.origin} : recipient;

@@ -13,9 +13,8 @@ import {sha256} from 'js-sha256';
 import {ManifestObjectFilter, ManifestObjectStore} from './manifest-object-store';
 import {defer, merge, of, Subject} from 'rxjs';
 import {distinctUntilChanged, expand, mergeMapTo, take, takeUntil} from 'rxjs/operators';
-import {PlatformMessageClient} from '../platform-message-client';
 import {Intent, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
-import {takeUntilUnsubscribe} from '../../client/messaging/message-client';
+import {MessageClient, takeUntilUnsubscribe} from '../../client/messaging/message-client';
 import {ApplicationRegistry} from '../application-registry';
 import {runSafe} from '../../safe-runner';
 import {filterArray} from '@scion/toolkit/operators';
@@ -103,7 +102,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
     // use the first 7 digits of the capability hash as capability id
     const capabilityId = sha256(JSON.stringify({application: appSymbolicName, type: capability.type, ...capability.qualifier})).substr(0, 7);
-    const registeredCapability: Capability = {
+    const capabilityToRegister: Capability = {
       ...capability,
       qualifier: capability.qualifier ?? {},
       params: coerceCapabilityParamDefinitions(capability, appSymbolicName),
@@ -117,7 +116,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     };
 
     // Register the capability.
-    this._capabilityStore.add(registeredCapability);
+    this._capabilityStore.add(capabilityToRegister);
     return capabilityId;
   }
 
@@ -132,7 +131,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
     // use the first 7 digits of the intention hash as intention id
     const intentionId = sha256(JSON.stringify({application: appSymbolicName, type: intention.type, ...intention.qualifier})).substr(0, 7);
-    const registeredIntention: Intention = {
+    const intentionToRegister: Intention = {
       ...intention,
       metadata: {
         id: intentionId,
@@ -141,7 +140,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     };
 
     // Register the intention.
-    this._intentionStore.add(registeredIntention);
+    this._intentionStore.add(intentionToRegister);
     return intentionId;
   }
 
@@ -150,7 +149,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   private installCapabilityRegisterRequestHandler(): void {
-    Beans.get(PlatformMessageClient).observe$<Capability>(ManifestRegistryTopics.RegisterCapability)
+    Beans.get(MessageClient).observe$<Capability>(ManifestRegistryTopics.RegisterCapability)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<Capability>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
@@ -159,16 +158,16 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
         try {
           const capabilityId = this.registerCapability(capability, appSymbolicName);
-          Beans.get(PlatformMessageClient).publish(replyTo, capabilityId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+          Beans.get(MessageClient).publish(replyTo, capabilityId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
-          Beans.get(PlatformMessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+          Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
         }
       }));
   }
 
   private installCapabilityUnregisterRequestHandler(): void {
-    Beans.get(PlatformMessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.UnregisterCapabilities)
+    Beans.get(MessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.UnregisterCapabilities)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
@@ -177,16 +176,16 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
         try {
           this.unregisterCapabilities(appSymbolicName, capabilityFilter);
-          Beans.get(PlatformMessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+          Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
-          Beans.get(PlatformMessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+          Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
         }
       }));
   }
 
   private installIntentionRegisterRequestHandler(): void {
-    Beans.get(PlatformMessageClient).observe$<Intention>(ManifestRegistryTopics.RegisterIntention)
+    Beans.get(MessageClient).observe$<Intention>(ManifestRegistryTopics.RegisterIntention)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<Intention>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
@@ -196,16 +195,16 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
         try {
           assertIntentionRegisterApiEnabled(appSymbolicName);
           const intentionId = this.registerIntention(intention, appSymbolicName);
-          Beans.get(PlatformMessageClient).publish(replyTo, intentionId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+          Beans.get(MessageClient).publish(replyTo, intentionId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
-          Beans.get(PlatformMessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+          Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
         }
       }));
   }
 
   private installIntentionUnregisterRequestHandler(): void {
-    Beans.get(PlatformMessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.UnregisterIntentions)
+    Beans.get(MessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.UnregisterIntentions)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
@@ -215,16 +214,16 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
         try {
           assertIntentionRegisterApiEnabled(appSymbolicName);
           this.unregisterIntention(appSymbolicName, intentFilter);
-          Beans.get(PlatformMessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+          Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
-          Beans.get(PlatformMessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+          Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
         }
       }));
   }
 
   private installCapabilitiesLookupRequestHandler(): void {
-    Beans.get(PlatformMessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.LookupCapabilities)
+    Beans.get(MessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.LookupCapabilities)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
@@ -240,16 +239,16 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
             expand(() => registryChange$.pipe(take(1), mergeMapTo(finder$))),
             filterArray(capability => this.isApplicationQualifiedForCapability(appSymbolicName, capability)),
             distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-            takeUntilUnsubscribe(replyTo, PlatformMessageClient),
+            takeUntilUnsubscribe(replyTo),
           )
           .subscribe(capabilities => { // eslint-disable-line rxjs/no-nested-subscribe
-            Beans.get(PlatformMessageClient).publish<Capability[]>(replyTo, capabilities, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+            Beans.get(MessageClient).publish<Capability[]>(replyTo, capabilities, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
           });
       }));
   }
 
   private installIntentionsLookupRequestHandler(): void {
-    Beans.get(PlatformMessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.LookupIntentions)
+    Beans.get(MessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.LookupIntentions)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
@@ -260,10 +259,10 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
           .pipe(
             expand(() => this._intentionStore.change$.pipe(take(1), mergeMapTo(finder$))),
             distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-            takeUntilUnsubscribe(replyTo, PlatformMessageClient),
+            takeUntilUnsubscribe(replyTo),
           )
           .subscribe(intentions => { // eslint-disable-line rxjs/no-nested-subscribe
-            Beans.get(PlatformMessageClient).publish<Intention[]>(replyTo, intentions, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+            Beans.get(MessageClient).publish<Intention[]>(replyTo, intentions, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
           });
       }));
   }

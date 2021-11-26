@@ -10,7 +10,7 @@
 
 import {HttpClient} from './http-client';
 import {MicrofrontendPlatform} from '../microfrontend-platform';
-import {ApplicationManifest} from '../platform.model';
+import {Manifest} from '../platform.model';
 import {ApplicationRegistry} from './application-registry';
 import {Logger} from '../logger';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -28,7 +28,7 @@ describe('ManifestCollector', () => {
     httpClientSpy.fetch
       .withArgs('http://www.app-2/manifest').and.returnValue(okAnswer({body: {name: 'application-2', intentions: [], capabilities: []}, delay: 120}))
       .withArgs('http://www.app-3/manifest').and.returnValue(okAnswer({body: {name: 'application-3', intentions: [], capabilities: []}, delay: 30}))
-      .and.callFake((arg) => fetch(arg)); // fetches the manifest of 'scion-platform' host app
+      .and.callFake((arg) => fetch(arg)); // fetches the manifest of the host app
     Beans.register(HttpClient, {useValue: httpClientSpy});
 
     // mock {Logger}
@@ -36,11 +36,16 @@ describe('ManifestCollector', () => {
     Beans.register(Logger, {useValue: loggerSpy});
 
     // start the platform
-    await MicrofrontendPlatform.startHost([
-      {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'application-1'})},
-      {symbolicName: 'app-2', manifestUrl: 'http://www.app-2/manifest'},
-      {symbolicName: 'app-3', manifestUrl: 'http://www.app-3/manifest'},
-    ], {symbolicName: 'app-1'});
+    await MicrofrontendPlatform.startHost({
+      host: {
+        symbolicName: 'app-1',
+        manifest: serveManifest({name: 'application-1'}),
+      },
+      applications: [
+        {symbolicName: 'app-2', manifestUrl: 'http://www.app-2/manifest'},
+        {symbolicName: 'app-3', manifestUrl: 'http://www.app-3/manifest'},
+      ],
+    });
 
     // assert application registrations
     expect(Beans.get(ApplicationRegistry).getApplication('app-1').name).toEqual('application-1');
@@ -63,7 +68,7 @@ describe('ManifestCollector', () => {
       .withArgs('http://www.app-2/manifest').and.returnValue(nokAnswer({status: 500, delay: 100}))
       .withArgs('http://www.app-3/manifest').and.returnValue(okAnswer({body: {name: 'application-3', intentions: [], capabilities: []}, delay: 600}))
       .withArgs('http://www.app-4/manifest').and.returnValue(nokAnswer({status: 502, delay: 200}))
-      .and.callFake((arg) => fetch(arg)); // fetches the manifest of 'scion-platform' host app
+      .and.callFake((arg) => fetch(arg)); // fetches the manifest of the host app
 
     Beans.register(HttpClient, {useValue: httpClientSpy});
 
@@ -72,12 +77,14 @@ describe('ManifestCollector', () => {
     Beans.register(Logger, {useValue: loggerSpy});
 
     // start the platform
-    await MicrofrontendPlatform.startHost([
-      {symbolicName: 'app-1', manifestUrl: 'http://www.app-1/manifest'},
-      {symbolicName: 'app-2', manifestUrl: 'http://www.app-2/manifest'},
-      {symbolicName: 'app-3', manifestUrl: 'http://www.app-3/manifest'},
-      {symbolicName: 'app-4', manifestUrl: 'http://www.app-4/manifest'},
-    ]);
+    await MicrofrontendPlatform.startHost({
+      applications: [
+        {symbolicName: 'app-1', manifestUrl: 'http://www.app-1/manifest'},
+        {symbolicName: 'app-2', manifestUrl: 'http://www.app-2/manifest'},
+        {symbolicName: 'app-3', manifestUrl: 'http://www.app-3/manifest'},
+        {symbolicName: 'app-4', manifestUrl: 'http://www.app-4/manifest'},
+      ],
+    });
 
     // assert application registrations
     expect(Beans.get(ApplicationRegistry).getApplication('app-1').name).toEqual('application-1');
@@ -95,7 +102,7 @@ describe('ManifestCollector', () => {
       .withArgs('http://www.app-2/manifest').and.returnValue(okAnswer({body: {name: 'application-2', intentions: [], capabilities: []}, delay: 400}))
       .withArgs('http://www.app-3/manifest').and.returnValue(okAnswer({body: {name: 'application-3', intentions: [], capabilities: []}, delay: 600})) // greater than the global manifestLoadTimeout => expect failure
       .withArgs('http://www.app-4/manifest').and.returnValue(okAnswer({body: {name: 'application-4', intentions: [], capabilities: []}, delay: 600})) // less then than the app-specific manifestLoadTimeout => expect success
-      .and.callFake((arg) => fetch(arg)); // fetches the manifest of 'scion-platform' host app
+      .and.callFake((arg) => fetch(arg)); // fetches the manifest of the host app
 
     Beans.register(HttpClient, {useValue: httpClientSpy});
 
@@ -105,7 +112,7 @@ describe('ManifestCollector', () => {
 
     // start the platform
     await MicrofrontendPlatform.startHost({
-      apps: [
+      applications: [
         {symbolicName: 'app-1', manifestUrl: 'http://www.app-1/manifest', manifestLoadTimeout: 300}, // app-specific timeout
         {symbolicName: 'app-2', manifestUrl: 'http://www.app-2/manifest'},
         {symbolicName: 'app-3', manifestUrl: 'http://www.app-3/manifest'},
@@ -125,7 +132,7 @@ describe('ManifestCollector', () => {
   });
 });
 
-function okAnswer(answer: {body: ApplicationManifest; delay: number}): Promise<Partial<Response>> {
+function okAnswer(answer: {body: Manifest; delay: number}): Promise<Partial<Response>> {
   const response: Partial<Response> = {
     ok: true,
     json: (): Promise<any> => Promise.resolve(answer.body),

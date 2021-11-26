@@ -17,6 +17,7 @@ import {ManifestRegistryTopics} from '../../host/manifest-registry/ɵmanifest-re
 import {ManifestObjectFilter} from '../../host/manifest-registry/manifest-object-store';
 import {mapToBody} from '../../messaging.model';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {BrokerGateway, NullBrokerGateway} from '../messaging/broker-gateway';
 
 /**
  * Allows looking up capabilities available to the current app and managing the capabilities it provides.
@@ -37,13 +38,15 @@ export class ManifestService implements PreDestroy {
 
   /**
    * Promise that resolves when loaded the applications from the host.
+   * If messaging is disabled, the Promise resolves immediately.
    *
    * @internal
    */
   public whenApplicationsLoaded: Promise<void>;
 
-  constructor(private _messageClient: MessageClient = Beans.get(MessageClient)) {
-    this.whenApplicationsLoaded = this.loadApplications();
+  constructor() {
+    const messagingDisabled = Beans.get(BrokerGateway) instanceof NullBrokerGateway;
+    this.whenApplicationsLoaded = messagingDisabled ? Promise.resolve() : this.requestApplications();
   }
 
   /**
@@ -60,7 +63,7 @@ export class ManifestService implements PreDestroy {
    * @deprecated since version 1.0.0-beta.8. Use {@link applications} instead.
    */
   public lookupApplications$(): Observable<Application[]> {
-    return this._messageClient.observe$<Application[]>(PlatformTopics.Applications)
+    return Beans.get(MessageClient).observe$<Application[]>(PlatformTopics.Applications)
       .pipe(
         take(1),
         mapToBody(),
@@ -85,7 +88,7 @@ export class ManifestService implements PreDestroy {
    *         It never completes and emits continuously when satisfying capabilities are registered or unregistered.
    */
   public lookupCapabilities$<T extends Capability>(filter?: ManifestObjectFilter): Observable<T[]> {
-    return this._messageClient.request$<T[]>(ManifestRegistryTopics.LookupCapabilities, filter)
+    return Beans.get(MessageClient).request$<T[]>(ManifestRegistryTopics.LookupCapabilities, filter)
       .pipe(mapToBody());
   }
 
@@ -102,7 +105,7 @@ export class ManifestService implements PreDestroy {
    *         It never completes and emits continuously when satisfying intentions are registered or unregistered.
    */
   public lookupIntentions$(filter?: ManifestObjectFilter): Observable<Intention[]> {
-    return this._messageClient.request$<Intention[]>(ManifestRegistryTopics.LookupIntentions, filter)
+    return Beans.get(MessageClient).request$<Intention[]>(ManifestRegistryTopics.LookupIntentions, filter)
       .pipe(mapToBody());
   }
 
@@ -113,7 +116,7 @@ export class ManifestService implements PreDestroy {
    *         or that rejects if the registration failed.
    */
   public registerCapability<T extends Capability>(capability: T): Promise<string> {
-    return this._messageClient.request$<string>(ManifestRegistryTopics.RegisterCapability, capability)
+    return Beans.get(MessageClient).request$<string>(ManifestRegistryTopics.RegisterCapability, capability)
       .pipe(mapToBody())
       .toPromise();
   }
@@ -134,7 +137,7 @@ export class ManifestService implements PreDestroy {
    *         or that rejects if the unregistration failed.
    */
   public unregisterCapabilities(filter?: ManifestObjectFilter): Promise<void> {
-    return this._messageClient.request$<void>(ManifestRegistryTopics.UnregisterCapabilities, filter)
+    return Beans.get(MessageClient).request$<void>(ManifestRegistryTopics.UnregisterCapabilities, filter)
       .pipe(mergeMapTo(EMPTY))
       .toPromise()
       .then(() => Promise.resolve()); // resolve to `void`
@@ -149,7 +152,7 @@ export class ManifestService implements PreDestroy {
    *         or that rejects if the registration failed.
    */
   public registerIntention(intention: Intention): Promise<string> {
-    return this._messageClient.request$<string>(ManifestRegistryTopics.RegisterIntention, intention)
+    return Beans.get(MessageClient).request$<string>(ManifestRegistryTopics.RegisterIntention, intention)
       .pipe(mapToBody())
       .toPromise();
   }
@@ -170,14 +173,14 @@ export class ManifestService implements PreDestroy {
    *         or that rejects if the unregistration failed.
    */
   public unregisterIntentions(filter?: ManifestObjectFilter): Promise<void> {
-    return this._messageClient.request$<void>(ManifestRegistryTopics.UnregisterIntentions, filter)
+    return Beans.get(MessageClient).request$<void>(ManifestRegistryTopics.UnregisterIntentions, filter)
       .pipe(mergeMapTo(EMPTY))
       .toPromise()
       .then(() => Promise.resolve()); // resolve to `void`
   }
 
-  private async loadApplications(): Promise<void> {
-    this._applications = await this._messageClient.observe$<Application[]>(PlatformTopics.Applications)
+  private async requestApplications(): Promise<void> {
+    this._applications = await Beans.get(MessageClient).observe$<Application[]>(PlatformTopics.Applications)
       .pipe(mapToBody(), take(1), takeUntil(this._destroy$))
       .toPromise()
       .then(applications => applications || []);

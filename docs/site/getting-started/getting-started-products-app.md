@@ -52,7 +52,7 @@ In this section, we will connect the `products` micro application to the platfor
         import { MicrofrontendPlatform } from '@scion/microfrontend-platform';   
    
         public async init(): Promise<void> {
-   [+]    await MicrofrontendPlatform.connectToHost({symbolicName: 'products-app'});
+   [+]    await MicrofrontendPlatform.connectToHost('products-app');
         }   
    ```
    > Lines to be added are preceded by the [+] mark.   
@@ -63,7 +63,7 @@ In this section, we will connect the `products` micro application to the platfor
    Create the file `manifest.json` in the `src` folder, as follows:
    ```json
    {
-     "name": "Products App"
+     "name": "Products Application"
    }
    ```
    
@@ -122,7 +122,7 @@ In this section, we will render products in an unordered list.
    ```ts
         public async init(): Promise<void> {
           // Connect to the platform host
-          await MicrofrontendPlatform.connectToHost({symbolicName: 'products-app'});
+          await MicrofrontendPlatform.connectToHost('products-app');
 
    [+]    // Render the products
    [+]    this.products.forEach(product => this.renderProduct(product));
@@ -199,7 +199,7 @@ class ProductsController {
 
   public async init(): Promise<void> {
     // Connect to the platform host
-    await MicrofrontendPlatform.connectToHost({symbolicName: 'products-app'});
+    await MicrofrontendPlatform.connectToHost('products-app');
 
     // Render the products
     this.products.forEach(product => this.renderProduct(product));
@@ -239,7 +239,7 @@ interface Product {
 
 ```json
 {
-  "name": "Products App"
+  "name": "Products Application"
 }
 ```
 </details>

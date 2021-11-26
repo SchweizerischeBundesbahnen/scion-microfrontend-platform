@@ -21,8 +21,7 @@ import {MessageHandler} from './message-handler';
 
 export class ɵIntentClient implements IntentClient {
 
-  constructor(private readonly _brokerGateway: BrokerGateway) {
-  }
+  private readonly _brokerGateway = Beans.get(BrokerGateway);
 
   public publish<T = any>(intent: Intent, body?: T, options?: IntentOptions): Promise<void> {
     assertExactQualifier(intent.qualifier);

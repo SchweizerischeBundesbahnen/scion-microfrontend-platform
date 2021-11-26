@@ -12,7 +12,8 @@ In this Chapter
 
 - <<chapter:angular-integration-guide:configuring-hash-based-routing>>
 - <<chapter:angular-integration-guide:starting-platform-in-app-initializer>>
-- <<chapter:angular-integration-guide:starting-platform-in-route-resolver>>
+- <<chapter:angular-integration-guide:connecting-to-host-in-app-initializer>>
+- <<chapter:angular-integration-guide:using-route-resolver-instead-app-initializer>>
 - <<chapter:angular-integration-guide:activate-custom-elements-schema>>
 - <<chapter:angular-integration-guide:providing-activator-services>>
 - <<chapter:angular-integration-guide:providing-platform-beans-for-dependency-injection>>
@@ -24,10 +25,6 @@ In this Chapter
 [[chapter:angular-integration-guide:configuring-hash-based-routing]]
 [discrete]
 === Configuring Hash-Based Routing
-====
-TIP: Read chapter <<chapter:miscellaneous:routing-in-micro-applications>> to learn more about why to prefer hash-based routing.
-====
-
 We recommend using hash-based routing over HTML 5 push-state routing in micro applications. To enable hash-based routing in an Angular application, pass `{useHash: true}` when configuring the router in `AppRoutingModule`, as follows.
 
 [source,typescript]
@@ -35,14 +32,15 @@ We recommend using hash-based routing over HTML 5 push-state routing in micro ap
 include::angular-integration-guide.snippets.ts[tags=configure-hash-based-routing]
 ----
 
-[[chapter:angular-integration-guide:starting-platform-in-app-initializer]]
-[discrete]
-=== Starting the Platform in an Angular App Initializer
 ====
-TIP: Refer to chapter <<chapter:starting-the-platform>> for detailed instructions on how to start the platform in the host and micro applications.
+TIP: Read chapter <<chapter:miscellaneous:routing-in-micro-applications>> to learn more about why to prefer hash-based routing.
 ====
 
-The platform should be started during the bootstrapping of the Angular application, that is, before displaying content to the user. For an Angular host application and also for Angular micro applications, we recommend to start the the platform in an app initializer.
+[[chapter:angular-integration-guide:starting-platform-in-app-initializer]]
+[discrete]
+=== Starting the Platform Host in an Angular App Initializer
+
+The platform should be started during the bootstrapping of the Angular application, that is, before displaying content to the user. Hence, we recommend starting the platform in an app initializer. See chapter <<chapter:angular-integration-guide:using-route-resolver-instead-app-initializer>> for an alternative approach.
 
 NOTE: Angular allows hooking into the process of initialization by providing an initializer to the `APP_INITIALIZER` injection token. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
 
@@ -64,49 +62,47 @@ Next, we implement the `PlatformInitializer` to start the platform.
 ----
 include::start-platform-via-initializer.snippets.ts[tags=host-app:initializer]
 ----
-<1> Injects the Angular `HttpClient` and `NgZone`.
-<2> Registers the Angular `HttpClient` as bean in the bean manager, allowing the `HttpPlatformConfigLoader` to load the platform config over the network.
-<3> Starts the platform host. It's important to start the platform outside Angular's zone in order to avoid triggering change detection for unrelated DOM events.
+<1> Injects the Angular `NgZone`.
+<2> Declares or loads the platform config, e.g., using `HttpClient`.
+<3> Starts the platform host. It is super important to start the platform outside the Angular zone to avoid excessive change detection cycles.
 
-And finally, in the code snippet below, the `HttpPlatformConfigLoader` to load the platform config over the network.
-[source,typescript]
-----
-include::start-platform-via-initializer.snippets.ts[tags=host-app:platform-config-loader]
-----
-<1> Fetches the config over the network. Because the loader is constructed by the platform and not Angular, constructor injection is not available. Instead, we can look up the `HttpClient` via the bean manager.
 
-'''
+====
+TIP: Refer to chapter <<chapter:configuration:starting-the-platform-in-host-application>> for detailed instructions on how to start the platform in the host and micro applications.
+====
 
-As for the host application, a micro application can also start the platform via an Angular app initializer, as illustrated by the code snippet below. For reasons of simplicity, we have inlined the platform startup.
+[[chapter:angular-integration-guide:connecting-to-host-in-app-initializer]]
+[discrete]
+=== Connecting to the Host in an Angular App Initializer
+A micro application should connect to the platform host during the bootstrapping of the Angular application, that is, before displaying content to the user. Hence, we recommend connecting to the platform host in an app initializer. See chapter <<chapter:angular-integration-guide:using-route-resolver-instead-app-initializer>> for an alternative approach.
 
 [source,typescript]
 ----
 include::start-platform-via-initializer.snippets.ts[tags=micro-app:initializer]
 ----
-<1> Starts the platform in the name of the `product-catalog-app` micro application. It's important to start the platform outside Angular's zone in order to avoid triggering change detection for unrelated DOM events.
+<1> Provides an initializer to the `APP_INITIALIZER` injection token.
+<2> Instructs Angular to pass the `NgZone` to the higher order function.
+<3> Returns the initializer function, which connects to the host. It is super important to start the platform outside the Angular zone to avoid excessive change detection cycles.
 
-[[chapter:angular-integration-guide:starting-platform-in-route-resolver]]
+[[chapter:angular-integration-guide:using-route-resolver-instead-app-initializer]]
 [discrete]
-=== Starting the Platform in an Angular Route Resolver
-====
-TIP: Refer to chapter <<chapter:starting-the-platform>> for detailed instructions on how to start the platform in the host and micro applications.
-====
-
-If you cannot use an initializer for whatever reason, an alternative would be to use a route resolver.
+=== Using a Route Resolver instead of an App Initializer
+If you cannot use an app initializer for starting the platform or connecting to the platform host, an alternative would be to use a route resolver.
 
 NOTE: Angular allows installing resolvers on a route, allowing data to be resolved asynchronously before the route is finally activated.
 
-The following code snippet refers to starting the platform in a micro application. However, the same applies to starting the platform in the host application.
+The following code snippet illustrates how to connect to the platform host using an Angular resolver. Similarly, you could start the platform in the host application.
 
-For a micro application, the resolver implementation could look similar to the following:
+For a micro application, the resolver implementation could look as following:
 
 [source,typescript]
 ----
 include::start-platform-via-resolver.snippets.ts[tags=resolver]
 ----
-<1> Starts the platform in the `resolve` method, returning a Promise that resolves when the platform started. It's important to start the platform outside Angular's zone in order to avoid triggering change detection for unrelated DOM events.
+<1> Injects the Angular `NgZone`.
+<2> Connects to the platform host. It is super important to start the platform outside the Angular zone to avoid excessive change detection cycles.
 
-It is absolutely essential for an application instance to start the platform only once. Therefore, it is recommended to install the resolver in a parent route common to all microfrontend routes. When loading a microfrontend for the first time, Angular will wait activating the child route until the platform finished starting. When navigating to another microfrontend of the micro application, the resolver would not resolve anew.
+Ensure that a micro application instance connects to the host only once. Therefore, it is recommended to install the resolver in a parent route common to all microfrontend routes. When loading a microfrontend for the first time, Angular will wait activating the child route until the platform finished starting. When navigating to another microfrontend of the micro application, the resolver would not resolve anew.
 
 [source,typescript]
 ----

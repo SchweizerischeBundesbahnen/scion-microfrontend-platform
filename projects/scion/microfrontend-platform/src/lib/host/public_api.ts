@@ -11,8 +11,10 @@
 /**
  * Entry point for all public APIs of this package.
  */
-export * from './platform-config';
-export * from './platform-config-loader';
+export * from './microfrontend-platform-config';
+export * from './host-config';
+export * from './application-config';
 export * from './manifest-registry/public_api';
 export * from './activator/public_api';
 export * from './message-broker/message-interception';
+export {HostManifestInterceptor} from './host-manifest-interceptor';

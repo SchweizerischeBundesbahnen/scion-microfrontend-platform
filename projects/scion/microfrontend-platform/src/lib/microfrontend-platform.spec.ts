@@ -9,10 +9,7 @@
  */
 
 import {MicrofrontendPlatform} from './microfrontend-platform';
-import {MessageClient} from './client/messaging/message-client';
-import {ApplicationConfig} from './host/platform-config';
-import {expectPromise, serveManifest, waitFor} from './spec.util.spec';
-import {PlatformMessageClient} from './host/platform-message-client';
+import {expectPromise, waitFor} from './spec.util.spec';
 import {PlatformState} from './platform-state';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {PlatformPropertyService} from './platform-property-service';
@@ -24,7 +21,7 @@ describe('MicrofrontendPlatform', () => {
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
   it('should report that the app is not connected to the platform host when the host platform is not found', async () => {
-    const startup = MicrofrontendPlatform.connectToHost({symbolicName: 'client-app', messaging: {brokerDiscoverTimeout: 250}});
+    const startup = MicrofrontendPlatform.connectToHost('client-app', {brokerDiscoverTimeout: 250});
     await expectPromise(startup).toReject();
     await expect(await MicrofrontendPlatform.isConnectedToHost()).toBe(false);
   });
@@ -34,25 +31,23 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should report that the app is connected to the platform host when connected', async () => {
-    const manifestUrl = serveManifest({name: 'Host Application'});
-    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+    await MicrofrontendPlatform.startHost({applications: []});
     await expect(await MicrofrontendPlatform.isConnectedToHost()).toBe(true);
   });
 
   it('should enter state \'started\' when started', async () => {
-    const startup = MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}});
+    const startup = MicrofrontendPlatform.connectToHost('A', {connect: false});
 
     await expectPromise(startup).toResolve();
     expect(MicrofrontendPlatform.state).toEqual(PlatformState.Started);
   });
 
   it('should reject starting the client platform multiple times', async () => {
-    const startup = MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}});
+    const startup = MicrofrontendPlatform.connectToHost('A', {connect: false});
     await expectPromise(startup).toResolve();
 
     try {
-      await MicrofrontendPlatform.connectToHost({symbolicName: 'A'});
+      await MicrofrontendPlatform.connectToHost('A');
       fail('expected \'MicrofrontendPlatform.forClient()\' to error');
     }
     catch (error) {
@@ -61,30 +56,16 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should reject starting the host platform multiple times', async () => {
-    const startup = MicrofrontendPlatform.startHost([]);
+    const startup = MicrofrontendPlatform.startHost({applications: []});
     await expectPromise(startup).toResolve();
 
     try {
-      await MicrofrontendPlatform.startHost([]);
+      await MicrofrontendPlatform.startHost({applications: []});
       fail('expected \'MicrofrontendPlatform.startHost()\' to error');
     }
     catch (error) {
       await expect(error.message).toMatch(/\[PlatformStateError] Failed to enter platform state \[prevState=Started, newState=Starting]/);
     }
-  });
-
-  it('should register the `MessageClient` as alias for `PlatformMessageClient` when starting the host platform anonymously', async () => {
-    await MicrofrontendPlatform.startHost([]);
-
-    expect(Beans.get(MessageClient)).toBe(Beans.get(PlatformMessageClient));
-  });
-
-  it('should not register the `MessageClient` as alias for `PlatformMessageClient` when starting the host platform in the name of an app', async () => {
-    const manifestUrl = serveManifest({name: 'Host Application'});
-    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250, deliveryTimeout: 250}});
-
-    expect(Beans.get(MessageClient)).not.toBe(Beans.get(PlatformMessageClient));
   });
 
   it('should construct eager beans at platform startup', async () => {
@@ -96,7 +77,7 @@ describe('MicrofrontendPlatform', () => {
       }
     }
 
-    await MicrofrontendPlatform.startPlatform(() => {
+    await MicrofrontendPlatform.startPlatform(async () => {
       Beans.register(Bean, {eager: true});
     });
 
@@ -115,7 +96,7 @@ describe('MicrofrontendPlatform', () => {
     Beans.registerInitializer({useFunction: () => void (log.push('executing initializer [runlevel=0]')), runlevel: 0});
     Beans.registerInitializer({useFunction: () => void (log.push('executing initializer [runlevel=2]')), runlevel: 2});
 
-    await MicrofrontendPlatform.startPlatform(() => {
+    await MicrofrontendPlatform.startPlatform(async () => {
       Beans.register(Bean, {eager: true});
     });
 
@@ -245,20 +226,18 @@ describe('MicrofrontendPlatform', () => {
     Beans.registerInitializer(() => Promise.reject());
     Beans.registerInitializer(() => Promise.resolve());
 
-    await expectPromise(MicrofrontendPlatform.startPlatform()).toReject(/PlatformStartupError/);
+    await expectPromise(MicrofrontendPlatform.startPlatform()).toReject(/MicrofrontendPlatformStartupError/);
   });
 
   it('should allow looking up platform properties from the host', async () => {
     await MicrofrontendPlatform.startHost({
-      apps: [
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'application-1'})},
-      ],
+      applications: [],
       properties: {
         'prop1': 'PROP1',
         'prop2': 'PROP2',
         'prop3': 'PROP3',
       },
-    }, {symbolicName: 'app-1'});
+    });
 
     expect(Beans.get(PlatformPropertyService).properties()).toEqual(new Map()
       .set('prop1', 'PROP1')
@@ -268,8 +247,6 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should not emit progress if not startet yet, report progress during startup, and complete after started [MicrofrontendPlatform.startHost]', async () => {
-    const manifestUrl = serveManifest({name: 'Host Application'});
-    const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
     const captor1 = new ObserveCaptor<number>();
     const captor2 = new ObserveCaptor<number>();
 
@@ -277,7 +254,7 @@ describe('MicrofrontendPlatform', () => {
     MicrofrontendPlatform.startupProgress$.subscribe(captor1);
     expect(captor1.getValues()).toEqual([]); // no emission
 
-    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+    await MicrofrontendPlatform.startHost({applications: []});
 
     // Expect the progress to be 100% after the platform is started and the Observable to be completed.
     expect(captor1.getLastValue()).toEqual(100);
@@ -289,7 +266,7 @@ describe('MicrofrontendPlatform', () => {
     MicrofrontendPlatform.startupProgress$.subscribe(captor2);
     expect(captor2.getValues()).toEqual([]); // no emission
 
-    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+    await MicrofrontendPlatform.startHost({applications: []});
 
     // Expect the progress to be 100% after the platform completed startup and the Observable to be completed.
     expect(captor2.getLastValue()).toEqual(100);
@@ -305,7 +282,7 @@ describe('MicrofrontendPlatform', () => {
     expect(captor1.getValues()).toEqual([]); // no emission
 
     // start the platform
-    await MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}});
+    await MicrofrontendPlatform.connectToHost('A', {connect: false});
 
     // Expect the progress to be 100% after the platform completed startup and the Observable to be completed.
     expect(captor1.getLastValue()).toEqual(100);
@@ -317,7 +294,7 @@ describe('MicrofrontendPlatform', () => {
     MicrofrontendPlatform.startupProgress$.subscribe(captor2);
     expect(captor2.getValues()).toEqual([]); // no emission
 
-    await MicrofrontendPlatform.connectToHost({symbolicName: 'A', messaging: {enabled: false}});
+    await MicrofrontendPlatform.connectToHost('A', {connect: false});
 
     // Expect the progress to be 100% after the platform completed startup and the Observable to be completed.
     expect(captor2.getLastValue()).toEqual(100);

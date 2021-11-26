@@ -7,10 +7,9 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import {PlatformMessageClient} from '../platform-message-client';
 import {BehaviorSubject, Subject} from 'rxjs';
 import {distinctUntilChanged, map, takeUntil} from 'rxjs/operators';
-import {takeUntilUnsubscribe} from '../../client/messaging/message-client';
+import {MessageClient, takeUntilUnsubscribe} from '../../client/messaging/message-client';
 import {MessageHeaders, TopicMessage} from '../../messaging.model';
 import {runSafe} from '../../safe-runner';
 import {PlatformTopics} from '../../ɵmessaging.model';
@@ -39,7 +38,7 @@ export class FocusTracker implements PreDestroy {
    * Monitors when a client gains the focus.
    */
   private monitorFocusInEvents(): void {
-    Beans.get(PlatformMessageClient).observe$<void>(PlatformTopics.FocusIn)
+    Beans.get(MessageClient).observe$<void>(PlatformTopics.FocusIn)
       .pipe(
         map(event => event.headers.get(MessageHeaders.ClientId)),
         distinctUntilChanged(),
@@ -54,7 +53,7 @@ export class FocusTracker implements PreDestroy {
    * Replies to 'focus-within' requests.
    */
   private replyToIsFocusWithinRequests(): void {
-    Beans.get(PlatformMessageClient).observe$<void>(PlatformTopics.IsFocusWithin)
+    Beans.get(MessageClient).observe$<void>(PlatformTopics.IsFocusWithin)
       .pipe(takeUntil(this._destroy$))
       .subscribe((request: TopicMessage<void>) => runSafe(() => {
         const clientId = request.headers.get(MessageHeaders.ClientId);
@@ -64,11 +63,11 @@ export class FocusTracker implements PreDestroy {
           .pipe(
             map(focusOwner => this.isFocusWithin(clientId, focusOwner)),
             distinctUntilChanged(),
-            takeUntilUnsubscribe(replyTo, PlatformMessageClient),
+            takeUntilUnsubscribe(replyTo),
             takeUntil(this._destroy$),
           )
           .subscribe((isFocusWithin: boolean) => { // eslint-disable-line rxjs/no-nested-subscribe
-            Beans.get(PlatformMessageClient).publish(replyTo, isFocusWithin);
+            Beans.get(MessageClient).publish(replyTo, isFocusWithin);
           });
       }));
   }
@@ -79,8 +78,6 @@ export class FocusTracker implements PreDestroy {
   private isFocusWithin(clientId: string, focusOwner: Client | undefined): boolean {
     const clientWindow = Defined.orElseThrow(Beans.get(ClientRegistry).getByClientId(clientId), () => Error(`[NullClientError] No client registered under '${clientId}'.`)).window;
     for (let client = focusOwner; client !== undefined; client = this.getParentClient(client)) {
-      // Compare against the window instead of the client id because in the host app the
-      // {@link MessageClient} and {@link PlatformMessageClient} share the same window
       if (client.window === clientWindow) {
         return true;
       }

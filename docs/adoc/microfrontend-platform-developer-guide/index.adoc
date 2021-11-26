@@ -58,8 +58,8 @@ include::{chaptersdir}/scion-microfrontend-platform/scion-microfrontend-platform
 include::{chaptersdir}/microfrontend-architecture/microfrontend-architecture.adoc[]
 include::{chaptersdir}/technology/technology.adoc[]
 include::{chaptersdir}/core-concepts/core-concepts.adoc[]
+include::{chaptersdir}/configuration/configuration.adoc[]
 include::{chaptersdir}/miscellaneous/miscellaneous.adoc[]
 include::{chaptersdir}/security/security.adoc[]
-include::{chaptersdir}/configuration/configuration.adoc[]
 include::{chaptersdir}/terminology/terminology.adoc[]
 

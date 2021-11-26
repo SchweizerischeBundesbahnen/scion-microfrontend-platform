@@ -10,24 +10,20 @@
 
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {take} from 'rxjs/operators';
-import {PlatformMessageClient} from '../../host/platform-message-client';
 import {RouterOutlets} from './router-outlet.element';
 import {OutletRouter} from './outlet-router';
 import {NavigationOptions} from './metadata';
-import {ApplicationConfig} from '../../host/platform-config';
-import {expectPromise, serveManifest} from '../../spec.util.spec';
+import {expectPromise} from '../../spec.util.spec';
 import {UUID} from '@scion/toolkit/uuid';
 import {mapToBody} from '../../messaging.model';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {MessageClient} from '../messaging/message-client';
 
 describe('OutletRouter', () => {
 
   describe('Named parameter substitution', () => {
 
-    beforeAll(async () => {
-      const platformConfig: ApplicationConfig[] = [{symbolicName: 'host-client-app', manifestUrl: serveManifest({name: 'Host Client App'})}];
-      await MicrofrontendPlatform.startHost(platformConfig, {symbolicName: 'host-client-app'});
-    });
+    beforeAll(async () => await MicrofrontendPlatform.startHost({applications: []}));
     afterAll(async () => await MicrofrontendPlatform.destroy());
 
     describe('absolute URL (hash-based routing)', () => testSubstitution('http://localhost:4200/#/', {expectedBasePath: 'http://localhost:4200/#/'}));
@@ -158,7 +154,7 @@ describe('OutletRouter', () => {
       // Navigate to the given URL
       await Beans.get(OutletRouter).navigate(url, {...navigationOptions, outlet});
       // Lookup the navigated URL
-      return Beans.get(PlatformMessageClient).observe$(RouterOutlets.urlTopic(outlet)).pipe(take(1), mapToBody<string>()).toPromise();
+      return Beans.get(MessageClient).observe$(RouterOutlets.urlTopic(outlet)).pipe(take(1), mapToBody<string>()).toPromise();
     }
   });
 });

@@ -9,7 +9,7 @@
  */
 
 import {NgModule} from '@angular/core';
-import {ACTIVATION_CONTEXT, ActivationContext, ContextService, MessageClient, MicroApplicationConfig} from '@scion/microfrontend-platform';
+import {ACTIVATION_CONTEXT, ActivationContext, APP_IDENTITY, ContextService, MessageClient} from '@scion/microfrontend-platform';
 import {RouterModule} from '@angular/router';
 import {Beans} from '@scion/toolkit/bean-manager';
 
@@ -26,7 +26,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 export class ActivatorProgressModule {
 
   constructor() {
-    const symbolicName = Beans.get(MicroApplicationConfig).symbolicName;
+    const symbolicName = Beans.get<string>(APP_IDENTITY);
     const randomDelay = 1000 + Math.floor(Math.random() * 3000); // range: [1s, 4s); >=1s to exceed the 'activatorLoadTimeout' timeout of app3 [app3#activatorLoadTimeout=800ms] @see environment.ts
 
     console.log(`[testing] Delay the readiness signaling of the app '${symbolicName}' by ${randomDelay}ms.`);

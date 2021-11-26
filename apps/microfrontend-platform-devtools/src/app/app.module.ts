@@ -108,6 +108,6 @@ export function providePlatformInitializerFn(ngZoneMessageClientDecorator: NgZon
     });
 
     // Run the microfrontend platform as client app
-    return zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost({symbolicName: 'devtools'}));
+    return zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost('devtools'));
   };
 }

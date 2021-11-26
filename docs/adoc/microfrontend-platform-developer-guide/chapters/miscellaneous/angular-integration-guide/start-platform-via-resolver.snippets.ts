@@ -6,11 +6,11 @@ import { ActivatedRouteSnapshot, Resolve, RouterModule, RouterStateSnapshot, Rou
 @Injectable({providedIn: 'root'})
 export class PlatformInitializer implements Resolve<void> {
 
-  constructor(private _zone: NgZone) {
+  constructor(private _zone: NgZone) { // <1>
   }
 
   public resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<void> {
-    return this._zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost({symbolicName: 'product-catalog-app'})); // <1>
+    return this._zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost('<SYMBOLIC NAME>')); // <2>
   }
 }
 

@@ -7,7 +7,7 @@
  *
  *  SPDX-License-Identifier: EPL-2.0
  */
-import {MonoTypeOperatorFunction, OperatorFunction, pipe, throwError} from 'rxjs';
+import {identity, MonoTypeOperatorFunction, OperatorFunction, pipe, throwError} from 'rxjs';
 import {filter, map, timeoutWith} from 'rxjs/operators';
 import {MessageEnvelope, MessagingChannel, MessagingTransport} from './ɵmessaging.model';
 import {Message, TopicMessage} from './messaging.model';
@@ -78,5 +78,5 @@ export function timeoutIfPresent<T>(timeout: number | undefined): MonoTypeOperat
   if (timeout) {
     return timeoutWith(new Date(Date.now() + timeout), throwError(`Timeout of ${timeout}ms elapsed.`));
   }
-  return pipe();
+  return identity;
 }

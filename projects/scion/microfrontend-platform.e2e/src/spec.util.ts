@@ -19,10 +19,13 @@ export async function isCssClassPresent(elementFinder: ElementFinder, cssClass: 
 }
 
 /**
- * Returns css classes on given element.
+ * Returns CSS classes on given element.
  */
 export async function getCssClasses(elementFinder: ElementFinder): Promise<string[]> {
   const classAttr: string = await elementFinder.getAttribute('class');
+  if (!classAttr) {
+    return [];
+  }
   return classAttr.split(/\s+/);
 }
 

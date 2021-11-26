@@ -16,7 +16,7 @@
  *
  * @category Platform
  */
-export interface ApplicationManifest {
+export interface Manifest {
   /**
    * The name of the application, e.g. displayed in the DevTools.
    */
@@ -78,17 +78,17 @@ export interface Application {
    */
   manifestUrl: string;
   /**
-   * Maximum time (in milliseconds) that the host waits for this application to fetch its manifest.
+   * Maximum time (in milliseconds) that the host waits until the manifest for this application is loaded.
    *
    * This is the effective timeout, i.e, either the application-specific timeout as defined in {@link ApplicationConfig.manifestLoadTimeout},
-   * or the global timeout as defined in {@link PlatformConfig.manifestLoadTimeout}, otherwise `undefined`.
+   * or the global timeout as defined in {@link MicrofrontendPlatformConfig.manifestLoadTimeout}, otherwise `undefined`.
    */
   manifestLoadTimeout?: number;
   /**
    * Maximum time (in milliseconds) that the host waits for this application to signal readiness.
    *
    * This is the effective timeout, i.e, either the application-specific timeout as defined in {@link ApplicationConfig.activatorLoadTimeout},
-   * or the global timeout as defined in {@link PlatformConfig.activatorLoadTimeout}, otherwise `undefined`.
+   * or the global timeout as defined in {@link MicrofrontendPlatformConfig.activatorLoadTimeout}, otherwise `undefined`.
    */
   activatorLoadTimeout?: number;
   /**
@@ -379,3 +379,11 @@ export interface ParamDefinition {
    */
   [property: string]: any;
 }
+
+/** @internal */
+export const ɵAPP_CONFIG = Symbol('ɵAPP_CONFIG');
+
+/**
+ * Symbol to get the application's symbolic name from the bean manager.
+ */
+export const APP_IDENTITY = Symbol('APP_IDENTITY');

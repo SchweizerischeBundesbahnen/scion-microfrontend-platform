@@ -33,7 +33,7 @@ include::message-interception.snippets.ts[tags=message-logger-interceptor]
 [[chapter:message-interception:registering-interceptors]]
 [discrete]
 === Registering Interceptors
-You register interceptors with the bean manager when the host application starts. Interceptors can be registered only in the host application. They are invoked in registration order.
+You register interceptors with the bean manager when starting the host application. Interceptors can be registered only in the host application. They are invoked in registration order.
 
 [source,typescript]
 ----

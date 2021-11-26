@@ -9,7 +9,7 @@
  */
 import {Component} from '@angular/core';
 import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {Intention, ManifestObjectFilter, ManifestService, MicroApplicationConfig} from '@scion/microfrontend-platform';
+import {APP_IDENTITY, Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
 import {SciParamsEnterComponent} from '@scion/toolkit.internal/widgets';
 import {Observable} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -57,7 +57,7 @@ export class RegisterIntentionComponent {
       [APP_SYMBOLIC_NAME]: new FormControl(''),
     });
 
-    this.intentions$ = Beans.get(ManifestService).lookupIntentions$({appSymbolicName: Beans.get(MicroApplicationConfig).symbolicName});
+    this.intentions$ = Beans.get(ManifestService).lookupIntentions$({appSymbolicName: Beans.get<string>(APP_IDENTITY)});
   }
 
   public onRegister(): void {

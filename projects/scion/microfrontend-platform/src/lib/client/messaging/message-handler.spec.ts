@@ -8,10 +8,9 @@
  *  SPDX-License-Identifier: EPL-2.0
  */
 import {MessageClient} from '../../client/messaging/message-client';
-import {expectPromise, serveManifest, waitFor, waitForCondition} from '../../spec.util.spec';
+import {expectPromise, waitFor, waitForCondition} from '../../spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {ApplicationConfig} from '../../host/platform-config';
 import {IntentMessage, TopicMessage} from '../../messaging.model';
 import {AsyncSubject, concat, Observable, of, ReplaySubject, Subject, throwError} from 'rxjs';
 import {finalize} from 'rxjs/operators';
@@ -28,9 +27,7 @@ describe('Message Handler', () => {
   describe('pub/sub', () => {
 
     it('should receive messages published to a topic', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       const collector = new Array<string>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -46,9 +43,7 @@ describe('Message Handler', () => {
     });
 
     it('should not unregister the callback on error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       const collector = new Array<string>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -65,9 +60,7 @@ describe('Message Handler', () => {
     });
 
     it('should not unregister the callback on async error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       const collector = new Array<string>();
       Beans.get(MessageClient).onMessage<string>('topic', async message => {
@@ -84,9 +77,7 @@ describe('Message Handler', () => {
     });
 
     it('should ignore values returned by the callback', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       const collector = new Array<string>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -103,9 +94,7 @@ describe('Message Handler', () => {
     });
 
     it('should ignore async values returned by the callback', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       const collector = new Array<string>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -122,9 +111,7 @@ describe('Message Handler', () => {
     });
 
     it('should unregister the handler when cancelling its subscription', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       const collector = new Array<string>();
       const subscription = Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -146,9 +133,7 @@ describe('Message Handler', () => {
   describe('request/response', () => {
 
     it('should reply with a single response and then complete the requestor\'s Observable', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return message.body.toUpperCase();
@@ -163,9 +148,7 @@ describe('Message Handler', () => {
     });
 
     it('should reply with a single response (Promise) and then complete the requestor\'s Observable', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return Promise.resolve(message.body.toUpperCase());
@@ -180,9 +163,7 @@ describe('Message Handler', () => {
     });
 
     it('should reply with a single response (Observable) and then complete the requestor\'s Observable', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return of(message.body.toUpperCase());
@@ -197,9 +178,7 @@ describe('Message Handler', () => {
     });
 
     it('should reply with multiple responses and then complete the requestor\'s Observable', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         const body = message.body.toUpperCase();
@@ -215,9 +194,7 @@ describe('Message Handler', () => {
     });
 
     it('should reply with multiple responses without completing the requestor\'s Observable', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         const body = message.body.toUpperCase();
@@ -240,9 +217,7 @@ describe('Message Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when not returning a value', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         // not returning a value
@@ -257,9 +232,7 @@ describe('Message Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when returning `undefined`', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         return undefined;
@@ -274,9 +247,7 @@ describe('Message Handler', () => {
     });
 
     it('should treat `null` as valid reply', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         return null;
@@ -291,9 +262,7 @@ describe('Message Handler', () => {
     });
 
     it('should ignore `undefined` values, but not `null` values', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         const body = message.body.toUpperCase();
@@ -309,9 +278,7 @@ describe('Message Handler', () => {
     });
 
     it('should error the requestor\'s Observable when throwing an error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         throw Error('some error');
@@ -328,9 +295,7 @@ describe('Message Handler', () => {
     });
 
     it('should error the requestor\'s Observable when returning a Promise that rejects', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         return Promise.reject('some error');
@@ -347,9 +312,7 @@ describe('Message Handler', () => {
     });
 
     it('should error the requestor\'s Observable when returning an Observable that errors', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         return throwError('some error');
@@ -366,9 +329,7 @@ describe('Message Handler', () => {
     });
 
     it('should reply values until encountering an error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return concat(
@@ -388,9 +349,7 @@ describe('Message Handler', () => {
     });
 
     it('should not unregister the handler if the replier Observable errors', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return concat(
@@ -419,9 +378,7 @@ describe('Message Handler', () => {
     });
 
     it('should not unregister the handler on error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       const collected = [];
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -449,9 +406,7 @@ describe('Message Handler', () => {
     });
 
     it('should not unregister the handler on async error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       const collected = [];
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -479,9 +434,7 @@ describe('Message Handler', () => {
     });
 
     it('should unsubscribe from the replier Observable when the requestor unsubscribes', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       const replierConstruct$ = new Subject();
       const whenReplierConstruct = replierConstruct$.toPromise();
@@ -508,9 +461,7 @@ describe('Message Handler', () => {
     });
 
     it('should unsubscribe the replier\'s and requestor\'s Observable when unregistering the handler', async () => {
-      const manifestUrl = serveManifest({name: 'Host App'});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       const replierConstruct$ = new AsyncSubject();
       const replierTeardown$ = new AsyncSubject();
@@ -549,9 +500,15 @@ describe('Intent Handler', () => {
   describe('pub/sub', () => {
 
     it('should receive intents', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       const collector = new Array<string>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
@@ -567,9 +524,15 @@ describe('Intent Handler', () => {
     });
 
     it('should not unregister the callback on error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       const collector = new Array<string>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
@@ -586,9 +549,15 @@ describe('Intent Handler', () => {
     });
 
     it('should not unregister the callback on async error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       const collector = new Array<string>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, async intentMessage => {
@@ -605,9 +574,15 @@ describe('Intent Handler', () => {
     });
 
     it('should ignore values returned by the callback', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       const collector = new Array<string>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
@@ -624,9 +599,15 @@ describe('Intent Handler', () => {
     });
 
     it('should ignore async values returned by the callback', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       const collector = new Array<string>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
@@ -643,9 +624,15 @@ describe('Intent Handler', () => {
     });
 
     it('should unregister the handler when cancelling its subscription', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       const collector = new Array<string>();
       const subscription = Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
@@ -667,9 +654,15 @@ describe('Intent Handler', () => {
   describe('request/response', () => {
 
     it('should reply with a single response and then complete the requestor\'s Observable', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         return intentMessage.body.toUpperCase();
@@ -684,9 +677,15 @@ describe('Intent Handler', () => {
     });
 
     it('should reply with a single response (Promise) and then complete the requestor\'s Observable', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         return Promise.resolve(intentMessage.body.toUpperCase());
@@ -701,9 +700,15 @@ describe('Intent Handler', () => {
     });
 
     it('should reply with a single response (Observable) and then complete the requestor\'s Observable', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         return of(intentMessage.body.toUpperCase());
@@ -718,9 +723,15 @@ describe('Intent Handler', () => {
     });
 
     it('should reply with multiple responses and then complete the requestor\'s Observable', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         const body = intentMessage.body.toUpperCase();
@@ -736,9 +747,15 @@ describe('Intent Handler', () => {
     });
 
     it('should reply with multiple responses without completing the requestor\'s Observable', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         const body = intentMessage.body.toUpperCase();
@@ -761,9 +778,15 @@ describe('Intent Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when not returning a value', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, () => {
         // not returning a value
@@ -778,9 +801,15 @@ describe('Intent Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when returning `undefined`', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, () => {
         return undefined;
@@ -795,9 +824,15 @@ describe('Intent Handler', () => {
     });
 
     it('should treat `null` as valid reply', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, () => {
         return null;
@@ -812,9 +847,15 @@ describe('Intent Handler', () => {
     });
 
     it('should ignore `undefined` values, but not `null` values', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         const body = intentMessage.body.toUpperCase();
@@ -830,9 +871,15 @@ describe('Intent Handler', () => {
     });
 
     it('should error the requestor\'s Observable when throwing an error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, () => {
         throw Error('some error');
@@ -849,9 +896,15 @@ describe('Intent Handler', () => {
     });
 
     it('should error the requestor\'s Observable when returning a Promise that rejects', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, () => {
         return Promise.reject('some error');
@@ -868,9 +921,15 @@ describe('Intent Handler', () => {
     });
 
     it('should error the requestor\'s Observable when returning an Observable that errors', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, () => {
         return throwError('some error');
@@ -887,9 +946,15 @@ describe('Intent Handler', () => {
     });
 
     it('should reply values until encountering an error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         return concat(
@@ -909,9 +974,15 @@ describe('Intent Handler', () => {
     });
 
     it('should not unregister the handler if the replier Observable errors', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         return concat(
@@ -940,9 +1011,15 @@ describe('Intent Handler', () => {
     });
 
     it('should not unregister the handler on error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       const collected = [];
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
@@ -970,9 +1047,15 @@ describe('Intent Handler', () => {
     });
 
     it('should not unregister the handler on async error', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       const collected = [];
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
@@ -1000,9 +1083,15 @@ describe('Intent Handler', () => {
     });
 
     it('should unsubscribe from the replier Observable when the requestor unsubscribes', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       const replierConstruct$ = new Subject();
       const whenReplierConstruct = replierConstruct$.toPromise();
@@ -1029,9 +1118,15 @@ describe('Intent Handler', () => {
     });
 
     it('should unsubscribe the replier\'s and requestor\'s Observable when unregistering the handler', async () => {
-      const manifestUrl = serveManifest({name: 'Host App', capabilities: [{type: 'capability'}]});
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: manifestUrl}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app'});
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
 
       const replierConstruct$ = new AsyncSubject();
       const replierTeardown$ = new AsyncSubject();

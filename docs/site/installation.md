@@ -7,13 +7,12 @@
 
 This short manual helps to install the SCION Microfrontend Platform and describes how to start the platform. For more detailed instructions, please refer to the [Developer Guide][link-developer-guide#configuration].
 
-
 1. **Install `SCION Microfrontend Platform` using the NPM command-line tool**
 
    ```console
    npm install @scion/microfrontend-platform --save
    ```
-  
+
 1. **Install `SCION Toolkit` using the NPM command-line tool**
 
    ```console
@@ -29,72 +28,77 @@ This short manual helps to install the SCION Microfrontend Platform and describe
    <details>
      <summary><strong>Start the platform in the host application</strong></summary>
      <br>
-    
-   The host application provides the top-level integration container for microfrontends. Typically, it is the web app which the user loads into his browser and provides the main application shell, defining areas to embed microfrontends. The host application registers the micro applications when starting the platform host.
 
-   3.1. *Registering micro applications*
+     The host application provides the top-level integration container for microfrontends. Typically, it is the web app which the user loads into his browser that provides the main application shell, defining areas to embed microfrontends.
 
-      For each micro application to register, you must provide an application config with the application's symbolic name and the URL to its manifest.
-      ```ts
-      const platformConfig: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: '/manifest.json'}, // optional
-        {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
-        {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
-      ];
-      ```
-      Symbolic names must be unique and are used by the micro applications to connect to the platform host. The manifest is a JSON file that contains information about a micro application.
-   
-   3.2. *Starting the platform*
+     The host application starts the platform by invoking the method `MicrofrontendPlatform.startHost` and passing a config with the web applications to register as micro applications. Registered micro applications can interact with the platform and other micro applications.
 
-      When starting the platform, you pass the app config array as first argument, as following:
-      ```ts
-      await MicrofrontendPlatform.startHost(platformConfig, {symbolicName: 'host-app'});
-      ```
-      Alternatively, you could load the config asynchronously using a config loader, e.g., for loading the config over the network.
+     ```ts
+     await MicrofrontendPlatform.startHost({
+       applications: [
+         {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
+         {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
+       ],
+     });
+     ```
 
-      The second argument is the symbolic name of the micro application starting the platform host. It is optional. If specified, the host app can interact with the platform and other micro applications, e.g., publish messages or navigate in router outlets. The host application has no extra privileges compared to other micro applications and must also provide a manifest file. The manifest declares at least the name of the application, as follows:
- 
-      ```json
-      {
-        "name": "Host App"
-      }
-      ```
+     For each micro application to register, you must provide an application config with the application's symbolic name and the URL to its manifest. Symbolic names must be unique and are used by the micro applications to connect to the platform host. The manifest is a JSON file that contains information about the micro application.
 
-      The method for starting the platform host returns a Promise that resolves when the platform started successfully and activators, if any, signaled ready. You should wait for the Promise to resolve before interacting with the platform.
-   </details>    
- 
-   <details>
-     <summary><strong>Start the platform in micro applications</strong></summary>
-     <br>
-     
-   For a micro application to connect to the platform host, it must be registered in the host application. For this, the micro application must provide a manifest file.  
- 
-   3.1. *Providing a manifest*
-  
-      Create the manifest file, for example, `manifest.json`. The manifest declares at least the name of the application.
- 
-      ```json
-      {
-        "name": "Products App"
-      }
-      ```
-   
-   3.2. *Connecting to the platform host*
-   
-      ```ts
-      await MicrofrontendPlatform.connectToHost({symbolicName: 'products-app'});
-      ```
-   
-      As the symbolic name, you must pass the exact same name under which you registered the micro application in the host application.
-      
-      The method for connecting to the platform host returns a Promise that resolves when connected to the platform host, or that rejects if not finding the platform host or if the micro application is not authorized to connect. You should wait for the Promise to resolve before interacting with the platform.
-  
+     As with micro applications, the host can provide a manifest to contribute behavior, as following:
+
+     ```ts
+     await MicrofrontendPlatform.startHost({
+       host: {
+         manifest: {
+           name: 'Host Application',
+           capabilities: [
+             // capabilities of the host application
+           ],
+           intentions: [
+             // intentions of the host application
+           ],
+         }
+       },
+       applications: [
+         {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
+         {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
+       ],
+     });
+     ```
+
+     The method for starting the platform host returns a Promise that resolves once platform startup completed. You should wait for the Promise to resolve before interacting with the platform.
    </details>
-   
+
+   <details>
+     <summary><strong>Connect to the platform host in a micro application</strong></summary>
+     <br>
+
+     For a micro application to connect to the platform host, it needs to provide a manifest file and be registered in the host application.
+
+     Create the manifest file, for example, `manifest.json`. The manifest declares at minimum the name of the application.
+
+     ```json
+     {
+       "name": "Products Application"
+     }
+     ```
+
+     A micro application connects to the platform host by invoking the method `MicrofrontendPlatform.connectToHost` and passing its identity as argument. The host does check whether the connecting micro application is qualified to connect, i.e., is registered in the host application under that origin; otherwise, the host will reject the connection attempt.
+
+     ```ts
+     await MicrofrontendPlatform.connectToHost('products-app');
+     ```
+
+     As the symbolic name, you must pass the exact same name under which you registered the micro application in the host application.
+
+     The method for connecting to the platform host returns a Promise that resolves when connected to the platform host. You should wait for the Promise to resolve before interacting with the platform.
+
+   </details>
+
    ***
-   
+
    For Angular applications, we recommend starting the platform in an app initializer and synchronizing the message client with the Angular zone. For more detailed information on integrating the SCION Microfrontend Platform into an Angular application, please refer to the [Angular Integration Guide][link-developer-guide#angular_integration_guide].
-   
+
 
 [menu-home]: /README.md
 [menu-projects-overview]: /docs/site/projects-overview.md

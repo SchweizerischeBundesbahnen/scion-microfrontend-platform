@@ -18,8 +18,7 @@ import {MessageHandler} from './message-handler';
 
 export class ɵMessageClient implements MessageClient {
 
-  constructor(private readonly _brokerGateway: BrokerGateway) {
-  }
+  private readonly _brokerGateway = Beans.get(BrokerGateway);
 
   public publish<T = any>(topic: string, message?: T, options?: PublishOptions): Promise<void> {
     assertTopic(topic, {allowWildcardSegments: false});

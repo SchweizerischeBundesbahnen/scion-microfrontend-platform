@@ -1,5 +1,5 @@
-import { Handler, IntentInterceptor, IntentMessage, MessageInterceptor, MicrofrontendPlatform, PlatformConfig, PlatformConfigLoader, PlatformState, TopicMatcher, TopicMessage } from '@scion/microfrontend-platform';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {Handler, IntentInterceptor, IntentMessage, MessageInterceptor, MicrofrontendPlatform, PlatformState, TopicMatcher, TopicMessage} from '@scion/microfrontend-platform';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 {
   // tag::message-logger-interceptor[]
@@ -27,12 +27,6 @@ import { Beans } from '@scion/toolkit/bean-manager';
 
   // end::message-logger-interceptor[]
 
-  class YourPlatformConfigLoader implements PlatformConfigLoader {
-    public load(): Promise<PlatformConfig> {
-      return undefined;
-    }
-  }
-
   // tag::message-logger-interceptor-registration[]
   MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
     Beans.register(MessageInterceptor, {useClass: MessageLoggerInterceptor, multi: true}); // <1>
@@ -40,7 +34,7 @@ import { Beans } from '@scion/toolkit/bean-manager';
   });
 
   // Start the platform.
-  MicrofrontendPlatform.startHost(YourPlatformConfigLoader); // <3>
+  MicrofrontendPlatform.startHost(...); // <3>
   // end::message-logger-interceptor-registration[]
 }
 

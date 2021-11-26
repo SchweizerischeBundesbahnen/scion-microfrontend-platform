@@ -9,7 +9,7 @@
  */
 import {Component} from '@angular/core';
 import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
-import {Capability, ManifestObjectFilter, ManifestService, MicroApplicationConfig, ParamDefinition} from '@scion/microfrontend-platform';
+import {APP_IDENTITY, Capability, ManifestObjectFilter, ManifestService, ParamDefinition} from '@scion/microfrontend-platform';
 import {SciParamsEnterComponent} from '@scion/toolkit.internal/widgets';
 import {Observable} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -64,7 +64,7 @@ export class RegisterCapabilityComponent {
       [APP_SYMBOLIC_NAME]: new FormControl(''),
     });
 
-    this.capabilities$ = Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: Beans.get(MicroApplicationConfig).symbolicName});
+    this.capabilities$ = Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: Beans.get<string>(APP_IDENTITY)});
   }
 
   public onRegister(): void {

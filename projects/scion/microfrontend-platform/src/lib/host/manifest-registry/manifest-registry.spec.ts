@@ -9,7 +9,6 @@
  */
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {expectEmissions, installLoggerSpies, readConsoleLog, serveManifest} from '../../spec.util.spec';
-import {ApplicationConfig} from '../platform-config';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestRegistry} from './manifest-registry';
 import {Capability} from '../../platform.model';
@@ -30,21 +29,22 @@ describe('ManifestRegistry', () => {
   describe('hasIntention', () => {
 
     it('should error if not passing an exact qualifier', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
 
       expect(() => Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app')).toThrowError(/IllegalQualifierError/);
     });
 
     it(`should have an implicit intention for a capability having an exact qualifier ({entity: 'person', id: '5'})`, async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-        {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ],
+      });
 
       // Register capability
       Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1');
@@ -62,12 +62,13 @@ describe('ManifestRegistry', () => {
     });
 
     it(`should have an implicit intention for a capability having an asterisk wildcard qualifier ({entity: 'person', id: '*'})`, async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-        {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ],
+      });
 
       // Register capability
       Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
@@ -84,12 +85,13 @@ describe('ManifestRegistry', () => {
     });
 
     it(`should have an implicit intention for a capability having an optional qualifier ({entity: 'person', id: '?'})`, async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-        {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ],
+      });
 
       // Register capability
       Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'app-1');
@@ -106,12 +108,13 @@ describe('ManifestRegistry', () => {
     });
 
     it(`should match an intention having an exact qualifier ({entity: 'person', id: '5'})`, async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-        {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ],
+      });
 
       // Register intention
       await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1');
@@ -129,12 +132,13 @@ describe('ManifestRegistry', () => {
     });
 
     it(`should match an intention having an asterisk wildcard qualifier ({entity: 'person', id: '*'})`, async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-        {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ],
+      });
 
       // Register intention
       await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
@@ -151,12 +155,13 @@ describe('ManifestRegistry', () => {
     });
 
     it(`should match an intention having an any-more wildcard (**) qualifier ({entity: 'person', '*': '*'})`, async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-        {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ],
+      });
 
       // Register intention
       await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {'entity': 'person', '*': '*'}}, 'app-1');
@@ -174,12 +179,13 @@ describe('ManifestRegistry', () => {
     });
 
     it(`should match an intention having an optional wildcard (?) qualifier ({entity: 'person', id: '?'})`, async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-        {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-        {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+        ],
+      });
 
       // Register intention
       await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'app-1');
@@ -199,10 +205,10 @@ describe('ManifestRegistry', () => {
   describe('resolveCapabilitiesByIntent', () => {
 
     it('should error if not passing an exact qualifier', async () => {
-      const registeredApps: ApplicationConfig[] = [
-        {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
 
       expect(() => Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app')).toThrowError(/IllegalQualifierError/);
     });
@@ -210,12 +216,13 @@ describe('ManifestRegistry', () => {
     describe('implicit intention', () => {
 
       it('should resolve to own private capability having an exact qualifier', async () => {
-        const registeredApps: ApplicationConfig[] = [
-          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-        ];
-        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        await MicrofrontendPlatform.startHost({
+          host: {symbolicName: 'host-app'},
+          applications: [
+            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          ],
+        });
 
         // Register capability
         const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1');
@@ -230,12 +237,13 @@ describe('ManifestRegistry', () => {
       });
 
       it('should resolve to own private capability having an asterisk wildcard (*) in the qualifier', async () => {
-        const registeredApps: ApplicationConfig[] = [
-          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-        ];
-        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        await MicrofrontendPlatform.startHost({
+          host: {symbolicName: 'host-app'},
+          applications: [
+            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          ],
+        });
 
         // Register capability
         const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
@@ -250,12 +258,13 @@ describe('ManifestRegistry', () => {
       });
 
       it('should resolve to own private capability having an optional wildcard (?) in the qualifier', async () => {
-        const registeredApps: ApplicationConfig[] = [
-          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-        ];
-        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        await MicrofrontendPlatform.startHost({
+          host: {symbolicName: 'host-app'},
+          applications: [
+            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          ],
+        });
 
         // Register capability
         const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'app-1');
@@ -270,12 +279,13 @@ describe('ManifestRegistry', () => {
       });
 
       it('should not resolve to private capabilities of other applications', async () => {
-        const registeredApps: ApplicationConfig[] = [
-          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-        ];
-        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        await MicrofrontendPlatform.startHost({
+          host: {symbolicName: 'host-app'},
+          applications: [
+            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          ],
+        });
 
         // Register capabilities of app-1
         Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id1'}, private: true}, 'app-1');
@@ -293,12 +303,13 @@ describe('ManifestRegistry', () => {
       });
 
       it('should not resolve to public capabilities of other applications', async () => {
-        const registeredApps: ApplicationConfig[] = [
-          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-        ];
-        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        await MicrofrontendPlatform.startHost({
+          host: {symbolicName: 'host-app'},
+          applications: [
+            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          ],
+        });
 
         // Register capabilities of app-1
         Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id1'}, private: false}, 'app-1');
@@ -319,12 +330,13 @@ describe('ManifestRegistry', () => {
     describe('explicit intention', () => {
 
       it('should resolve to public foreign capability having an exact qualifier', async () => {
-        const registeredApps: ApplicationConfig[] = [
-          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-        ];
-        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        await MicrofrontendPlatform.startHost({
+          host: {symbolicName: 'host-app'},
+          applications: [
+            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          ],
+        });
 
         // Register capability of app-1
         const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '5'}, private: false}, 'app-1');
@@ -336,12 +348,13 @@ describe('ManifestRegistry', () => {
       });
 
       it('should resolve to public foreign capability having an asterisk wildcard (*) in the qualifier', async () => {
-        const registeredApps: ApplicationConfig[] = [
-          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-        ];
-        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        await MicrofrontendPlatform.startHost({
+          host: {symbolicName: 'host-app'},
+          applications: [
+            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          ],
+        });
 
         // Register capability of app-1
         const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
@@ -353,12 +366,13 @@ describe('ManifestRegistry', () => {
       });
 
       it('should resolve to public foreign capability having an optional wildcard (?) in the qualifier', async () => {
-        const registeredApps: ApplicationConfig[] = [
-          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-        ];
-        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        await MicrofrontendPlatform.startHost({
+          host: {symbolicName: 'host-app'},
+          applications: [
+            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          ],
+        });
 
         // Register capability of app-1
         const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
@@ -371,12 +385,13 @@ describe('ManifestRegistry', () => {
       });
 
       it('should resolve to public (but not private) capabilities of other apps', async () => {
-        const registeredApps: ApplicationConfig[] = [
-          {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
-        ];
-        await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        await MicrofrontendPlatform.startHost({
+          host: {symbolicName: 'host-app'},
+          applications: [
+            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
+            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          ],
+        });
 
         // Register capabilities of app-1
         const publicCapabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'public'}, private: false}, 'app-1');
@@ -396,10 +411,10 @@ describe('ManifestRegistry', () => {
   });
 
   it('should not allow registering a capability using the any-more wildcard (**) in its qualifier', async () => {
-    const registeredApps: ApplicationConfig[] = [
-      {symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})},
-    ];
-    await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+    await MicrofrontendPlatform.startHost({
+      host: {symbolicName: 'host-app'},
+      applications: [],
+    });
 
     expect(() => Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {'entity': 'person', '*': '*'}}, 'host-app')).toThrowError(`[CapabilityRegisterError] Asterisk wildcard ('*') not allowed in the qualifier key.`);
   });
@@ -407,10 +422,10 @@ describe('ManifestRegistry', () => {
   describe('Capability Params', () => {
     it('should register params and support legacy param declaration (via manifest)', async () => {
       // Register capability via manifest
-      const registeredApps: ApplicationConfig[] = [
-        {
+      await MicrofrontendPlatform.startHost({
+        host: {
           symbolicName: 'host-app',
-          manifestUrl: serveManifest({
+          manifest: {
             name: 'Host',
             capabilities: [
               {
@@ -423,10 +438,10 @@ describe('ManifestRegistry', () => {
                 optionalParams: ['param4'], // deprecated; expect legacy support
               },
             ],
-          }),
+          },
         },
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        applications: [],
+      });
 
       // Assert deprecation warning
       expect(readConsoleLog('warn')).toEqual(jasmine.arrayContaining([
@@ -451,8 +466,10 @@ describe('ManifestRegistry', () => {
     });
 
     it('should register params and support legacy param declaration (via ManifestService)', async () => {
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
 
       // Register capability via ManifestServie
       const capabilityId = await Beans.get(ManifestService).registerCapability({
@@ -488,11 +505,10 @@ describe('ManifestRegistry', () => {
     });
 
     it('should error if params forget to declare whether they are required or optional (via manifest)', async () => {
-      // Register capability via manifest
-      const registeredApps: ApplicationConfig[] = [
-        {
+      await MicrofrontendPlatform.startHost({
+        host: {
           symbolicName: 'host-app',
-          manifestUrl: serveManifest({
+          manifest: {
             name: 'Host',
             capabilities: [
               {
@@ -502,18 +518,18 @@ describe('ManifestRegistry', () => {
                 ],
               },
             ],
-          }),
+          },
         },
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        applications: [],
+      });
+
       expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] Parameter 'param' must be explicitly defined as required or optional.`,
       ]));
     });
 
     it('should error if params forget to declare whether they are required or optional (via ManifestService)', async () => {
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       // Register capability via ManifestServie
       await expectAsync(Beans.get(ManifestService).registerCapability({
@@ -525,10 +541,10 @@ describe('ManifestRegistry', () => {
 
     it('should error if deprecated params are required (via manifest)', async () => {
       // Register capability via manifest
-      const registeredApps: ApplicationConfig[] = [
-        {
+      await MicrofrontendPlatform.startHost({
+        host: {
           symbolicName: 'host-app',
-          manifestUrl: serveManifest({
+          manifest: {
             name: 'Host',
             capabilities: [
               {
@@ -538,10 +554,11 @@ describe('ManifestRegistry', () => {
                 ],
               },
             ],
-          }),
+          },
         },
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        applications: [],
+      });
+
       expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`,
       ]));
@@ -549,10 +566,10 @@ describe('ManifestRegistry', () => {
 
     it('should error if deprecated params, which declare a substitute, are required (via manifest)', async () => {
       // Register capability via manifest
-      const registeredApps: ApplicationConfig[] = [
-        {
+      await MicrofrontendPlatform.startHost({
+        host: {
           symbolicName: 'host-app',
-          manifestUrl: serveManifest({
+          manifest: {
             name: 'Host',
             capabilities: [
               {
@@ -563,18 +580,18 @@ describe('ManifestRegistry', () => {
                 ],
               },
             ],
-          }),
+          },
         },
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        applications: [],
+      });
+
       expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`,
       ]));
     });
 
     it('should error if deprecated params are required (via ManifestService)', async () => {
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       // Register capability via ManifestServie
       await expectAsync(Beans.get(ManifestService).registerCapability({
@@ -585,8 +602,7 @@ describe('ManifestRegistry', () => {
     });
 
     it('should error if deprecated params, which declare a substitute, are required (via ManifestService)', async () => {
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       // Register capability via ManifestServie
       await expectAsync(Beans.get(ManifestService).registerCapability({
@@ -601,10 +617,10 @@ describe('ManifestRegistry', () => {
 
     it('should error if deprecated params declare an invalid substitute (via manifest)', async () => {
       // Register capability via manifest
-      const registeredApps: ApplicationConfig[] = [
-        {
+      await MicrofrontendPlatform.startHost({
+        host: {
           symbolicName: 'host-app',
-          manifestUrl: serveManifest({
+          manifest: {
             name: 'Host',
             capabilities: [
               {
@@ -616,18 +632,18 @@ describe('ManifestRegistry', () => {
                 ],
               },
             ],
-          }),
+          },
         },
-      ];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+        applications: [],
+      });
+
       expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] The deprecated parameter 'param1' defines an invalid substitute 'paramX'. Valid substitutes are: [param2,param3]`,
       ]));
     });
 
     it('should error if deprecated params declare an invalid substitute (via ManifestService)', async () => {
-      const registeredApps: ApplicationConfig[] = [{symbolicName: 'host-app', manifestUrl: serveManifest({name: 'Host'})}];
-      await MicrofrontendPlatform.startHost(registeredApps, {symbolicName: 'host-app', messaging: {brokerDiscoverTimeout: 250}});
+      await MicrofrontendPlatform.startHost({applications: []});
 
       // Register capability via ManifestServie
       await expectAsync(Beans.get(ManifestService).registerCapability({

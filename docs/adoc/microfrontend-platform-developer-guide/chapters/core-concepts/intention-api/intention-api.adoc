@@ -49,8 +49,9 @@ The following code snippet shows the manifest of the _Product Catalog Applicatio
 include::intention-api.snippets.ts[tags=manifest]
 ----
 
-.Properties of `ApplicationManifest`
-[cols="1,1,1,99"]
+[[objects::manifest]]
+.Properties of `Manifest`
+[cols="1,2,1,5"]
 |===
 | Property | Type | Mandatory | Description
 
@@ -66,12 +67,12 @@ a| `string`
 For a _Single Page Application_ that uses _hash-based_ routing, you typically specify the hash symbol (`#`) as the base URL.
 
 | capabilities
-a| `Capability[]`
+a| `<<objects::capability,Capability>>[]`
 | no
 | Functionality that qualified micro application can look up or call via intent.
 
 | intentions
-a| `Intention[]`
+a| `<<objects::intention,Intention>>[]`
 | no
 | Functionality which this micro application intends to use.
 |===
@@ -98,9 +99,9 @@ The following code snippet shows an example of how to declare a capability in th
 include::intention-api.snippets.ts[tags=capability-declaration]
 ----
 
-[[chapter:intention-api:capability-properties]]
+[[objects::capability]]
 .Properties of `Capability`
-[cols="1,1,1,99"]
+[cols="1,2,1,5"]
 |===
 | Property | Type | Mandatory | Description
 
@@ -176,9 +177,9 @@ The following code snippet shows an example of how to declare an intention in th
 include::intention-api.snippets.ts[tags=intention-declaration]
 ----
 
-[[chapter:intention-api:intention-properties]]
+[[objects::intention]]
 .Properties of `Intention`
-[cols="1,1,1,99"]
+[cols="1,2,1,5"]
 |===
 | Property | Type | Mandatory | Description
 
@@ -255,7 +256,7 @@ By passing a `ManifestObjectFilter` to the `lookupCapabilities$` method, you can
 IMPORTANT: A micro application can only look up its own capabilities and public capabilities for which it has declared an intention.
 
 .Properties of `ManifestObjectFilter` to filter capabilities
-[cols="1,1,1,99"]
+[cols="1,2,1,8"]
 |===
 | Property | Type | Mandatory | Description
 
@@ -292,7 +293,7 @@ The platform allows you to look up and observe intentions. Unlike when <<chapter
 You can look up intentions using the `ManifestService.lookupIntentions$` method. By passing a `ManifestObjectFilter` to the `lookupIntentions$` method, you can control which intentions to observe. Specified filter criteria are "AND"ed together. If not passing a filter, all intentions are observed. When subscribing to the Observable, it emits the requested intentions. The Observable never completes and emits continuously when satisfying intentions are registered or unregistered.
 
 .Properties of `ManifestObjectFilter` to filter intentions
-[cols="1,1,1,99"]
+[cols="1,2,1,8"]
 |===
 | Property | Type | Mandatory | Description
 
@@ -338,7 +339,7 @@ include::intention-api.snippets.ts[tags=capability-register-notification]
 <1> Registers the capability to inform the user about planned maintenance.
 <2> Unregisters the capability after 30 seconds.
 
-For an overview of the supported capability properties, see chapter <<chapter:intention-api:capability-properties>>.
+For an overview of the supported capability properties, see chapter <<objects::capability>>.
 
 TIP: Capabilities are typically registered in an activator. An activator is a special microfrontend that a micro application can provide to interact with the platform. Activators are loaded when starting the host application and run for the entire application lifecycle. For more information, refer to chapter <<chapter:activator>>.
 
@@ -370,5 +371,5 @@ include::intention-api.snippets.ts[tags=enable-intention-register-api]
 ----
 <1> Enables the API for the `Product Catalog Application`.
 
-Similar to <<chapter:intention-api:capability-registration,registering a capability>>, you can register an intention using the `ManifestService` and its `registerIntention` method. For an overview of the supported intention properties, see chapter <<chapter:intention-api:intention-properties>>.
+Similar to <<chapter:intention-api:capability-registration,registering a capability>>, you can register an intention using the `ManifestService` and its `registerIntention` method. For an overview of the supported intention properties, see chapter <<objects::intention>>.
 
