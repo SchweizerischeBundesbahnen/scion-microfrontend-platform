@@ -5,7 +5,7 @@
  * available under the terms of the Eclipse Public License 2.0
  * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
- *  SPDX-License-Identifier: EPL-2.0
+ * SPDX-License-Identifier: EPL-2.0
  */
 import {concat, EMPTY, NEVER, Observable, Observer, of, Subject, TeardownLogic} from 'rxjs';
 import {filter, map, mergeMapTo, startWith, switchMapTo, take, takeUntil} from 'rxjs/operators';
