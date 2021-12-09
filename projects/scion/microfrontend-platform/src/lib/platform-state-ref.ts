@@ -21,4 +21,6 @@ import {PlatformState} from './platform-state';
 export abstract class PlatformStateRef {
 
   public abstract whenState(state: PlatformState): Promise<void>;
+
+  public abstract state: PlatformState;
 }

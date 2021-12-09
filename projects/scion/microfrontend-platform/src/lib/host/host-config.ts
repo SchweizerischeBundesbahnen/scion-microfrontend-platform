@@ -54,4 +54,11 @@ export abstract class HostConfig {
    * By default, a timeout of 10s is used.
    */
   public abstract readonly messageDeliveryTimeout?: number;
+  /**
+   * Maximum time (in milliseconds) to wait until the message broker is discovered on platform startup. If the broker is not discovered within
+   * the specified time, platform startup fails with an error. By default, a timeout of 10s is used.
+   *
+   * @internal
+   */
+  public abstract readonly brokerDiscoverTimeout?: number;
 }

@@ -22,35 +22,39 @@ export enum MessagingTransport {
    */
   BrokerToClient = 'sci://microfrontend-platform/broker-to-client',
   /**
-   * Transport to send messages from the client to the gateway.
+   * Transport used by a microfrontend to communicate with its embedding outlet.
    */
-  ClientToGateway = 'sci://microfrontend-platform/client-to-gateway',
-  /**
-   * Transport to send messages from the gateway to the client.
-   */
-  GatewayToClient = 'sci://microfrontend-platform/gateway-to-client',
-  /**
-   * Transport to send messages from the gateway to the broker.
-   */
-  GatewayToBroker = 'sci://microfrontend-platform/gateway-to-broker',
-  /**
-   * Transport to send messages from the broker to the gateway.
-   */
-  BrokerToGateway = 'sci://microfrontend-platform/broker-to-gateway',
-  /**
-   * Transport to send messages from the embedded outlet content to its containing outlet.
-   */
-  EmbeddedOutletContentToOutlet = 'sci://microfrontend-platform/embeddedOutletContent-to-outlet',
+  MicrofrontendToOutlet = 'sci://microfrontend-platform/microfrontend-to-outlet',
 }
 
 /**
  * Defines the channels to which messages can be sent.
  */
 export enum MessagingChannel {
+  /**
+   * Channel for clients to subscribe to a topic destination.
+   */
   TopicSubscribe = 'topic-subscribe',
+  /**
+   * Channel for clients to unsubscribe from a topic destination.
+   */
   TopicUnsubscribe = 'topic-unsubscribe',
+  /**
+   * Channel to publish and dispatch topic-related messages.
+   */
   Topic = 'topic',
+  /**
+   * Channel to publish and dispatch intents.
+   */
   Intent = 'intent',
+  /**
+   * Channel for clients to send a connect request.
+   */
+  ClientConnect = 'client-connect',
+  /**
+   * Channel for clients to send a disconnect request.
+   */
+  ClientDisconnect = 'client-disconnect'
 }
 
 /**
@@ -70,18 +74,6 @@ export enum PlatformTopics {
    * Allows requesting the subscription count on a topic.
    */
   RequestSubscriberCount = 'ɵREQUEST_SUBSCRIBER_COUNT',
-  /**
-   * A broker gateway broadcasts a connect request to this topic in order to discover the broker.
-   */
-  ClientConnect = 'ɵCLIENT_CONNECT',
-  /**
-   * A broker gateway sends a disconnect message to this topic before being disposed.
-   */
-  ClientDisconnect = 'ɵCLIENT_DISCONNECT',
-  /**
-   * A message client sends an info request to this topic to request information about the gateway and the broker.
-   */
-  RequestGatewayInfo = 'ɵGATEWAY_INFO',
   /**
    * When a client gains the focus it publishes a retained event to this topic.
    */

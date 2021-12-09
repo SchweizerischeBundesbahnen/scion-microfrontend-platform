@@ -7,44 +7,33 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {EMPTY, from, fromEvent, merge, NEVER, noop, Observable, Observer, of, Subject, TeardownLogic, throwError} from 'rxjs';
-import {MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
-import {finalize, first, map, mergeMap, share, switchMap, take, takeUntil, timeoutWith} from 'rxjs/operators';
-import {filterByChannel, filterByHeader, filterByOrigin, filterByTopic, filterByTransport, pluckEnvelope, pluckMessage} from '../../operators';
+import {EMPTY, fromEvent, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, Subject, TeardownLogic, throwError} from 'rxjs';
+import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
+import {finalize, map, mergeMap, take, takeUntil, tap, timeoutWith} from 'rxjs/operators';
+import {filterByChannel, filterByMessageHeader, filterByOrigin, filterByTopicChannel, filterByTransport, pluckMessage} from '../../operators';
 import {UUID} from '@scion/toolkit/uuid';
 import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
-import {GatewayInfoResponse, getGatewayJavaScript} from './broker-gateway-script';
 import {Logger, NULL_LOGGER} from '../../logger';
 import {Dictionaries} from '@scion/toolkit/util';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {APP_IDENTITY, IS_PLATFORM_HOST} from '../../platform.model';
-import {Runlevel} from '../../platform-state';
+import {PlatformState, Runlevel} from '../../platform-state';
+import {ConnectOptions} from '../connect-options';
+import {PlatformStateRef} from '../../platform-state-ref';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.
  *
- * The gateway is always between one client and the broker. Clients never connect to the broker or to each other directly.
- * The gateway operates on a dedicated {@link Window} instance. To initiate a connection, the gateway sends a CONNECT message
- * to the current and all its parent windows. When the broker receives a CONNECT message of a trusted client, the broker responds
- * with a CONNACK message and a status code. If no CONNACK message is received within some timeout, publishing messages is rejected
- * and no messages are received.
- *
- * When the gateway is disposed, it sends a DISCONNECT message to the broker.
- *
- * The gateway connects in runlevel 1 to the broker. Gateway interaction in lower runlevels is buffered and does
- * not start the `brokerDiscoverTimeout` timeout timer.
- *
- * But, even if the gateway connects in runlevel 1 to the broker, the broker itself enables messaging only in runlevel 2, buffering all
- * messages sent in lower runlevels. That said, if posting a message in runlevel 1, and if runlevel 1 takes a long time to complete,
- * a `BrokerDiscoverTimeoutError` may be thrown. However, you only need to be aware of this in the host platform, as clients are embedded
- * after messaging is activated.
+ * To initiate a connection, the gateway sends a CONNECT message to the current and all parent windows. When the broker window
+ * receives the CONNECT message, the broker responds with a CONNACK message. If no CONNACK message is received within the discovery
+ * timeout, the gateway errors. When the gateway is being disposed, it sends a DISCONNECT message to the broker.
  *
  * @ignore
  */
 export abstract class BrokerGateway {
 
   /**
-   * Returns a promise that resolves after a connection to the broker could be established, or which rejects otherwise,
+   * Returns a Promise that resolves after a connection to the broker could be established, or which rejects otherwise,
    * e.g., due to an error, or because the gateway is not allowed to connect, or because the `brokerDiscoverTimeout`
    * time has elapsed. The connect timeout timer only starts after entering runlevel 1.
    */
@@ -64,19 +53,19 @@ export abstract class BrokerGateway {
   public abstract postMessage(channel: MessagingChannel, message: Message): Promise<void>;
 
   /**
-   * Posts a message to the message broker and receives replies.
+   * Posts a message to the message broker and receives replies. The Observable never completes.
    */
   public abstract requestReply$<T = any>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>>;
 
   /**
-   * Subscribes to messages published to the given topic.
+   * Subscribes to messages published to the given topic. The Observable never completes.
    */
-  public abstract subscribeToTopic<T>(topic: string): Observable<TopicMessage<T>>;
+  public abstract subscribeToTopic$<T>(topic: string): Observable<TopicMessage<T>>;
 
   /**
    * An Observable that emits when a message from the message broker is received.
    */
-  public abstract get message$(): Observable<MessageEnvelope>;
+  public abstract get message$(): Observable<MessageEvent<MessageEnvelope>>;
 }
 
 /**
@@ -100,7 +89,7 @@ export class NullBrokerGateway implements BrokerGateway {
     return Promise.resolve();
   }
 
-  public get message$(): Observable<MessageEnvelope> {
+  public get message$(): Observable<MessageEvent<MessageEnvelope>> {
     return NEVER;
   }
 
@@ -112,7 +101,7 @@ export class NullBrokerGateway implements BrokerGateway {
     return NEVER;
   }
 
-  public subscribeToTopic<T>(topic: string): Observable<TopicMessage<T>> {
+  public subscribeToTopic$<T>(topic: string): Observable<TopicMessage<T>> {
     return NEVER;
   }
 }
@@ -124,83 +113,78 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
 
   private _destroy$ = new Subject<void>();
   private _appSymbolicName: string;
-  private _whenDestroy = this._destroy$.pipe(first()).toPromise();
-  private _message$: Observable<MessageEnvelope>;
-  private _whenGatewayInfo: Promise<GatewayInfo>;
+  private _brokerDiscoverTimeout: number;
+  private _messageDeliveryTimeout: number;
+  private _whenBrokerInfo: Promise<BrokerInfo>;
+  private _brokerInfo: BrokerInfo | null = null;
+  public readonly message$ = new Subject<MessageEvent<MessageEnvelope>>();
 
-  constructor(private _config: {messageDeliveryTimeout: number; brokerDiscoveryTimeout: number}) {
+  constructor(connectOptions?: ConnectOptions) {
+    this._brokerDiscoverTimeout = connectOptions?.brokerDiscoverTimeout ?? 10_000;
+    this._messageDeliveryTimeout = connectOptions?.messageDeliveryTimeout ?? 10_000;
     this._appSymbolicName = Beans.get<string>(APP_IDENTITY);
+    this._whenBrokerInfo = this.initGateway().then(brokerInfo => this._brokerInfo = brokerInfo);
+  }
 
-    // Get the JavaScript to discover the message broker and dispatch messages.
-    const gatewayJavaScript = getGatewayJavaScript({clientAppName: this._appSymbolicName, clientOrigin: window.origin, discoverTimeout: this._config.brokerDiscoveryTimeout});
+  private async initGateway(): Promise<BrokerInfo> {
+    // If running in the host, wait connecting to the broker until entering runlevel 1, because in runlevel 0,
+    // the broker is initialized.
+    if (Beans.get(IS_PLATFORM_HOST)) {
+      await Beans.whenRunlevel(Runlevel.One);
+    }
 
-    const isPlatformHost = Beans.get(IS_PLATFORM_HOST);
+    // Connect to the broker.
+    const brokerInfo = await this.connectToBroker();
 
-    // Connect this gateway to the broker.
-    // The broker processes connect requests from clients only after it entered runlevel 1. Requests initiated in lower runlevels are buffered,
-    // potentially causing a timeout error, e.g., if fetching the manifests takes a long time to complete. For that reason, if running as platform host,
-    // we initiate the connect request to the broker only once entering runlevel 1.
-    this._whenGatewayInfo = (isPlatformHost ? Beans.whenRunlevel(Runlevel.One) : Promise.resolve())
-      .then(() => this.mountIframeAndLoadScript(gatewayJavaScript)) // Create a hidden iframe and load the gateway script.
-      .then(gatewayWindow => this.requestGatewayInfo(gatewayWindow, {brokerDiscoveryTimeout: this._config.brokerDiscoveryTimeout}))
-      .catch(error => {
-        Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(error); // Fall back using NULL_LOGGER when the platform is shutting down.
-        throw error;
-      });
+    // Subscribes to messages sent to this client.
+    this.installBrokerMessageListener(brokerInfo);
 
-    // Subscribe for broker messages sent to the gateway window.
-    this._message$ = from(this._whenGatewayInfo.catch(() => NEVER_PROMISE)) // avoid uncaught promise error
-      .pipe(
-        switchMap(gateway => fromEvent<MessageEvent>(gateway.window, 'message').pipe(filterByOrigin(gateway.brokerOrigin))),
-        filterByTransport(MessagingTransport.BrokerToClient),
-        pluckEnvelope(),
-        map((envelope: MessageEnvelope) => {
-          envelope.message.headers = copyMap(envelope.message.headers);
-          if (envelope.channel === MessagingChannel.Intent) {
-            const intentMessage = envelope.message as IntentMessage;
-            intentMessage.intent.params = copyMap(intentMessage.intent.params);
-          }
-          return envelope;
-        }),
-        takeUntil(this._destroy$), // no longer emit messages when destroyed
-        share(),
-      );
+    return brokerInfo;
   }
 
   public isConnected(): Promise<boolean> {
-    return this.whenConnected().then(() => true).catch(() => false);
+    return this._whenBrokerInfo.then(() => true).catch(() => false);
   }
 
   public async whenConnected(): Promise<void> {
-    await this._whenGatewayInfo;
+    await this._whenBrokerInfo;
   }
 
   public async postMessage(channel: MessagingChannel, message: Message): Promise<void> {
-    const gateway = await this._whenGatewayInfo; // wait until connected to the broker
-    const messageId = UUID.randomUUID();
+    if (isPlatformStopped()) {
+      throw Error('[MessageDispatchError] Platform is stopped. Messages cannot be published or received.');
+    }
 
+    // Wait until connected to the broker.
+    const brokerInfo = await this._whenBrokerInfo;
+
+    const messageId = UUID.randomUUID();
     const envelope: MessageEnvelope = {
       transport: MessagingTransport.ClientToBroker,
       channel: channel,
       message: message,
     };
-    envelope.message.headers.set(MessageHeaders.MessageId, messageId);
-    addSenderHeadersToEnvelope(envelope, {clientAppName: this._appSymbolicName, clientId: gateway.clientId});
+    envelope.message.headers
+      .set(MessageHeaders.MessageId, messageId)
+      .set(MessageHeaders.Timestamp, Date.now())
+      .set(MessageHeaders.AppSymbolicName, this._appSymbolicName)
+      .set(MessageHeaders.ClientId, brokerInfo.clientId);
 
-    // Create Promise waiting for the broker to accept and dispatch the message.
+    // Install Promise that resolves once the broker has acknowledged the message, or that rejects otherwise.
     const postError$ = new Subject<never>();
     const whenPosted = merge(this.message$, postError$)
       .pipe(
-        filterByTopic<MessageDeliveryStatus>(messageId),
-        first(),
-        timeoutWith(new Date(Date.now() + this._config.messageDeliveryTimeout), throwError(`[MessageDispatchError] Broker did not report message delivery state within the ${this._config.messageDeliveryTimeout}ms timeout. [envelope=${stringifyEnvelope(envelope)}]`)),
+        filterByTopicChannel<MessageDeliveryStatus>(messageId),
+        take(1),
+        pluckMessage(),
+        timeoutWith(new Date(Date.now() + this._messageDeliveryTimeout), throwError(`[MessageDispatchError] Broker did not report message delivery state within the ${this._messageDeliveryTimeout}ms timeout. [envelope=${stringifyEnvelope(envelope)}]`)),
         mergeMap(statusMessage => statusMessage.body!.ok ? EMPTY : throwError(statusMessage.body!.details)),
         takeUntil(this._destroy$),
       )
       .toPromise();
 
     try {
-      gateway.window.postMessage(envelope, gateway.window.origin);
+      brokerInfo.window.postMessage(envelope, brokerInfo.origin);
     }
     catch (error) {
       postError$.error(error);
@@ -211,186 +195,197 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
 
   public requestReply$<T = any>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
     return new Observable((observer: Observer<TopicMessage>): TeardownLogic => {
-      message.headers.set(MessageHeaders.ReplyTo, UUID.randomUUID());
+      if (isPlatformStopped()) {
+        observer.error('[MessageDispatchError] Platform is stopped. Messages cannot be published or received.');
+        return noop;
+      }
+
+      const replyTo = UUID.randomUUID();
       const unsubscribe$ = new Subject<void>();
-      const postError$ = new Subject<void>();
+      const requestError$ = new Subject<never>();
+
+      // Add 'ReplyTo' topic to the message headers where to receive the response(s).
+      message.headers.set(MessageHeaders.ReplyTo, replyTo);
 
       // Receive replies sent to the reply topic.
-      this.subscribeToTopic<T>(message.headers.get(MessageHeaders.ReplyTo))
-        .pipe(takeUntil(merge(this._destroy$, unsubscribe$, postError$)))
-        .subscribe(next => observer.next(next), error => observer.error(error)); // dispatch next and error, but not complete
+      merge(this.subscribeToTopic$<T>(replyTo), requestError$)
+        .pipe(takeUntil(merge(this._destroy$, unsubscribe$)))
+        .subscribe(observer);
 
-      // Post the message to the broker.
+      // Post the request to the broker.
       this.postMessage(channel, message)
-        .catch(error => {
-          postError$.next();
-          observer.error(error);
-        });
+        .catch(error => requestError$.error(error));
 
       return (): void => unsubscribe$.next();
     });
   }
 
-  public subscribeToTopic<T>(topic: string): Observable<TopicMessage<T>> {
+  public subscribeToTopic$<T>(topic: string): Observable<TopicMessage<T>> {
     return new Observable((observer: Observer<TopicMessage>): TeardownLogic => {
-      const unsubscribe$ = new Subject<void>();
+      if (isPlatformStopped()) {
+        observer.error('[MessageDispatchError] Platform is stopped. Messages cannot be published or received.');
+        return noop;
+      }
+
       const subscriberId = UUID.randomUUID();
+      const unsubscribe$ = new Subject<void>();
+      const subscribeError$ = new Subject<never>();
 
       // Receive messages sent to the given topic.
-      this._message$
+      merge(this.message$, subscribeError$)
         .pipe(
           filterByChannel<TopicMessage>(MessagingChannel.Topic),
+          filterByMessageHeader({key: MessageHeaders.ɵTopicSubscriberId, value: subscriberId}),
           pluckMessage(),
-          filterByHeader({key: MessageHeaders.ɵTopicSubscriberId, value: subscriberId}),
-          map(message => ({...message, headers: copyMap(message.headers), params: copyMap(message.params)})),
           takeUntil(merge(this._destroy$, unsubscribe$)),
-          finalize(() => {
-            const command: TopicUnsubscribeCommand = {subscriberId, headers: new Map()};
-            this.postMessage(MessagingChannel.TopicUnsubscribe, command)
-              // Do not propagate unsubscription errors, only log them, e.g. when the broker is not available. Fall back using NULL_LOGGER when the platform is shutting down
-              .catch(error => Beans.get(Logger, {orElseGet: NULL_LOGGER}).warn(`[TopicUnsubscribeError] Failed to unsubscribe from topic '${topic}'. Caused by: ${error}`));
-          }),
+          finalize(() => this.unsubscribeFromTopic(topic, subscriberId)),
         )
         .subscribe(observer);
 
-      // Subscribe for the messages sent to the given topic.
+      // Post the topic subscription to the broker.
       const topicSubscribeMessage: TopicSubscribeCommand = {subscriberId, topic, headers: new Map()};
       this.postMessage(MessagingChannel.TopicSubscribe, topicSubscribeMessage)
-        // Do not propagate subscription errors, only log them, e.g. when the broker is not available. Fall back using NULL_LOGGER when the platform is shutting down
-        .catch(error => Beans.get(Logger, {orElseGet: NULL_LOGGER}).warn(`[TopicSubscribeError] Failed to subscribe to topic '${topic}'. Caused by: ${error}`));
+        .catch(error => subscribeError$.error(error));
 
       return (): void => unsubscribe$.next();
     });
   }
 
-  public get message$(): Observable<MessageEnvelope> {
-    return this._message$;
+  /**
+   * Unsubscribes given topic subscription.
+   *
+   * Has no effect if the platform is stopped. If this operation fails, the error is logged as
+   * a warning and swallowed.
+   */
+  private async unsubscribeFromTopic(topic: string, subscriberId: string): Promise<void> {
+    if (isPlatformStopped()) {
+      return;
+    }
+
+    const topicUnsubscribeCommand: TopicUnsubscribeCommand = {subscriberId, headers: new Map()};
+    try {
+      await this.postMessage(MessagingChannel.TopicUnsubscribe, topicUnsubscribeCommand);
+    }
+    catch (error) {
+      // Do not propagate unsubscribe error, but log it as warning.
+      Beans.get(Logger, {orElseGet: NULL_LOGGER}).warn(`[TopicUnsubscribeError] Failed to unsubscribe from topic '${topic}'. Caused by: ${error}`);
+    }
   }
 
   /**
-   * Mounts a hidden iframe and loads the given JavaScript.
-   *
-   * @return A Promise that resolves to the content window of the iframe.
+   * Subscribes to messages sent to this client.
+   * Messages are dispatched to {@link message$}.
    */
-  private mountIframeAndLoadScript(javaScript: string): Promise<Window> {
-    const html = `<html><head><script>${javaScript}</script></head><body>Message Broker Gateway for '${this._appSymbolicName}'</body></html>`;
-    const iframeUrl = URL.createObjectURL(new Blob([html], {type: 'text/html'}));
-    const iframe = document.body.appendChild(document.createElement('iframe'));
-    iframe.setAttribute('src', iframeUrl);
-
-    // Take the iframe out of the document flow and hide it.
-    iframe.style.display = 'none';
-    iframe.style.position = 'absolute';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.pointerEvents = 'none';
-
-    // Add a destroy listener to unmount the iframe and revoke the object URL.
-    this._whenDestroy.then(() => {
-      document.body.removeChild(iframe);
-      URL.revokeObjectURL(iframeUrl);
-    });
-
-    // Resolve to the content window of the iframe.
-    return fromEvent(iframe, 'load')
+  private installBrokerMessageListener(brokerInfo: BrokerInfo): void {
+    fromEvent<MessageEvent>(window, 'message')
       .pipe(
-        map(() => iframe.contentWindow),
-        take(1),
+        filterByOrigin(brokerInfo.origin),
+        filterByTransport(MessagingTransport.BrokerToClient),
+        fixMapObjects(),
         takeUntil(this._destroy$),
       )
-      .toPromise()
-      .then(neverResolveIfUndefined)
-      .then(contentWindow => contentWindow !== null ? Promise.resolve(contentWindow) : NEVER_PROMISE);
+      .subscribe(this.message$);
   }
 
   /**
-   * Sends a request to the gateway to query information about the gateway and the broker.
+   * Connects this client to the broker by sending a CONNECT message to the current and all parent windows.
    *
-   * @return A Promise that resolves to information about the gateway and the broker, or rejects
-   *         if not receiving information within the specified timeout.
+   * When the broker receives the CONNECT message and trusts this client, the broker responds with a CONNACK message,
+   * or rejects the connect attempt otherwise.
+   *
+   * @return A Promise that, when connected, resolves to information about the broker, or that rejects if the connect attempt
+   * failed, either because the broker could not be found or because the application is not allowed to connect.
    */
-  private requestGatewayInfo(gatewayWindow: Window, options: {brokerDiscoveryTimeout: number}): Promise<GatewayInfo> {
-    const replyToTopic = UUID.randomUUID();
-    const request: MessageEnvelope<TopicMessage> = {
-      transport: MessagingTransport.ClientToGateway,
-      channel: MessagingChannel.Topic,
-      message: {
-        topic: PlatformTopics.RequestGatewayInfo,
-        headers: new Map()
-          .set(MessageHeaders.MessageId, UUID.randomUUID())
-          .set(MessageHeaders.ReplyTo, replyToTopic),
-      },
-    };
-
-    const whenReply: Promise<GatewayInfo> = fromEvent<MessageEvent>(window, 'message')
+  private connectToBroker(): Promise<BrokerInfo> {
+    const replyTo = UUID.randomUUID();
+    const connectPromise = fromEvent<MessageEvent>(window, 'message')
       .pipe(
-        filterByOrigin(gatewayWindow.origin),
-        filterByTransport(MessagingTransport.GatewayToClient),
-        pluckEnvelope(),
-        filterByTopic<GatewayInfoResponse>(replyToTopic),
-        mergeMap((reply: TopicMessage<GatewayInfoResponse>): Observable<GatewayInfo> => {
-          const response: GatewayInfoResponse = reply.body!;
-          return response.ok ? of({clientId: response.clientId!, window: gatewayWindow, brokerOrigin: response.brokerOrigin!}) : throwError(response.error);
+        filterByTransport(MessagingTransport.BrokerToClient),
+        filterByTopicChannel<ConnackMessage>(replyTo),
+        mergeMap((messageEvent: MessageEvent<MessageEnvelope<TopicMessage<ConnackMessage>>>) => {
+          const response: ConnackMessage | undefined = messageEvent.data.message.body;
+          if (response?.returnCode !== 'accepted') {
+            return throwError(`${response?.returnMessage ?? 'UNEXPECTED: Empty broker discovery response'} [code: '${response?.returnCode ?? 'n/a'}']`);
+          }
+          return of({clientId: response.clientId!, window: messageEvent.source as Window, origin: messageEvent.origin});
         }),
         take(1),
-        timeoutWith(new Date(Date.now() + options.brokerDiscoveryTimeout), throwError(`[BrokerDiscoverTimeoutError] Message broker not discovered within the ${options.brokerDiscoveryTimeout}ms timeout. Messages cannot be published or received.`)),
+        timeoutWith(new Date(Date.now() + this._brokerDiscoverTimeout), throwError(`[ClientConnectError] Message broker not discovered within the ${this._brokerDiscoverTimeout}ms timeout. Messages cannot be published or received.`)),
+        tap(noop, error => Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(error)), // Fall back using NULL_LOGGER when the platform is shutting down.
         takeUntil(this._destroy$),
       )
       .toPromise();
 
-    addSenderHeadersToEnvelope(request, {clientAppName: this._appSymbolicName});
-    gatewayWindow.postMessage(request, gatewayWindow.origin);
-    return whenReply.then(neverResolveIfUndefined);
+    const connectMessage: MessageEnvelope = {
+      transport: MessagingTransport.ClientToBroker,
+      channel: MessagingChannel.ClientConnect,
+      message: {
+        headers: new Map()
+          .set(MessageHeaders.MessageId, UUID.randomUUID())
+          .set(MessageHeaders.Timestamp, Date.now())
+          .set(MessageHeaders.AppSymbolicName, this._appSymbolicName)
+          .set(MessageHeaders.ReplyTo, replyTo),
+      },
+    };
+
+    this.collectWindowHierarchy().forEach(window => window.postMessage(connectMessage, '*'));
+    return connectPromise;
+  }
+
+  /**
+   * Disconnects this client from the broker by sending a DISCONNECT message.
+   * Has no effect if not connected to the broker. If this operation fails, the error is logged as
+   * a warning, but not thrown.
+   */
+  private disconnectFromBroker(): void {
+    if (!this._brokerInfo) {
+      return;
+    }
+
+    const disconnectMessage: MessageEnvelope = {
+      transport: MessagingTransport.ClientToBroker,
+      channel: MessagingChannel.ClientDisconnect,
+      message: {
+        headers: new Map()
+          .set(MessageHeaders.MessageId, UUID.randomUUID())
+          .set(MessageHeaders.Timestamp, Date.now())
+          .set(MessageHeaders.AppSymbolicName, this._appSymbolicName)
+          .set(MessageHeaders.ClientId, this._brokerInfo.clientId),
+      },
+    };
+
+    try {
+      this._brokerInfo.window.postMessage(disconnectMessage, this._brokerInfo.origin);
+      this._brokerInfo = null;
+    }
+    catch (error) {
+      Beans.get(Logger, {orElseGet: NULL_LOGGER}).warn(`[ClientDisconnectError] Failed to disconnect from the broker. Caused by: ${error}`);
+    }
+  }
+
+  /**
+   * Returns an array of the current `Window` hierarchy.
+   * Windows are sorted in top-down order, i.e., parent windows precede child windows.
+   */
+  private collectWindowHierarchy(): Window[] {
+    const candidates: Window[] = [];
+
+    for (let candidate = window as Window; candidate !== window.top; candidate = candidate.parent) {
+      candidates.unshift(candidate);
+    }
+
+    candidates.unshift(window.top);
+    return candidates;
   }
 
   public preDestroy(): void {
     this._destroy$.next();
+    this.disconnectFromBroker();
   }
 }
 
 /**
- * Information about the gateway and the broker.
- *
- * @ignore
- */
-export interface GatewayInfo {
-  window: Window;
-  brokerOrigin: string;
-  clientId: string;
-}
-
-/**
- * Adds headers to the message to identify the sending app.
- */
-function addSenderHeadersToEnvelope(envelope: MessageEnvelope, sender: {clientAppName: string; clientId?: string}): void {
-  const headers = envelope.message.headers;
-
-  headers.set(MessageHeaders.Timestamp, Date.now());
-  headers.set(MessageHeaders.AppSymbolicName, sender.clientAppName);
-  sender.clientId && headers.set(MessageHeaders.ClientId, sender.clientId);
-}
-
-/**
- * Returns a Promise that never resolves if the given value is `undefined`.
- *
- * For instance, if creating a Promise from an Observable, the Promise resolves to `undefined`
- * if the Observable did not emit a value before its completion, e.g., on shutdown.
- *
- * @ignore
- */
-function neverResolveIfUndefined<T>(value: T): Promise<T> {
-  return value !== undefined ? Promise.resolve(value) : NEVER_PROMISE;
-}
-
-/**
- * Creates a string representation of the given {@link MessageEnvelope}.
- */
-function stringifyEnvelope(envelope: MessageEnvelope): string {
-  return JSON.stringify(envelope, (key, value) => (value instanceof Map) ? Dictionaries.coerce(value) : value);
-}
-
-/**
- * Creates a copy from the given `Map`.
+ * Replaces `Map` objects contained in the message with a `Map` object of the current JavaScript realm.
  *
  * Data sent from one JavaScript realm to another is serialized with the structured clone algorithm.
  * Although the algorithm supports the `Map` data type, a deserialized map object cannot be checked to be instance of `Map`.
@@ -400,13 +395,45 @@ function stringifyEnvelope(envelope: MessageEnvelope): string {
  * @see http://man.hubwiz.com/docset/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm.html
  * @internal
  */
-function copyMap<K, V>(data?: Map<K, V>): Map<K, V> {
-  return new Map(data || []);
+function fixMapObjects<T extends Message>(): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
+  return map((event: MessageEvent<MessageEnvelope<T>>): MessageEvent<MessageEnvelope<T>> => {
+    const envelope: MessageEnvelope = event.data;
+    envelope.message.headers = new Map(envelope.message.headers || []);
+
+    if (envelope.channel === MessagingChannel.Intent) {
+      const intentMessage = envelope.message as IntentMessage;
+      intentMessage.intent.params = new Map(intentMessage.intent.params || []);
+    }
+    if (envelope.channel === MessagingChannel.Topic) {
+      const topicMessage = envelope.message as TopicMessage;
+      topicMessage.params = new Map(topicMessage.params || []);
+    }
+    return event;
+  });
 }
 
 /**
- * Promise which never resolves.
+ * Creates a string representation of the given {@link MessageEnvelope}.
+ */
+function stringifyEnvelope(envelope: MessageEnvelope): string {
+  return JSON.stringify(envelope, (key, value) => (value instanceof Map) ? Dictionaries.coerce(value) : value);
+}
+
+function isPlatformStopped(): boolean {
+  const platformState = Beans.opt(PlatformStateRef);
+  if (!platformState) {
+    return true;
+  }
+  return platformState.state >= PlatformState.Stopping;
+}
+
+/**
+ * Information about the broker.
  *
  * @ignore
  */
-const NEVER_PROMISE = new Promise<never>(noop);
+interface BrokerInfo {
+  clientId: string;
+  origin: string;
+  window: Window;
+}

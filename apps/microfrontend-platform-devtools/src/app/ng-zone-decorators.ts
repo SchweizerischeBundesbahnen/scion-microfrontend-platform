@@ -23,28 +23,28 @@ export class NgZoneMessageClientDecorator implements BeanDecorator<MessageClient
   constructor(private _zone: NgZone) {
   }
 
-  public decorate(messageClient: MessageClient): MessageClient {
+  public decorate(delegate: MessageClient): MessageClient {
     const zone = this._zone;
     return new class implements MessageClient {
 
       public publish<T = any>(topic: string, message?: T, options?: PublishOptions): Promise<void> {
-        return messageClient.publish(topic, message, options);
+        return delegate.publish(topic, message, options);
       }
 
       public request$<T>(topic: string, request?: any, options?: RequestOptions): Observable<TopicMessage<T>> {
-        return messageClient.request$<T>(topic, request, options).pipe(synchronizeWithAngular(zone));
+        return delegate.request$<T>(topic, request, options).pipe(synchronizeWithAngular(zone));
       }
 
       public observe$<T>(topic: string): Observable<TopicMessage<T>> {
-        return messageClient.observe$<T>(topic).pipe(synchronizeWithAngular(zone));
+        return delegate.observe$<T>(topic).pipe(synchronizeWithAngular(zone));
       }
 
       public onMessage<IN = any, OUT = any>(topic: string, callback: (message: TopicMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
-        return messageClient.onMessage(topic, callback);
+        return delegate.onMessage(topic, callback);
       }
 
       public subscriberCount$(topic: string): Observable<number> {
-        return messageClient.subscriberCount$(topic).pipe(synchronizeWithAngular(zone));
+        return delegate.subscriberCount$(topic).pipe(synchronizeWithAngular(zone));
       }
     };
   }
@@ -59,24 +59,24 @@ export class NgZoneIntentClientDecorator implements BeanDecorator<IntentClient> 
   constructor(private _zone: NgZone) {
   }
 
-  public decorate(intentClient: IntentClient): IntentClient {
+  public decorate(delegate: IntentClient): IntentClient {
     const zone = this._zone;
     return new class implements IntentClient {
 
       public publish<T = any>(intent: Intent, body?: T, options?: IntentOptions): Promise<void> {
-        return intentClient.publish(intent, body, options);
+        return delegate.publish(intent, body, options);
       }
 
       public request$<T>(intent: Intent, body?: any, options?: IntentOptions): Observable<TopicMessage<T>> {
-        return intentClient.request$<T>(intent, body, options).pipe(synchronizeWithAngular(zone));
+        return delegate.request$<T>(intent, body, options).pipe(synchronizeWithAngular(zone));
       }
 
       public observe$<T>(selector?: Intent): Observable<IntentMessage<T>> {
-        return intentClient.observe$<T>(selector).pipe(synchronizeWithAngular(zone));
+        return delegate.observe$<T>(selector).pipe(synchronizeWithAngular(zone));
       }
 
       public onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
-        return intentClient.onIntent(selector, callback);
+        return delegate.onIntent(selector, callback);
       }
     };
   }
