@@ -5,7 +5,7 @@
  * available under the terms of the Eclipse Public License 2.0
  * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
- *  SPDX-License-Identifier: EPL-2.0
+ * SPDX-License-Identifier: EPL-2.0
  */
 import {EMPTY, from, fromEvent, merge, NEVER, noop, Observable, Observer, of, Subject, TeardownLogic, throwError} from 'rxjs';
 import {MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
