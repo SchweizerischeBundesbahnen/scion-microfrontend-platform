@@ -47,7 +47,7 @@ export class ɵMessageClient implements MessageClient {
 
   public observe$<T>(topic: string): Observable<TopicMessage<T>> {
     assertTopic(topic, {allowWildcardSegments: true});
-    return this._brokerGateway.subscribeToTopic<T>(topic);
+    return this._brokerGateway.subscribeToTopic$<T>(topic);
   }
 
   public onMessage<IN = any, OUT = any>(topic: string, callback: (message: TopicMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {

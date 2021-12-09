@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {EMPTY, fromEvent, MonoTypeOperatorFunction, Observable, of, OperatorFunction, pipe, Subject} from 'rxjs';
+import {EMPTY, fromEvent, MonoTypeOperatorFunction, Observable, of, Subject} from 'rxjs';
 import {catchError, filter, mergeMap, share, takeUntil} from 'rxjs/operators';
 import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
 import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
@@ -27,6 +27,7 @@ import {Runlevel} from '../../platform-state';
 import {APP_IDENTITY, Capability, ParamDefinition} from '../../platform.model';
 import {bufferUntil} from '@scion/toolkit/operators';
 import {ParamMatcher} from './param-matcher';
+import {filterByChannel, filterByTopicChannel, filterByTransport} from '../../operators';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -48,7 +49,7 @@ import {ParamMatcher} from './param-matcher';
 export class MessageBroker implements PreDestroy {
 
   private readonly _destroy$ = new Subject<void>();
-  private readonly _clientRequests$: Observable<ClientMessage>;
+  private readonly _clientMessage$: Observable<MessageEvent<MessageEnvelope>>;
 
   private readonly _clientRegistry = Beans.get(ClientRegistry);
   private readonly _topicSubscriptionRegistry = new TopicSubscriptionRegistry();
@@ -65,11 +66,12 @@ export class MessageBroker implements PreDestroy {
     this._manifestRegistry = Beans.get(ManifestRegistry);
 
     // Construct a stream of messages sent by clients.
-    this._clientRequests$ = fromEvent<MessageEvent>(window, 'message')
+    this._clientMessage$ = fromEvent<MessageEvent>(window, 'message')
       .pipe(
-        filterMessage(MessagingTransport.ClientToBroker),
+        filterByTransport(MessagingTransport.ClientToBroker),
+        filterByChannel(MessagingChannel.Intent, MessagingChannel.Topic, MessagingChannel.TopicSubscribe, MessagingChannel.TopicUnsubscribe),
         bufferUntil(Beans.whenRunlevel(Runlevel.Two)),
-        checkOriginTrusted(this._clientRegistry, {transport: MessagingTransport.BrokerToClient}),
+        checkOriginTrusted(),
         catchErrorAndRetry(),
         share(),
       );
@@ -95,23 +97,23 @@ export class MessageBroker implements PreDestroy {
   private installClientConnectListener(): void {
     fromEvent<MessageEvent>(window, 'message')
       .pipe(
-        filterByTransportAndTopic(MessagingTransport.GatewayToBroker, PlatformTopics.ClientConnect),
+        filterByTransport(MessagingTransport.ClientToBroker),
+        filterByChannel(MessagingChannel.ClientConnect),
         bufferUntil(Beans.whenRunlevel(Runlevel.One)),
         catchErrorAndRetry(),
         takeUntil(this._destroy$),
       )
       .subscribe((event: MessageEvent) => runSafe(() => {
         const envelope: MessageEnvelope<TopicMessage<void>> = event.data;
-        const gatewayWindow = event.source as Window;
+        const clientWindow = event.source as Window;
         const clientAppName = envelope.message.headers.get(MessageHeaders.AppSymbolicName);
-
+        const clientMessageTarget: MessageTarget = {window: clientWindow, origin: event.origin};
         const replyTo = envelope.message.headers.get(MessageHeaders.ReplyTo);
-        const sender = {gatewayWindow, origin: event.origin};
 
         if (!clientAppName) {
           const warning = `Client connect attempt rejected by the message broker: Bad request. [origin='${event.origin}']`;
           Beans.get(Logger).warn(`[WARNING] ${warning}`);
-          sendTopicMessage<ConnackMessage>(sender, MessagingTransport.BrokerToGateway, {
+          sendTopicMessage<ConnackMessage>(clientMessageTarget, {
             topic: replyTo,
             body: {returnCode: 'refused:bad-request', returnMessage: `[MessageClientConnectError] ${warning}`},
             headers: new Map(),
@@ -123,7 +125,7 @@ export class MessageBroker implements PreDestroy {
         if (!application) {
           const warning = `Client connect attempt rejected by the message broker: Unknown client. [app='${clientAppName}']`;
           Beans.get(Logger).warn(`[WARNING] ${warning}`);
-          sendTopicMessage<ConnackMessage>(sender, MessagingTransport.BrokerToGateway, {
+          sendTopicMessage<ConnackMessage>(clientMessageTarget, {
             topic: replyTo,
             body: {returnCode: 'refused:rejected', returnMessage: `[MessageClientConnectError] ${warning}`},
             headers: new Map(),
@@ -135,7 +137,7 @@ export class MessageBroker implements PreDestroy {
           const warning = `Client connect attempt blocked by the message broker: Wrong origin [actual='${event.origin}', expected='${application.origin}', app='${application.symbolicName}']`;
           Beans.get(Logger).warn(`[WARNING] ${warning}`);
 
-          sendTopicMessage<ConnackMessage>(sender, MessagingTransport.BrokerToGateway, {
+          sendTopicMessage<ConnackMessage>(clientMessageTarget, {
             topic: replyTo,
             body: {returnCode: 'refused:blocked', returnMessage: `[MessageClientConnectError] ${warning}`},
             headers: new Map(),
@@ -143,10 +145,10 @@ export class MessageBroker implements PreDestroy {
           return;
         }
 
-        const client: Client = new Client({id: UUID.randomUUID(), application, gatewayWindow, window: gatewayWindow.parent});
+        const client: Client = new Client({id: UUID.randomUUID(), application, window: clientWindow});
         this._clientRegistry.registerClient(client);
 
-        sendTopicMessage<ConnackMessage>(sender, MessagingTransport.BrokerToGateway, {
+        sendTopicMessage<ConnackMessage>(clientMessageTarget, {
           topic: replyTo,
           body: {returnCode: 'accepted', clientId: client.id},
           headers: new Map(),
@@ -160,15 +162,17 @@ export class MessageBroker implements PreDestroy {
   private installClientDisconnectListener(): void {
     fromEvent<MessageEvent>(window, 'message')
       .pipe(
-        filterByTransportAndTopic(MessagingTransport.GatewayToBroker, PlatformTopics.ClientDisconnect),
+        filterByTransport(MessagingTransport.ClientToBroker),
+        filterByChannel(MessagingChannel.ClientDisconnect),
         bufferUntil(Beans.whenRunlevel(Runlevel.One)),
-        checkOriginTrusted<TopicMessage<void>>(this._clientRegistry, {transport: MessagingTransport.BrokerToGateway}),
+        checkOriginTrusted(),
         catchErrorAndRetry(),
         takeUntil(this._destroy$),
       )
-      .subscribe((message: ClientMessage<TopicMessage<void>>) => runSafe(() => {
-        this._clientRegistry.unregisterClient(message.client);
-        this._topicSubscriptionRegistry.unsubscribeClient(message.client.id);
+      .subscribe((event: MessageEvent<MessageEnvelope>) => runSafe(() => {
+        const client = getSendingClient(event);
+        this._clientRegistry.unregisterClient(client);
+        this._topicSubscriptionRegistry.unsubscribeClient(client.id);
       }));
   }
 
@@ -176,29 +180,29 @@ export class MessageBroker implements PreDestroy {
    * Listens for topic subscribe commands.
    */
   private installTopicSubscribeListener(): void {
-    this._clientRequests$
+    this._clientMessage$
       .pipe(
-        filterByChannel(MessagingChannel.TopicSubscribe),
+        filterByChannel<TopicSubscribeCommand>(MessagingChannel.TopicSubscribe),
         takeUntil(this._destroy$),
       )
-      .subscribe((clientMessage: ClientMessage<TopicSubscribeCommand>) => runSafe(() => {
-        const client = clientMessage.client;
-        const envelope = clientMessage.envelope;
+      .subscribe((event: MessageEvent<MessageEnvelope<TopicSubscribeCommand>>) => runSafe(() => {
+        const client = getSendingClient(event);
+        const envelope = event.data;
         const topic = envelope.message.topic;
         const subscriberId = envelope.message.subscriberId;
         const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
 
         if (!topic) {
-          sendDeliveryStatusError(client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, '[TopicSubscribeError] Missing required property on message: topic');
+          sendDeliveryStatusError(client, messageId, '[TopicSubscribeError] Missing required property on message: topic');
           return;
         }
         if (!subscriberId) {
-          sendDeliveryStatusError(client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, '[TopicSubscribeError] Missing required property on message: subscriberId');
+          sendDeliveryStatusError(client, messageId, '[TopicSubscribeError] Missing required property on message: subscriberId');
           return;
         }
 
         this._topicSubscriptionRegistry.subscribe(topic, client, subscriberId);
-        sendDeliveryStatusSuccess(client, {transport: MessagingTransport.BrokerToClient, topic: messageId});
+        sendDeliveryStatusSuccess(client, messageId);
 
         // Dispatch a retained message, if any.
         const retainedMessage = this._retainedMessageRegistry.findMostRecentRetainedMessage(topic);
@@ -208,7 +212,7 @@ export class MessageBroker implements PreDestroy {
             headers: new Map(retainedMessage.headers).set(MessageHeaders.ɵTopicSubscriberId, subscriberId),
             params: new TopicMatcher(topic).match(retainedMessage.topic).params,
           };
-          sendTopicMessage(client, MessagingTransport.BrokerToClient, retainedMessageWorkingCopy);
+          sendTopicMessage(client, retainedMessageWorkingCopy);
         }
       }));
   }
@@ -217,24 +221,24 @@ export class MessageBroker implements PreDestroy {
    * Listens for topic unsubscribe commands.
    */
   private installTopicUnsubscribeListener(): void {
-    this._clientRequests$
+    this._clientMessage$
       .pipe(
-        filterByChannel(MessagingChannel.TopicUnsubscribe),
+        filterByChannel<TopicUnsubscribeCommand>(MessagingChannel.TopicUnsubscribe),
         takeUntil(this._destroy$),
       )
-      .subscribe((clientMessage: ClientMessage<TopicUnsubscribeCommand>) => runSafe(() => {
-        const client = clientMessage.client;
-        const envelope = clientMessage.envelope;
+      .subscribe((event: MessageEvent<MessageEnvelope<TopicUnsubscribeCommand>>) => runSafe(() => {
+        const client = getSendingClient(event);
+        const envelope = event.data;
         const subscriberId = envelope.message.subscriberId;
         const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
 
         if (!subscriberId) {
-          sendDeliveryStatusError(client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, '[TopicUnsubscribeError] Missing required property on message: subscriberId');
+          sendDeliveryStatusError(client, messageId, '[TopicUnsubscribeError] Missing required property on message: subscriberId');
           return;
         }
 
         this._topicSubscriptionRegistry.unsubscribe(subscriberId);
-        sendDeliveryStatusSuccess(client, {transport: MessagingTransport.BrokerToClient, topic: messageId});
+        sendDeliveryStatusSuccess(client, messageId);
       }));
   }
 
@@ -242,19 +246,18 @@ export class MessageBroker implements PreDestroy {
    * Replies to requests to observe the number of subscribers on a topic.
    */
   private installTopicSubscriberCountObserver(): void {
-    this._clientRequests$
+    this._clientMessage$
       .pipe(
-        filterByChannel(MessagingChannel.Topic),
-        filterByTopic(PlatformTopics.RequestSubscriberCount),
+        filterByTopicChannel<string>(PlatformTopics.RequestSubscriberCount),
         takeUntil(this._destroy$),
       )
-      .subscribe((clientMessage: ClientMessage<TopicMessage<string>>) => runSafe(() => {
-        const client = clientMessage.client;
-        const request = clientMessage.envelope.message;
+      .subscribe((event: MessageEvent<MessageEnvelope<TopicMessage<string>>>) => runSafe(() => {
+        const client = getSendingClient(event);
+        const request = event.data.message;
         const topic = request.body!;
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
         const messageId = request.headers.get(MessageHeaders.MessageId);
-        sendDeliveryStatusSuccess(client, {transport: MessagingTransport.BrokerToClient, topic: messageId});
+        sendDeliveryStatusSuccess(client, messageId);
 
         this._topicSubscriptionRegistry.subscriptionCount$(topic)
           .pipe(takeUntil(this._topicSubscriptionRegistry.subscriptionCount$(replyTo).pipe(filter(count => count === 0))))
@@ -274,22 +277,23 @@ export class MessageBroker implements PreDestroy {
    * Dispatches topic messages to subscribed clients.
    */
   private installTopicMessageDispatcher(): void {
-    this._clientRequests$
+    this._clientMessage$
       .pipe(
-        filterByChannel(MessagingChannel.Topic),
-        filter(clientMessage => clientMessage.envelope.message.topic !== PlatformTopics.RequestSubscriberCount), // do not dispatch messages sent to the `RequestSubscriberCount` topic as handled separately
+        filterByChannel<TopicMessage>(MessagingChannel.Topic),
+        filter(message => message.data.message.topic !== PlatformTopics.RequestSubscriberCount), // do not dispatch messages sent to the `RequestSubscriberCount` topic as handled separately
         takeUntil(this._destroy$),
       )
-      .subscribe((clientMessage: ClientMessage<TopicMessage>) => runSafe(() => {
-        const topicMessage = clientMessage.envelope.message;
+      .subscribe((event: MessageEvent<MessageEnvelope<TopicMessage>>) => runSafe(() => {
+        const client = getSendingClient(event);
+        const topicMessage = event.data.message;
         const messageId = topicMessage.headers.get(MessageHeaders.MessageId);
 
         try {
           this._messagePublisher.publish(topicMessage);
-          sendDeliveryStatusSuccess(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId});
+          sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
-          sendDeliveryStatusError(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, error.message || error.message.toString());
+          sendDeliveryStatusError(client, messageId, error.message || error.message.toString());
         }
       }));
   }
@@ -298,30 +302,31 @@ export class MessageBroker implements PreDestroy {
    * Dispatches intents to qualified clients.
    */
   private installIntentMessageDispatcher(): void {
-    this._clientRequests$
+    this._clientMessage$
       .pipe(
-        filterByChannel(MessagingChannel.Intent),
+        filterByChannel<IntentMessage>(MessagingChannel.Intent),
         takeUntil(this._destroy$),
       )
-      .subscribe((clientMessage: ClientMessage<IntentMessage>) => runSafe(() => {
-        const intentMessage = clientMessage.envelope.message;
+      .subscribe((event: MessageEvent<MessageEnvelope<IntentMessage>>) => runSafe(() => {
+        const client = getSendingClient(event);
+        const intentMessage = event.data.message;
         const messageId = intentMessage.headers.get(MessageHeaders.MessageId);
 
         if (!intentMessage.intent) {
           const error = '[IntentDispatchError] Missing required property on message: intent';
-          sendDeliveryStatusError(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, error);
+          sendDeliveryStatusError(client, messageId, error);
           return;
         }
 
         if (!intentMessage.intent.type) {
           const error = '[IntentDispatchError] Missing required property on intent: type';
-          sendDeliveryStatusError(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, error);
+          sendDeliveryStatusError(client, messageId, error);
           return;
         }
 
-        if (!this._manifestRegistry.hasIntention(intentMessage.intent, clientMessage.client.application.symbolicName)) {
-          const error = `[NotQualifiedError] Application '${clientMessage.client.application.symbolicName}' is not qualified to publish intents of the type '${intentMessage.intent.type}' and qualifier '${JSON.stringify(intentMessage.intent.qualifier || {})}'. Ensure to have listed the intention in the application manifest.`;
-          sendDeliveryStatusError(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, error);
+        if (!this._manifestRegistry.hasIntention(intentMessage.intent, client.application.symbolicName)) {
+          const error = `[NotQualifiedError] Application '${client.application.symbolicName}' is not qualified to publish intents of the type '${intentMessage.intent.type}' and qualifier '${JSON.stringify(intentMessage.intent.qualifier || {})}'. Ensure to have listed the intention in the application manifest.`;
+          sendDeliveryStatusError(client, messageId, error);
           return;
         }
 
@@ -329,7 +334,7 @@ export class MessageBroker implements PreDestroy {
         const capabilities = this._manifestRegistry.resolveCapabilitiesByIntent(intentMessage.intent, intentMessage.headers.get(MessageHeaders.AppSymbolicName));
         if (capabilities.length === 0) {
           const error = `[NullProviderError] No application found to provide a capability of the type '${intentMessage.intent.type}' and qualifiers '${JSON.stringify(intentMessage.intent.qualifier || {})}'. Maybe, the capability is not public API or the providing application not available.`;
-          sendDeliveryStatusError(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, error);
+          sendDeliveryStatusError(client, messageId, error);
           return;
         }
 
@@ -340,7 +345,7 @@ export class MessageBroker implements PreDestroy {
           if (!paramMatchResult.matches) {
             const intentStringified = JSON.stringify(intentMessage.intent, (key, value) => (key === 'params') ? undefined : value);
             const error = `[ParamMismatchError] Params of the intent do not match expected params of the resolved capability. Ensure to pass required params and not to include additional params. [intent=${intentStringified}, missingParams=[${paramMatchResult.missingParams.map(param => param.name)}], unexpectedParams=[${paramMatchResult.unexpectedParams}]].`;
-            sendDeliveryStatusError(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, error);
+            sendDeliveryStatusError(client, messageId, error);
             return;
           }
 
@@ -357,10 +362,10 @@ export class MessageBroker implements PreDestroy {
 
         try {
           capabilities.forEach(capability => this._intentPublisher.publish({...intentMessage, capability}));
-          sendDeliveryStatusSuccess(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId});
+          sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
-          sendDeliveryStatusError(clientMessage.client, {transport: MessagingTransport.BrokerToClient, topic: messageId}, error.message || error.message.toString());
+          sendDeliveryStatusError(client, messageId, error.message || error.message.toString());
         }
       }));
   }
@@ -404,7 +409,7 @@ export class MessageBroker implements PreDestroy {
           channel: MessagingChannel.Intent,
           message: message,
         };
-        client.gatewayWindow.postMessage(envelope, client.application.origin);
+        client.window.postMessage(envelope, client.application.origin);
       });
     });
   }
@@ -432,7 +437,7 @@ export class MessageBroker implements PreDestroy {
         },
       };
       const client: Client = resolvedTopicDestination.subscription.client;
-      client.gatewayWindow.postMessage(envelope, client.application.origin);
+      client.window.postMessage(envelope, client.application.origin);
     });
 
     return true;
@@ -450,32 +455,20 @@ export class MessageBroker implements PreDestroy {
   }
 }
 
-/** @ignore */
-function filterMessage(transport: MessagingTransport, channel?: MessagingChannel): MonoTypeOperatorFunction<MessageEvent> {
-  return filter((messageEvent: MessageEvent): boolean => {
-    const envelope: MessageEnvelope = messageEvent.data;
-    if (!envelope) {
-      return false;
-    }
-    else if (envelope.transport !== transport) {
-      return false;
-    }
-    else if (channel && envelope.channel !== channel) {
-      return false;
-    }
-    return true;
-  });
-}
-
 /**
- * Returns a filter which passes all messages of given {@link MessagingChannel}.
+ * Resolves to the client that sent the passed message.
+ *
+ * Throws an error if the client could not be resolved.
  *
  * @ignore
  */
-function filterByChannel(channel: MessagingChannel): MonoTypeOperatorFunction<ClientMessage> {
-  return filter((message: ClientMessage): boolean => {
-    return message.envelope.channel === channel;
-  });
+function getSendingClient(event: MessageEvent<MessageEnvelope>): Client {
+  const clientId = event.data.message.headers.get(MessageHeaders.ClientId);
+  const client = Beans.get(ClientRegistry).getByClientId(clientId)!;
+  if (!client) {
+    throw Error(`[NullClientError] Client not found in client registry. [clientId=${clientId}]`);
+  }
+  return client;
 }
 
 /**
@@ -483,75 +476,64 @@ function filterByChannel(channel: MessagingChannel): MonoTypeOperatorFunction<Cl
  *
  * @ignore
  */
-function checkOriginTrusted<MSG extends Message>(clientRegistry: ClientRegistry, rejectConfig: {transport: MessagingTransport}): OperatorFunction<MessageEvent, ClientMessage<MSG>> {
-  return mergeMap((event: MessageEvent): Observable<ClientMessage> => {
+function checkOriginTrusted<T extends Message>(): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
+  return mergeMap((event: MessageEvent<MessageEnvelope<T>>): Observable<MessageEvent<MessageEnvelope<T>>> => {
+    if (!event.source) {
+      return EMPTY;
+    }
+
     const envelope: MessageEnvelope = event.data;
-    const senderGatewayWindow = event.source as Window;
-    const clientId = envelope.message.headers.get(MessageHeaders.ClientId);
     const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
-    const client = (senderGatewayWindow ? clientRegistry.getByGatewayWindow(senderGatewayWindow) : clientRegistry.getByClientId(clientId));
+    const clientId = envelope.message.headers.get(MessageHeaders.ClientId);
+    const client = Beans.get(ClientRegistry).getByClientId(clientId)!;
 
     if (!client) {
-      const sender = {gatewayWindow: senderGatewayWindow, origin: event.origin};
+      const sender: MessageTarget = {window: event.source as Window, origin: event.origin};
       const error = `[MessagingError] Message rejected: Client not registered [origin=${event.origin}]`;
-      sender.gatewayWindow && sendDeliveryStatusError(sender, {transport: rejectConfig.transport, topic: messageId}, error);
+      sendDeliveryStatusError(sender, messageId, error);
+      return EMPTY;
+    }
+
+    if (event.source !== client.window) {
+      const sender: MessageTarget = {window: event.source as Window, origin: event.origin};
+      const error = `[MessagingError] Message rejected: Wrong window [origin=${event.origin}]`;
+      sendDeliveryStatusError(sender, messageId, error);
       return EMPTY;
     }
 
     if (event.origin !== client.application.origin) {
-      const target = {gatewayWindow: client.gatewayWindow, origin: event.origin};
+      const sender: MessageTarget = {window: event.source as Window, origin: event.origin};
       const error = `[MessagingError] Message rejected: Wrong origin [actual=${event.origin}, expected=${client.application.origin}, application=${client.application.symbolicName}]`;
-      sendDeliveryStatusError(target, {transport: rejectConfig.transport, topic: messageId}, error);
+      sendDeliveryStatusError(sender, messageId, error);
       return EMPTY;
     }
 
-    return of({
-      envelope: event.data as MessageEnvelope<MSG>,
-      client: client,
-    });
+    return of(event);
   });
 }
 
 /** @ignore */
-export function filterByTopic(topic: string): MonoTypeOperatorFunction<ClientMessage<TopicMessage>> {
-  return filter((clientMessage: ClientMessage<TopicMessage>): boolean => {
-    return clientMessage.envelope.message.topic === topic;
-  });
-}
-
-/** @ignore */
-export function filterByTransportAndTopic(transport: MessagingTransport, topic: string): MonoTypeOperatorFunction<MessageEvent> {
-  return pipe(
-    filterMessage(transport, MessagingChannel.Topic),
-    filter((event: MessageEvent): boolean => {
-      const envelope = event.data as MessageEnvelope<TopicMessage>;
-      return envelope.message && envelope.message.topic === topic;
-    }),
-  );
-}
-
-/** @ignore */
-function sendDeliveryStatusSuccess(recipient: {gatewayWindow: Window; origin: string} | Client, destination: {transport: MessagingTransport; topic: string}): void {
-  sendTopicMessage<MessageDeliveryStatus>(recipient, destination.transport, {
-    topic: destination.topic,
+function sendDeliveryStatusSuccess(target: MessageTarget | Client, topic: string): void {
+  sendTopicMessage<MessageDeliveryStatus>(target, {
+    topic: topic,
     body: {ok: true},
     headers: new Map(),
   });
 }
 
 /** @ignore */
-function sendDeliveryStatusError(recipient: {gatewayWindow: Window; origin: string} | Client, destination: {transport: MessagingTransport; topic: string}, error: string): void {
-  sendTopicMessage<MessageDeliveryStatus>(recipient, destination.transport, {
-    topic: destination.topic,
+function sendDeliveryStatusError(target: MessageTarget | Client, topic: string, error: string): void {
+  sendTopicMessage<MessageDeliveryStatus>(target, {
+    topic: topic,
     body: {ok: false, details: error},
     headers: new Map(),
   });
 }
 
 /** @ignore */
-function sendTopicMessage<T>(recipient: {gatewayWindow: Window; origin: string} | Client, transport: MessagingTransport, message: TopicMessage<T>): void {
+function sendTopicMessage<T>(target: MessageTarget | Client, message: TopicMessage<T>): void {
   const envelope: MessageEnvelope<TopicMessage<T>> = {
-    transport: transport,
+    transport: MessagingTransport.BrokerToClient,
     channel: MessagingChannel.Topic,
     message: {...message},
   };
@@ -567,18 +549,12 @@ function sendTopicMessage<T>(recipient: {gatewayWindow: Window; origin: string} 
     headers.set(MessageHeaders.AppSymbolicName, Beans.get<string>(APP_IDENTITY));
   }
 
-  const target = recipient instanceof Client ? {gatewayWindow: recipient.gatewayWindow, origin: recipient.application.origin} : recipient;
-  target.gatewayWindow.postMessage(envelope, target.origin);
-}
-
-/**
- * Represents a message send by a client connected to the message broker.
- *
- * @ignore
- */
-interface ClientMessage<MSG extends Message = any> {
-  envelope: MessageEnvelope<MSG>;
-  client: Client;
+  if (target instanceof Client) {
+    target.window.postMessage(envelope, target.application.origin);
+  }
+  else {
+    target.window.postMessage(envelope, target.origin);
+  }
 }
 
 /**
@@ -593,6 +569,9 @@ function catchErrorAndRetry<T>(): MonoTypeOperatorFunction<T> {
   });
 }
 
+/**
+ * @ignore
+ */
 function constructDeprecatedParamWarning(param: ParamDefinition, metadata: {appSymbolicName: string}): string {
   const deprecation = param.deprecated!;
   const useInstead = typeof deprecation === 'object' && deprecation.useInstead || undefined;
@@ -603,4 +582,14 @@ function constructDeprecatedParamWarning(param: ParamDefinition, metadata: {appS
     .concat(useInstead ? `Pass parameter '${useInstead}' instead.` : [])
     .concat(message || [])
     .join(' ');
+}
+
+/**
+ * Represents the target where to send a message.
+ *
+ * @ignore
+ */
+interface MessageTarget {
+  window: Window;
+  origin: string;
 }

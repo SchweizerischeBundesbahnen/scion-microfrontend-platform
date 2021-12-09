@@ -42,7 +42,7 @@ export class KeyboardEventDispatcher implements PreDestroy {
    *
    * IMPORTANT NOTE FOR ANGULAR APPLICATIONS:
    * Always subscribe to top-level DOM events during event dispatcher construction. Event dispatchers are eagerly constructed on platform startup.
-   * Typically, Angular applications connect to the platform outside the Angular zone to avoid excessive change detection cycles for irrelevant DOM events.
+   * Typically, Angular applications connect to the platform outside of the Angular zone to avoid excessive change detection cycles for irrelevant DOM events.
    */
   private installKeyboardEventListener(): void {
     merge(fromEvent<KeyboardEvent>(document, 'keydown'), fromEvent<KeyboardEvent>(document, 'keyup'))

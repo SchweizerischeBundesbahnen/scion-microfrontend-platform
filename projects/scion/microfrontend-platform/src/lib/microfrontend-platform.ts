@@ -127,7 +127,7 @@ export class MicrofrontendPlatform {
    * will execute. The platform supports following runlevels:
    *
    * - In runlevel `0`, the platform fetches manifests of registered micro applications.
-   * - In runlevel `1`, the platform constructs eager beans.
+   * - In runlevel `1`, the platform constructs eager beans and connects to the broker.
    * - From runlevel `2` and above, messaging is enabled. This is the default runlevel at which initializers execute if not specifying any runlevel.
    * - In runlevel `3`, the platform installs activator microfrontends. See https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:activator to learn more about activators.
    *
@@ -171,8 +171,8 @@ export class MicrofrontendPlatform {
         Beans.register(ManifestService);
         Beans.register(KeyboardEventDispatcher, {eager: true});
         Beans.register(BrokerGateway, provideBrokerGateway({
-          connectToHost: true,
           messageDeliveryTimeout: config.host?.messageDeliveryTimeout,
+          brokerDiscoverTimeout: config.host?.brokerDiscoverTimeout,
         }));
 
         // Register app configs under the symbol `ɵAPP_CONFIG` in the bean manager.
@@ -261,7 +261,7 @@ export class MicrofrontendPlatform {
         await SciRouterOutletElement.define();
         this.installClientStartupProgressMonitor();
 
-        registerRunlevel1Initializers();
+        registerRunlevel0Initializers();
         registerRunlevel2Initializers();
 
         Beans.register(IS_PLATFORM_HOST, {useValue: false});
@@ -269,11 +269,7 @@ export class MicrofrontendPlatform {
         Beans.register(PlatformPropertyService, {eager: true});
         Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger});
         Beans.registerIfAbsent(HttpClient);
-        Beans.register(BrokerGateway, provideBrokerGateway({
-          connectToHost: connectOptions?.connect ?? true,
-          messageDeliveryTimeout: connectOptions?.messageDeliveryTimeout,
-          brokerDiscoveryTimeout: connectOptions?.brokerDiscoverTimeout,
-        }));
+        Beans.register(BrokerGateway, provideBrokerGateway(connectOptions));
         Beans.registerIfAbsent(MessageClient, provideMessageClient());
         Beans.registerIfAbsent(IntentClient, provideIntentClient());
         Beans.registerIfAbsent(OutletRouter);
@@ -292,13 +288,13 @@ export class MicrofrontendPlatform {
     );
 
     /**
-     * Registers initializers to run in runlevel 1.
+     * Registers initializers to run in runlevel 0.
      */
-    function registerRunlevel1Initializers(): void {
+    function registerRunlevel0Initializers(): void {
       // Wait until connected to the message broker, or reject if the maximal broker discovery timeout has elapsed.
       Beans.registerInitializer({
         useFunction: () => Beans.get(BrokerGateway).whenConnected(),
-        runlevel: Runlevel.One,
+        runlevel: Runlevel.Zero,
       });
     }
 
@@ -355,7 +351,7 @@ export class MicrofrontendPlatform {
       return Promise.resolve();
     }
     catch (error) {
-      Beans.destroy();
+      await MicrofrontendPlatform.destroy();
       return Promise.reject(`[MicrofrontendPlatformStartupError] Microfrontend platform failed to start: ${error}`);
     }
   }
@@ -450,18 +446,15 @@ export class MicrofrontendPlatform {
 }
 
 /** @ignore */
-function provideBrokerGateway(config: {connectToHost: boolean; messageDeliveryTimeout?: number; brokerDiscoveryTimeout?: number}): BeanInstanceConstructInstructions {
-  if (!config.connectToHost) {
-    return {useClass: NullBrokerGateway};
+function provideBrokerGateway(connectOptions?: ConnectOptions): BeanInstanceConstructInstructions {
+  if (connectOptions?.connect ?? true) {
+    return {
+      useFactory: () => new ɵBrokerGateway(connectOptions),
+      eager: true,
+      destroyOrder: Number.MAX_VALUE,
+    };
   }
-  return {
-    useFactory: () => new ɵBrokerGateway({
-      brokerDiscoveryTimeout: config.brokerDiscoveryTimeout ?? 10000,
-      messageDeliveryTimeout: config.messageDeliveryTimeout ?? 10000,
-    }),
-    eager: true,
-    destroyOrder: Number.MAX_VALUE,
-  };
+  return {useClass: NullBrokerGateway};
 }
 
 /** @ignore */

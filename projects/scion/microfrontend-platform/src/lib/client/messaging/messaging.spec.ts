@@ -626,10 +626,10 @@ describe('Messaging', () => {
     const startup = MicrofrontendPlatform.connectToHost('client-app', {brokerDiscoverTimeout: 250});
     await expectPromise(startup).toReject(/MicrofrontendPlatformStartupError/);
 
-    await expect(loggerSpy).toHaveBeenCalledWith('[BrokerDiscoverTimeoutError] Message broker not discovered within the 250ms timeout. Messages cannot be published or received.');
+    await expect(loggerSpy).toHaveBeenCalledWith('[ClientConnectError] Message broker not discovered within the 250ms timeout. Messages cannot be published or received.');
   });
 
-  it('should not error with `BrokerDiscoverTimeoutError` when starting the platform host and initializers in runlevel 0 take a long time to complete, e.g., when fetching manifests', async () => {
+  it('should not error with `ClientConnectError` when starting the platform host and if initializers in runlevel 0 take a long time to complete, e.g., to fetch manifests', async () => {
     const loggerSpy = getLoggerSpy('error');
     const initializerDuration = 1000;
 
@@ -643,14 +643,14 @@ describe('Messaging', () => {
       runlevel: 0,
     });
 
-    const startup = MicrofrontendPlatform.startHost({applications: []});
+    const startup = MicrofrontendPlatform.startHost({host: {brokerDiscoverTimeout: 250}, applications: []});
 
     await expectPromise(startup).toResolve();
     expect(initializerCompleted).toBeTrue();
     expect(loggerSpy).not.toHaveBeenCalled();
   });
 
-  it('should not error with `BrokerDiscoverTimeoutError` when publishing a message in runlevel 0 and runlevel 0 takes a long time to complete (messaging only enabled in runlevel 2)', async () => {
+  it('should not error with `ClientConnectError` when publishing a message in runlevel 0 and if runlevel 0 takes a long time to complete (host connects to the broker in runlevel 1)', async () => {
     const loggerSpy = getLoggerSpy('error');
     const initializerDuration = 1000;
 
@@ -672,7 +672,7 @@ describe('Messaging', () => {
     });
 
     // Start the host
-    const startup = MicrofrontendPlatform.startHost({applications: []});
+    const startup = MicrofrontendPlatform.startHost({host: {brokerDiscoverTimeout: 250}, applications: []});
 
     // Expect the startup not to error
     await expectPromise(startup).toResolve();
@@ -1516,11 +1516,10 @@ function mountBadClientAndConnect(badClientConfig: {symbolicName: string}): {dis
   //       IS LOADED INTO THE IFRAME. THE ONLY EXCEPTION ARE REFERENCES TO INTERFACE TYPES AS NOT TRANSPILED INTO
   //       JAVASCRIPT.
   function sendConnnectRequest(symbolicName: string): void {
-    const env: MessageEnvelope<TopicMessage> = {
-      transport: 'sci://microfrontend-platform/gateway-to-broker' as any,
-      channel: 'topic' as any,
+    const env: MessageEnvelope = {
+      transport: 'sci://microfrontend-platform/client-to-broker' as any,
+      channel: 'client-connect' as any,
       message: {
-        topic: 'ɵCLIENT_CONNECT',
         headers: new Map()
           .set('ɵMESSAGE_ID', '123')
           .set('ɵAPP_SYMBOLIC_NAME', symbolicName),

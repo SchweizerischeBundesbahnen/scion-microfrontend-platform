@@ -29,7 +29,7 @@ export class MouseUpEventDispatcher implements PreDestroy {
   private _dispatcherId = UUID.randomUUID();
 
   constructor() {
-    // IMPORTANT: In Angular applications, the platform should be started outside the Angular zone in order to avoid excessive change detection cycles
+    // IMPORTANT: In Angular applications, the platform should be started outside of the Angular zone in order to avoid excessive change detection cycles
     // of platform-internal subscriptions to global DOM events. For that reason, we subscribe to `document.mouseup` events in the dispatcher's constructor.
     this.produceSynthEvents();
     this.consumeSynthEvents();

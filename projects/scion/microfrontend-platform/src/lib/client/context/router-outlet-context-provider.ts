@@ -9,7 +9,7 @@
  */
 import {BehaviorSubject, fromEvent, Observable, Subject} from 'rxjs';
 import {filter, share, takeUntil} from 'rxjs/operators';
-import {filterByChannel, filterByTopic, filterByTransport, pluckEnvelope} from '../../operators';
+import {filterByChannel, filterByTopicChannel, filterByTransport, pluckMessage} from '../../operators';
 import {MessageEnvelope, MessagingChannel, MessagingTransport} from '../../ɵmessaging.model';
 import {TopicMatcher} from '../../topic-matcher.util';
 import {MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
@@ -31,7 +31,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
  */
 export class RouterOutletContextProvider {
 
-  private _embeddedOutletContentRequest$: Observable<MessageEnvelope<TopicMessage<any[]>>>;
+  private _microfrontendRequest$: Observable<MessageEvent<MessageEnvelope<TopicMessage>>>;
 
   private _entries$ = new BehaviorSubject<Map<string, any>>(new Map());
   private _entryChange$ = new Subject<Contexts.ContextTreeChangeEvent>();
@@ -39,11 +39,10 @@ export class RouterOutletContextProvider {
 
   constructor(iframe: HTMLIFrameElement) {
     // Listen for requests from embedded web content of the outlet.
-    this._embeddedOutletContentRequest$ = fromEvent<MessageEvent>(window, 'message')
+    this._microfrontendRequest$ = fromEvent<MessageEvent>(window, 'message')
       .pipe(
         filter(event => event.source === iframe.contentWindow),
-        filterByTransport(MessagingTransport.EmbeddedOutletContentToOutlet),
-        pluckEnvelope(),
+        filterByTransport(MessagingTransport.MicrofrontendToOutlet),
         filterByChannel<TopicMessage>(MessagingChannel.Topic),
         share(),
       );
@@ -109,9 +108,10 @@ export class RouterOutletContextProvider {
    * When a key is not found in this context, the lookup is passed on to the parent context.
    */
   private installContextValueLookupListener(): void {
-    this._embeddedOutletContentRequest$
+    this._microfrontendRequest$
       .pipe(
-        filterByTopic<any[]>(Contexts.contextValueLookupTopic(':name')),
+        filterByTopicChannel<any[]>(Contexts.contextValueLookupTopic(':name')),
+        pluckMessage(),
         takeUntil(this._outletDisconnect$),
       )
       .subscribe((lookupRequest: TopicMessage<any[]>) => runSafe(() => {
@@ -162,9 +162,10 @@ export class RouterOutletContextProvider {
    * When the root context is reached, the request is finally answered with all collected context names.
    */
   private installContextTreeNamesLookupListener(): void {
-    this._embeddedOutletContentRequest$
+    this._microfrontendRequest$
       .pipe(
-        filterByTopic<Set<string>>(Contexts.contextTreeNamesLookupTopic()),
+        filterByTopicChannel<Set<string>>(Contexts.contextTreeNamesLookupTopic()),
+        pluckMessage(),
         takeUntil(this._outletDisconnect$),
       )
       .subscribe((lookupRequest: TopicMessage<Set<string>>) => runSafe(() => {
@@ -189,9 +190,10 @@ export class RouterOutletContextProvider {
    * when the requestor unsubscribes. The request is also passed on to the parent context.
    */
   private installContextTreeObserveListener(): void {
-    this._embeddedOutletContentRequest$
+    this._microfrontendRequest$
       .pipe(
-        filterByTopic<void>(Contexts.contextTreeChangeTopic()),
+        filterByTopicChannel<void>(Contexts.contextTreeChangeTopic()),
+        pluckMessage(),
         takeUntil(this._outletDisconnect$),
       )
       .subscribe((observeRequest: TopicMessage<void>) => runSafe(() => {

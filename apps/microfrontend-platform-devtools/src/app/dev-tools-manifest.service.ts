@@ -107,7 +107,7 @@ export class DevToolsManifestService {
           new QualifierMatcher(intention.qualifier, {evalAsterisk: true, evalOptional: true}).matches(capability.qualifier) ||
           new QualifierMatcher(capability.qualifier, {evalAsterisk: true, evalOptional: true}).matches(intention.qualifier)
         )),
-        filterArray(intention => isCapabilityVisibleToApplication(capability, intention.metadata.appSymbolicName)),
+        filterArray(intention => this.isCapabilityVisibleToApplication(capability, intention.metadata.appSymbolicName)),
       );
   }
 
@@ -118,13 +118,13 @@ export class DevToolsManifestService {
           new QualifierMatcher(intention.qualifier, {evalAsterisk: true, evalOptional: true}).matches(capability.qualifier) ||
           new QualifierMatcher(capability.qualifier, {evalAsterisk: true, evalOptional: true}).matches(intention.qualifier)
         )),
-        filterArray(capability => isCapabilityVisibleToApplication(capability, intention.metadata.appSymbolicName)),
+        filterArray(capability => this.isCapabilityVisibleToApplication(capability, intention.metadata.appSymbolicName)),
       );
   }
-}
 
-function isCapabilityVisibleToApplication(capability: Capability, appSymbolicName: string): boolean {
-  return !capability.private || this._appsBySymbolicName.get(appSymbolicName).scopeCheckDisabled || capability.metadata.appSymbolicName === appSymbolicName;
+  private isCapabilityVisibleToApplication(capability: Capability, appSymbolicName: string): boolean {
+    return !capability.private || this._appsBySymbolicName.get(appSymbolicName).scopeCheckDisabled || capability.metadata.appSymbolicName === appSymbolicName;
+  }
 }
 
 const byType = (a: ManifestObject, b: ManifestObject): number => a.type.localeCompare(b.type);

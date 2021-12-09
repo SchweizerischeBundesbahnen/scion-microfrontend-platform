@@ -77,7 +77,7 @@ export namespace Contexts {
    */
   export function newContextValueLookupRequest(name: string, replyTo: string, options?: ContextLookupOptions, values?: any[]): MessageEnvelope<TopicMessage<any[]>> {
     return {
-      transport: MessagingTransport.EmbeddedOutletContentToOutlet,
+      transport: MessagingTransport.MicrofrontendToOutlet,
       channel: MessagingChannel.Topic,
       message: {
         topic: contextValueLookupTopic(encodeURIComponent(name)), // Encode in order to support names containing forward slashes or starting with a colon.
@@ -98,7 +98,7 @@ export namespace Contexts {
    */
   export function newContextTreeNamesLookupRequest(replyTo: string, names?: Set<string>): MessageEnvelope<TopicMessage<Set<string>>> {
     return {
-      transport: MessagingTransport.EmbeddedOutletContentToOutlet,
+      transport: MessagingTransport.MicrofrontendToOutlet,
       channel: MessagingChannel.Topic,
       message: {
         topic: Contexts.contextTreeNamesLookupTopic(),
@@ -117,7 +117,7 @@ export namespace Contexts {
    */
   export function newContextTreeObserveRequest(replyTo: string): MessageEnvelope<TopicMessage<void>> {
     return {
-      transport: MessagingTransport.EmbeddedOutletContentToOutlet,
+      transport: MessagingTransport.MicrofrontendToOutlet,
       channel: MessagingChannel.Topic,
       message: {
         topic: Contexts.contextTreeChangeTopic(),

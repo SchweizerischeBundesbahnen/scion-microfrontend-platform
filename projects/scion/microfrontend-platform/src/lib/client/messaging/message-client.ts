@@ -162,7 +162,7 @@ export abstract class MessageClient {
  * @category Messaging
  */
 export function takeUntilUnsubscribe<T>(topic: string): MonoTypeOperatorFunction<T> {
-  return takeUntil(Beans.get(MessageClient).subscriberCount$(topic).pipe(first(count => count === 0)));
+  return takeUntil(Beans.get(MessageClient).subscriberCount$(topic).pipe(first(count => count === 0, 0)));
 }
 
 /**

@@ -15,7 +15,6 @@ import {runSafe} from '../../safe-runner';
 import {PlatformTopics} from '../../ɵmessaging.model';
 import {Client, ClientRegistry} from '../message-broker/client.registry';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
-import {Defined} from '@scion/toolkit/util';
 
 /**
  * Tracks the focus across microfrontends and answers {@link PlatformTopics.IsFocusWithin} requests.
@@ -76,9 +75,8 @@ export class FocusTracker implements PreDestroy {
    * Tests whether the given client has received focus or contains embedded web content that has received focus.
    */
   private isFocusWithin(clientId: string, focusOwner: Client | undefined): boolean {
-    const clientWindow = Defined.orElseThrow(Beans.get(ClientRegistry).getByClientId(clientId), () => Error(`[NullClientError] No client registered under '${clientId}'.`)).window;
     for (let client = focusOwner; client !== undefined; client = this.getParentClient(client)) {
-      if (client.window === clientWindow) {
+      if (client.id === clientId) {
         return true;
       }
     }
@@ -89,7 +87,7 @@ export class FocusTracker implements PreDestroy {
     if (client.window.parent === client.window) {
       return undefined; // window has no parent as it is the top-level window
     }
-    return Beans.get(ClientRegistry).getByWindow(client.window.parent) || undefined;
+    return Beans.get(ClientRegistry).getByWindow(client.window.parent);
   }
 
   public preDestroy(): void {
