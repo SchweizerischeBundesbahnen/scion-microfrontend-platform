@@ -5,6 +5,98 @@
 
 ## Changelog
 
+# [1.0.0-beta.20](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.19...1.0.0-beta.20) (2022-01-31)
+
+
+### Code Refactoring
+
+* **platform:** consolidate API for configuring the platform ([142ce8e](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/142ce8ef446c59ffda32312eea666f3509a155ed)), closes [#39](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/39) [#96](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/96)
+* **platform:** remove gateway iframe in client-broker communication ([0a4b4b0](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/0a4b4b0bead9c6bb9e09d92a45e33d8cde754f0a)), closes [#14](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/14)
+
+
+### BREAKING CHANGES
+
+* **platform:** Removing the gateway communication iframe introduced a breaking change in the host/client communication protocol.
+
+  You need to upgrade the version of SCION Microfrontend Platform in host and client applications at the same time.
+  The breaking change refers only to the communication protocol, the API of the SCION Microfrontend Platform has not changed.
+  
+  To migrate, upgrade to the newest version of `@scion/microfrontend-platform` in the host and client applications.
+* **platform:** Consolidation of the API for configuring the platform host introduced a breaking change. The communication protocol between host and client is not affected by this change.
+
+  - API for loading the platform config via a config loader has been removed; to migrate, load the config before starting the platform;
+  - API for passing an app list to `MicrofrontendPlatform.startHost` has been removed; to migrate, register applications via `MicrofrontendPlatformConfig` object, as follows: `MicrofrontendPlatformConfig.applications`;
+  - manual registration of the host application has been removed as now done implicitly; to migrate:
+    - remove host app from the app list;
+    - configure host privileges via `HostConfig` object, as follows:
+      - `MicrofrontendPlatformConfig.host.scopeCheckDisabled`
+      - `MicrofrontendPlatformConfig.host.intentionCheckDisabled`
+      - `MicrofrontendPlatformConfig.host.intentionRegisterApiDisabled`
+    - specify message delivery timeout in `MicrofrontendPlatformConfig.host.messageDeliveryTimeout`;
+    - provide the host's manifest, if any, via `MicrofrontendPlatformConfig.host.manifest`, either as object literal or as URL;
+    - specify the host's symbolic name in `MicrofrontendPlatformConfig.host.symbolicName`; if not specified, defaults to `host`;
+  - the Activator API can now be disabled by setting the flag `MicrofrontendPlatformConfig.activatorApiDisabled` instead of `PlatformConfig.platformFlags.activatorApiDisabled`;
+  - the interface `ApplicationManifest` has been renamed to `Manifest`;
+
+  - the micro application must now pass its identity (symbolic name) directly as the first argument, rather than via the options object;
+  - the options object passed to `MicrofrontendPlatform.connectToHost` has been renamed from ` MicroApplicationConfig` to `ConnectOptions` and messaging options are now top-level options; to migrate:
+    - set the flag `MicrofrontendPlatformConnectOptions.connect` instead of `MicroApplicationConfig.messaging.enabled` to control if to connect to the platform host;
+    - specify 'broker discovery timeout' in `MicrofrontendPlatformConnectOptions.brokerDiscoverTimeout` instead of `MicroApplicationConfig.messaging.brokerDiscoverTimeout`;
+    - specify 'message delivery timeout' in `MicrofrontendPlatformConnectOptions.messageDeliveryTimeout` instead of `MicroApplicationConfig.messaging.deliveryTimeout`;
+
+  ### The following snippets illustrate how a migration could look like:
+  
+  #### Before migration
+  
+  ```typescript
+  const applications: ApplicationConfig[] = [
+    {symbolicName: 'host', manifestUrl: '/manifest.json'}, // optional
+    {symbolicName: 'app1', manifestUrl: 'http://app1/manifest.json'},
+    {symbolicName: 'app2', manifestUrl: 'http://app2/manifest.json'},
+  ];
+  await MicrofrontendPlatform.startHost(applications, {symbolicName: 'host'});
+  ```
+  
+  #### After migration
+  
+  ```typescript
+  await MicrofrontendPlatform.startHost({
+    host: {
+      symbolicName: 'host',
+      manifest: '/manifest.json'
+    },
+    applications: [
+     {symbolicName: 'app1', manifestUrl: 'http://app1/manifest.json'},
+     {symbolicName: 'app2', manifestUrl: 'http://app2/manifest.json'}
+    ]
+  });
+  ```
+  
+  #### After migration if inlining the host manifest
+  
+  ```typescript
+  await MicrofrontendPlatform.startHost({
+    host: {
+      symbolicName: 'host',
+      manifest: {
+        name: 'Host Application',
+        capabilities: [
+          // capabilities of the host application
+        ],
+        intentions: [
+          // intentions of the host application
+        ]
+      }
+    },
+    applications: [
+     {symbolicName: 'app1', manifestUrl: 'http://app1/manifest.json'},
+     {symbolicName: 'app2', manifestUrl: 'http://app2/manifest.json'}
+    ],
+  });
+  ```
+
+
+
 # [1.0.0-beta.19](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.18...1.0.0-beta.19) (2021-11-05)
 
 
