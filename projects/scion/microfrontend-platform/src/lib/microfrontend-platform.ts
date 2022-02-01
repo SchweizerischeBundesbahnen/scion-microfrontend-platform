@@ -136,7 +136,6 @@ export class MicrofrontendPlatform {
    */
   public static startHost(config: MicrofrontendPlatformConfig): Promise<void> {
     return MicrofrontendPlatform.startPlatform(async () => {
-        await SciRouterOutletElement.define();
         MicrofrontendPlatform.installHostStartupProgressMonitor();
 
         registerRunlevel0Initializers();
@@ -229,6 +228,12 @@ export class MicrofrontendPlatform {
         useFunction: () => Beans.get(ManifestService).whenApplicationsLoaded,
         runlevel: Runlevel.Two,
       });
+      // Ensure the SciRouterOutlet to be instantiated after initialization of the platform.
+      // Otherwise, the router outlet construction may fail or result in unexpected behavior, for example, because beans are not yet registered.
+      Beans.registerInitializer({
+        useFunction: () => SciRouterOutletElement.define(),
+        runlevel: Runlevel.Two,
+      });
     }
 
     /**
@@ -258,7 +263,6 @@ export class MicrofrontendPlatform {
    */
   public static connectToHost(symbolicName: string, connectOptions?: ConnectOptions): Promise<void> {
     return MicrofrontendPlatform.startPlatform(async () => {
-        await SciRouterOutletElement.define();
         this.installClientStartupProgressMonitor();
 
         registerRunlevel0Initializers();
@@ -307,10 +311,15 @@ export class MicrofrontendPlatform {
         useFunction: () => Beans.get(PlatformPropertyService).whenPropertiesLoaded,
         runlevel: Runlevel.Two,
       });
-
       // Wait until obtained registered applications so that they can be accessed synchronously by the application via `ManifestService#applications`.
       Beans.registerInitializer({
         useFunction: () => Beans.get(ManifestService).whenApplicationsLoaded,
+        runlevel: Runlevel.Two,
+      });
+      // Ensure the SciRouterOutlet to be instantiated after initialization of the platform.
+      // Otherwise, the router outlet construction may fail or result in unexpected behavior, for example, because beans are not yet registered.
+      Beans.registerInitializer({
+        useFunction: () => SciRouterOutletElement.define(),
         runlevel: Runlevel.Two,
       });
     }
