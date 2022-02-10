@@ -24,7 +24,7 @@ In this Chapter
 [[chapter:activator:what-is-an-activator]]
 [discrete]
 === What is an Activator?
-An activator allows a micro application to initialize and connect to the platform when the user loads the host application into his browser. An activator is a startup hook for micro applications to initialize or register message or intent handlers to provide functionality. In the broadest sense, an activator is a kind of microfrontend, i.e. an HTML page that runs in an iframe. In contrast to regular microfrontends, however, at platform startup, the platform loads activator microfrontends into hidden iframes for the entire platform lifecycle, thus, providing a stateful session to the micro application on the client-side.
+An activator allows a micro application to initialize and connect to the platform upon host application's startup, i.e., when the user loads the web application into the browser. An activator is a startup hook for micro applications to initialize or register message or intent handlers to provide functionality. In the broadest sense, an activator is a kind of microfrontend, i.e. an HTML page that runs in an iframe. In contrast to regular microfrontends, however, at platform startup, the platform loads activator microfrontends into hidden iframes for the entire platform lifecycle, thus, providing a stateful session to the micro application on the client-side.
 
 A micro application registers an activator as public _activator_ capability in its manifest, as follows:
 

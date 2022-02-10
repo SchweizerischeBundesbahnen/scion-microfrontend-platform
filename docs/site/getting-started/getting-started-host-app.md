@@ -180,9 +180,12 @@ sci-router-outlet[name="SHOPPING-CART"].sci-empty {
 
 We did it! Run `npm run start` to serve the applications.
 
-If you open the page http://localhost:4200, you will not see much yet. That's because we first have to implement the micro applications for `products` and `shopping cart`. If you open the console panel of your browser, you will see that the platform tries to load the manifests for the `products` and `shopping cart` micro applications, which leads to an error because not yet available.
+When you open the page http://localhost:4200, you see:
+- the header "Products" provided by the otherwise still empty `products` microfrontend
+- the button we prepared for toggling the shopping cart sidebar
+- the `devtools` microfrontend
 
-What you can see though is the `devtools` microfrontend.
+This is not yet much. That is because we first have to implement the micro applications for `products` and `shopping cart`. If you open the console panel of your browser, you will notice that the platform tries to load the manifests for the `products` and `shopping cart` micro applications, which leads to an error because they are not yet available.
 </details>
 
 <details>

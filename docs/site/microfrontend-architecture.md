@@ -11,7 +11,7 @@ Web frontends are becoming more and more common, even for complex business appli
   <a href="https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/raw/master/docs/adoc/microfrontend-platform-developer-guide/images/microfrontend-architecture.svg"><img src="/docs/adoc/microfrontend-platform-developer-guide/images/microfrontend-architecture.svg" alt="Microfrontend Architecture"></a>
 </p>
 
-The microservice and microfrontend architecture design approach enables us to form development teams full-stack in line with the business functionality, resulting in independent so-called micro applications. A micro application deals with well-defined business functionality. Its backend services are collectively referred to as microservice and its user-facing parts as microfrontend.
+The microservice and microfrontend architecture design approach enables us to form development teams full-stack in line with the business functionality, resulting in independent so-called micro applications. A micro application deals with well-defined business functionality. Its backend services are collectively referred to as microservice and its user-facing parts as microfrontends.
 
 ***
 

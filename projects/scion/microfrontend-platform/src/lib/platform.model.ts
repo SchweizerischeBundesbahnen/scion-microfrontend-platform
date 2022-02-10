@@ -277,8 +277,9 @@ export enum PlatformCapabilityTypes {
 }
 
 /**
- * An activator allows a micro application to initialize and connect to the platform when the user loads the host
- * application into his browser.
+ * An activator allows a micro application to initialize and connect to the platform upon host application's startup,
+ * i.e., when the user loads the web application into the browser.
+ *
  *
  * In the broadest sense, an activator is a kind of microfrontend, i.e. an HTML page that runs in an iframe. In contrast
  * to regular microfrontends, however, at platform startup, the platform loads activator microfrontends into hidden iframes
