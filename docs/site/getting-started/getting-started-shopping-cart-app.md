@@ -86,9 +86,9 @@ In this section, we will render the products added to the shopping cart in an un
 1. Open the TypeScript file `shopping-cart-controller.ts`.
 1. Render the content of the shopping cart.
 
-   If we recall the implementation of the `products` micro application, we notice that the `products` microfrontend publishes a message to the topic `shopping-cart/add-product` when the user adds a product to the shopping cart. However, due to the design of our application, our microfrontend may not display at that time. Therefore we would miss the message.  
+   If we recall the implementation of the `products` micro application, we notice that the `products` microfrontend publishes a message to the topic `shopping-cart/add-product` when the user adds a product to the shopping cart. However, due to the design of our application, our microfrontend might not be displayed at that time. Therefore we would miss the message.  
    
-   The concept of activators comes to our rescue. An activator allows a micro application to initialize and connect to the platform when the user loads the host application into his browser. In the course of this Getting Started Guide, we will implement an activator that will listen to messages published to the topic `shopping-cart/add-product` and put the message's payload into session storage. But more about this later. 
+   The concept of activators comes to our rescue. An activator allows a micro application to initialize and connect to the platform upon host application's startup. In the course of this Getting Started Guide, we will implement an activator that will listen to messages published to the topic `shopping-cart/add-product` and put the message's payload into session storage. But more about this later. 
     
    In the skeleton for this project, you will find the class `ShoppingCartService` in the file `shopping-cart-service.ts`. It provides us access to the session storage via an RxJS `Observable`, notifying us when the user adds a product to the shopping cart.
    
@@ -151,7 +151,7 @@ For the `shopping cart` micro application we need to implement an activator to r
 
 ***
 #### What is an Activator
-An activator allows a micro application to initialize and connect to the platform when the user loads the host application into his browser. In the broadest sense, an activator is a kind of microfrontend, i.e. an HTML page that runs in an iframe. In contrast to regular microfrontends, however, at platform startup, the platform loads activator microfrontends into hidden iframes for the entire platform lifecycle, thus, providing a stateful session to the micro application on the client-side.
+An activator allows a micro application to initialize and connect to the platform upon host application's startup, i.e., when the user loads the web application into the browser. In the broadest sense, an activator is a kind of microfrontend, i.e. an HTML page that runs in an iframe. In contrast to regular microfrontends, however, at platform startup, the platform loads activator microfrontends into hidden iframes for the entire platform lifecycle, thus, providing a stateful session to the micro application on the client-side.
 
 A micro application can register an activator as **public activator capability** in its manifest, as follows:
 ```json
@@ -244,7 +244,7 @@ Like a regular microfrontend, an activator must connect to the platform host to 
 
 In this section, we will listen for messages published to the topic `shopping-cart/add-product` and put the message's payload into session storage. Like in the previous chapter, we use the `ShoppingCartService`.
 
-> Since an activator runs in a separate browsing context, other microfrontends cannot access the state of the activator microfrontend. Instead, an activator could put data, for example, into session storage, so that microfrontends of its micro application can access it. For more information, refer to chapter [Sharing State][link-developer-guide#activator:state-sharing] in the Developer Guide.
+> Since an activator runs in a separate browsing context, other microfrontends cannot access the state of the activator microfrontend. Instead, an activator can put data, for example, into session storage, so that microfrontends of its micro application can access it. For more information, refer to chapter [Sharing State][link-developer-guide#activator:state-sharing] in the Developer Guide.
   
 > Session storage is visible to applications running on the same protocol, domain, and port. Since this condition is met by all microfrontends of a micro application, session storage is the perfect place for sharing state among microfrontend instances of the same micro application.
 
@@ -281,9 +281,9 @@ In this section, we will listen for messages published to the topic `shopping-ca
 If we recall the implementation of the host application, we notice that we have delegated the routing to show the `shopping cart` microfrontend to the `shopping cart` micro application itself. When the user clicks on the shopping cart button, the host app simply publishes a message to the topic `shopping-cart/toggle-side-panel`. In the activator, we now can receive such messages and navigate accordingly.
 
 1. Open the TypeScript file `activator.ts`.
-1. Subscribe to messages published to the topic `shopping-cart/add-product`.
+1. Subscribe to messages published to the topic `shopping-cart/toggle-side-panel`.
    
-   If the shopping cart side panel is currently closed, we will open it, or close it if it is open. Actually, we do not really open or close it, but navigate to the `shopping cart` microfrontend, or perform a `null` navigation to clear the target router outlet. In a member variable, we store whether the panel is closed or opened.
+   If the shopping cart side panel is currently closed, we will open it, otherwise close it. Actually, we do not really open or close it, but navigate to the `shopping cart` microfrontend, or perform a `null` navigation to clear the target router outlet. In a member variable, we store whether the panel is closed or opened.
    Also, we open the panel when the user adds a product to the shopping cart.
    
    ```ts
@@ -307,7 +307,7 @@ If we recall the implementation of the host application, we notice that we have 
        
    [+]     // Listener to open or close the shopping cart panel
    [+]     Beans.get(MessageClient)
-   [+]       .observe$<Product>('shopping-cart/toggle-side-panel')
+   [+]       .observe$<void>('shopping-cart/toggle-side-panel')
    [+]       .subscribe(() => this.setShoppingCartPanelVisibility(!this.panelVisible));
          }
        
@@ -433,7 +433,7 @@ class Activator {
 
     // Listener to open or close the shopping cart panel
     Beans.get(MessageClient)
-      .observe$<Product>('shopping-cart/toggle-side-panel')
+      .observe$<void>('shopping-cart/toggle-side-panel')
       .subscribe(() => this.setShoppingCartPanelVisibility(!this.panelVisible));
   }
 

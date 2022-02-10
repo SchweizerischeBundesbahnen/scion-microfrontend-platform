@@ -95,11 +95,11 @@ In this section, we will render products in an unordered list.
 1. Create the products array as private member before the constructor, as follows:
    ```ts
    private products: Product[] = [
-     {id: 1, name: 'Product 1'},
-     {id: 2, name: 'Product 2'},
-     {id: 3, name: 'Product 3'},
-     {id: 4, name: 'Product 4'},
-     {id: 5, name: 'Product 5'},
+     {id: 1, name: 'Fancy Shoes'},
+     {id: 2, name: 'Shiny knick-knack'},
+     {id: 3, name: 'Fascinating book'},
+     {id: 4, name: 'Exciting gadget'},
+     {id: 5, name: 'Bells and whistles'},
    ];
    ```  
 1. Create a method to render a list item for a product, as follows:
@@ -190,11 +190,11 @@ import { Beans } from '@scion/toolkit/bean-manager';
 class ProductsController {
 
   private products: Product[] = [
-    {id: 1, name: 'Product 1'},
-    {id: 2, name: 'Product 2'},
-    {id: 3, name: 'Product 3'},
-    {id: 4, name: 'Product 4'},
-    {id: 5, name: 'Product 5'},
+    {id: 1, name: 'Fancy Shoes'},
+    {id: 2, name: 'Shiny knick-knack'},
+    {id: 3, name: 'Fascinating book'},
+    {id: 4, name: 'Exciting gadget'},
+    {id: 5, name: 'Bells and whistles'},
   ];
 
   public async init(): Promise<void> {
