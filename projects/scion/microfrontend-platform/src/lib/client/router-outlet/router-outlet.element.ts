@@ -537,7 +537,7 @@ export class SciRouterOutletElement extends HTMLElement {
     }
     else {
       customElements.define(ELEMENT_NAME, SciRouterOutletElement);
-      return customElements.whenDefined(ELEMENT_NAME);
+      return customElements.whenDefined(ELEMENT_NAME).then(() => Promise.resolve());
     }
   }
 }

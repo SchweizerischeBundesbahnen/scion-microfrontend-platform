@@ -11,7 +11,8 @@ import {$, browser, protractor} from 'protractor';
 import {enterText} from '../spec.util';
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
 import {ManifestObjectFilter, Qualifier} from '@scion/microfrontend-platform';
-import {SciCheckboxPO, SciParamsEnterPO} from '@scion/toolkit.internal/widgets.po';
+import {SciParamsEnterPO} from '../../deps/scion/toolkit.internal/params-enter/params-enter.po';
+import {SciCheckboxPO} from '../../deps/scion/toolkit.internal/checkbox/checkbox.po';
 
 const EC = protractor.ExpectedConditions;
 

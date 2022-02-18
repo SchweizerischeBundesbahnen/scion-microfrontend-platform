@@ -10,8 +10,8 @@
 import {$} from 'protractor';
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
 import {getInputValue, waitUntilLocation} from '../spec.util';
-import {SciPropertyPO} from '@scion/toolkit.internal/widgets.po';
 import {TestingAppPO} from '../testing-app.po';
+import {SciPropertyPO} from '../../deps/scion/toolkit.internal/property/property.po';
 
 export abstract class MicrofrontendPagePO {
 

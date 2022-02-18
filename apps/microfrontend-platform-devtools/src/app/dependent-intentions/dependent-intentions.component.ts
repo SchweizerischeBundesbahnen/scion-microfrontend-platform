@@ -11,7 +11,7 @@ import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} fro
 import {Intention} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
 import {Observable, ReplaySubject} from 'rxjs';
-import {expand, map, mapTo, switchMap, take} from 'rxjs/operators';
+import {expand, map, switchMap, take} from 'rxjs/operators';
 import {filterManifestObjects} from '../manifest-object-filter.utils';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Maps} from '@scion/toolkit/util';
@@ -38,7 +38,7 @@ export class DependentIntentionsComponent implements OnChanges {
     this.intentionsByApp$ = this._appChange$
       .pipe(
         switchMap(() => manifestService.observeDependentIntentions$(this.appSymbolicName)),
-        expand(intentions => this.filterFormControl.valueChanges.pipe(take(1), mapTo(intentions))),
+        expand(intentions => this.filterFormControl.valueChanges.pipe(take(1), map(() => intentions))),
         map(intentions => filterManifestObjects(intentions, this.filterFormControl.value)),
         map(intentions => intentions.reduce((acc, intention) => Maps.addListValue(acc, intention.metadata.appSymbolicName, intention), new Map())),
       );

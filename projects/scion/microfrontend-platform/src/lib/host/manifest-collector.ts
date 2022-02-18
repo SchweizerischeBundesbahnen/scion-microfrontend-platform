@@ -15,8 +15,7 @@ import {Logger} from '../logger';
 import {Beans, Initializer} from '@scion/toolkit/bean-manager';
 import {ProgressMonitor} from './progress-monitor/progress-monitor';
 import {ManifestLoadProgressMonitor} from './progress-monitor/progress-monitors';
-import {from} from 'rxjs';
-import {timeoutIfPresent} from '../operators';
+import {firstValueFrom, from, identity, Observable, throwError, timeout} from 'rxjs';
 import {APP_IDENTITY, Manifest, ɵAPP_CONFIG} from '../platform.model';
 import {HostManifestInterceptor} from './host-manifest-interceptor';
 import {ApplicationConfig} from './application-config';
@@ -46,22 +45,23 @@ export class ManifestCollector implements Initializer {
   }
 
   private async fetchAndRegisterManifest(appConfig: ApplicationConfig, monitor: ProgressMonitor): Promise<void> {
-    if (!appConfig.manifestUrl) {
-      Beans.get(Logger).error(`[AppConfigError] Failed to fetch manifest for application '${appConfig.symbolicName}'. Manifest URL must not be empty.`);
-      return;
-    }
-
     try {
-      const response = await from(Beans.get(HttpClient).fetch(appConfig.manifestUrl))
-        .pipe(timeoutIfPresent(appConfig.manifestLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).manifestLoadTimeout))
-        .toPromise();
-
-      if (!response.ok) {
-        Beans.get(Logger).error(`[ManifestFetchError] Failed to fetch manifest for application '${appConfig.symbolicName}'. Maybe the application is currently unavailable. [httpStatusCode=${response.status}, httpStatusText=${response.statusText}]`, appConfig, response.status);
+      if (!appConfig.manifestUrl) {
+        Beans.get(Logger).error(`[AppConfigError] Failed to fetch manifest for application '${appConfig.symbolicName}'. Manifest URL must not be empty.`);
         return;
       }
 
-      const manifest: Manifest = await response.json();
+      const fetchManifest$ = from(Beans.get(HttpClient).fetch(appConfig.manifestUrl));
+      const manifestFetchTimeout = appConfig.manifestLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).manifestLoadTimeout;
+      const onManifestFetchTimeout = (): Observable<never> => throwError(() => `Timeout of ${manifestFetchTimeout}ms elapsed.`);
+      const manifestFetchResponse = await firstValueFrom(fetchManifest$.pipe(manifestFetchTimeout ? timeout({first: manifestFetchTimeout, with: onManifestFetchTimeout}) : identity));
+
+      if (!manifestFetchResponse.ok) {
+        Beans.get(Logger).error(`[ManifestFetchError] Failed to fetch manifest for application '${appConfig.symbolicName}'. Maybe the application is currently unavailable. [httpStatusCode=${manifestFetchResponse.status}, httpStatusText=${manifestFetchResponse.statusText}]`, appConfig, manifestFetchResponse.status);
+        return;
+      }
+
+      const manifest: Manifest = await manifestFetchResponse.json();
 
       // Let the host manifest be intercepted before registering it in the platform, for example by libraries integrating the SCION Microfrontend Platform, e.g., to allow the programmatic registration of capabilities or intentions.
       if (appConfig.symbolicName === Beans.get<string>(APP_IDENTITY)) {

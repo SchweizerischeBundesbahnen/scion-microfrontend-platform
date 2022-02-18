@@ -7,8 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {identity, MonoTypeOperatorFunction, OperatorFunction, pipe, throwError} from 'rxjs';
-import {filter, map, timeoutWith} from 'rxjs/operators';
+import {MonoTypeOperatorFunction, OperatorFunction, pipe} from 'rxjs';
+import {filter, map} from 'rxjs/operators';
 import {MessageEnvelope, MessagingChannel, MessagingTransport} from './ɵmessaging.model';
 import {Message, TopicMessage} from './messaging.model';
 import {TopicMatcher} from './topic-matcher.util';
@@ -61,22 +61,4 @@ export function pluckMessage<T extends Message>(): OperatorFunction<MessageEvent
   return map((messageEvent: MessageEvent<MessageEnvelope<T>>): T => {
     return messageEvent.data.message;
   });
-}
-
-/**
- * Like RxJS {@link timeoutWith}, but without effect if passing a `0` or `undefined` timeout.
- *
- * Throws an error if passing a negative timeout.
- *
- * @ignore
- */
-export function timeoutIfPresent<T>(timeout: number | undefined): MonoTypeOperatorFunction<T> {
-  if (timeout && timeout < 0) {
-    throw Error(`[IllegalTimeoutError] Negative timeouts not supported [timeout=${timeout}]`);
-  }
-
-  if (timeout) {
-    return timeoutWith(new Date(Date.now() + timeout), throwError(`Timeout of ${timeout}ms elapsed.`));
-  }
-  return identity;
 }

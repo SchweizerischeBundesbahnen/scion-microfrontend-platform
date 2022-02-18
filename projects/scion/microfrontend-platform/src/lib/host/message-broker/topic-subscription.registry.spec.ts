@@ -9,7 +9,6 @@
  */
 import {TopicSubscriptionRegistry} from './topic-subscription.registry';
 import {ClientRegistry} from '../client-registry/client.registry';
-import {take} from 'rxjs/operators';
 import {expectEmissions} from '../../testing/spec.util.spec';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
@@ -18,6 +17,7 @@ import {Application} from '../../platform.model';
 import {Client} from '../client-registry/client';
 import {ɵClient} from '../client-registry/ɵclient';
 import {VERSION} from '../../version';
+import {firstValueFrom} from 'rxjs';
 
 describe('TopicSubscriptionRegistry', () => {
 
@@ -496,7 +496,7 @@ describe('TopicSubscriptionRegistry', () => {
   function expectSubscriptionCount(topic: string): {toBe: (expected: number) => Promise<void>} {
     return {
       toBe: async (expected: any): Promise<void> => {
-        await expect(await Beans.get(TopicSubscriptionRegistry).subscriptionCount$(topic).pipe(take(1)).toPromise()).withContext(`topic: ${topic}`).toBe(expected);
+        await expect(await firstValueFrom(Beans.get(TopicSubscriptionRegistry).subscriptionCount$(topic))).withContext(`topic: ${topic}`).toBe(expected);
       },
     };
   }

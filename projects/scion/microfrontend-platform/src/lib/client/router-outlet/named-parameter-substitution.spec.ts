@@ -9,7 +9,6 @@
  */
 
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
-import {take} from 'rxjs/operators';
 import {RouterOutlets} from './router-outlet.element';
 import {OutletRouter} from './outlet-router';
 import {NavigationOptions} from './metadata';
@@ -18,6 +17,7 @@ import {UUID} from '@scion/toolkit/uuid';
 import {mapToBody} from '../../messaging.model';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageClient} from '../messaging/message-client';
+import {firstValueFrom} from 'rxjs';
 
 describe('OutletRouter', () => {
 
@@ -154,7 +154,7 @@ describe('OutletRouter', () => {
       // Navigate to the given URL
       await Beans.get(OutletRouter).navigate(url, {...navigationOptions, outlet});
       // Lookup the navigated URL
-      return Beans.get(MessageClient).observe$(RouterOutlets.urlTopic(outlet)).pipe(take(1), mapToBody<string>()).toPromise();
+      return firstValueFrom(Beans.get(MessageClient).observe$<string>(RouterOutlets.urlTopic(outlet)).pipe(mapToBody<string>()));
     }
   });
 });

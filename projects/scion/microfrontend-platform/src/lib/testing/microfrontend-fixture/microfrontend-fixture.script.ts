@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Observer, timer} from 'rxjs';
+import {firstValueFrom, Observer, timer} from 'rxjs';
 import {MatcherResult, TopicMatcher} from '../../topic-matcher.util';
 import {UUID} from '@scion/toolkit/uuid';
 import {Dictionary} from '@scion/toolkit/util';
@@ -43,7 +43,7 @@ export function testcase_5(params: Dictionary, observer: Observer<void>): void {
 
 export async function testcase_6(): Promise<void> {
   // Delay script execution.
-  await timer(500).toPromise();
+  await firstValueFrom(timer(500));
 
   // Add testee div after delay.
   const testeeDiv = document.body.appendChild(document.createElement('div'));

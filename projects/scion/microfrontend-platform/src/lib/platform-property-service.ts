@@ -10,9 +10,9 @@
 
 import {MessageClient} from './client/messaging/message-client';
 import {PlatformTopics} from './ɵmessaging.model';
-import {map, take, takeUntil} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 import {Dictionary, Maps} from '@scion/toolkit/util';
-import {Subject} from 'rxjs';
+import {firstValueFrom, Subject} from 'rxjs';
 import {mapToBody} from './messaging.model';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {BrokerGateway, NullBrokerGateway} from './client/messaging/broker-gateway';
@@ -70,15 +70,8 @@ export class PlatformPropertyService implements PreDestroy {
   }
 
   private async requestProperties(): Promise<void> {
-    this._properties = await Beans.get(MessageClient).observe$<Dictionary>(PlatformTopics.PlatformProperties)
-      .pipe(
-        mapToBody(),
-        map(properties => Maps.coerce(properties)),
-        take(1),
-        takeUntil(this._destroy$),
-      )
-      .toPromise()
-      .then(properties => properties || new Map<string, any>());
+    const properties$ = Beans.get(MessageClient).observe$<Dictionary>(PlatformTopics.PlatformProperties);
+    this._properties = await firstValueFrom(properties$.pipe(mapToBody(), map(properties => Maps.coerce(properties))));
   }
 
   /**

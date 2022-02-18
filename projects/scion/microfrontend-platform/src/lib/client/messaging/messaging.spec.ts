@@ -7,14 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {first, publishReplay, timeoutWith} from 'rxjs/operators';
-import {ConnectableObservable, Observable, Subject, throwError} from 'rxjs';
+import {Subject} from 'rxjs';
 import {IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from './message-client';
 import {IntentClient} from './intent-client';
 import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, waitForCondition, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
-import {Defined, Objects} from '@scion/toolkit/util';
 import {ClientRegistry} from '../../host/client-registry/client.registry';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestService} from '../manifest-registry/manifest-service';
@@ -805,70 +803,70 @@ describe('Messaging', () => {
   it('should allow multiple subscriptions to the same topic in the same client', async () => {
     await MicrofrontendPlatform.startHost({applications: []});
 
-    const receiver1$ = Beans.get(MessageClient).observe$<string>('topic').pipe(publishReplay(1)) as ConnectableObservable<TopicMessage<string>>;
-    const receiver2$ = Beans.get(MessageClient).observe$<string>('topic').pipe(publishReplay(1)) as ConnectableObservable<TopicMessage<string>>;
-    const receiver3$ = Beans.get(MessageClient).observe$<string>('topic').pipe(publishReplay(1)) as ConnectableObservable<TopicMessage<string>>;
+    const captor1 = new ObserveCaptor(bodyExtractFn);
+    const captor2 = new ObserveCaptor(bodyExtractFn);
+    const captor3 = new ObserveCaptor(bodyExtractFn);
 
-    const subscription1 = receiver1$.connect();
-    const subscription2 = receiver2$.connect();
-    const subscription3 = receiver3$.connect();
+    const subscription1 = Beans.get(MessageClient).observe$<string>('topic').subscribe(captor1);
+    const subscription2 = Beans.get(MessageClient).observe$<string>('topic').subscribe(captor2);
+    const subscription3 = Beans.get(MessageClient).observe$<string>('topic').subscribe(captor3);
 
     // publish 'message 1a'
     await Beans.get(MessageClient).publish('topic', 'message 1a', {retain: true});
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1a'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 1a'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 1a'})).toResolve();
+    await expectEmissions(captor1).toEqual(['message 1a']);
+    await expectEmissions(captor2).toEqual(['message 1a']);
+    await expectEmissions(captor3).toEqual(['message 1a']);
 
     // publish 'message 1b'
     await Beans.get(MessageClient).publish('topic', 'message 1b', {retain: true});
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 1b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['message 1a', 'message 1b']);
+    await expectEmissions(captor2).toEqual(['message 1a', 'message 1b']);
+    await expectEmissions(captor3).toEqual(['message 1a', 'message 1b']);
 
     // unsubscribe observable 1
     subscription1.unsubscribe();
 
     // publish 'message 2a'
     await Beans.get(MessageClient).publish('topic', 'message 2a', {retain: true});
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 2a'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2a'})).toResolve();
+    await expectEmissions(captor1).toEqual(['message 1a', 'message 1b']);
+    await expectEmissions(captor2).toEqual(['message 1a', 'message 1b', 'message 2a']);
+    await expectEmissions(captor3).toEqual(['message 1a', 'message 1b', 'message 2a']);
 
     // publish 'message 2b'
     await Beans.get(MessageClient).publish('topic', 'message 2b', {retain: true});
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 2b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['message 1a', 'message 1b']);
+    await expectEmissions(captor2).toEqual(['message 1a', 'message 1b', 'message 2a', 'message 2b']);
+    await expectEmissions(captor3).toEqual(['message 1a', 'message 1b', 'message 2a', 'message 2b']);
 
     // unsubscribe observable 3
     subscription3.unsubscribe();
 
     // publish 'message 3a'
     await Beans.get(MessageClient).publish('topic', 'message 3a', {retain: true});
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 3a'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['message 1a', 'message 1b']);
+    await expectEmissions(captor2).toEqual(['message 1a', 'message 1b', 'message 2a', 'message 2b', 'message 3a']);
+    await expectEmissions(captor3).toEqual(['message 1a', 'message 1b', 'message 2a', 'message 2b']);
 
     // publish 'message 3b'
     await Beans.get(MessageClient).publish('topic', 'message 3b', {retain: true});
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 3b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['message 1a', 'message 1b']);
+    await expectEmissions(captor2).toEqual(['message 1a', 'message 1b', 'message 2a', 'message 2b', 'message 3a', 'message 3b']);
+    await expectEmissions(captor3).toEqual(['message 1a', 'message 1b', 'message 2a', 'message 2b']);
 
     // unsubscribe observable 2
     subscription2.unsubscribe();
 
     // publish 'message 4a'
     await Beans.get(MessageClient).publish('topic', 'message 4a', {retain: true});
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 3b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['message 1a', 'message 1b']);
+    await expectEmissions(captor2).toEqual(['message 1a', 'message 1b', 'message 2a', 'message 2b', 'message 3a', 'message 3b']);
+    await expectEmissions(captor3).toEqual(['message 1a', 'message 1b', 'message 2a', 'message 2b']);
 
     // publish 'message 4b'
     await Beans.get(MessageClient).publish('topic', 'message 4b', {retain: true});
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'message 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'message 3b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'message 2b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['message 1a', 'message 1b']);
+    await expectEmissions(captor2).toEqual(['message 1a', 'message 1b', 'message 2a', 'message 2b', 'message 3a', 'message 3b']);
+    await expectEmissions(captor3).toEqual(['message 1a', 'message 1b', 'message 2a', 'message 2b']);
   });
 
   it('should allow multiple subscriptions to the same intent in the same client', async () => {
@@ -883,70 +881,70 @@ describe('Messaging', () => {
       applications: [],
     });
 
-    const receiver1$ = Beans.get(IntentClient).observe$<string>().pipe(publishReplay(1)) as ConnectableObservable<IntentMessage<string>>;
-    const receiver2$ = Beans.get(IntentClient).observe$<string>().pipe(publishReplay(1)) as ConnectableObservable<IntentMessage<string>>;
-    const receiver3$ = Beans.get(IntentClient).observe$<string>().pipe(publishReplay(1)) as ConnectableObservable<IntentMessage<string>>;
+    const captor1 = new ObserveCaptor(bodyExtractFn);
+    const captor2 = new ObserveCaptor(bodyExtractFn);
+    const captor3 = new ObserveCaptor(bodyExtractFn);
 
-    const subscription1 = receiver1$.connect();
-    const subscription2 = receiver2$.connect();
-    const subscription3 = receiver3$.connect();
+    const subscription1 = Beans.get(IntentClient).observe$<string>().subscribe(captor1);
+    const subscription2 = Beans.get(IntentClient).observe$<string>().subscribe(captor2);
+    const subscription3 = Beans.get(IntentClient).observe$<string>().subscribe(captor3);
 
     // issue 'intent 1a'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 1a');
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1a'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 1a'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 1a'})).toResolve();
+    await expectEmissions(captor1).toEqual(['intent 1a']);
+    await expectEmissions(captor2).toEqual(['intent 1a']);
+    await expectEmissions(captor3).toEqual(['intent 1a']);
 
     // issue 'intent 1b'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 1b');
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 1b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['intent 1a', 'intent 1b']);
+    await expectEmissions(captor2).toEqual(['intent 1a', 'intent 1b']);
+    await expectEmissions(captor3).toEqual(['intent 1a', 'intent 1b']);
 
     // unsubscribe observable 1
     subscription1.unsubscribe();
 
     // issue 'intent 2a'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 2a');
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 2a'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2a'})).toResolve();
+    await expectEmissions(captor1).toEqual(['intent 1a', 'intent 1b']);
+    await expectEmissions(captor2).toEqual(['intent 1a', 'intent 1b', 'intent 2a']);
+    await expectEmissions(captor3).toEqual(['intent 1a', 'intent 1b', 'intent 2a']);
 
     // issue 'intent 2b'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 2b');
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 2b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['intent 1a', 'intent 1b']);
+    await expectEmissions(captor2).toEqual(['intent 1a', 'intent 1b', 'intent 2a', 'intent 2b']);
+    await expectEmissions(captor3).toEqual(['intent 1a', 'intent 1b', 'intent 2a', 'intent 2b']);
 
     // unsubscribe observable 3
     subscription3.unsubscribe();
 
     // issue 'intent 3a'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 3a');
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 3a'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['intent 1a', 'intent 1b']);
+    await expectEmissions(captor2).toEqual(['intent 1a', 'intent 1b', 'intent 2a', 'intent 2b', 'intent 3a']);
+    await expectEmissions(captor3).toEqual(['intent 1a', 'intent 1b', 'intent 2a', 'intent 2b']);
 
     // issue 'intent 3b'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 3b');
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 3b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['intent 1a', 'intent 1b']);
+    await expectEmissions(captor2).toEqual(['intent 1a', 'intent 1b', 'intent 2a', 'intent 2b', 'intent 3a', 'intent 3b']);
+    await expectEmissions(captor3).toEqual(['intent 1a', 'intent 1b', 'intent 2a', 'intent 2b']);
 
     // unsubscribe observable 2
     subscription2.unsubscribe();
 
     // issue 'intent 4a'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 4a');
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 3b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['intent 1a', 'intent 1b']);
+    await expectEmissions(captor2).toEqual(['intent 1a', 'intent 1b', 'intent 2a', 'intent 2b', 'intent 3a', 'intent 3b']);
+    await expectEmissions(captor3).toEqual(['intent 1a', 'intent 1b', 'intent 2a', 'intent 2b']);
 
     // issue 'intent 4b'
     await Beans.get(IntentClient).publish({type: 'xyz'}, 'intent 4b');
-    await expectPromise(waitUntilMessageReceived(receiver1$, {body: 'intent 1b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver2$, {body: 'intent 3b'})).toResolve();
-    await expectPromise(waitUntilMessageReceived(receiver3$, {body: 'intent 2b'})).toResolve();
+    await expectEmissions(captor1).toEqual(['intent 1a', 'intent 1b']);
+    await expectEmissions(captor2).toEqual(['intent 1a', 'intent 1b', 'intent 2a', 'intent 2b', 'intent 3a', 'intent 3b']);
+    await expectEmissions(captor3).toEqual(['intent 1a', 'intent 1b', 'intent 2a', 'intent 2b']);
   });
 
   it('should receive a message once regardless of the number of subscribers in the same client', async () => {
@@ -1383,10 +1381,7 @@ describe('Messaging', () => {
 
       const captor = new ObserveCaptor();
       new Subject<void>()
-        .pipe(
-          takeUntilUnsubscribe('some-topic'),
-          timeoutWith(new Date(Date.now() + 2000), throwError('[SpecTimeoutError] Timeout elapsed.')),
-        )
+        .pipe(takeUntilUnsubscribe('some-topic'))
         .subscribe(captor);
 
       // unsubscribe subscription1
@@ -1689,19 +1684,6 @@ function expectMessage(actual: TopicMessage): {toMatch: (expected: TopicMessage)
       }));
     },
   };
-}
-
-/**
- * Waits until a message with the given body is received.
- */
-async function waitUntilMessageReceived(observable$: Observable<TopicMessage | IntentMessage>, waitUntil: {body: any; timeout?: number}): Promise<void> {
-  const timeout = Defined.orElse(waitUntil.timeout, 250);
-  await observable$
-    .pipe(
-      first(msg => Objects.isEqual(msg.body, waitUntil.body)),
-      timeoutWith(new Date(Date.now() + timeout), throwError('[SpecTimeoutError] Timeout elapsed.')),
-    )
-    .toPromise();
 }
 
 type Disposable = () => void;

@@ -174,6 +174,9 @@ describe('ApplicationRegistry', () => {
       expect(() => registerApp({symbolicName: 'app\\1'})).toThrowError(/ApplicationRegistrationError/);
       expect(() => registerApp({symbolicName: 'app&1'})).toThrowError(/ApplicationRegistrationError/);
       expect(() => registerApp({symbolicName: 'app?1'})).toThrowError(/ApplicationRegistrationError/);
+      expect(() => registerApp({symbolicName: ' app-1'})).toThrowError(/ApplicationRegistrationError/);
+      expect(() => registerApp({symbolicName: 'app-1 '})).toThrowError(/ApplicationRegistrationError/);
+      expect(() => registerApp({symbolicName: 'app 1'})).toThrowError(/ApplicationRegistrationError/);
     });
 
     function registerApp(app: {symbolicName: string}): void {

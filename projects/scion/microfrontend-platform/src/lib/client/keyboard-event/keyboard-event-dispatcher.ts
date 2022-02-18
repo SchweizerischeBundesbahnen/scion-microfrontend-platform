@@ -7,8 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {fromEvent, merge, MonoTypeOperatorFunction, noop, Observable, OperatorFunction, Subject} from 'rxjs';
-import {filter, map, switchMap, take, takeUntil, tap} from 'rxjs/operators';
+import {fromEvent, merge, MonoTypeOperatorFunction, Observable, OperatorFunction, Subject, withLatestFrom} from 'rxjs';
+import {filter, map, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {MessageClient} from '../messaging/message-client';
 import {ContextService} from '../context/context-service';
 import {KEYSTROKE_CONTEXT_NAME_PREFIX, OUTLET_CONTEXT, OutletContext, RouterOutlets} from '../router-outlet/router-outlet.element';
@@ -28,11 +28,9 @@ import {filterArray, mapArray} from '@scion/toolkit/operators';
 export class KeyboardEventDispatcher implements PreDestroy {
 
   private _destroy$ = new Subject<void>();
-  private _whenOutletIdentity: Promise<string>;
   private _keyboardEvents$ = new Subject<KeyboardEvent>();
 
   constructor() {
-    this._whenOutletIdentity = this.lookupOutletIdentity();
     this.installKeyboardEventListener();
     this.installKeystrokeListener();
   }
@@ -61,15 +59,16 @@ export class KeyboardEventDispatcher implements PreDestroy {
         mapArray(keystrokeContextName => keystrokeContextName.substring(KEYSTROKE_CONTEXT_NAME_PREFIX.length)),
         mapArray(keystroke => this.observeKeyboardEvent$(keystroke)),
         switchMap(keyboardEvents => merge(...keyboardEvents)),
+        withLatestFrom(Beans.get(ContextService).observe$<OutletContext>(OUTLET_CONTEXT).pipe(filter(Boolean))),
         takeUntil(this._destroy$),
       )
-      .subscribe(event => runSafe(() => this.onKeyboardEventToPropagate(event)));
+      .subscribe(([event, outletContext]) => runSafe(() => this.onKeyboardEventToPropagate(event, outletContext.uid)));
   }
 
   /**
    * Method invoked for each keyboard events to be propagated to the parent router outlet across the iframe boundary.
    */
-  private onKeyboardEventToPropagate(event: KeyboardEvent): void {
+  private onKeyboardEventToPropagate(event: KeyboardEvent, outletIdentity: string): void {
     const eventInit: KeyboardEventInit = {
       key: event.key,
       ctrlKey: event.ctrlKey,
@@ -79,10 +78,8 @@ export class KeyboardEventDispatcher implements PreDestroy {
       bubbles: event.bubbles,
     };
 
-    this._whenOutletIdentity.then(outletIdentity => {
-      const publishTo = RouterOutlets.keyboardEventTopic(outletIdentity, event.type);
-      Beans.get(MessageClient).publish<KeyboardEventInit>(publishTo, eventInit);
-    });
+    const publishTo = RouterOutlets.keyboardEventTopic(outletIdentity, event.type);
+    Beans.get(MessageClient).publish<KeyboardEventInit>(publishTo, eventInit);
   }
 
   /**
@@ -107,16 +104,6 @@ export class KeyboardEventDispatcher implements PreDestroy {
         applyKeystrokeFlags(keystroke.flags),
       ),
     );
-  }
-
-  /**
-   * Looks up the identity of the outlet containing this microfrontend. If not running in the context of an outlet, the Promise returned never resolves.
-   */
-  private lookupOutletIdentity(): Promise<string> {
-    return Beans.get(ContextService).observe$<OutletContext>(OUTLET_CONTEXT)
-      .pipe(take(1), takeUntil(this._destroy$))
-      .toPromise()
-      .then(outletContext => outletContext ? Promise.resolve(outletContext.uid) : new Promise<never>(noop));
   }
 
   public preDestroy(): void {

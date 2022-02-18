@@ -7,11 +7,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, ElementRef, HostListener, Injector, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, HostListener, Injector, OnDestroy} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
-import {CdkTrapFocus, FocusTrap} from '@angular/cdk/a11y';
 import {ComponentPortal} from '@angular/cdk/portal';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
@@ -25,7 +24,7 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
   templateUrl: './router-outlet-context.component.html',
   styleUrls: ['./router-outlet-context.component.scss'],
 })
-export class RouterOutletContextComponent implements OnInit, OnDestroy {
+export class RouterOutletContextComponent implements OnDestroy {
 
   public readonly NAME = NAME;
   public readonly VALUE = VALUE;
@@ -33,12 +32,6 @@ export class RouterOutletContextComponent implements OnInit, OnDestroy {
   public form: FormGroup;
 
   private _destroy$ = new Subject<void>();
-  private _focusTrap: FocusTrap;
-
-  @ViewChild(CdkTrapFocus, {static: true})
-  public set setFocusTrap(trapFocus: CdkTrapFocus) {
-    this._focusTrap = trapFocus.focusTrap;
-  }
 
   constructor(host: ElementRef<HTMLElement>,
               formBuilder: FormBuilder,
@@ -56,10 +49,6 @@ export class RouterOutletContextComponent implements OnInit, OnDestroy {
       });
   }
 
-  public ngOnInit(): void {
-    this._focusTrap.focusFirstTabbableElement();
-  }
-
   @HostListener('keydown.escape')
   public onClose(): void {
     this._overlay.dispose();
@@ -68,7 +57,6 @@ export class RouterOutletContextComponent implements OnInit, OnDestroy {
   public onAddClick(): void {
     this.routerOutlet.setContextValue(this.form.get(NAME).value, this.parseContextValueFromUI());
     this.form.reset();
-    this._focusTrap.focusFirstTabbableElement();
   }
 
   private parseContextValueFromUI(): string | null | undefined {

@@ -42,7 +42,7 @@ export class ActivatorProgressModule {
       throw Error('[NullActivatorContextError] Not running in an activator context.');
     }
 
-    // Signal the host platform that this activator is ready, except for app3 which has no readiness topic declared
+    // Signal the host platform that this activator is ready.
     const readinessTopics = activationContext.activator.properties.readinessTopics;
     if (readinessTopics) {
       Beans.get(MessageClient).publish(readinessTopics as string);

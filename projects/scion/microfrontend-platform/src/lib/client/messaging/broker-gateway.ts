@@ -7,9 +7,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {EMPTY, fromEvent, interval, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError} from 'rxjs';
+import {EMPTY, firstValueFrom, fromEvent, interval, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout} from 'rxjs';
 import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
-import {finalize, map, mergeMap, take, takeUntil, tap, timeoutWith} from 'rxjs/operators';
+import {finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {filterByChannel, filterByMessageHeader, filterByOrigin, filterByTopicChannel, filterByTransport, pluckMessage} from '../../operators';
 import {UUID} from '@scion/toolkit/uuid';
 import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
@@ -182,16 +182,21 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
 
     // Install Promise that resolves once the broker has acknowledged the message, or that rejects otherwise.
     const postError$ = new Subject<never>();
-    const whenPosted = merge(this.message$, postError$)
-      .pipe(
-        filterByTopicChannel<MessageDeliveryStatus>(messageId),
-        take(1),
-        pluckMessage(),
-        timeoutWith(new Date(Date.now() + this._messageDeliveryTimeout), throwError(`[MessageDispatchError] Broker did not report message delivery state within the ${this._messageDeliveryTimeout}ms timeout. [envelope=${stringifyEnvelope(envelope)}]`)),
-        mergeMap(statusMessage => statusMessage.body!.ok ? EMPTY : throwError(statusMessage.body!.details)),
-        takeUntil(this._platformStopping$),
-      )
-      .toPromise();
+    const whenPosted = new Promise<void>((resolve, reject) => {
+      merge(this.message$, postError$)
+        .pipe(
+          filterByTopicChannel<MessageDeliveryStatus>(messageId),
+          take(1),
+          pluckMessage(),
+          timeout({first: this._messageDeliveryTimeout, with: () => throwError(() => `[MessageDispatchError] Broker did not report message delivery state within the ${this._messageDeliveryTimeout}ms timeout. [envelope=${stringifyEnvelope(envelope)}]`)}),
+          mergeMap(statusMessage => statusMessage.body!.ok ? EMPTY : throwError(() => statusMessage.body!.details)),
+          takeUntil(this._platformStopping$),
+        )
+        .subscribe({
+          error: reject,
+          complete: resolve,
+        });
+    });
 
     try {
       brokerInfo.window.postMessage(envelope, brokerInfo.origin);
@@ -328,14 +333,14 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
    */
   private connectToBroker(): Promise<BrokerInfo> {
     const replyTo = UUID.randomUUID();
-    const connectPromise = fromEvent<MessageEvent>(window, 'message')
+    const connectPromise = firstValueFrom(fromEvent<MessageEvent>(window, 'message')
       .pipe(
         filterByTransport(MessagingTransport.BrokerToClient),
         filterByTopicChannel<ConnackMessage>(replyTo),
         mergeMap((messageEvent: MessageEvent<MessageEnvelope<TopicMessage<ConnackMessage>>>) => {
           const response: ConnackMessage | undefined = messageEvent.data.message.body;
           if (response?.returnCode !== 'accepted') {
-            return throwError(`${response?.returnMessage ?? 'UNEXPECTED: Empty broker discovery response'} [code: '${response?.returnCode ?? 'n/a'}']`);
+            return throwError(() => `${response?.returnMessage ?? 'UNEXPECTED: Empty broker discovery response'} [code: '${response?.returnCode ?? 'n/a'}']`);
           }
           return of<BrokerInfo>({
             clientId: response.clientId!,
@@ -344,12 +349,10 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
             origin: messageEvent.origin,
           });
         }),
-        take(1),
-        timeoutWith(new Date(Date.now() + this._brokerDiscoverTimeout), throwError(`[ClientConnectError] Message broker not discovered within the ${this._brokerDiscoverTimeout}ms timeout. Messages cannot be published or received.`)),
-        tap({error: (error) => Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(error)}), // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
+        timeout({first: this._brokerDiscoverTimeout, with: () => throwError(() => `[ClientConnectError] Message broker not discovered within the ${this._brokerDiscoverTimeout}ms timeout. Messages cannot be published or received.`)}),
+        tap({error: error => Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(error)}), // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
         takeUntil(this._platformStopping$),
-      )
-      .toPromise();
+      ));
 
     const connectMessage: MessageEnvelope = {
       transport: MessagingTransport.ClientToBroker,

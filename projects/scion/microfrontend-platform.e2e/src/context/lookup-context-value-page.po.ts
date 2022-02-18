@@ -10,8 +10,8 @@
 
 import {$, browser, protractor} from 'protractor';
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {SciCheckboxPO} from '@scion/toolkit.internal/widgets.po';
 import {enterText} from '../spec.util';
+import {SciCheckboxPO} from '../../deps/scion/toolkit.internal/checkbox/checkbox.po';
 
 const EC = protractor.ExpectedConditions;
 

@@ -109,10 +109,10 @@ export class BrowserOutletComponent {
         .map(route => {
           const matrixParams: Map<string, any> = route.data['matrixParams'] || new Map();
           const matrixParamsEncoded = Array.from(matrixParams.keys())
-            .reduce((encoded, paramKey) => encoded.concat(`${paramKey}=${matrixParams.get(paramKey)}`), [])
-            .join(';');
+            .reduce((encoded, paramKey) => encoded.concat(`;${paramKey}=${matrixParams.get(paramKey)}`), [])
+            .join();
           return {
-            url: `${app.url}/#/${route.path}${matrixParamsEncoded ? `;${matrixParamsEncoded}` : ''}`,
+            url: `${app.url}/#/${route.path}${matrixParamsEncoded}`,
             label: `${app.symbolicName}: ${route.data['pageTitle']}`,
           };
         }));

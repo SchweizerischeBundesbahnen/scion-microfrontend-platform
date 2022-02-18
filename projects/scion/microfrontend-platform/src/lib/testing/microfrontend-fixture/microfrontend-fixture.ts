@@ -140,7 +140,7 @@ export class MicrofrontendFixture {
     // Emit messages sent by the script to the fixture.
     const message$ = new ReplaySubject(Infinity);
     const next$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.next));
-    const error$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.error), mergeMap(error => throwError(Error(error))));
+    const error$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.error), mergeMap(error => throwError(() => Error(error))));
     const complete$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.complete));
     const load$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.load));
     merge(next$, error$)
@@ -154,8 +154,8 @@ export class MicrofrontendFixture {
           finalize(() => this.message$ = message$),
         )
         .subscribe({
-          error: (error) => reject(error),
-          complete: () => resolve(),
+          error: reject,
+          complete: resolve,
         });
     });
 

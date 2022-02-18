@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Activator, PlatformCapabilityTypes} from '../../platform.model';
-import {catchError, filter, mergeMapTo, take} from 'rxjs/operators';
+import {first} from 'rxjs/operators';
 import {ApplicationRegistry} from '../application-registry';
 import {OutletRouter} from '../../client/router-outlet/outlet-router';
 import {SciRouterOutletElement} from '../../client/router-outlet/router-outlet.element';
@@ -16,13 +16,12 @@ import {Arrays, Maps} from '@scion/toolkit/util';
 import {UUID} from '@scion/toolkit/uuid';
 import {Logger} from '../../logger';
 import {MessageHeaders} from '../../messaging.model';
-import {EMPTY} from 'rxjs';
+import {EMPTY, firstValueFrom, identity, Observable, timeout} from 'rxjs';
 import {PlatformState} from '../../platform-state';
 import {Beans, Initializer} from '@scion/toolkit/bean-manager';
 import {MicrofrontendPlatformRef} from '../../microfrontend-platform-ref';
 import {ProgressMonitor} from '../progress-monitor/progress-monitor';
 import {ActivatorLoadProgressMonitor} from '../progress-monitor/progress-monitors';
-import {timeoutIfPresent} from '../../operators';
 import {ManifestService} from '../../client/manifest-registry/manifest-service';
 import {MessageClient} from '../../client/messaging/message-client';
 
@@ -38,9 +37,7 @@ export class ActivatorInstaller implements Initializer {
 
   public async init(): Promise<void> {
     // Lookup activators.
-    const activators: Activator[] = await Beans.get(ManifestService).lookupCapabilities$<Activator>({type: PlatformCapabilityTypes.Activator})
-      .pipe(take(1))
-      .toPromise();
+    const activators: Activator[] = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$<Activator>({type: PlatformCapabilityTypes.Activator}));
 
     const monitor = Beans.get(ActivatorLoadProgressMonitor);
     if (!activators.length) {
@@ -90,18 +87,23 @@ export class ActivatorInstaller implements Initializer {
     const activatorLoadTimeout = Beans.get(ApplicationRegistry).getApplication(appSymbolicName)!.activatorLoadTimeout;
     const readinessPromises: Promise<void>[] = activators
       .reduce((acc, activator) => acc.concat(Arrays.coerce(activator.properties.readinessTopics)), new Array<string>()) // concat readiness topics
-      .map(readinessTopic => Beans.get(MessageClient).observe$<void>(readinessTopic)
-        .pipe(
-          filter(msg => msg.headers.get(MessageHeaders.AppSymbolicName) === appSymbolicName),
-          timeoutIfPresent(activatorLoadTimeout),
-          take(1),
-          mergeMapTo(EMPTY),
-          catchError(error => {
-            Beans.get(Logger).error(`[ActivatorLoadTimeoutError] Timeout elapsed while waiting for application to signal readiness [app=${appSymbolicName}, timeout=${activatorLoadTimeout}ms, readinessTopic=${readinessTopic}].`, error);
+      .map(readinessTopic => {
+          const onReadinessTimeout = (): Observable<never> => {
+            Beans.get(Logger).error(`[ActivatorLoadTimeoutError] Timeout elapsed while waiting for application to signal readiness [app=${appSymbolicName}, timeout=${activatorLoadTimeout}ms, readinessTopic=${readinessTopic}].`);
             return EMPTY;
-          }),
-        )
-        .toPromise(),
+          };
+          return new Promise((resolve, reject) => {
+            return Beans.get(MessageClient).observe$<void>(readinessTopic)
+              .pipe(
+                first(msg => msg.headers.get(MessageHeaders.AppSymbolicName) === appSymbolicName),
+                activatorLoadTimeout ? timeout({first: activatorLoadTimeout, with: onReadinessTimeout}) : identity,
+              )
+              .subscribe({
+                error: reject,
+                complete: resolve,
+              });
+          });
+        },
       );
 
     if (!readinessPromises.length) {

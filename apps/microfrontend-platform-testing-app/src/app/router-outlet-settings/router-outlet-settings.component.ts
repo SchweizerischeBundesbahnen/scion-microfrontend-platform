@@ -7,13 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, ElementRef, HostListener, Injector, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, HostListener, Injector, OnDestroy} from '@angular/core';
 import {PreferredSize, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
-import {CdkTrapFocus, FocusTrap} from '@angular/cdk/a11y';
 
 const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top'};
 
@@ -22,15 +21,9 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
   templateUrl: './router-outlet-settings.component.html',
   styleUrls: ['./router-outlet-settings.component.scss'],
 })
-export class RouterOutletSettingsComponent implements OnInit, OnDestroy {
+export class RouterOutletSettingsComponent implements OnDestroy {
 
   private _destroy$ = new Subject<void>();
-  private _focusTrap: FocusTrap;
-
-  @ViewChild(CdkTrapFocus, {static: true})
-  public set setFocusTrap(trapFocus: CdkTrapFocus) {
-    this._focusTrap = trapFocus.focusTrap;
-  }
 
   constructor(host: ElementRef<HTMLElement>,
               private _routerOutlet: SciRouterOutletElement,
@@ -40,10 +33,6 @@ export class RouterOutletSettingsComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this._overlay.dispose();
       });
-  }
-
-  public ngOnInit(): void {
-    this._focusTrap.focusInitialElementWhenReady().then();
   }
 
   public onPageScrollingToggle(): void {

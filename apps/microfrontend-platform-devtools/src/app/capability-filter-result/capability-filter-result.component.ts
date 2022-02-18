@@ -13,7 +13,7 @@ import {Capability} from '@scion/microfrontend-platform';
 import {CapabilityFilterSession} from '../find-capabilities/capability-filter-session.service';
 import {ShellService} from '../shell.service';
 import {FormControl} from '@angular/forms';
-import {expand, map, mapTo, take} from 'rxjs/operators';
+import {expand, map, take} from 'rxjs/operators';
 import {filterManifestObjects} from '../manifest-object-filter.utils';
 
 @Component({
@@ -31,7 +31,7 @@ export class CapabilityFilterResultComponent {
     shellService.detailsTitle = 'Capabilities';
     this.capabilities$ = capabilityFilterSession.capabilities$()
       .pipe(
-        expand(capabilities => this.filterFormControl.valueChanges.pipe(take(1), mapTo(capabilities))),
+        expand(capabilities => this.filterFormControl.valueChanges.pipe(take(1), map(() => capabilities))),
         map(capabilities => filterManifestObjects(capabilities, this.filterFormControl.value)),
       );
   }

@@ -31,17 +31,23 @@
 import {WEBPACK_SCRIPT_CONTEXT, WEBPACK_SCRIPT_CONTEXT_ACTIVE} from './lib/testing/microfrontend-fixture/microfrontend-fixture';
 // import 'zone.js';
 // import 'zone.js/testing';
-// import { getTestBed } from '@angular/core/testing';
-// import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
+// import {getTestBed} from '@angular/core/testing';
+// import {BrowserDynamicTestingModule, platformBrowserDynamicTesting} from '@angular/platform-browser-dynamic/testing';
 export {};
 
-declare const require: any;
+declare const require: {
+  context(path: string, deep?: boolean, filter?: RegExp): {
+    <T>(id: string): T;
+    keys(): string[];
+  };
+};
 
 // First, initialize the Angular testing environment.
 // getTestBed().initTestEnvironment(
 //   BrowserDynamicTestingModule,
 //   platformBrowserDynamicTesting(),
 // );
+
 // Then we find all the tests.
 const context = createWebpackContext();
 // And load the modules.

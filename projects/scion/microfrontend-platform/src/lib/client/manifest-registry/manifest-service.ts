@@ -8,10 +8,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {EMPTY, Observable, Subject} from 'rxjs';
+import {firstValueFrom, lastValueFrom, Observable, Subject} from 'rxjs';
 import {MessageClient} from '../messaging/message-client';
 import {Application, Capability, Intention} from '../../platform.model';
-import {mergeMapTo, take, takeUntil} from 'rxjs/operators';
+import {take} from 'rxjs/operators';
 import {PlatformTopics} from '../../ɵmessaging.model';
 import {ManifestRegistryTopics} from '../../host/manifest-registry/ɵmanifest-registry';
 import {ManifestObjectFilter} from '../../host/manifest-registry/manifest-object-store';
@@ -111,15 +111,14 @@ export class ManifestService implements PreDestroy {
   }
 
   /**
-   * Registers given capability. If the capability has public visiblity, other applications can browse the capability and interact with it.
+   * Registers given capability. If the capability has public visibility, other applications can browse the capability and interact with it.
    *
    * @return A Promise that resolves to the identity of the registered capability,
    *         or that rejects if the registration failed.
    */
   public registerCapability<T extends Capability>(capability: T): Promise<string> {
-    return Beans.get(MessageClient).request$<string>(ManifestRegistryTopics.RegisterCapability, capability)
-      .pipe(mapToBody())
-      .toPromise();
+    const register$ = Beans.get(MessageClient).request$<string>(ManifestRegistryTopics.RegisterCapability, capability);
+    return lastValueFrom(register$.pipe(mapToBody()));
   }
 
   /**
@@ -138,10 +137,12 @@ export class ManifestService implements PreDestroy {
    *         or that rejects if the unregistration failed.
    */
   public unregisterCapabilities(filter?: ManifestObjectFilter): Promise<void> {
-    return Beans.get(MessageClient).request$<void>(ManifestRegistryTopics.UnregisterCapabilities, filter)
-      .pipe(mergeMapTo(EMPTY))
-      .toPromise()
-      .then(() => Promise.resolve()); // resolve to `void`
+    return new Promise<void>((resolve, reject) => {
+      Beans.get(MessageClient).request$<void>(ManifestRegistryTopics.UnregisterCapabilities, filter).subscribe({
+        error: reject,
+        complete: resolve,
+      });
+    });
   }
 
   /**
@@ -155,9 +156,8 @@ export class ManifestService implements PreDestroy {
    *         or that rejects if the registration failed.
    */
   public registerIntention(intention: Intention): Promise<string> {
-    return Beans.get(MessageClient).request$<string>(ManifestRegistryTopics.RegisterIntention, intention)
-      .pipe(mapToBody())
-      .toPromise();
+    const register$ = Beans.get(MessageClient).request$<string>(ManifestRegistryTopics.RegisterIntention, intention);
+    return lastValueFrom(register$.pipe(mapToBody()));
   }
 
   /**
@@ -177,17 +177,17 @@ export class ManifestService implements PreDestroy {
    *         or that rejects if the unregistration failed.
    */
   public unregisterIntentions(filter?: ManifestObjectFilter): Promise<void> {
-    return Beans.get(MessageClient).request$<void>(ManifestRegistryTopics.UnregisterIntentions, filter)
-      .pipe(mergeMapTo(EMPTY))
-      .toPromise()
-      .then(() => Promise.resolve()); // resolve to `void`
+    return new Promise<void>((resolve, reject) => {
+      Beans.get(MessageClient).request$<void>(ManifestRegistryTopics.UnregisterIntentions, filter).subscribe({
+        error: reject,
+        complete: resolve,
+      });
+    });
   }
 
   private async requestApplications(): Promise<void> {
-    this._applications = await Beans.get(MessageClient).observe$<Application[]>(PlatformTopics.Applications)
-      .pipe(mapToBody(), take(1), takeUntil(this._destroy$))
-      .toPromise()
-      .then(applications => applications || []);
+    const applications$ = Beans.get(MessageClient).observe$<Application[]>(PlatformTopics.Applications);
+    this._applications = await firstValueFrom(applications$.pipe(mapToBody()));
   }
 
   /**

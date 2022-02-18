@@ -105,8 +105,8 @@ export class PreferredSizeComponent implements OnDestroy {
   }
 
   private reset(): void {
-    setCssVariable(this._host, '--width', undefined);
-    setCssVariable(this._host, '--height', undefined);
+    setCssVariable(this._host, '--width');
+    setCssVariable(this._host, '--height');
     Beans.get(PreferredSizeService).fromDimension(undefined);
     Beans.get(PreferredSizeService).resetPreferredSize();
     this.elementDimensionObservableBound = false;

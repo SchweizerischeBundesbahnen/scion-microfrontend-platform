@@ -12,7 +12,7 @@ import {expectPromise, waitFor, waitForCondition, waitUntilSubscriberCount} from
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {IntentMessage, TopicMessage} from '../../messaging.model';
-import {AsyncSubject, concat, Observable, of, ReplaySubject, Subject, throwError} from 'rxjs';
+import {concat, Observable, of, ReplaySubject, throwError} from 'rxjs';
 import {finalize} from 'rxjs/operators';
 import {IntentClient} from './intent-client';
 import {ObserveCaptor} from '@scion/toolkit/testing';
@@ -322,7 +322,7 @@ describe('Message Handler', () => {
       await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
-        return throwError('some error');
+        return throwError(() => 'some error');
       });
 
       const captor = new ObserveCaptor(bodyExtractFn);
@@ -341,7 +341,7 @@ describe('Message Handler', () => {
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return concat(
           of(message.body.toUpperCase()),
-          throwError('some error'),
+          throwError(() => 'some error'),
         );
       });
 
@@ -361,7 +361,7 @@ describe('Message Handler', () => {
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return concat(
           of(message.body.toUpperCase()),
-          throwError('some error'),
+          throwError(() => 'some error'),
         );
       });
 
@@ -443,57 +443,47 @@ describe('Message Handler', () => {
     it('should unsubscribe from the replier Observable when the requestor unsubscribes', async () => {
       await MicrofrontendPlatform.startHost({applications: []});
 
-      const replierConstruct$ = new Subject();
-      const whenReplierConstruct = replierConstruct$.toPromise();
-
-      const replierTeardown$ = new Subject();
-      const whenReplierTeardown = replierTeardown$.toPromise();
-
-      const replierFinalize$ = new Subject();
-      const whenReplierFinalize = replierFinalize$.toPromise();
+      const replierCaptor = new ObservableCaptor();
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         return new Observable(() => {
-          replierConstruct$.complete();
-          return () => replierTeardown$.complete();
-        })
-          .pipe(finalize(() => replierFinalize$.complete()));
+          replierCaptor.onConstruct();
+          return () => replierCaptor.onUnsubscribe();
+        }).pipe(finalize(() => replierCaptor.onFinalize()));
       });
 
       const subscription = Beans.get(MessageClient).request$('topic').subscribe();
-      await expectPromise(whenReplierConstruct).toResolve();
+      await expectPromise(replierCaptor.constructed).toResolve();
       subscription.unsubscribe();
-      await expectPromise(whenReplierTeardown).toResolve();
-      await expectPromise(whenReplierFinalize).toResolve();
+      await expectPromise(replierCaptor.unsubscribed).toResolve();
+      await expectPromise(replierCaptor.finalized).toResolve();
     });
 
     it('should unsubscribe the replier\'s and requestor\'s Observable when unregistering the handler', async () => {
       await MicrofrontendPlatform.startHost({applications: []});
 
-      const replierConstruct$ = new AsyncSubject();
-      const replierTeardown$ = new AsyncSubject();
-      const replierFinalize$ = new AsyncSubject();
-      const requestorFinalize$ = new AsyncSubject();
+      const replierCaptor = new ObservableCaptor();
+      const requestorCaptor = new ObservableCaptor();
 
       const handlerSubscription = Beans.get(MessageClient).onMessage<string>('topic', () => {
         return new Observable(() => {
-          replierConstruct$.complete();
-          return () => replierTeardown$.complete();
+          replierCaptor.onConstruct();
+          return () => replierCaptor.onUnsubscribe();
         })
-          .pipe(finalize(() => replierFinalize$.complete()));
+          .pipe(finalize(() => replierCaptor.onFinalize()));
       });
 
       const requestorSubscription = Beans.get(MessageClient).request$('topic')
-        .pipe(finalize(() => requestorFinalize$.complete()))
+        .pipe(finalize(() => requestorCaptor.onFinalize()))
         .subscribe();
 
-      await expectPromise(replierConstruct$.toPromise()).toResolve();
+      await expectPromise(replierCaptor.constructed).toResolve();
       expect(requestorSubscription.closed).toBeFalse();
 
       handlerSubscription.unsubscribe();
-      await expectPromise(replierTeardown$.toPromise()).toResolve();
-      await expectPromise(replierFinalize$.toPromise()).toResolve();
-      await expectPromise(requestorFinalize$.toPromise()).toResolve();
+      await expectPromise(replierCaptor.unsubscribed).toResolve();
+      await expectPromise(replierCaptor.finalized).toResolve();
+      await expectPromise(requestorCaptor.finalized).toResolve();
       expect(requestorSubscription.closed).toBeTrue();
     });
 
@@ -984,7 +974,7 @@ describe('Intent Handler', () => {
       });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, () => {
-        return throwError('some error');
+        return throwError(() => 'some error');
       });
 
       const captor = new ObserveCaptor(bodyExtractFn);
@@ -1011,7 +1001,7 @@ describe('Intent Handler', () => {
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         return concat(
           of(intentMessage.body.toUpperCase()),
-          throwError('some error'),
+          throwError(() => 'some error'),
         );
       });
 
@@ -1039,7 +1029,7 @@ describe('Intent Handler', () => {
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         return concat(
           of(intentMessage.body.toUpperCase()),
-          throwError('some error'),
+          throwError(() => 'some error'),
         );
       });
 
@@ -1145,28 +1135,21 @@ describe('Intent Handler', () => {
         applications: [],
       });
 
-      const replierConstruct$ = new Subject();
-      const whenReplierConstruct = replierConstruct$.toPromise();
-
-      const replierTeardown$ = new Subject();
-      const whenReplierTeardown = replierTeardown$.toPromise();
-
-      const replierFinalize$ = new Subject();
-      const whenReplierFinalize = replierFinalize$.toPromise();
+      const replierCaptor = new ObservableCaptor();
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, () => {
         return new Observable(() => {
-          replierConstruct$.complete();
-          return () => replierTeardown$.complete();
+          replierCaptor.onConstruct();
+          return () => replierCaptor.onUnsubscribe();
         })
-          .pipe(finalize(() => replierFinalize$.complete()));
+          .pipe(finalize(() => replierCaptor.onFinalize()));
       });
 
       const subscription = Beans.get(IntentClient).request$({type: 'capability'}).subscribe();
-      await expectPromise(whenReplierConstruct).toResolve();
+      await expectPromise(replierCaptor.constructed).toResolve();
       subscription.unsubscribe();
-      await expectPromise(whenReplierTeardown).toResolve();
-      await expectPromise(whenReplierFinalize).toResolve();
+      await expectPromise(replierCaptor.unsubscribed).toResolve();
+      await expectPromise(replierCaptor.finalized).toResolve();
     });
 
     it('should unsubscribe the replier\'s and requestor\'s Observable when unregistering the handler', async () => {
@@ -1180,30 +1163,27 @@ describe('Intent Handler', () => {
         applications: [],
       });
 
-      const replierConstruct$ = new AsyncSubject();
-      const replierTeardown$ = new AsyncSubject();
-      const replierFinalize$ = new AsyncSubject();
-      const requestorFinalize$ = new AsyncSubject();
+      const replierCaptor = new ObservableCaptor();
+      const requestorCaptor = new ObservableCaptor();
 
       const handlerSubscription = Beans.get(IntentClient).onIntent<string>({type: 'capability'}, () => {
         return new Observable(() => {
-          replierConstruct$.complete();
-          return () => replierTeardown$.complete();
-        })
-          .pipe(finalize(() => replierFinalize$.complete()));
+          replierCaptor.onConstruct();
+          return () => replierCaptor.onUnsubscribe();
+        }).pipe(finalize(() => replierCaptor.onFinalize()));
       });
 
       const requestorSubscription = Beans.get(IntentClient).request$({type: 'capability'})
-        .pipe(finalize(() => requestorFinalize$.complete()))
+        .pipe(finalize(() => requestorCaptor.onFinalize()))
         .subscribe();
 
-      await expectPromise(replierConstruct$.toPromise()).toResolve();
+      await expectPromise(replierCaptor.constructed).toResolve();
       expect(requestorSubscription.closed).toBeFalse();
 
       handlerSubscription.unsubscribe();
-      await expectPromise(replierTeardown$.toPromise()).toResolve();
-      await expectPromise(replierFinalize$.toPromise()).toResolve();
-      await expectPromise(requestorFinalize$.toPromise()).toResolve();
+      await expectPromise(replierCaptor.unsubscribed).toResolve();
+      await expectPromise(replierCaptor.finalized).toResolve();
+      await expectPromise(requestorCaptor.finalized).toResolve();
       expect(requestorSubscription.closed).toBeTrue();
     });
 
@@ -1253,3 +1233,17 @@ describe('Intent Handler', () => {
 });
 
 type Disposable = () => void;
+
+/**
+ * Helps to capture lifecycle events of an Observable.
+ */
+class ObservableCaptor {
+
+  public constructed = new Promise<void>(resolve => this.onConstruct = resolve);
+  public unsubscribed = new Promise<void>(resolve => this.onUnsubscribe = resolve);
+  public finalized = new Promise<void>(resolve => this.onFinalize = resolve);
+
+  public onConstruct: () => void;
+  public onUnsubscribe: () => void;
+  public onFinalize: () => void;
+}

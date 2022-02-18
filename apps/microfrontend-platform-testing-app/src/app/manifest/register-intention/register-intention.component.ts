@@ -88,11 +88,12 @@ export class RegisterIntentionComponent {
 
     const nilQualifierIfEmpty = this.unregisterForm.get(NILQUALIFIER_IF_EMPTY).value;
     const qualifier = SciParamsEnterComponent.toParamsDictionary(this.unregisterForm.get(QUALIFIER) as FormArray, false);
+    const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
 
     const filter: ManifestObjectFilter = {
       id: this.unregisterForm.get(ID).value || undefined,
       type: this.unregisterForm.get(TYPE).value || undefined,
-      qualifier: Object.keys(qualifier).length ? qualifier : (nilQualifierIfEmpty ? {} : undefined),
+      qualifier: Object.keys(qualifier).length ? qualifier : nilQualifierOrUndefined,
       appSymbolicName: this.unregisterForm.get(APP_SYMBOLIC_NAME).value || undefined,
     };
 
