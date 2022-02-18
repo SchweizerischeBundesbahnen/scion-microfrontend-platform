@@ -1351,5 +1351,4 @@ describe('ManifestService', () => {
       await expectEmissions(captor).toEqual([[intentionIdApp1]]);
     });
   });
-})
-;
+});

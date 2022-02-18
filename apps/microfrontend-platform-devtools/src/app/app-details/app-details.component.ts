@@ -10,7 +10,7 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild} from '@angular/core';
 import {BehaviorSubject, MonoTypeOperatorFunction, Observable, Subject} from 'rxjs';
 import {Application, Capability, Intention} from '@scion/microfrontend-platform';
-import {distinctUntilChanged, expand, filter, map, mapTo, switchMap, take, takeUntil} from 'rxjs/operators';
+import {distinctUntilChanged, expand, filter, map, switchMap, take, takeUntil} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {ActivatedRoute, NavigationEnd, Router, UrlSegmentGroup} from '@angular/router';
 import {filterManifestObjects} from '../manifest-object-filter.utils';
@@ -69,7 +69,7 @@ export class AppDetailsComponent implements OnDestroy {
     return this.application$
       .pipe(
         switchMap(application => this._manifestService.capabilities$({appSymbolicName: application.symbolicName})),
-        expand(capabilities => this.capabilityFilterFormControl.valueChanges.pipe(take(1), mapTo(capabilities))),
+        expand(capabilities => this.capabilityFilterFormControl.valueChanges.pipe(take(1), map(() => capabilities))),
         map(capabilities => filterManifestObjects(capabilities, this.capabilityFilterFormControl.value)),
       );
   }
@@ -78,7 +78,7 @@ export class AppDetailsComponent implements OnDestroy {
     return this.application$
       .pipe(
         switchMap(application => this._manifestService.intentions$({appSymbolicName: application.symbolicName})),
-        expand(intentions => this.intentionFilterFormControl.valueChanges.pipe(take(1), mapTo(intentions))),
+        expand(intentions => this.intentionFilterFormControl.valueChanges.pipe(take(1), map(() => intentions))),
         map(intentions => filterManifestObjects(intentions, this.intentionFilterFormControl.value)),
       );
   }

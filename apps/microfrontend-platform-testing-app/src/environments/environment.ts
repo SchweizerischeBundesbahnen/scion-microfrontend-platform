@@ -36,7 +36,7 @@ export const environment = {
     app_3: {
       symbolicName: 'app-3',
       url: 'http://localhost:4203',
-      activatorLoadTimeout: 800, // activator-readiness.e2e-spec.ts & startup-progress.e2e-spec.ts
+      activatorLoadTimeout: 800, // activator-readiness.e2e-spec.ts and startup-progress.e2e-spec.ts
     },
     app_4: {
       symbolicName: 'app-4',

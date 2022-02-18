@@ -12,7 +12,7 @@ import {Capability, Intention, ParamDefinition} from '../../platform.model';
 import {sha256} from 'js-sha256';
 import {ManifestObjectFilter, ManifestObjectStore} from './manifest-object-store';
 import {defer, merge, of, Subject} from 'rxjs';
-import {distinctUntilChanged, expand, mergeMapTo, take, takeUntil} from 'rxjs/operators';
+import {distinctUntilChanged, expand, mergeMap, take, takeUntil} from 'rxjs/operators';
 import {Intent, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from '../../client/messaging/message-client';
 import {ApplicationRegistry} from '../application-registry';
@@ -101,7 +101,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     }
 
     // use the first 7 digits of the capability hash as capability id
-    const capabilityId = sha256(JSON.stringify({application: appSymbolicName, type: capability.type, ...capability.qualifier})).substr(0, 7);
+    const capabilityId = sha256(JSON.stringify({application: appSymbolicName, type: capability.type, ...capability.qualifier})).substring(0, 7);
     const capabilityToRegister: Capability = {
       ...capability,
       qualifier: capability.qualifier ?? {},
@@ -130,7 +130,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     }
 
     // use the first 7 digits of the intention hash as intention id
-    const intentionId = sha256(JSON.stringify({application: appSymbolicName, type: intention.type, ...intention.qualifier})).substr(0, 7);
+    const intentionId = sha256(JSON.stringify({application: appSymbolicName, type: intention.type, ...intention.qualifier})).substring(0, 7);
     const intentionToRegister: Intention = {
       ...intention,
       metadata: {
@@ -236,7 +236,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
         const finder$ = defer(() => of(this._capabilityStore.find(lookupFilter)));
         return finder$
           .pipe(
-            expand(() => registryChange$.pipe(take(1), mergeMapTo(finder$))),
+            expand(() => registryChange$.pipe(take(1), mergeMap(() => finder$))),
             filterArray(capability => this.isApplicationQualifiedForCapability(appSymbolicName, capability)),
             distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
             takeUntilUnsubscribe(replyTo),
@@ -257,7 +257,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
         const finder$ = defer(() => of(this._intentionStore.find(lookupFilter)));
         return finder$
           .pipe(
-            expand(() => this._intentionStore.change$.pipe(take(1), mergeMapTo(finder$))),
+            expand(() => this._intentionStore.change$.pipe(take(1), mergeMap(() => finder$))),
             distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
             takeUntilUnsubscribe(replyTo),
           )

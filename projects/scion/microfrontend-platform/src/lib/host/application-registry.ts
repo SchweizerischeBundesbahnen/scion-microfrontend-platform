@@ -24,7 +24,7 @@ import {ApplicationConfig} from './application-config';
  */
 export class ApplicationRegistry {
 
-  private static readonly SYMBOLIC_NAME_REGEXP = new RegExp('^[a-z0-9-]+$');
+  private static readonly SYMBOLIC_NAME_REGEXP = /^[a-z0-9-]+$/;
 
   private readonly _applications = new Map<string, Application>();
 

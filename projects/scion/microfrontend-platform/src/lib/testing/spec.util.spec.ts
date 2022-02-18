@@ -8,14 +8,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Arrays, Defined} from '@scion/toolkit/util';
+import {Arrays} from '@scion/toolkit/util';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {ConsoleLogger, Logger} from '../logger';
 import {Beans} from '@scion/toolkit/bean-manager';
-import CallInfo = jasmine.CallInfo;
 import {MessageClient} from '../client/messaging/message-client';
-import {first, timeoutWith} from 'rxjs/operators';
-import {throwError} from 'rxjs';
+import {first} from 'rxjs/operators';
+import {stringifyError} from '../error.util';
+import CallInfo = jasmine.CallInfo;
 
 /**
  * Expects the given Promise to either resolve or reject.
@@ -49,9 +49,8 @@ export function expectPromise(actual: Promise<any>): PromiseMatcher {
         fail(`Promise expected to be rejected but was resolved: ${value}`);
       }
       catch (reason) {
-        const expectedErrorMessage = expected && (typeof reason === 'string' ? reason : (reason instanceof Error ? reason.message : reason.toString()));
-        if (expectedErrorMessage && !expectedErrorMessage.match(expected)) {
-          fail(`Expected promise to be rejected with a reason matching '${expected.source}', but was '${expectedErrorMessage}'.`);
+        if (expected && !stringifyError(reason).match(expected)) {
+          fail(`Expected promise to be rejected with a reason matching '${expected.source}', but was '${(stringifyError(reason))}'.`);
         }
         else {
           expect(true).toBeTrue();
@@ -106,9 +105,9 @@ export function waitForCondition(condition: () => boolean | Promise<boolean>, ti
  * Expects the {@link ObserveCaptor} to capture given emissions. This expectation waits a maximum of 5 seconds until the expected element count
  * is captured.
  */
-export function expectEmissions<T = any, R = T>(captor: ObserveCaptor<T, R>): {toEqual: (expected: R | R[]) => Promise<boolean>} {
+export function expectEmissions<T = any, R = T>(captor: ObserveCaptor<T, R>): {toEqual: (expected: R | R[]) => Promise<void>} {
   return {
-    toEqual: async (expected: R | R[]): Promise<boolean> => {
+    toEqual: async (expected: R | R[]): Promise<void> => {
       const expectedValues = Arrays.coerce(expected);
       await captor.waitUntilEmitCount(expectedValues.length, 5000);
       return expect(captor.getValues()).toEqual(expectedValues);
@@ -151,12 +150,13 @@ export function resetLoggerSpy(severity: 'info' | 'warn' | 'error'): void {
 /**
  * Waits until the given number of subscribers are subscribed to the given topic, or throws an error otherwise.
  */
-export async function waitUntilSubscriberCount(topic: string, expectedCount: number, options?: {timeout?: number}): Promise<void> {
-  const timeout = Defined.orElse(options && options.timeout, 1000);
-  await Beans.opt(MessageClient).subscriberCount$(topic)
-    .pipe(
-      first(count => count === expectedCount),
-      timeoutWith(new Date(Date.now() + timeout), throwError('[SpecTimeoutError] Timeout elapsed.')),
-    )
-    .toPromise();
+export async function waitUntilSubscriberCount(topic: string, expectedCount: number): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    Beans.get(MessageClient).subscriberCount$(topic)
+      .pipe(first(count => count === expectedCount))
+      .subscribe({
+        error: reject,
+        complete: resolve,
+      });
+  });
 }

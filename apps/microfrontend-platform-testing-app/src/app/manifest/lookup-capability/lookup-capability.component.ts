@@ -51,11 +51,12 @@ export class LookupCapabilityComponent {
   public onLookup(): void {
     const nilQualifierIfEmpty = this.form.get(NILQUALIFIER_IF_EMPTY).value;
     const qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(QUALIFIER) as FormArray, false);
+    const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
 
     const filter: ManifestObjectFilter = {
       id: this.form.get(ID).value || undefined,
       type: this.form.get(TYPE).value || undefined,
-      qualifier: Object.keys(qualifier).length ? qualifier : (nilQualifierIfEmpty ? {} : undefined),
+      qualifier: Object.keys(qualifier).length ? qualifier : nilQualifierOrUndefined,
       appSymbolicName: this.form.get(APP_SYMBOLIC_NAME).value || undefined,
     };
     this.capabilities$ = Beans.get(ManifestService).lookupCapabilities$(filter)

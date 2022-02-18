@@ -36,7 +36,7 @@ This section explains how to submit a pull request.
   <summary><strong>Development</strong></summary>
   <br>
 
-Make sure to use Node.js version 14.17.0 for contributing to SCION. We suggest using [Node Version Manager](https://github.com/nvm-sh/nvm) if you need different Node.js versions for other projects.
+Make sure to use Node.js version 16.14.0 for contributing to SCION. We suggest using [Node Version Manager](https://github.com/nvm-sh/nvm) if you need different Node.js versions for other projects.
 
 For development, you can uncomment the section `PATH-OVERRIDE-FOR-DEVELOPMENT` in `tsconfig.json`. This allows running tests or serving applications without having to build dependent modules first.
 
@@ -146,7 +146,8 @@ Each commit message consists of a **header**, a **summary** and a **footer**.  T
 - `refactor`: changes that neither fixes a bug nor adds a feature
 - `perf`: changes that improve performance
 - `test`: adding missing tests, refactoring tests; no production code change
-- `chore`: other changes like formatting, updating the license, updating dependencies, removal of deprecations, etc
+- `chore`: other changes like formatting, updating the license, removal of deprecations, etc
+- `deps`: changes related to updating dependencies
 - `ci`: changes to our CI configuration files and scripts
 - `revert`: revert of a previous commit
 - `release`: publish a new release
@@ -249,21 +250,10 @@ We have the following microfrontend-platform related packages:
 </details>
 
 <details>
-  <summary><strong>Releasing Policy</strong></summary>
+  <summary><strong>Versioning</strong></summary>
   <br>
-  
-SCION follows the semantic versioning scheme (SemVer) for its releases. In this scheme, a release is represented by three numbers: `MAJOR.MINOR.PATCH`. For example, version `1.5.3` indicates major version `1`, minor version `5`, and patch level `3`.
 
-**Major Version:**\
-The major version number is incremented when introducing any backwards incompatible changes to the API.
-
-**Minor Version**\
-The minor version number is incremented when introducting some new, backwards compatible functionality.
-
-**Patch Level**\
-The patch or maintenance level is incremented when fixing bugs.
-
-In the development of a new major release, we usually release pre-releases and tag them with the beta tag (`-beta.x`). A beta pre-release is a snapshot of current development, so it is potentially unstable and incomplete. Before releasing the major version, we start releasing one or more release candidates, which we tag with the rc tag (`-rc.x`). We will publish the official and stable major release if the platform is working as expected and we do not find any critical problems.  
+SCION Microfrontend Platform follows the semantic versioning scheme (SemVer) for its releases. For more information, see our [version policy][link-versioning].
   
 </details>
 
@@ -304,6 +294,7 @@ This chapter describes the tasks to publish a new release to NPM.
 
 [link-getting-started-guide-repo]: https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform-getting-started
 [link-github-actions-workflow]: https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/actions
+[link-versioning]: /docs/site/versioning.md
 
 [menu-home]: /README.md
 [menu-projects-overview]: /docs/site/projects-overview.md

@@ -14,7 +14,7 @@ import {environment} from '../environments/environment';
 import {HashLocationStrategy, LocationStrategy} from '@angular/common';
 import {TestingAppTopics} from './testing-app.topics';
 import {takeUntil} from 'rxjs/operators';
-import {noop, Subject} from 'rxjs';
+import {Subject} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {NgZoneIntentClientDecorator, NgZoneMessageClientDecorator} from './ng-zone-decorators';
 
@@ -76,14 +76,14 @@ export class PlatformInitializer implements OnDestroy {
     // Log the startup progress (startup-progress.e2e-spec.ts).
     MicrofrontendPlatform.startupProgress$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(
-        progress => {
+      .subscribe({
+        next: progress => {
           console.debug(`[PlatformInitializer::host:progress] ${progress}%`);
         },
-        noop,
-        () => {
+        complete: () => {
           console.debug(`[PlatformInitializer::host:progress] startup completed`);
-        });
+        },
+      });
 
     // Run the microfrontend platform as host app
     await this._zone.runOutsideAngular(() => {

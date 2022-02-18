@@ -11,9 +11,9 @@
 import {MicrofrontendPlatform} from '../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageClient} from './messaging/message-client';
-import {Observer} from 'rxjs';
+import {firstValueFrom, Observer} from 'rxjs';
 import {UUID} from '@scion/toolkit/uuid';
-import {map, take} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 import {MessageHeaders} from '../messaging.model';
 import {MicrofrontendPlatformStopper} from '../microfrontend-platform-stopper';
 import {VERSION} from '../version';
@@ -43,12 +43,8 @@ export async function connectToHostThenLocationHref({symbolicName, locationHref}
 
 async function sendCurrentClientIdToFixture(observer: Observer<string>): Promise<void> {
   const uuid = UUID.randomUUID();
-  const clientId = Beans.get(MessageClient).observe$(uuid)
-    .pipe(
-      take(1),
-      map(message => message.headers.get(MessageHeaders.ClientId)),
-    )
-    .toPromise();
+  const uuid$ = Beans.get(MessageClient).observe$(uuid).pipe(map(message => message.headers.get(MessageHeaders.ClientId)));
+  const clientId = firstValueFrom(uuid$);
   await Beans.get(MessageClient).publish(uuid);
   observer.next(await clientId);
 }

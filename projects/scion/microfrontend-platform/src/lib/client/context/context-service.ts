@@ -7,8 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {concat, EMPTY, NEVER, Observable, Observer, of, Subject, TeardownLogic} from 'rxjs';
-import {filter, map, mergeMapTo, startWith, switchMapTo, take, takeUntil} from 'rxjs/operators';
+import {concat, firstValueFrom, NEVER, Observable, Observer, of, Subject, switchMap, TeardownLogic} from 'rxjs';
+import {filter, first, map, startWith, take, takeUntil} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
 import {MessageClient} from '../messaging/message-client';
 import {mapToBody, MessageHeaders, ResponseStatusCodes} from '../../messaging.model';
@@ -82,6 +82,7 @@ export class ContextService implements PreDestroy {
    */
   public observe$<T>(name: string, options: ContextLookupOptions & {collect: true}): Observable<T[]>;
 
+  public observe$<T>(name: string, options?: ContextLookupOptions): Observable<T | T[] | null>;
   public observe$<T>(name: string, options?: ContextLookupOptions): Observable<T | T[] | null> {
     if (Beans.get(IS_PLATFORM_HOST)) {
       return concat(of(options?.collect ? [] : null), NEVER);
@@ -91,7 +92,7 @@ export class ContextService implements PreDestroy {
       .pipe(
         filter(event => event.name === name),
         startWith(undefined as void),
-        switchMapTo(this.lookupContextValue$<T>(name, options)),
+        switchMap(() => this.lookupContextValue$<T>(name, options)),
       );
   }
 
@@ -129,7 +130,7 @@ export class ContextService implements PreDestroy {
   public lookup<T>(name: string, options: ContextLookupOptions & {collect: true}): Promise<T[]>;
 
   public lookup<T>(name: string, options?: ContextLookupOptions): Promise<T | T[] | null> {
-    return this.observe$<T>(name, options as any).pipe(take(1)).toPromise();
+    return firstValueFrom(this.observe$<T>(name, options));
   }
 
   /**
@@ -157,7 +158,7 @@ export class ContextService implements PreDestroy {
     return this._contextTreeChange$
       .pipe(
         startWith(undefined as void),
-        switchMapTo(this.lookupContextNames$()),
+        switchMap(() => this.lookupContextNames$()),
       );
   }
 
@@ -237,14 +238,17 @@ export class ContextService implements PreDestroy {
           mapToBody(),
           takeUntil(this._destroy$),
         )
-        .subscribe((event: Contexts.ContextTreeChangeEvent | Contexts.RootContextSubscribeEventType) => {
-          if (event === Contexts.RootContextSubscribeEvent) {
-            resolve(); // resolve the promise as subscribed to all parent contexts.
-          }
-          else {
-            listener(event);
-          }
-        }, error => reject(error));
+        .subscribe({
+          next: (event: Contexts.ContextTreeChangeEvent | Contexts.RootContextSubscribeEventType) => {
+            if (event === Contexts.RootContextSubscribeEvent) {
+              resolve(); // resolve the promise as subscribed to all parent contexts.
+            }
+            else {
+              listener(event);
+            }
+          },
+          error: reject,
+        });
 
       // Send the observe request.
       whenSubscribedToReplyTopic(replyTo)
@@ -264,11 +268,12 @@ export class ContextService implements PreDestroy {
  * @ignore
  */
 function whenSubscribedToReplyTopic(topic: string): Promise<void> {
-  return Beans.get(MessageClient).subscriberCount$(topic)
-    .pipe(
-      filter(count => count === 1),
-      take(1),
-      mergeMapTo(EMPTY))
-    .toPromise()
-    .then(() => Promise.resolve());
+  return new Promise<void>((resolve, reject) => {
+    Beans.get(MessageClient).subscriberCount$(topic)
+      .pipe(first(count => count === 1))
+      .subscribe({
+        error: reject,
+        complete: resolve,
+      });
+  });
 }

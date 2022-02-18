@@ -11,7 +11,7 @@ import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} fro
 import {Capability} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
 import {Observable, ReplaySubject} from 'rxjs';
-import {expand, map, mapTo, switchMap, take} from 'rxjs/operators';
+import {expand, map, switchMap, take} from 'rxjs/operators';
 import {filterManifestObjects} from '../manifest-object-filter.utils';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {FormControl} from '@angular/forms';
@@ -39,7 +39,7 @@ export class RequiredCapabilitiesComponent implements OnChanges {
     this.capabilitiesByApp$ = this._appChange$
       .pipe(
         switchMap(() => manifestService.observeDependingCapabilities$(this.appSymbolicName)),
-        expand(capabilities => this.filterFormControl.valueChanges.pipe(take(1), mapTo(capabilities))),
+        expand(capabilities => this.filterFormControl.valueChanges.pipe(take(1), map(() => capabilities))),
         map(capabilities => filterManifestObjects(capabilities, this.filterFormControl.value)),
         map(capabilities => capabilities.reduce((acc, capability) => Maps.addListValue(acc, capability.metadata.appSymbolicName, capability), new Map())),
       );

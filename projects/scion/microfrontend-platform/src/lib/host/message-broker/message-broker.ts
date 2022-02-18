@@ -33,6 +33,7 @@ import semver from 'semver';
 import {VERSION} from '../../version';
 import {CLIENT_HEARTBEAT_INTERVAL} from '../client-registry/client.constants';
 import {ɵClient} from '../client-registry/ɵclient';
+import {stringifyError} from '../../error.util';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -309,7 +310,7 @@ export class MessageBroker implements PreDestroy {
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
-          sendDeliveryStatusError(client, messageId, error.message || error.message.toString());
+          sendDeliveryStatusError(client, messageId, stringifyError(error));
         }
       }));
   }
@@ -381,7 +382,7 @@ export class MessageBroker implements PreDestroy {
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
-          sendDeliveryStatusError(client, messageId, error.message || error.message.toString());
+          sendDeliveryStatusError(client, messageId, stringifyError(error));
         }
       }));
   }

@@ -88,10 +88,10 @@ export class ReceiveMessageComponent implements OnDestroy {
     try {
       this._subscription = this._messageClient.observe$(this.form.get(DESTINATION).get(TOPIC).value)
         .pipe(finalize(() => this.form.enable()))
-        .subscribe(
-          message => this.messages.push(message),
-          error => this.subscribeError = error,
-        );
+        .subscribe({
+          next: message => this.messages.push(message),
+          error: error => this.subscribeError = error,
+        });
     }
     catch (error) {
       this.form.enable();
@@ -108,10 +108,10 @@ export class ReceiveMessageComponent implements OnDestroy {
     try {
       this._subscription = this._intentClient.observe$({type, qualifier})
         .pipe(finalize(() => this.form.enable()))
-        .subscribe(
-          message => this.messages.push(message),
-          error => this.subscribeError = error,
-        );
+        .subscribe({
+          next: message => this.messages.push(message),
+          error: error => this.subscribeError = error,
+        });
     }
     catch (error) {
       this.form.enable();

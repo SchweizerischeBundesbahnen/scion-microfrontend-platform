@@ -123,7 +123,7 @@ describe('Keystroke', () => {
       Beans.register(Logger, {useValue: loggerSpy});
 
       expect(Keystroke.fromString('keydown.s{}')).toEqual(new Keystroke('keydown', 's', undefined, {}));
-      expect(loggerSpy.warn.calls.any()).toBe(false);
+      expect(loggerSpy.warn.calls.any()).toBeFalse();
     });
 
     it('should log a warning if a flag is not supported', () => {

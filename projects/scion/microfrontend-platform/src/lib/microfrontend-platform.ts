@@ -19,7 +19,7 @@ import {ConsoleLogger, Logger} from './logger';
 import {HttpClient} from './host/http-client';
 import {ManifestCollector} from './host/manifest-collector';
 import {MessageBroker} from './host/message-broker/message-broker';
-import {filter, take, takeUntil} from 'rxjs/operators';
+import {first, takeUntil} from 'rxjs/operators';
 import {OutletRouter} from './client/router-outlet/outlet-router';
 import {SciRouterOutletElement} from './client/router-outlet/router-outlet.element';
 import {FocusInEventDispatcher} from './client/focus/focus-in-event-dispatcher';
@@ -388,7 +388,7 @@ export class MicrofrontendPlatform {
   }
 
   /**
-   * Allows to wait for the platform to enter the specified {@link PlatformState}.
+   * Allows waiting for the platform to enter the specified {@link PlatformState}.
    * If already in that state, the Promise resolves instantly.
    *
    * @param  state - the state to wait for.
@@ -396,10 +396,14 @@ export class MicrofrontendPlatform {
    *         If already in that state, the Promise resolves instantly.
    */
   public static async whenState(state: PlatformState): Promise<void> {
-    return this._state$
-      .pipe(filter(it => it === state), take(1))
-      .toPromise()
-      .then(() => Promise.resolve());
+    return new Promise<void>((resolve, reject) => {
+      this._state$
+        .pipe(first(it => it === state))
+        .subscribe({
+          error: reject,
+          complete: resolve,
+        });
+    });
   }
 
   /**

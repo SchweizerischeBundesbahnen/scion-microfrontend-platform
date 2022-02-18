@@ -10,7 +10,7 @@
 import {Injectable} from '@angular/core';
 import {Observable, Subject} from 'rxjs';
 import {Capability, Qualifier} from '@scion/microfrontend-platform';
-import {expand, map, mapTo, take} from 'rxjs/operators';
+import {expand, map, take} from 'rxjs/operators';
 import {KeyValuePair, LogicalOperator} from './filter-field/filter-field';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Arrays} from '@scion/toolkit/util';
@@ -64,7 +64,7 @@ export class CapabilityFilterSession {
   public capabilities$(): Observable<Capability[]> {
     return this._manifestService.capabilities$()
       .pipe(
-        expand(capabilities => this._filterChange$.pipe(take(1), mapTo(capabilities))),
+        expand(capabilities => this._filterChange$.pipe(take(1), map(() => capabilities))),
         map(capabilities => this.filter(capabilities)),
       );
   }

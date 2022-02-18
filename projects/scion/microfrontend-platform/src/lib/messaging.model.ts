@@ -273,21 +273,22 @@ export function throwOnErrorStatus<BODY>(): MonoTypeOperatorFunction<TopicMessag
       }
 
       if (typeof message.body === 'string') {
-        return throwError(new RequestError(message.body, status, message));
+        const messageBody: string = message.body;
+        return throwError(() => new RequestError(messageBody, status, message));
       }
 
       switch (status) {
         case ResponseStatusCodes.BAD_REQUEST: {
-          return throwError(new RequestError('The receiver could not understand the request due to invalid syntax.', status, message));
+          return throwError(() => new RequestError('The receiver could not understand the request due to invalid syntax.', status, message));
         }
         case ResponseStatusCodes.NOT_FOUND: {
-          return throwError(new RequestError('The receiver could not find the requested resource.', status, message));
+          return throwError(() => new RequestError('The receiver could not find the requested resource.', status, message));
         }
         case ResponseStatusCodes.ERROR: {
-          return throwError(new RequestError('The receiver encountered an internal error.', status, message));
+          return throwError(() => new RequestError('The receiver encountered an internal error.', status, message));
         }
         default: {
-          return throwError(new RequestError('Request error.', status, message));
+          return throwError(() => new RequestError('Request error.', status, message));
         }
       }
     }),

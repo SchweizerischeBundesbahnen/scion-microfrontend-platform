@@ -54,16 +54,16 @@ export class LookupContextValueComponent implements OnDestroy {
     // Observe
     this._subscription = this._contextService.observe$(key, options)
       .pipe(takeUntil(this._destroy$))
-      .subscribe(
-        next => {
+      .subscribe({
+        next: next => {
           this.observeValue = next;
           this._cd.markForCheck();
         },
-        error => {
+        error: error => {
           this.subscribeError = error;
           this._cd.markForCheck();
         },
-      );
+      });
 
     // Lookup
     this._contextService.lookup(key, options)

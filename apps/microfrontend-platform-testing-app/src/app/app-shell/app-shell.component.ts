@@ -8,9 +8,9 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component, HostBinding, OnDestroy} from '@angular/core';
-import {asapScheduler, Subject} from 'rxjs';
+import {asapScheduler, Subject, switchMap} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
-import {switchMapTo, takeUntil} from 'rxjs/operators';
+import {takeUntil} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
 import {Defined} from '@scion/toolkit/util';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -41,7 +41,7 @@ export class AppShellComponent implements OnDestroy {
   private installRouteActivateListener(): void {
     this._routeActivate$
       .pipe(
-        switchMapTo(Beans.get(ContextService).observe$<OutletContext>(OUTLET_CONTEXT)),
+        switchMap(() => Beans.get(ContextService).observe$<OutletContext>(OUTLET_CONTEXT)),
         takeUntil(this._destroy$),
       )
       .subscribe(outletContext => {

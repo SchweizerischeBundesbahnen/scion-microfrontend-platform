@@ -11,8 +11,9 @@ import {enterText, selectOption} from '../spec.util';
 import {MessagingFlavor} from './publish-message-page.po';
 import {$} from 'protractor';
 import {Qualifier} from '@scion/microfrontend-platform';
-import {SciListPO, SciParamsEnterPO, WaitUntil} from '@scion/toolkit.internal/widgets.po';
 import {MessageListItemPO} from './message-list-item.po';
+import {SciListPO, WaitUntil} from '../../deps/scion/toolkit.internal/list/list.po';
+import {SciParamsEnterPO} from '../../deps/scion/toolkit.internal/params-enter/params-enter.po';
 
 export class ReceiveMessagePagePO {
 

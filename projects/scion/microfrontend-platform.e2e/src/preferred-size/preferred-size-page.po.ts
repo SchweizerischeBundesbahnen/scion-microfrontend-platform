@@ -10,8 +10,8 @@
 import {$} from 'protractor';
 import {enterText} from '../spec.util';
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {SciCheckboxPO} from '@scion/toolkit.internal/widgets.po';
 import {ISize} from 'selenium-webdriver';
+import {SciCheckboxPO} from '../../deps/scion/toolkit.internal/checkbox/checkbox.po';
 
 export class PreferredSizePagePO {
 

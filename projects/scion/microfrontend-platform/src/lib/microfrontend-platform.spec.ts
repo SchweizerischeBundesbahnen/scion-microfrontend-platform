@@ -23,16 +23,16 @@ describe('MicrofrontendPlatform', () => {
   it('should report that the app is not connected to the platform host when the host platform is not found', async () => {
     const startup = MicrofrontendPlatform.connectToHost('client-app', {brokerDiscoverTimeout: 250});
     await expectPromise(startup).toReject();
-    await expect(await MicrofrontendPlatform.isConnectedToHost()).toBe(false);
+    await expect(await MicrofrontendPlatform.isConnectedToHost()).toBeFalse();
   });
 
   it('should report that the app is not connected to the platform host when the client platform is not started', async () => {
-    await expect(await MicrofrontendPlatform.isConnectedToHost()).toBe(false);
+    await expect(await MicrofrontendPlatform.isConnectedToHost()).toBeFalse();
   });
 
   it('should report that the app is connected to the platform host when connected', async () => {
     await MicrofrontendPlatform.startHost({applications: []});
-    await expect(await MicrofrontendPlatform.isConnectedToHost()).toBe(true);
+    await expect(await MicrofrontendPlatform.isConnectedToHost()).toBeTrue();
   });
 
   it('should enter state \'started\' when started', async () => {

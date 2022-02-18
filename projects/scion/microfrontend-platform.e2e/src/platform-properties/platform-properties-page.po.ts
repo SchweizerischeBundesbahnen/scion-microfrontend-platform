@@ -9,7 +9,7 @@
  */
 import {$} from 'protractor';
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {SciPropertyPO} from '@scion/toolkit.internal/widgets.po';
+import {SciPropertyPO} from '../../deps/scion/toolkit.internal/property/property.po';
 
 export class PlatformPropertiesPagePO {
 

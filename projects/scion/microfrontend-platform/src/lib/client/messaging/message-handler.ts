@@ -60,7 +60,7 @@ export class MessageHandler<MSG extends Message, REPLY> {
       reply = this._callback(request);
     }
     catch (error) {
-      reply = throwError(error);
+      reply = throwError(() => error);
     }
 
     // Send response(s) or a potential completion or error back to the requestor.
@@ -82,24 +82,24 @@ export class MessageHandler<MSG extends Message, REPLY> {
           }
         }),
       )
-      .subscribe(
-        next => {
+      .subscribe({
+        next: next => {
           // Transport the value to the requestor.
           const replyHeaders = new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK);
           this._messageClient.publish(replyTo, next, {headers: replyHeaders}).then();
         },
-        error => {
+        error: error => {
           observableStatus = 'errored';
           // Transport the error to the requestor.
           const replyHeaders = new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR);
           this._messageClient.publish(replyTo, stringifyError(error), {headers: replyHeaders}).then();
         },
-        () => {
+        complete: () => {
           observableStatus = 'completed';
           // Terminate the communication when finished producing responses.
           const replyHeaders = new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL);
           this._messageClient.publish(replyTo, undefined, {headers: replyHeaders}).then();
         },
-      ));
+      }));
   }
 }

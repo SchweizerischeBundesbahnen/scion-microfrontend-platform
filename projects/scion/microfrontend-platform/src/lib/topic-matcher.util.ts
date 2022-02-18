@@ -69,7 +69,7 @@ export class TopicMatcher {
       matches: true,
       params: patternSegments.reduce((params, segment, i) => {
         if (isWildcardSegment(segment)) {
-          return params.set(segment.substr(1), inputTopicSegments[i]);
+          return params.set(segment.substring(1), inputTopicSegments[i]);
         }
         return params;
       }, new Map()),

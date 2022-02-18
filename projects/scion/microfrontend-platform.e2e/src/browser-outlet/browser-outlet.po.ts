@@ -9,10 +9,10 @@
  */
 import {$, browser, ElementFinder, WebElement} from 'protractor';
 import {enterText, getUrlOfCurrentWebDriverExecutionContext, runOutsideAngularSynchronization, setAttribute, switchToIframe, waitUntilLocation} from '../spec.util';
-import {UUID} from '@scion/toolkit/uuid';
 import {Outlets, TestingAppOrigins, TestingAppPO} from '../testing-app.po';
 import {RouterOutletContextPO} from '../context/router-outlet-context.po';
 import {RouterOutletSettingsPO} from '../settings/router-outlet-settings.po';
+import {UUID} from '../../deps/scion/toolkit/uuid.util';
 
 /**
  * Page object for {@link BrowserOutletComponent} to show a microfrontend in an iframe inside `<sci-router-outlet>`.
@@ -135,7 +135,7 @@ export class BrowserOutletPO {
       }
 
       // Get the iframe from the custom element (inside shadow DOM)
-      const iframe = await browser.executeScript('return arguments[0].iframe', this._outletFinder.$('sci-router-outlet').getWebElement()) as WebElement;
+      const iframe: WebElement = await browser.executeScript('return arguments[0].iframe', this._outletFinder.$('sci-router-outlet').getWebElement());
 
       // Activate this iframe's WebDriver execution context.
       await switchToIframe(iframe);
