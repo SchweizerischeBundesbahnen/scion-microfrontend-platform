@@ -9,7 +9,7 @@
  */
 
 import {MicrofrontendPlatform} from './microfrontend-platform';
-import {expectPromise, waitFor} from './spec.util.spec';
+import {expectPromise, waitFor} from './testing/spec.util.spec';
 import {PlatformState} from './platform-state';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {PlatformPropertyService} from './platform-property-service';

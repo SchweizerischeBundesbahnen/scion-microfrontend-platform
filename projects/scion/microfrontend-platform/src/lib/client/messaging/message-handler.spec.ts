@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {MessageClient} from '../../client/messaging/message-client';
-import {expectPromise, waitFor, waitForCondition} from '../../spec.util.spec';
+import {expectPromise, waitFor, waitForCondition} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {IntentMessage, TopicMessage} from '../../messaging.model';

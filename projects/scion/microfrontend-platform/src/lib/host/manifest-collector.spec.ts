@@ -15,7 +15,7 @@ import {ApplicationRegistry} from './application-registry';
 import {Logger} from '../logger';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestService} from '../client/manifest-registry/manifest-service';
-import {serveManifest} from '../spec.util.spec';
+import {ManifestFixture} from '../testing/manifest-fixture/manifest-fixture';
 
 describe('ManifestCollector', () => {
 
@@ -39,7 +39,7 @@ describe('ManifestCollector', () => {
     await MicrofrontendPlatform.startHost({
       host: {
         symbolicName: 'app-1',
-        manifest: serveManifest({name: 'application-1'}),
+        manifest: new ManifestFixture({name: 'application-1'}).serve(),
       },
       applications: [
         {symbolicName: 'app-2', manifestUrl: 'http://www.app-2/manifest'},

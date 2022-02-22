@@ -13,7 +13,7 @@ import {take} from 'rxjs/operators';
 import {RouterOutlets} from './router-outlet.element';
 import {OutletRouter} from './outlet-router';
 import {NavigationOptions} from './metadata';
-import {expectPromise} from '../../spec.util.spec';
+import {expectPromise} from '../../testing/spec.util.spec';
 import {UUID} from '@scion/toolkit/uuid';
 import {mapToBody} from '../../messaging.model';
 import {Beans} from '@scion/toolkit/bean-manager';
