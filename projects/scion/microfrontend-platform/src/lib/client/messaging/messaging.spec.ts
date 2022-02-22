@@ -12,7 +12,7 @@ import {ConnectableObservable, noop, Observable, Subject, throwError} from 'rxjs
 import {IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from './message-client';
 import {IntentClient} from './intent-client';
-import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, serveManifest, waitForCondition} from '../../spec.util.spec';
+import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, waitForCondition} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Defined, Objects} from '@scion/toolkit/util';
 import {ClientRegistry} from '../../host/message-broker/client.registry';
@@ -21,6 +21,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestService} from '../manifest-registry/manifest-service';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {Handler, IntentInterceptor, MessageInterceptor} from '../../host/message-broker/message-interception';
+import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
 const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<string, any> => msg.headers;
@@ -82,10 +83,7 @@ describe('Messaging', () => {
       applications: [
         {
           symbolicName: 'client-app',
-          manifestUrl: serveManifest({
-            name: 'Client Application',
-            capabilities: [{type: 'some-type', private: false}],
-          }),
+          manifestUrl: new ManifestFixture({name: 'Client Application', capabilities: [{type: 'some-type', private: false}]}).serve(),
         },
       ],
     });
@@ -98,10 +96,7 @@ describe('Messaging', () => {
       applications: [
         {
           symbolicName: 'client-app',
-          manifestUrl: serveManifest({
-            name: 'Client Application',
-            capabilities: [{type: 'some-type', private: false}],
-          }),
+          manifestUrl: new ManifestFixture({name: 'Client Application', capabilities: [{type: 'some-type', private: false}]}).serve(),
         },
       ],
     });
@@ -475,10 +470,7 @@ describe('Messaging', () => {
       applications: [
         {
           symbolicName: 'client-app',
-          manifestUrl: serveManifest({
-            name: 'Client Application',
-            capabilities: [{type: 'some-type', private: false}],
-          }),
+          manifestUrl: new ManifestFixture({name: 'Client Application', capabilities: [{type: 'some-type', private: false}]}).serve(),
         },
       ],
     });
@@ -526,10 +518,7 @@ describe('Messaging', () => {
       applications: [
         {
           symbolicName: 'client-app',
-          manifestUrl: serveManifest({
-            name: 'Client Application',
-            capabilities: [{type: 'some-capability', private: false}],
-          }),
+          manifestUrl: new ManifestFixture({name: 'Client Application', capabilities: [{type: 'some-capability', private: false}]}).serve(),
         },
       ],
     });
@@ -602,10 +591,7 @@ describe('Messaging', () => {
       applications: [
         {
           symbolicName: 'client',
-          manifestUrl: serveManifest({
-            name: 'Client',
-            baseUrl: 'http://app-origin',
-          }),
+          manifestUrl: new ManifestFixture({name: 'Client', baseUrl: 'http://app-origin'}).serve(),
         },
       ],
     });

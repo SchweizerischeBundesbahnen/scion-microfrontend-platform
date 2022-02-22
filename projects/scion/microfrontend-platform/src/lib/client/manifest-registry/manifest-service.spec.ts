@@ -8,12 +8,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
-import {expectEmissions, serveManifest} from '../../spec.util.spec';
+import {expectEmissions} from '../../testing/spec.util.spec';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestService} from '../../client/manifest-registry/manifest-service';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {Capability, Intention} from '../../platform.model';
 import {ManifestRegistry} from '../../host/manifest-registry/manifest-registry';
+import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 
 const manifestObjectIdsExtractFn = (manifestObjects: Array<Capability | Intention>): string[] => manifestObjects.map(manifestObject => manifestObject.metadata.id);
 
@@ -100,7 +101,7 @@ describe('ManifestService', () => {
     it('should allow looking up public capabilities of another app (intention contains the any-more wildcard (**))', async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       // Register intention in host-app: {entity: 'person', '*': '*'}
@@ -179,7 +180,7 @@ describe('ManifestService', () => {
     it('should allow looking up public capabilities of another app (only any-more wildcard (**) intention)', async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       // Register intention in host-app: {'*': '*'}
@@ -258,7 +259,7 @@ describe('ManifestService', () => {
     it('should allow looking up public capabilities of another app (intention contains the asterisk wildcard (*))', async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       // Register intention in host-app: {entity: 'person', id: '*'}
@@ -337,7 +338,7 @@ describe('ManifestService', () => {
     it('should allow looking up public capabilities of another app (intention is an exact qualifier)', async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       // Register intention in host-app: {entity: 'person', id: 'exact'}
@@ -416,7 +417,7 @@ describe('ManifestService', () => {
     it('should allow looking up public capabilities of another app (intention contains the optional wildcard (?))', async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       // Register intention in host-app: {entity: 'person', id: '?'}
@@ -495,7 +496,7 @@ describe('ManifestService', () => {
     it('should not allow looking up private capabilities of another app', async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       // Register intention in host-app: {'*': '*'}
@@ -514,7 +515,7 @@ describe('ManifestService', () => {
     it('should allow looking up private capabilities of another app if scope check is disabled', async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app', scopeCheckDisabled: true},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       // Register intention in host-app: {'*': '*'}
@@ -533,7 +534,7 @@ describe('ManifestService', () => {
     it('should not allow looking up public capabilities of another app without matching intention', async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       // Register capability
@@ -549,7 +550,7 @@ describe('ManifestService', () => {
     it('should allow looking up public capabilities of another app without matching intention if intention check is disabled', async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app', intentionCheckDisabled: true},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       // Register capability
@@ -567,7 +568,7 @@ describe('ManifestService', () => {
     it('should allow looking up intentions', async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       // Register intentions in host-app
@@ -994,7 +995,7 @@ describe('ManifestService', () => {
     it(`should not remove other application's capabilities`, async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app', intentionCheckDisabled: true},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       const capabilityIdHostApp = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'host-app');
@@ -1331,7 +1332,7 @@ describe('ManifestService', () => {
     it(`should not remove other application's intentions`, async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app', intentionCheckDisabled: true, intentionRegisterApiDisabled: false},
-        applications: [{symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})}],
+        applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
       const intentionIdHostApp = Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');

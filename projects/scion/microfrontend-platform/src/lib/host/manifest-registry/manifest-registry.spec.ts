@@ -8,12 +8,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
-import {expectEmissions, installLoggerSpies, readConsoleLog, serveManifest} from '../../spec.util.spec';
+import {expectEmissions, installLoggerSpies, readConsoleLog} from '../../testing/spec.util.spec';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestRegistry} from './manifest-registry';
 import {Capability} from '../../platform.model';
 import {ManifestService} from '../../client/manifest-registry/manifest-service';
 import {ObserveCaptor} from '@scion/toolkit/testing';
+import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 import CallInfo = jasmine.CallInfo;
 
 const capabilityIdExtractFn = (capability: Capability): string => capability.metadata.id;
@@ -41,8 +42,8 @@ describe('ManifestRegistry', () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
         applications: [
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
         ],
       });
 
@@ -65,8 +66,8 @@ describe('ManifestRegistry', () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
         applications: [
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
         ],
       });
 
@@ -88,8 +89,8 @@ describe('ManifestRegistry', () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
         applications: [
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
         ],
       });
 
@@ -111,8 +112,8 @@ describe('ManifestRegistry', () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
         applications: [
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
         ],
       });
 
@@ -135,8 +136,8 @@ describe('ManifestRegistry', () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
         applications: [
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
         ],
       });
 
@@ -158,8 +159,8 @@ describe('ManifestRegistry', () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
         applications: [
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
         ],
       });
 
@@ -182,8 +183,8 @@ describe('ManifestRegistry', () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
         applications: [
-          {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-          {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
         ],
       });
 
@@ -219,8 +220,8 @@ describe('ManifestRegistry', () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [
-            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
           ],
         });
 
@@ -240,8 +241,8 @@ describe('ManifestRegistry', () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [
-            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
           ],
         });
 
@@ -261,8 +262,8 @@ describe('ManifestRegistry', () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [
-            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
           ],
         });
 
@@ -282,8 +283,8 @@ describe('ManifestRegistry', () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [
-            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
           ],
         });
 
@@ -306,8 +307,8 @@ describe('ManifestRegistry', () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [
-            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
           ],
         });
 
@@ -333,8 +334,8 @@ describe('ManifestRegistry', () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [
-            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
           ],
         });
 
@@ -351,8 +352,8 @@ describe('ManifestRegistry', () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [
-            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
           ],
         });
 
@@ -369,8 +370,8 @@ describe('ManifestRegistry', () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [
-            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
           ],
         });
 
@@ -388,8 +389,8 @@ describe('ManifestRegistry', () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [
-            {symbolicName: 'app-1', manifestUrl: serveManifest({name: 'App 1'})},
-            {symbolicName: 'app-2', manifestUrl: serveManifest({name: 'App 2'})},
+            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
           ],
         });
 
