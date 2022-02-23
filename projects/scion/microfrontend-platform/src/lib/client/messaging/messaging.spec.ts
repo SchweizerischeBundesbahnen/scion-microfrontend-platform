@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {first, publishReplay, timeoutWith} from 'rxjs/operators';
-import {ConnectableObservable, noop, Observable, Subject, throwError} from 'rxjs';
+import {ConnectableObservable, Observable, Subject, throwError} from 'rxjs';
 import {IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from './message-client';
 import {IntentClient} from './intent-client';
@@ -16,11 +16,11 @@ import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readCo
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Defined, Objects} from '@scion/toolkit/util';
 import {ClientRegistry} from '../../host/message-broker/client.registry';
-import {MessageEnvelope} from '../../ɵmessaging.model';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestService} from '../manifest-registry/manifest-service';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {Handler, IntentInterceptor, MessageInterceptor} from '../../host/message-broker/message-interception';
+import {MicrofrontendFixture} from '../../testing/microfrontend-fixture/microfrontend-fixture';
 import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
@@ -37,11 +37,17 @@ const capabilityIdExtractFn = <T>(msg: IntentMessage<T>): string => msg.capabili
  */
 describe('Messaging', () => {
 
+  const disposables = new Set<Disposable>();
+
   beforeEach(async () => {
     await MicrofrontendPlatform.destroy();
     installLoggerSpies();
   });
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+
+  afterEach(async () => {
+    await MicrofrontendPlatform.destroy();
+    disposables.forEach(disposable => disposable());
+  });
 
   it('should allow publishing messages to a topic', async () => {
     await MicrofrontendPlatform.startHost({applications: []});
@@ -574,16 +580,10 @@ describe('Messaging', () => {
   it('should reject a client connect attempt if the app is not registered', async () => {
     await MicrofrontendPlatform.startHost({applications: []}); // no app is registered
 
-    const badClient = mountBadClientAndConnect({symbolicName: 'bad-client'});
-    try {
-      const expectedLogMessage = `[WARNING] Client connect attempt rejected by the message broker: Unknown client. [app='bad-client']`;
-      await waitForCondition(() => readConsoleLog('warn').some(warning => warning === expectedLogMessage), 1000).catch(noop);
-      expect(readConsoleLog('warn')).toEqual(jasmine.arrayContaining([expectedLogMessage]));
-    }
-    finally {
-      badClient.dispose();
-    }
-    expect(true).toBeTrue();
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
+    const script = microfrontendFixture.mountIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'bad-client'});
+
+    await expectAsync(script).toBeRejectedWithError(/\[MessageClientConnectError] Client connect attempt rejected by the message broker: Unknown client./);
   });
 
   it('should reject a client connect attempt if the client\'s origin is different to the registered app origin', async () => {
@@ -596,15 +596,11 @@ describe('Messaging', () => {
       ],
     });
 
-    const badClient = mountBadClientAndConnect({symbolicName: 'client'}); // bad client connects under karma test runner origin (window.origin)
-    try {
-      const expectedLogMessage = `[WARNING] Client connect attempt blocked by the message broker: Wrong origin [actual='${window.origin}', expected='http://app-origin', app='client']`;
-      await waitForCondition(() => readConsoleLog('warn').some(warning => warning === expectedLogMessage), 1000).catch(noop);
-      expect(readConsoleLog('warn')).toEqual(jasmine.arrayContaining([expectedLogMessage]));
-    }
-    finally {
-      badClient.dispose();
-    }
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
+    // Client connects under karma test runner origin, but is registered under `http://app-origin`.
+    const script = microfrontendFixture.mountIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
+
+    await expectAsync(script).toBeRejectedWithError(/\[MessageClientConnectError] Client connect attempt blocked by the message broker: Wrong origin./);
   });
 
   it('should reject startup promise if the message broker cannot be discovered', async () => {
@@ -1492,40 +1488,15 @@ describe('Messaging', () => {
       ]);
     });
   });
-});
 
-/**
- * Mounts an iframe that tries to connect to the platform.
- */
-function mountBadClientAndConnect(badClientConfig: {symbolicName: string}): {dispose(): void} {
-  // Note: DO NOT USE CODE FROM OTHER MODULES BECAUSE SOLELY THE 'TO-STRING' REPRESENTATION OF FOLLOWING FUNCTION
-  //       IS LOADED INTO THE IFRAME. THE ONLY EXCEPTION ARE REFERENCES TO INTERFACE TYPES AS NOT TRANSPILED INTO
-  //       JAVASCRIPT.
-  function sendConnnectRequest(symbolicName: string): void {
-    const env: MessageEnvelope = {
-      transport: 'sci://microfrontend-platform/client-to-broker' as any,
-      channel: 'client-connect' as any,
-      message: {
-        headers: new Map()
-          .set('ɵMESSAGE_ID', '123')
-          .set('ɵAPP_SYMBOLIC_NAME', symbolicName),
-      },
-    };
-    window.parent.postMessage(env, '*');
+  /**
+   * Registers passed fixture for destruction after test execution.
+   */
+  function registerFixture(fixture: MicrofrontendFixture): MicrofrontendFixture {
+    disposables.add(() => fixture.unmountIframe());
+    return fixture;
   }
-
-  const script = `(${sendConnnectRequest.toString()})('${badClientConfig.symbolicName}');`; // invokes the transpiled function
-  const html = `<html><head><script>${script}</script></head><body>BAD CLIENT</body></html>`;
-  const iframeUrl = URL.createObjectURL(new Blob([html], {type: 'text/html'}));
-  const iframe = document.body.appendChild(document.createElement('iframe'));
-  iframe.setAttribute('src', iframeUrl);
-  return {
-    dispose(): void {
-      URL.revokeObjectURL(iframeUrl);
-      document.body.removeChild(iframe);
-    },
-  };
-}
+});
 
 /**
  * Expects the message to equal the expected message with its headers to contain at minimum the given map entries (because the platform adds platform-specific headers as well).
@@ -1566,3 +1537,5 @@ async function waitUntilMessageReceived(observable$: Observable<TopicMessage | I
     )
     .toPromise();
 }
+
+type Disposable = () => void;
