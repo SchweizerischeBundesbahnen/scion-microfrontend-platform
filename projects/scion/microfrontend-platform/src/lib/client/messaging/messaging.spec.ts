@@ -28,13 +28,6 @@ const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<strin
 const paramsExtractFn = <T>(msg: IntentMessage<T>): Map<string, any> => msg.intent.params;
 const capabilityIdExtractFn = <T>(msg: IntentMessage<T>): string => msg.capability.metadata.id;
 
-/**
- * Tests most important and fundamental features of the messaging facility with a single client, the host-app, only.
- *
- * More sophisticated and real-world testing with multiple, cross-origin clients is done end-to-end with Protractor against the testing app.
- *
- * See `messaging.e2e-spec.ts` for end-to-end tests.
- */
 describe('Messaging', () => {
 
   const disposables = new Set<Disposable>();
@@ -60,6 +53,64 @@ describe('Messaging', () => {
     await Beans.get(MessageClient).publish('some-topic', 'C');
 
     await expectEmissions(messageCaptor).toEqual(['A', 'B', 'C']);
+  });
+
+  it('should allow publishing a message in the platform\'s `whenState(PlatformState.Stopping)` hook', async () => {
+    await MicrofrontendPlatform.startHost({
+      applications: [
+        {
+          symbolicName: 'client',
+          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
+        },
+      ],
+    });
+
+    const captor = new ObserveCaptor<TopicMessage, string>(msg => msg.body);
+    Beans.get(MessageClient).observe$('client/whenPlatformStateStopping').subscribe(captor);
+
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
+    await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'sendMessageWhenPlatformStateStopping', {symbolicName: 'client'});
+    await expectEmissions(captor).toEqual(['message from client']);
+  });
+
+  it('should allow publishing a message in a bean\'s `preDestroy` hook when the platform is stopping`', async () => {
+    await MicrofrontendPlatform.startHost({
+      applications: [
+        {
+          symbolicName: 'client',
+          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
+        },
+      ],
+    });
+
+    const captor = new ObserveCaptor<TopicMessage, string>(msg => msg.body);
+    Beans.get(MessageClient).observe$('client/beanPreDestroy').subscribe(captor);
+
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
+    await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'sendMessageOnBeanPreDestroy', {symbolicName: 'client'});
+    await expectEmissions(captor).toEqual(['message from client']);
+  });
+
+  it('should allow publishing a message in `window.beforeunload` browser hook', async () => {
+    await MicrofrontendPlatform.startHost({
+      applications: [
+        {
+          symbolicName: 'client',
+          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
+        },
+      ],
+    });
+
+    const captor = new ObserveCaptor<TopicMessage, string>(msg => msg.body);
+    Beans.get(MessageClient).observe$('client/beforeunload').subscribe(captor);
+
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
+    await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'sendMessageInBeforeUnload', {symbolicName: 'client'});
+
+    // The browser does not trigger the 'beforeunload' event when removing the iframe.
+    // For that reason, we navigate to another side.
+    microfrontendFixture.setUrl('about:blank');
+    await expectEmissions(captor).toEqual(['message from client']);
   });
 
   it('should allow issuing an intent', async () => {

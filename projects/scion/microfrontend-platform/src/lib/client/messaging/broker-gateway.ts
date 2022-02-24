@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {EMPTY, fromEvent, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, Subject, TeardownLogic, throwError} from 'rxjs';
+import {EMPTY, fromEvent, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError} from 'rxjs';
 import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
 import {finalize, map, mergeMap, take, takeUntil, tap, timeoutWith} from 'rxjs/operators';
 import {filterByChannel, filterByMessageHeader, filterByOrigin, filterByTopicChannel, filterByTransport, pluckMessage} from '../../operators';
@@ -111,7 +111,12 @@ export class NullBrokerGateway implements BrokerGateway {
  */
 export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
 
-  private _destroy$ = new Subject<void>();
+  /*
+   * This Observable is primarily used as a notifier for the `takeUntil` operator to complete Observable subscriptions when the platform is shutting down.
+   * Since some subscriptions trigger subsequent broker interactions, e.g., unsubscribing from a topic subscription, the notifier must "replay" its state
+   * to avoid waiting for broker responses, which would never arrive and otherwise cause timeout errors.
+   */
+  private _platformStopping$ = new ReplaySubject<void>(1);
   private _appSymbolicName: string;
   private _brokerDiscoverTimeout: number;
   private _messageDeliveryTimeout: number;
@@ -120,9 +125,9 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
   public readonly message$ = new Subject<MessageEvent<MessageEnvelope>>();
 
   constructor(connectOptions?: ConnectOptions) {
+    this._appSymbolicName = Beans.get<string>(APP_IDENTITY);
     this._brokerDiscoverTimeout = connectOptions?.brokerDiscoverTimeout ?? 10_000;
     this._messageDeliveryTimeout = connectOptions?.messageDeliveryTimeout ?? 10_000;
-    this._appSymbolicName = Beans.get<string>(APP_IDENTITY);
     this._whenBrokerInfo = this.initGateway().then(brokerInfo => this._brokerInfo = brokerInfo);
   }
 
@@ -156,7 +161,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
     }
 
     // Wait until connected to the broker.
-    const brokerInfo = await this._whenBrokerInfo;
+    const brokerInfo = this._brokerInfo || await this._whenBrokerInfo; // Do not spawn a microtask when broker info is already available.
 
     const messageId = UUID.randomUUID();
     const envelope: MessageEnvelope = {
@@ -179,7 +184,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
         pluckMessage(),
         timeoutWith(new Date(Date.now() + this._messageDeliveryTimeout), throwError(`[MessageDispatchError] Broker did not report message delivery state within the ${this._messageDeliveryTimeout}ms timeout. [envelope=${stringifyEnvelope(envelope)}]`)),
         mergeMap(statusMessage => statusMessage.body!.ok ? EMPTY : throwError(statusMessage.body!.details)),
-        takeUntil(this._destroy$),
+        takeUntil(this._platformStopping$),
       )
       .toPromise();
 
@@ -209,7 +214,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
 
       // Receive replies sent to the reply topic.
       merge(this.subscribeToTopic$<T>(replyTo), requestError$)
-        .pipe(takeUntil(merge(this._destroy$, unsubscribe$)))
+        .pipe(takeUntil(merge(this._platformStopping$, unsubscribe$)))
         .subscribe(observer);
 
       // Post the request to the broker.
@@ -237,7 +242,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
           filterByChannel<TopicMessage>(MessagingChannel.Topic),
           filterByMessageHeader({key: MessageHeaders.ɵTopicSubscriberId, value: subscriberId}),
           pluckMessage(),
-          takeUntil(merge(this._destroy$, unsubscribe$)),
+          takeUntil(merge(this._platformStopping$, unsubscribe$)),
           finalize(() => this.unsubscribeFromTopic(topic, subscriberId)),
         )
         .subscribe(observer);
@@ -252,10 +257,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
   }
 
   /**
-   * Unsubscribes given topic subscription.
-   *
-   * Has no effect if the platform is stopped. If this operation fails, the error is logged as
-   * a warning and swallowed.
+   * Unsubscribes given topic subscription. Does nothing if the platform is stopped.
    */
   private async unsubscribeFromTopic(topic: string, subscriberId: string): Promise<void> {
     if (isPlatformStopped()) {
@@ -267,8 +269,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
       await this.postMessage(MessagingChannel.TopicUnsubscribe, topicUnsubscribeCommand);
     }
     catch (error) {
-      // Do not propagate unsubscribe error, but log it as warning.
-      Beans.get(Logger, {orElseGet: NULL_LOGGER}).warn(`[TopicUnsubscribeError] Failed to unsubscribe from topic '${topic}'. Caused by: ${error}`);
+      Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(`[TopicUnsubscribeError] Failed to unsubscribe from topic '${topic}'. Caused by: ${error}`);  // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
     }
   }
 
@@ -282,7 +283,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
         filterByOrigin(brokerInfo.origin),
         filterByTransport(MessagingTransport.BrokerToClient),
         fixMapObjects(),
-        takeUntil(this._destroy$),
+        takeUntil(this._platformStopping$),
       )
       .subscribe(this.message$);
   }
@@ -311,8 +312,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
         }),
         take(1),
         timeoutWith(new Date(Date.now() + this._brokerDiscoverTimeout), throwError(`[ClientConnectError] Message broker not discovered within the ${this._brokerDiscoverTimeout}ms timeout. Messages cannot be published or received.`)),
-        tap(noop, error => Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(error)), // Fall back using NULL_LOGGER when the platform is shutting down.
-        takeUntil(this._destroy$),
+        tap({error: (error) => Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(error)}), // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
+        takeUntil(this._platformStopping$),
       )
       .toPromise();
 
@@ -378,8 +379,15 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
     return candidates;
   }
 
+  /**
+   * Method invoked when the platform enters state {@link PlatformState.Stopping}.
+   *
+   * Since this gateway is registered in the bean manager with the maximum destruction order `{destroyOrder: Number.MAX_VALUE}`,
+   * the platform will destroy this bean after destroying other beans, which is important so that other beans can send messages
+   * when the platform shuts down.
+   */
   public preDestroy(): void {
-    this._destroy$.next();
+    this._platformStopping$.next();
     this.disconnectFromBroker();
   }
 }
@@ -422,9 +430,9 @@ function stringifyEnvelope(envelope: MessageEnvelope): string {
 function isPlatformStopped(): boolean {
   const platformState = Beans.opt(PlatformStateRef);
   if (!platformState) {
-    return true;
+    return true; // platform is destroyed
   }
-  return platformState.state >= PlatformState.Stopping;
+  return platformState.state >= PlatformState.Stopped;
 }
 
 /**

@@ -20,7 +20,13 @@ import {PlatformState} from './platform-state';
  */
 export abstract class PlatformStateRef {
 
+  /**
+   * @see {@link MicrofrontendPlatform#whenState}
+   */
   public abstract whenState(state: PlatformState): Promise<void>;
 
+  /**
+   * @see {@link MicrofrontendPlatform#state}
+   */
   public abstract state: PlatformState;
 }
