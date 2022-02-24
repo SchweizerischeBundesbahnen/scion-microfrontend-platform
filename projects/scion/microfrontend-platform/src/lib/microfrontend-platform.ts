@@ -148,7 +148,7 @@ export class MicrofrontendPlatform {
         Beans.register(IS_PLATFORM_HOST, {useValue: true});
         Beans.register(HostManifestInterceptor, {useClass: ɵHostManifestInterceptor, multi: true});
         Beans.register(ClientRegistry);
-        Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger});
+        Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: Number.MAX_VALUE});
         Beans.register(PlatformPropertyService, {eager: true});
         Beans.registerIfAbsent(HttpClient);
         Beans.register(ManifestRegistry, {useClass: ɵManifestRegistry, eager: true});
@@ -162,7 +162,7 @@ export class MicrofrontendPlatform {
         Beans.registerIfAbsent(OutletRouter);
         Beans.registerIfAbsent(RelativePathResolver);
         Beans.registerIfAbsent(RouterOutletUrlAssigner);
-        Beans.register(PlatformStateRef, {useValue: MicrofrontendPlatform});
+        Beans.register(PlatformStateRef, {useValue: MicrofrontendPlatform, destroyOrder: Number.MAX_VALUE});
         Beans.registerIfAbsent(MessageClient, provideMessageClient());
         Beans.registerIfAbsent(IntentClient, provideIntentClient());
         Beans.register(FocusMonitor);
@@ -271,7 +271,7 @@ export class MicrofrontendPlatform {
         Beans.register(IS_PLATFORM_HOST, {useValue: false});
         Beans.register(APP_IDENTITY, {useValue: symbolicName});
         Beans.register(PlatformPropertyService, {eager: true});
-        Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger});
+        Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: Number.MAX_VALUE});
         Beans.registerIfAbsent(HttpClient);
         Beans.register(BrokerGateway, provideBrokerGateway(connectOptions));
         Beans.registerIfAbsent(MessageClient, provideMessageClient());
@@ -287,7 +287,7 @@ export class MicrofrontendPlatform {
         Beans.register(ContextService);
         Beans.register(ManifestService);
         Beans.register(KeyboardEventDispatcher, {eager: true});
-        Beans.register(PlatformStateRef, {useValue: MicrofrontendPlatform});
+        Beans.register(PlatformStateRef, {useValue: MicrofrontendPlatform, destroyOrder: Number.MAX_VALUE});
       },
     );
 

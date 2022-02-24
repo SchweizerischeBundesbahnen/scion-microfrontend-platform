@@ -9,7 +9,38 @@
  */
 
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {PlatformState} from '../../platform-state';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {MessageClient} from './message-client';
+import {fromEvent} from 'rxjs';
 
 export async function connectToHost({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatform.connectToHost(symbolicName);
+}
+
+export async function sendMessageWhenPlatformStateStopping({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+  await MicrofrontendPlatform.connectToHost(symbolicName);
+  MicrofrontendPlatform.whenState(PlatformState.Stopping).then(async () => {
+    await Beans.get(MessageClient).publish(`${symbolicName}/whenPlatformStateStopping`, 'message from client');
+  });
+  await MicrofrontendPlatform.destroy();
+}
+
+export async function sendMessageOnBeanPreDestroy({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+  class LifecycleHook implements PreDestroy {
+    public preDestroy(): void {
+      Beans.get(MessageClient).publish(`${symbolicName}/beanPreDestroy`, 'message from client');
+    }
+  }
+
+  Beans.register(LifecycleHook, {eager: true});
+  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatform.destroy();
+}
+
+export async function sendMessageInBeforeUnload({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+  await MicrofrontendPlatform.connectToHost(symbolicName);
+  fromEvent(window, 'beforeunload', {once: true}).subscribe(() => {
+    Beans.get(MessageClient).publish(`${symbolicName}/beforeunload`, 'message from client');
+  });
 }
