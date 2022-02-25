@@ -197,11 +197,13 @@ export class MicrofrontendFixture {
           <head>
             <!-- Set global flag to instruct "test.ts" to create a webpack context with only "*.script.ts" files (plus referenced files).  -->
             <script>window['${WEBPACK_SCRIPT_CONTEXT_ACTIVE}'] = true;</script>
+            <!-- Load webpack runtime into the iframe. -->
+            <script src="${new URL('_karma_webpack_/runtime.js', window.parent.origin).href}"></script>
+            <!-- Load transpiled files of project dependencies into the iframe (e.g., SCION Toolkit).  -->
+            <script src="${new URL('_karma_webpack_/vendor.js', window.parent.origin).href}"></script>
             <!-- Load transpiled files of the project into the iframe. -->
             <script src="${new URL('_karma_webpack_/main.js', window.parent.origin).href}"></script>
-            <!-- Load transpiled files of project dependencies into the iframe (e.g., SCION Toolkit)  -->
-            <script src="${new URL('_karma_webpack_/vendor.js', window.parent.origin).href}"></script>
-            <!-- Execute the script, dispatching messages sent by the script to the fixture -->
+            <!-- Execute the script, dispatching messages sent by the script to the fixture. -->
             <script type="module">
                 (async () => {
                   // Create Observer for the script to send messages to the fixture. 
