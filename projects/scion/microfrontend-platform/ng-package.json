@@ -6,6 +6,7 @@
   },
   "allowedNonPeerDependencies": [
     "@scion",
-    "js-sha256"
+    "js-sha256",
+    "semver"
   ]
 }

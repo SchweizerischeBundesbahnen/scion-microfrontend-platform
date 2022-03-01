@@ -147,6 +147,10 @@ export enum MessageHeaders {
    */
   Timestamp = 'ɵTIMESTAMP',
   /**
+   * The version of the client.
+   */
+  Version = 'ɵVERSION',
+  /**
    * Use this header to set the request method to indicate the desired action to be performed for a given resource.
    * @see RequestMethods
    */

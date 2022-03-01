@@ -8,6 +8,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import {Beans} from '@scion/toolkit/bean-manager';
+import {APP_IDENTITY} from './platform.model';
+import {VERSION} from './version';
+
 /**
  * Logger used by the platform to log to the console.
  *
@@ -16,6 +20,11 @@
  * @category Platform
  */
 export abstract class Logger {
+
+  /**
+   * Logs with severity debug.
+   */
+  public abstract debug(message?: any, ...args: any[]): void;
 
   /**
    * Logs with severity info.
@@ -42,32 +51,32 @@ export abstract class Logger {
  */
 export class ConsoleLogger implements Logger {
 
-  /**
-   * Logs with severity info.
-   */
+  public debug(message?: any, ...args: any[]): void {
+    this.log('debug', message, args);
+  }
+
   public info(message?: any, ...args: any[]): void {
     this.log('info', message, args);
   }
 
-  /**
-   * Logs with severity warn.
-   */
   public warn(message?: any, ...args: any[]): void {
     this.log('warn', message, args);
   }
 
-  /**
-   * Logs with severity error.
-   */
   public error(message?: any, ...args: any[]): void {
     this.log('error', message, args);
   }
 
-  private log(severity: 'info' | 'warn' | 'error', message: any, args: any[]): void {
-    message = `[sci] ${message}`;
+  private log(severity: 'debug' | 'info' | 'warn' | 'error', message: any, args: any[]): void {
+    const loggingContext: LoggingContext = args[0] instanceof LoggingContext ? args.shift() : {appSymbolicName: Beans.get(APP_IDENTITY), version: Beans.get(VERSION)};
+    const prefix = new Array<string>()
+      .concat(loggingContext.version ? `[@scion/microfrontend-platform@${loggingContext.version}]` : '[@scion/microfrontend-platform]')
+      .concat(`[${loggingContext.appSymbolicName}]`)
+      .join('');
+
     if (console && typeof console[severity] === 'function') {
       const consoleFn = console[severity];
-      (args && args.length) ? consoleFn(message, ...args) : consoleFn(message);
+      args?.length ? consoleFn(`${prefix} ${message}`, ...args) : consoleFn(`${prefix} ${message}`);
     }
   }
 }
@@ -78,6 +87,10 @@ export class ConsoleLogger implements Logger {
  * @ignore
  */
 export const NULL_LOGGER = new class extends Logger {
+
+  public debug(message?: any, ...args: any[]): void {
+    // NOOP
+  }
 
   public info(message?: any, ...args: any[]): void {
     // NOOP
@@ -91,3 +104,14 @@ export const NULL_LOGGER = new class extends Logger {
     // NOOP
   }
 };
+
+/**
+ * Contextual information to add to the log message.
+ *
+ * Pass an instance of this class as the first argument to the logger when logging a message.
+ */
+export class LoggingContext {
+
+  constructor(public appSymbolicName: string, public version?: string) {
+  }
+}
