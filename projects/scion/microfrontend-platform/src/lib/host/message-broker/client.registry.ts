@@ -52,10 +52,12 @@ export class Client {
   public readonly id: string;
   public readonly window: Window;
   public readonly application: Application;
+  public readonly version: string;
 
   constructor(client: Client) {
     this.id = client.id;
     this.window = client.window;
     this.application = client.application;
+    this.version = client.version ?? '0.0.0';
   }
 }

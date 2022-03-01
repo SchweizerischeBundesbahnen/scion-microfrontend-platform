@@ -51,6 +51,10 @@ import {HostManifestInterceptor, ɵHostManifestInterceptor} from './host/host-ma
 import {ApplicationConfig} from './host/application-config';
 
 window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {once: true});
+/**
+ * Current version of the SCION Microfrontend Platform.
+ */
+const version = '1.0.0-rc.1';
 
 /**
  * **SCION Microfrontend Platform is a TypeScript-based open-source library that helps to implement a microfrontend architecture.**
@@ -143,6 +147,7 @@ export class MicrofrontendPlatform {
         registerRunlevel2Initializers();
         registerRunlevel3Initializers();
 
+        Beans.register(VERSION, {useValue: version, destroyOrder: Number.MAX_VALUE});
         Beans.register(APP_IDENTITY, {useValue: config.host?.symbolicName || 'host'});
         Beans.register(MicrofrontendPlatformConfig, {useValue: config});
         Beans.register(IS_PLATFORM_HOST, {useValue: true});
@@ -270,6 +275,7 @@ export class MicrofrontendPlatform {
 
         Beans.register(IS_PLATFORM_HOST, {useValue: false});
         Beans.register(APP_IDENTITY, {useValue: symbolicName});
+        Beans.register(VERSION, {useValue: version, destroyOrder: Number.MAX_VALUE});
         Beans.register(PlatformPropertyService, {eager: true});
         Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: Number.MAX_VALUE});
         Beans.registerIfAbsent(HttpClient);

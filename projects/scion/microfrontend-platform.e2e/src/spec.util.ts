@@ -196,7 +196,8 @@ export async function consumeBrowserLog(severity: Level = Level.SEVERE, filter?:
   return (await browser.manage().logs().get('browser'))
     .filter(log => log.level === severity || Level.ALL === severity)
     .map(log => log.message)
-    .map(message => message.match(/"(.+)"/)[1]) // log message is contained in double quotes
+    .map(message => message.match(/"(.+)"/)?.[1]) // log message is contained in double quotes, if any
+    .filter(Boolean)
     .filter(log => filter ? log.match(filter) : true);
 }
 

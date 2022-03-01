@@ -28,6 +28,8 @@ import {APP_IDENTITY, Capability, ParamDefinition} from '../../platform.model';
 import {bufferUntil} from '@scion/toolkit/operators';
 import {ParamMatcher} from './param-matcher';
 import {filterByChannel, filterByTopicChannel, filterByTransport} from '../../operators';
+import semver from 'semver';
+import {VERSION} from '../../version';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -145,8 +147,13 @@ export class MessageBroker implements PreDestroy {
           return;
         }
 
-        const client: Client = new Client({id: UUID.randomUUID(), application, window: clientWindow});
+        const client = new Client({id: UUID.randomUUID(), application, window: clientWindow, version: envelope.message.headers.get(MessageHeaders.Version)});
         this._clientRegistry.registerClient(client);
+
+        // Check if the client is compatible with the platform version of the host.
+        if (semver.major(client.version) !== semver.major(Beans.get<string>(VERSION))) {
+          Beans.get(Logger).warn(`[VersionMismatch] Application '${application.symbolicName}' uses a different major version of the @scion/microfrontend-platform than the host application, which may not be compatible. Please upgrade @scion/microfrontend-platform of application '${application.symbolicName}' from version '${(client.version)}' to version '${(Beans.get<string>(VERSION))}'.`, new LoggingContext(application.symbolicName, client.version));
+        }
 
         sendTopicMessage<ConnackMessage>(clientMessageTarget, {
           topic: replyTo,

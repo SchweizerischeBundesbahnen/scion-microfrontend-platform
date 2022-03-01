@@ -20,6 +20,7 @@ import {APP_IDENTITY, IS_PLATFORM_HOST} from '../../platform.model';
 import {PlatformState, Runlevel} from '../../platform-state';
 import {ConnectOptions} from '../connect-options';
 import {PlatformStateRef} from '../../platform-state-ref';
+import {VERSION} from '../../version';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.
@@ -325,7 +326,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
           .set(MessageHeaders.MessageId, UUID.randomUUID())
           .set(MessageHeaders.Timestamp, Date.now())
           .set(MessageHeaders.AppSymbolicName, this._appSymbolicName)
-          .set(MessageHeaders.ReplyTo, replyTo),
+          .set(MessageHeaders.ReplyTo, replyTo)
+          .set(MessageHeaders.Version, Beans.get(VERSION)),
       },
     };
 

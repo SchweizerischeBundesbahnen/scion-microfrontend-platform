@@ -30,7 +30,7 @@ describe('Activator Readiness', () => {
     await testingAppPO.navigateTo({}, {queryParams: new Map().set('manifestClassifier', 'activator-readiness')});
 
     await expect(await consumeBrowserLog(Level.ALL, /ActivatorLoadTimeoutError|PlatformInitializer::activator:onactivate/)).toEqual(jasmine.arrayContaining([
-      '[sci] [ActivatorLoadTimeoutError] Timeout elapsed while waiting for application to signal readiness [app=app-3, timeout=800ms, readinessTopic=activator/ready]." "Timeout of 800ms elapsed.',
+      jasmine.stringMatching(/\[ActivatorLoadTimeoutError].*\[app=app-3, timeout=800ms, readinessTopic=activator\/ready]/),
       '[PlatformInitializer::activator:onactivate] [app=app-1, pingReply=app-1 [primary: true, X-APP-NAME: app-1]]',
       '[PlatformInitializer::activator:onactivate] [app=app-1, pingReply=app-1 [primary: false, X-APP-NAME: app-1]]',
       '[PlatformInitializer::activator:onactivate] [app=app-2, pingReply=app-2 [primary: true, X-APP-NAME: app-2]]',
