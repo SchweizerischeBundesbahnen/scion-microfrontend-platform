@@ -581,7 +581,7 @@ describe('Messaging', () => {
     await MicrofrontendPlatform.startHost({applications: []}); // no app is registered
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-    const script = microfrontendFixture.mountIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'bad-client'});
+    const script = microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'bad-client'});
 
     await expectAsync(script).toBeRejectedWithError(/\[MessageClientConnectError] Client connect attempt rejected by the message broker: Unknown client./);
   });
@@ -598,7 +598,7 @@ describe('Messaging', () => {
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
     // Client connects under karma test runner origin, but is registered under `http://app-origin`.
-    const script = microfrontendFixture.mountIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
+    const script = microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
 
     await expectAsync(script).toBeRejectedWithError(/\[MessageClientConnectError] Client connect attempt blocked by the message broker: Wrong origin./);
   });
@@ -1490,10 +1490,10 @@ describe('Messaging', () => {
   });
 
   /**
-   * Registers passed fixture for destruction after test execution.
+   * Registers the fixture for destruction after test execution.
    */
   function registerFixture(fixture: MicrofrontendFixture): MicrofrontendFixture {
-    disposables.add(() => fixture.unmountIframe());
+    disposables.add(() => fixture.removeIframe());
     return fixture;
   }
 });
