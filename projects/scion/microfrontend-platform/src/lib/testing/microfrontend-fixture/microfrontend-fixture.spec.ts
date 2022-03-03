@@ -20,24 +20,24 @@ describe('MicrofrontendFixture', () => {
 
   it('should error if the script does not end with ".script.ts"', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    expect(() => fixture.mountIframe().loadScript('./lib/testing/microfrontend-fixture/some-script.ts', 'noop')).toThrowError(/MicrofrontendFixtureError/);
+    expect(() => fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/some-script.ts', 'noop')).toThrowError(/MicrofrontendFixtureError/);
   });
 
   it('should insert the iframe to the DOM', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    await fixture.mountIframe().setUrl('about:blank');
+    await fixture.insertIframe().setUrl('about:blank');
     expect(Array.from(document.body.children).includes(fixture.iframe)).toBeTrue();
   });
 
   it('should load the passed script into the iframe', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    await fixture.mountIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_1');
+    await fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_1');
     expect(fixture.iframe.contentDocument.querySelector('div.testee')).toBeDefined();
   });
 
   it('should allow to return data from the script', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    await fixture.mountIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_2');
+    await fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_2');
 
     const captor = new ObserveCaptor();
     fixture.message$.subscribe(captor);
@@ -46,7 +46,7 @@ describe('MicrofrontendFixture', () => {
 
   it('should support reporting an error from the script', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    const whenScriptLoaded = fixture.mountIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_3');
+    const whenScriptLoaded = fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_3');
 
     // Expect the script promise to reject.
     await expectAsync(whenScriptLoaded).toBeRejectedWithError('ERROR FROM SCRIPT');
@@ -60,7 +60,7 @@ describe('MicrofrontendFixture', () => {
 
   it('should report an error if script execution errors', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    const whenScriptLoaded = fixture.mountIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_4');
+    const whenScriptLoaded = fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_4');
 
     // Expect the script promise to reject.
     await expectAsync(whenScriptLoaded).toBeRejectedWithError('SCRIPT EXECUTION ERROR');
@@ -74,7 +74,7 @@ describe('MicrofrontendFixture', () => {
 
   it('should support completing the data observable from the script', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    await fixture.mountIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_5');
+    await fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_5');
 
     const captor = new ObserveCaptor();
     fixture.message$.subscribe(captor);
@@ -83,13 +83,13 @@ describe('MicrofrontendFixture', () => {
 
   it('should wait until finished loading the script', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    await fixture.mountIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_6');
+    await fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_6');
     expect(fixture.iframe.contentDocument.querySelector('div.testee.delayed')).toBeDefined();
   });
 
   it('should allow the script to import project-specific types', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    await fixture.mountIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_7');
+    await fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_7');
     const captor = new ObserveCaptor();
     fixture.message$.subscribe(captor);
     expect(captor.getLastValue()).not.toBeUndefined();
@@ -97,7 +97,7 @@ describe('MicrofrontendFixture', () => {
 
   it('should allow the script to import vendor-specific types', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    await fixture.mountIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_8');
+    await fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_8');
     const captor = new ObserveCaptor();
     fixture.message$.subscribe(captor);
     expect(captor.getLastValue()).not.toBeUndefined();
@@ -105,12 +105,12 @@ describe('MicrofrontendFixture', () => {
 
   it('should support loading a web page', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    fixture.mountIframe().setUrl('about:blank');
+    fixture.insertIframe().setUrl('about:blank');
     expect(fixture.iframe.contentWindow.location.href).toEqual('about:blank');
   });
 
   it('should support loading another script into the iframe', async () => {
-    const fixture = registerFixture(new MicrofrontendFixture()).mountIframe();
+    const fixture = registerFixture(new MicrofrontendFixture()).insertIframe();
     await fixture.loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_9a');
     expect(fixture.iframe.contentDocument.querySelector('div.testee-1')).toBeDefined();
     expect(fixture.iframe.contentDocument.querySelector('div.testee-2')).toBeNull();
@@ -122,44 +122,43 @@ describe('MicrofrontendFixture', () => {
 
   it('should destroy the iframe on unmount', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    fixture.mountIframe();
+    fixture.insertIframe();
     fixture.iframe.classList.add('testee');
     await fixture.loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'noop');
     expect(document.querySelector('iframe.testee')).toBeDefined();
 
-    fixture.unmountIframe();
+    fixture.removeIframe();
     expect(fixture.iframe).toBeNull();
     expect(document.querySelector('iframe.testee')).toBeNull();
     expect(fixture.message$).toBe(NEVER);
-    expect(fixture.url).toBe(null);
   });
 
   it('should complete the data observable on unmount', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    await fixture.mountIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'noop');
+    await fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'noop');
     const captor = new ObserveCaptor();
     fixture.message$.subscribe(captor);
 
     expect(captor.hasCompleted()).toBeFalse();
 
-    fixture.unmountIframe();
+    fixture.removeIframe();
     expect(captor.hasCompleted()).toBeTrue();
     expect(fixture.message$).toBe(NEVER);
   });
 
   it('should support loading a script after unmounting the iframe', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    fixture.mountIframe();
+    fixture.insertIframe();
     await fixture.loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_10a');
     const captor1 = new ObserveCaptor();
 
     fixture.message$.subscribe(captor1);
     expect(captor1.getValues()).toEqual(['ready (10a)']);
 
-    fixture.unmountIframe();
+    fixture.removeIframe();
 
     // Mount a new iframe
-    fixture.mountIframe();
+    fixture.insertIframe();
     const captor2 = new ObserveCaptor();
     await fixture.loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_10b');
     fixture.message$.subscribe(captor2);
@@ -170,7 +169,7 @@ describe('MicrofrontendFixture', () => {
   it('should allow passing arguments to the script', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
     const args = {stringArg: 'value1', numberArg: 123, booleanArg: true, objectArg: {key: 'value'}};
-    await fixture.mountIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_11', args);
+    await fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_11', args);
 
     const captor = new ObserveCaptor();
     fixture.message$.subscribe(captor);
@@ -181,7 +180,7 @@ describe('MicrofrontendFixture', () => {
    * Registers passed fixture for destruction after test execution.
    */
   function registerFixture(fixture: MicrofrontendFixture): MicrofrontendFixture {
-    disposables.add(() => fixture.unmountIframe());
+    disposables.add(() => fixture.removeIframe());
     return fixture;
   }
 });

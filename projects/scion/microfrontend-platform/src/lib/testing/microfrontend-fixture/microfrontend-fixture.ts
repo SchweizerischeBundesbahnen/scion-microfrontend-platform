@@ -9,7 +9,7 @@
  */
 
 import {fromEvent, merge, NEVER, Observable, OperatorFunction, pipe, ReplaySubject, Subject, throwError} from 'rxjs';
-import {filter, map, mergeMap, take, takeUntil} from 'rxjs/operators';
+import {filter, finalize, map, mergeMap, take, takeUntil} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
 import {Dictionary} from '@scion/toolkit/util';
 
@@ -38,9 +38,9 @@ import {Dictionary} from '@scion/toolkit/util';
  *   ],
  * });
  *
- * // Mount micro-app
+ * // Mount micro application
  * const fixture = new MicrofrontendFixture();
- * await fixture.mountIframe().loadScript('./lib/microfrontend.script.ts', 'connectToHost', {symbolicName: 'client'});
+ * await fixture.insertIframe().loadScript('./lib/microfrontend.script.ts', 'connectToHost', {symbolicName: 'client'});
  *```
  *
  * #### Script: "./lib/microfrontend.script.ts"
@@ -53,16 +53,12 @@ import {Dictionary} from '@scion/toolkit/util';
 export class MicrofrontendFixture {
 
   private _unmount$ = new Subject<void>();
+  private _disposables = new Set<Disposable>();
 
   /**
    * Iframe created by this fixture.
    */
   public iframe: HTMLIFrameElement | null = null;
-
-  /**
-   * URL of the script loaded into the iframe.
-   */
-  public url: URL | null = null;
 
   /**
    * Messages sent by the script.
@@ -75,7 +71,7 @@ export class MicrofrontendFixture {
   /**
    * Creates an iframe and adds it to the DOM. Throws an error if already mounted.
    */
-  public mountIframe(): this {
+  public insertIframe(): this {
     if (this.iframe) {
       throw Error('[MicrofrontendFixtureError] iframe already mounted.');
     }
@@ -84,6 +80,8 @@ export class MicrofrontendFixture {
   }
 
   /**
+   * Loads the specified script into the iframe.
+   *
    * Transpiles the function in the specified TypeScript file to JavaScript, loads it into the iframe and invokes it,
    * passing the function specified arguments and an Observer so that the script can send messages to the fixture.
    *
@@ -105,6 +103,25 @@ export class MicrofrontendFixture {
    * @return Promise that resolves when completed loading the script, or that rejects when script execution fails.
    */
   public loadScript(scriptPath: string, functionName: string, args?: Dictionary): Promise<void> {
+    const scriptHandle = this.serveScript(scriptPath, functionName, args);
+    this.setUrl(scriptHandle.url);
+    return scriptHandle.whenLoaded;
+  }
+
+  /**
+   * Serves the specified script, but unlike {@link loadScript}, does not load it into the iframe.
+   *
+   * Returns a handle to obtain the script's URL and notifier Promise that resolves when loaded the script.
+   * Using the returned URL, the script can be loaded via {@link MicrofrontendFixture.setUrl} or from within a script via `location.href`.
+   *
+   * See {@link loadScript} for more information about the transpilation of the script.
+   *
+   * @param scriptPath - Specifies the location of the script (relative to the "src" folder of the project, e.g., "./lib/microfrontend.script.ts". The file name must end with ".script.ts".
+   * @param functionName - Specifies the function in the specified script which to transpile to JavaScript. That function will be loaded into the iframe and invoked.
+   * @param args - Specifies optional arguments to be passed to the function. Arguments are passed as first argument in the form of a dictionary.
+   * @return Handle to obtain the script's URL and notifier Promise that resolves when loaded the script.
+   */
+  public serveScript(scriptPath: string, functionName: string, args?: Dictionary): {url: string; whenLoaded: Promise<void>} {
     if (!scriptPath.endsWith('.script.ts')) {
       throw Error(`[MicrofrontendFixtureError] Expected script file name to end with '.script.ts', but was ${scriptPath}.`);
     }
@@ -118,9 +135,10 @@ export class MicrofrontendFixture {
     };
     const html = this.createHtmlToInvokeScript(scriptPath, functionName, args || {}, channels);
     const url = URL.createObjectURL(new Blob([html], {type: 'text/html'}));
+    this._disposables.add(() => URL.revokeObjectURL(url));
 
     // Emit messages sent by the script to the fixture.
-    const message$ = this.message$ = new ReplaySubject(Infinity);
+    const message$ = new ReplaySubject(Infinity);
     const next$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.next));
     const error$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.error), mergeMap(error => throwError(Error(error))));
     const complete$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.complete));
@@ -131,16 +149,17 @@ export class MicrofrontendFixture {
 
     const whenLoaded = new Promise<void>((resolve, reject) => {
       merge(load$, error$)
-        .pipe(take(1))
+        .pipe(
+          take(1),
+          finalize(() => this.message$ = message$),
+        )
         .subscribe({
           error: (error) => reject(error),
           complete: () => resolve(),
         });
     });
 
-    // Load the script into the iframe.
-    this.setUrl(url);
-    return whenLoaded;
+    return {url, whenLoaded};
   }
 
   /**
@@ -148,27 +167,25 @@ export class MicrofrontendFixture {
    */
   public setUrl(url: string): void {
     if (!this.iframe) {
-      throw Error('[MicrofrontendFixtureError] You first must mount the iframe.');
+      throw Error('[MicrofrontendFixtureError] Iframe not found.');
     }
     this.iframe.setAttribute('src', url);
-    this.url = new URL(url);
+    this.message$ = NEVER;
   }
 
   /**
-   * Removes the mounted iframe from the DOM, if any.
+   * Removes the iframe from the DOM, if any.
    */
-  public unmountIframe(): this {
+  public removeIframe(): this {
+    this._disposables.forEach(disposable => disposable());
+    this._disposables.clear();
+
     if (this.iframe) {
       this.iframe.remove();
       this.iframe = null;
       this.message$ instanceof Subject && this.message$.complete();
       this.message$ = NEVER;
       this._unmount$.next();
-    }
-
-    if (this.url?.protocol === 'blob:') {
-      URL.revokeObjectURL(this.url.href);
-      this.url = null;
     }
     return this;
   }
@@ -235,4 +252,6 @@ export const WEBPACK_SCRIPT_CONTEXT_ACTIVE = '__webpackScriptContextActive__';
 /**
  * Reference to the webpack context if {@link WEBPACK_SCRIPT_CONTEXT_ACTIVE} is active.
  */
-export const WEBPACK_SCRIPT_CONTEXT = '____WebpackScriptContext__';
+export const WEBPACK_SCRIPT_CONTEXT = '__WebpackScriptContext__';
+
+type Disposable = () => void;
