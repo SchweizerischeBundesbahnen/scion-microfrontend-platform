@@ -69,27 +69,33 @@ export interface MessageEnvelope<MSG extends Message = Message> {
 /**
  * Declares internal platform topics.
  */
-export enum PlatformTopics {
+export namespace PlatformTopics {
   /**
    * Allows requesting the subscription count on a topic.
    */
-  RequestSubscriberCount = 'ɵREQUEST_SUBSCRIBER_COUNT',
+  export const RequestSubscriberCount = 'ɵREQUEST_SUBSCRIBER_COUNT';
   /**
    * When a client gains the focus it publishes a retained event to this topic.
    */
-  FocusIn = 'ɵFOCUS_IN',
+  export const FocusIn = 'ɵFOCUS_IN';
   /**
    * Allows testing whether the requester has received focus or contains embedded web content that has received focus.
    */
-  IsFocusWithin = 'ɵIS_FOCUS_WITHIN',
+  export const IsFocusWithin = 'ɵIS_FOCUS_WITHIN';
   /**
    * Allows reading the platform properties from this retained topic.
    */
-  PlatformProperties = 'ɵPLATFORM_PROPERTIES',
+  export const PlatformProperties = 'ɵPLATFORM_PROPERTIES';
   /**
    * Allows reading the registered applications from this retained topic.
    */
-  Applications = 'ɵAPPLICATIONS',
+  export const Applications = 'ɵAPPLICATIONS';
+  /**
+   * Computes the topic where a client can publish its heartbeat.
+   */
+  export function heartbeat(clientId: string): string {
+    return `ɵclient/${clientId}/heartbeat`;
+  }
 }
 
 /**
@@ -102,6 +108,10 @@ export interface ConnackMessage {
    * Unique id assigned to the client by the broker. Is only set on success.
    */
   clientId?: string;
+  /**
+   * Specifies the interval (in seconds) at which the client must send a heartbeat to indicate to be connected to the host.
+   */
+  heartbeatInterval?: number;
 }
 
 export interface TopicSubscribeCommand extends Message {

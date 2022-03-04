@@ -11,14 +11,13 @@
 import {PlatformState} from './platform-state';
 
 /**
- * Provides access to the platform state.
+ * Provides access to {@link MicrofrontendPlatform}.
  *
  * Use this bean from within a class which is itself referenced in the {@link MicrofrontendPlatform}, in order to avoid ES2015 import cycles.
  *
- * @see {@link ActivatorInstaller} for an example.
  * @ignore
  */
-export abstract class PlatformStateRef {
+export abstract class MicrofrontendPlatformRef {
 
   /**
    * @see {@link MicrofrontendPlatform#whenState}
@@ -29,4 +28,9 @@ export abstract class PlatformStateRef {
    * @see {@link MicrofrontendPlatform#state}
    */
   public abstract state: PlatformState;
+
+  /**
+   * @see {@link MicrofrontendPlatform#destroy}
+   */
+  public abstract destroy(): void;
 }

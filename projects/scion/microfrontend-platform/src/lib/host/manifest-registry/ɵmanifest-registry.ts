@@ -22,7 +22,7 @@ import {ManifestRegistry} from './manifest-registry';
 import {assertExactQualifier, QualifierMatcher} from '../../qualifier-matcher';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {stringifyError} from '../../error.util';
-import {Logger} from '../../logger';
+import {LoggingContext, Logger} from '../../logger';
 
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
@@ -299,12 +299,12 @@ function coerceCapabilityParamDefinitions(capability: Capability, appSymbolicNam
   capability.requiredParams?.forEach(name => { // eslint-disable-line deprecation/deprecation
     params.push({name, required: true});
     const migration = `{ params: [{name: '${name}', required: true}] }`;
-    Beans.get(Logger).warn(`[DEPRECATION WARNING] The '${appSymbolicName}' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, capability);
+    Beans.get(Logger).warn(`[DEPRECATION] The '${appSymbolicName}' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, new LoggingContext(appSymbolicName), capability);
   });
   capability.optionalParams?.forEach(name => { // eslint-disable-line deprecation/deprecation
     params.push({name, required: false});
     const migration = `{ params: [{name: '${name}', required: false}] }`;
-    Beans.get(Logger).warn(`[DEPRECATION WARNING] The '${appSymbolicName}' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, capability);
+    Beans.get(Logger).warn(`[DEPRECATION] The '${appSymbolicName}' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, new LoggingContext(appSymbolicName), capability);
   });
   capability.params?.forEach(param => {
     params.push(param);

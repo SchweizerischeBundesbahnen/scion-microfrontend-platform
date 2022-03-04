@@ -11,18 +11,30 @@
 import {Defined} from '@scion/toolkit/util';
 import {TopicMatcher} from '../../topic-matcher.util';
 import {Observable, Subject} from 'rxjs';
-import {distinctUntilChanged, filter, map, startWith} from 'rxjs/operators';
-import {Client} from './client.registry';
+import {distinctUntilChanged, filter, map, startWith, takeUntil} from 'rxjs/operators';
+import {ClientRegistry} from '../client-registry/client.registry';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {runSafe} from '../../safe-runner';
+import {Client} from '../client-registry/client';
 
 /**
  * Central point for managing topic subscriptions.
  *
  * @ignore
  */
-export class TopicSubscriptionRegistry {
+export class TopicSubscriptionRegistry implements PreDestroy {
 
+  private readonly _destroy$ = new Subject<void>();
   private readonly _subscriptionRegistry = new Map<string, TopicSubscription>();
   private readonly _subscriptionChange$ = new Subject<SubscriptionChangeEvent>();
+
+  constructor() {
+    Beans.get(ClientRegistry).unregister$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((client: Client) => runSafe(() => {
+        this.unsubscribeClient(client.id);
+      }));
+  }
 
   /**
    * Subscribes the subscriber of given identity to receive messages sent to the given topic.
@@ -63,7 +75,7 @@ export class TopicSubscriptionRegistry {
    *
    * @param clientId - Identifies the client which should be unsubscribed from all its topics.
    */
-  public unsubscribeClient(clientId: string): void {
+  private unsubscribeClient(clientId: string): void {
     Defined.orElseThrow(clientId, () => Error('[TopicUnsubscribeError] ClientId required'));
 
     const subscriptions = this.subscriptions.filter(subscription => subscription.client.id === clientId);
@@ -113,6 +125,10 @@ export class TopicSubscriptionRegistry {
 
   private get subscriptions(): TopicSubscription[] {
     return Array.from(this._subscriptionRegistry.values());
+  }
+
+  public preDestroy(): void {
+    this._destroy$.next();
   }
 }
 

@@ -15,7 +15,7 @@ import {IntentClient} from './intent-client';
 import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, waitForCondition} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Defined, Objects} from '@scion/toolkit/util';
-import {ClientRegistry} from '../../host/message-broker/client.registry';
+import {ClientRegistry} from '../../host/client-registry/client.registry';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestService} from '../manifest-registry/manifest-service';
 import {ObserveCaptor} from '@scion/toolkit/testing';
@@ -70,6 +70,7 @@ describe('Messaging', () => {
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
     await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'sendMessageWhenPlatformStateStopping', {symbolicName: 'client'});
+    microfrontendFixture.removeIframe();
     await expectEmissions(captor).toEqual(['message from client']);
   });
 
@@ -88,6 +89,7 @@ describe('Messaging', () => {
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
     await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'sendMessageOnBeanPreDestroy', {symbolicName: 'client'});
+    microfrontendFixture.removeIframe();
     await expectEmissions(captor).toEqual(['message from client']);
   });
 
@@ -110,6 +112,26 @@ describe('Messaging', () => {
     // The browser does not trigger the 'beforeunload' event when removing the iframe.
     // For that reason, we navigate to another side.
     microfrontendFixture.setUrl('about:blank');
+    await expectEmissions(captor).toEqual(['message from client']);
+  });
+
+  it('should allow publishing a message in `window.unload` browser hook', async () => {
+    await MicrofrontendPlatform.startHost({
+      applications: [
+        {
+          symbolicName: 'client',
+          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
+        },
+      ],
+    });
+
+    const captor = new ObserveCaptor<TopicMessage, string>(msg => msg.body);
+    Beans.get(MessageClient).observe$('client/unload').subscribe(captor);
+
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
+    await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'sendMessageInUnload', {symbolicName: 'client'});
+
+    microfrontendFixture.removeIframe();
     await expectEmissions(captor).toEqual(['message from client']);
   });
 
@@ -1428,8 +1450,8 @@ describe('Messaging', () => {
       await expectEmissions(observeCaptor).toEqual(new Map().set('param2', 'value1'));
 
       // assert the deprecation warning
-      const expectedLogMessage = `[ParamDeprecationWarning] Application 'host-app' passes a deprecated parameter in the intent: 'param1'. Pass parameter 'param2' instead.`;
-      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual(jasmine.arrayContaining([expectedLogMessage]));
+      const expectedLogMessage = `[DEPRECATION] Application 'host-app' passes a deprecated parameter in the intent: 'param1'. Pass parameter 'param2' instead.`;
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual(jasmine.arrayContaining([expectedLogMessage]));
     });
 
     it('should make deprecated params optional', async () => {
@@ -1501,14 +1523,14 @@ describe('Messaging', () => {
       // publish without params
       await Beans.get(IntentClient).publish({type: 'capability'});
       await expectEmissions(observeCaptor).toEqual(new Map());
-      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual([]);
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual([]);
 
       // publish with deprecated param 'param1'
       observeCaptor.reset();
       await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')});
       await expectEmissions(observeCaptor).toEqual(new Map().set('param1', 'value1'));
-      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual([
-        `[ParamDeprecationWarning] Application 'host-app' passes a deprecated parameter in the intent: 'param1'. DEPRECATION NOTICE`,
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual([
+        `[DEPRECATION] Application 'host-app' passes a deprecated parameter in the intent: 'param1'. DEPRECATION NOTICE`,
       ]);
 
       // publish with deprecated param 'param2'
@@ -1516,8 +1538,8 @@ describe('Messaging', () => {
       resetLoggerSpy('warn');
       await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param2', 'value2')});
       await expectEmissions(observeCaptor).toEqual(new Map().set('param5', 'value2'));
-      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual([
-        `[ParamDeprecationWarning] Application 'host-app' passes a deprecated parameter in the intent: 'param2'. Pass parameter 'param5' instead. DEPRECATION NOTICE`,
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual([
+        `[DEPRECATION] Application 'host-app' passes a deprecated parameter in the intent: 'param2'. Pass parameter 'param5' instead. DEPRECATION NOTICE`,
       ]);
 
       // publish with deprecated param 'param3'
@@ -1525,8 +1547,8 @@ describe('Messaging', () => {
       resetLoggerSpy('warn');
       await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param3', 'value3')});
       await expectEmissions(observeCaptor).toEqual(new Map().set('param5', 'value3'));
-      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual([
-        `[ParamDeprecationWarning] Application 'host-app' passes a deprecated parameter in the intent: 'param3'. Pass parameter 'param5' instead.`,
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual([
+        `[DEPRECATION] Application 'host-app' passes a deprecated parameter in the intent: 'param3'. Pass parameter 'param5' instead.`,
       ]);
 
       // publish with deprecated param 'param4'
@@ -1534,8 +1556,8 @@ describe('Messaging', () => {
       resetLoggerSpy('warn');
       await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param4', 'value4')});
       await expectEmissions(observeCaptor).toEqual(new Map().set('param4', 'value4'));
-      expect(readConsoleLog('warn', {filter: /ParamDeprecationWarning/})).toEqual([
-        `[ParamDeprecationWarning] Application 'host-app' passes a deprecated parameter in the intent: 'param4'.`,
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual([
+        `[DEPRECATION] Application 'host-app' passes a deprecated parameter in the intent: 'param4'.`,
       ]);
     });
   });

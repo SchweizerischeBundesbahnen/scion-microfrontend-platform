@@ -13,8 +13,9 @@ import {MessageClient, takeUntilUnsubscribe} from '../../client/messaging/messag
 import {MessageHeaders, TopicMessage} from '../../messaging.model';
 import {runSafe} from '../../safe-runner';
 import {PlatformTopics} from '../../ɵmessaging.model';
-import {Client, ClientRegistry} from '../message-broker/client.registry';
+import {ClientRegistry} from '../client-registry/client.registry';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {Client} from '../client-registry/client';
 
 /**
  * Tracks the focus across microfrontends and answers {@link PlatformTopics.IsFocusWithin} requests.

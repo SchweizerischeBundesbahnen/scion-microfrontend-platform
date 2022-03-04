@@ -70,6 +70,27 @@ describe('MicrofrontendPlatform', () => {
     ]));
   });
 
+  it('should warn if client does not support heartbeat introduced in version "1.0.0-rc.1"', async () => {
+    setHostAppMicrofrontendPlatformVersion('1.0.0-rc.3');
+
+    await MicrofrontendPlatform.startHost({
+      applications: [
+        {
+          symbolicName: 'client',
+          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
+        },
+      ],
+    });
+
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
+    await microfrontendFixture.loadScript('./lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: '1.0.0-beta.20'});
+
+    // Assert version mismatch warning
+    expect(readConsoleLog('warn', {filter: /\[VersionMismatch]/})).toEqual(jasmine.arrayContaining([
+      `[VersionMismatch] Since '@scion/microfrontend-platform@1.0.0-rc.1', connected clients must send a heartbeat to indicate liveness. Please upgrade @scion/microfrontend-platform of application 'client' from version '1.0.0-beta.20' to version '1.0.0-rc.3'.`,
+    ]));
+  });
+
   /**
    * Registers the fixture for destruction after test execution.
    */

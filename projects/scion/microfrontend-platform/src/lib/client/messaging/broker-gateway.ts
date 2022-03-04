@@ -7,8 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {EMPTY, fromEvent, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError} from 'rxjs';
-import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
+import {EMPTY, fromEvent, interval, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError} from 'rxjs';
+import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
 import {finalize, map, mergeMap, take, takeUntil, tap, timeoutWith} from 'rxjs/operators';
 import {filterByChannel, filterByMessageHeader, filterByOrigin, filterByTopicChannel, filterByTransport, pluckMessage} from '../../operators';
 import {UUID} from '@scion/toolkit/uuid';
@@ -19,7 +19,9 @@ import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {APP_IDENTITY, IS_PLATFORM_HOST} from '../../platform.model';
 import {PlatformState, Runlevel} from '../../platform-state';
 import {ConnectOptions} from '../connect-options';
-import {PlatformStateRef} from '../../platform-state-ref';
+import {MicrofrontendPlatformRef} from '../../microfrontend-platform-ref';
+import {MessageClient} from '../../client/messaging/message-client';
+import {runSafe} from '../../safe-runner';
 import {VERSION} from '../../version';
 
 /**
@@ -144,6 +146,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
 
     // Subscribes to messages sent to this client.
     this.installBrokerMessageListener(brokerInfo);
+    // Periodically send a heartbeat to indicate to be connected to the host.
+    this.installHeartbeatPublisher(brokerInfo);
 
     return brokerInfo;
   }
@@ -290,6 +294,22 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
   }
 
   /**
+   * Installs a scheduler that periodically sends a heartbeat to indicate that this client is connected to the host.
+   *
+   * Note that no heartbeat scheduler is installed if running in the context of the host application.
+   */
+  private installHeartbeatPublisher(brokerInfo: BrokerInfo): void {
+    if (Beans.get(IS_PLATFORM_HOST)) {
+      return; // The host app client does not send a heartbeat.
+    }
+    interval(brokerInfo.heartbeatInterval)
+      .pipe(takeUntil(this._platformStopping$))
+      .subscribe(() => runSafe(() => {
+        Beans.get(MessageClient).publish(PlatformTopics.heartbeat(brokerInfo.clientId)).then();
+      }));
+  }
+
+  /**
    * Connects this client to the broker by sending a CONNECT message to the current and all parent windows.
    *
    * When the broker receives the CONNECT message and trusts this client, the broker responds with a CONNACK message,
@@ -309,7 +329,12 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
           if (response?.returnCode !== 'accepted') {
             return throwError(`${response?.returnMessage ?? 'UNEXPECTED: Empty broker discovery response'} [code: '${response?.returnCode ?? 'n/a'}']`);
           }
-          return of({clientId: response.clientId!, window: messageEvent.source as Window, origin: messageEvent.origin});
+          return of<BrokerInfo>({
+            clientId: response.clientId!,
+            heartbeatInterval: response.heartbeatInterval!,
+            window: messageEvent.source as Window,
+            origin: messageEvent.origin,
+          });
         }),
         take(1),
         timeoutWith(new Date(Date.now() + this._brokerDiscoverTimeout), throwError(`[ClientConnectError] Message broker not discovered within the ${this._brokerDiscoverTimeout}ms timeout. Messages cannot be published or received.`)),
@@ -384,7 +409,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
   /**
    * Method invoked when the platform enters state {@link PlatformState.Stopping}.
    *
-   * Since this gateway is registered in the bean manager with the maximum destruction order `{destroyOrder: Number.MAX_VALUE}`,
+   * Since this gateway is registered in the bean manager with the maximum destruction order `{destroyOrder: Number.MAX_SAFE_INTEGER}`,
    * the platform will destroy this bean after destroying other beans, which is important so that other beans can send messages
    * when the platform shuts down.
    */
@@ -430,7 +455,7 @@ function stringifyEnvelope(envelope: MessageEnvelope): string {
 }
 
 function isPlatformStopped(): boolean {
-  const platformState = Beans.opt(PlatformStateRef);
+  const platformState = Beans.opt(MicrofrontendPlatformRef);
   if (!platformState) {
     return true; // platform is destroyed
   }
@@ -444,6 +469,7 @@ function isPlatformStopped(): boolean {
  */
 interface BrokerInfo {
   clientId: string;
+  heartbeatInterval: number;
   origin: string;
   window: Window;
 }

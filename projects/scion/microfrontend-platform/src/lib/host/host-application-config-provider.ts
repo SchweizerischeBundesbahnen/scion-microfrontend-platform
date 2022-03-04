@@ -11,7 +11,7 @@
 import {APP_IDENTITY, Manifest} from '../platform.model';
 import {PlatformState} from '../platform-state';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {PlatformStateRef} from '../platform-state-ref';
+import {MicrofrontendPlatformRef} from '../microfrontend-platform-ref';
 import {ApplicationConfig} from './application-config';
 import {HostConfig} from './host-config';
 
@@ -38,6 +38,6 @@ function provideHostManifestUrl(hostManifest: string | Manifest | undefined): st
 
 function serveHostManifest(manifest: Manifest): string {
   const url = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
-  Beans.get(PlatformStateRef).whenState(PlatformState.Stopped).then(() => URL.revokeObjectURL(url));
+  Beans.get(MicrofrontendPlatformRef).whenState(PlatformState.Stopped).then(() => URL.revokeObjectURL(url));
   return url;
 }

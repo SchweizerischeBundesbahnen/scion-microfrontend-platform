@@ -7,23 +7,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Client, ClientRegistry} from './client.registry';
+import {ClientRegistry} from './client.registry';
 import {Application} from '../../platform.model';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {ɵClient} from './ɵclient';
+import {Client} from './client';
+import {VERSION} from '../../version';
 
 describe('ClientRegistry', () => {
 
-  beforeEach(async () => {
-    await MicrofrontendPlatform.destroy();
-    await MicrofrontendPlatform.startPlatform(async () => void (Beans.register(ClientRegistry)));
-  });
-
-  afterEach(async () => {
-    await MicrofrontendPlatform.destroy();
-  });
+  beforeEach(async () => await MicrofrontendPlatform.destroy());
+  afterEach(async () => await MicrofrontendPlatform.destroy());
 
   it('should register a client by its id', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
     const client1 = newClient('1', 'app-1');
     const client2 = newClient('2', 'app-2');
     Beans.get(ClientRegistry).registerClient(client1);
@@ -34,6 +33,8 @@ describe('ClientRegistry', () => {
   });
 
   it('should register a client by its window', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
     const client1 = newClient('1', 'app-1');
     const client2 = newClient('2', 'app-2');
     Beans.get(ClientRegistry).registerClient(client1);
@@ -44,6 +45,8 @@ describe('ClientRegistry', () => {
   });
 
   it('should register a client by its application', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
     const client1 = newClient('1', 'app-1');
     const client2 = newClient('2', 'app-1');
     const client3 = newClient('3', 'app-1');
@@ -60,6 +63,8 @@ describe('ClientRegistry', () => {
   });
 
   it('should unregister a client', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
     const client = newClient('1', 'app-1');
     Beans.get(ClientRegistry).registerClient(client);
 
@@ -75,6 +80,6 @@ describe('ClientRegistry', () => {
 
   function newClient(clientId: string, appSymbolicName: string): Client {
     const application: Partial<Application> = {symbolicName: appSymbolicName};
-    return new Client({id: clientId, window: {} as Window, application: application as Application});
+    return new ɵClient(clientId, {} as Window, application as Application, Beans.get(VERSION));
   }
 });

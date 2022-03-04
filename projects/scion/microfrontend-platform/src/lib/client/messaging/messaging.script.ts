@@ -23,7 +23,6 @@ export async function sendMessageWhenPlatformStateStopping({symbolicName}): Prom
   MicrofrontendPlatform.whenState(PlatformState.Stopping).then(async () => {
     await Beans.get(MessageClient).publish(`${symbolicName}/whenPlatformStateStopping`, 'message from client');
   });
-  await MicrofrontendPlatform.destroy();
 }
 
 export async function sendMessageOnBeanPreDestroy({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
@@ -35,12 +34,18 @@ export async function sendMessageOnBeanPreDestroy({symbolicName}): Promise<void>
 
   Beans.register(LifecycleHook, {eager: true});
   await MicrofrontendPlatform.connectToHost(symbolicName);
-  await MicrofrontendPlatform.destroy();
 }
 
 export async function sendMessageInBeforeUnload({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatform.connectToHost(symbolicName);
   fromEvent(window, 'beforeunload', {once: true}).subscribe(() => {
     Beans.get(MessageClient).publish(`${symbolicName}/beforeunload`, 'message from client');
+  });
+}
+
+export async function sendMessageInUnload({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+  await MicrofrontendPlatform.connectToHost(symbolicName);
+  fromEvent(window, 'unload', {once: true}).subscribe(() => {
+    Beans.get(MessageClient).publish(`${symbolicName}/unload`, 'message from client');
   });
 }
