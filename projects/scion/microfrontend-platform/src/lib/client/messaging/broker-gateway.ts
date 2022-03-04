@@ -220,7 +220,11 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
       // Receive replies sent to the reply topic.
       merge(this.subscribeToTopic$<T>(replyTo), requestError$)
         .pipe(takeUntil(merge(this._platformStopping$, unsubscribe$)))
-        .subscribe(observer);
+        .subscribe({
+          next: reply => observer.next(reply),
+          error: error => observer.error(error),
+          complete: noop, // As per the API, the Observable never completes.
+        });
 
       // Post the request to the broker.
       this.postMessage(channel, message)
@@ -250,7 +254,11 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
           takeUntil(merge(this._platformStopping$, unsubscribe$)),
           finalize(() => this.unsubscribeFromTopic(topic, subscriberId)),
         )
-        .subscribe(observer);
+        .subscribe({
+          next: reply => observer.next(reply),
+          error: error => observer.error(error),
+          complete: noop, // As per the API, the Observable never completes.
+        });
 
       // Post the topic subscription to the broker.
       const topicSubscribeMessage: TopicSubscribeCommand = {subscriberId, topic, headers: new Map()};

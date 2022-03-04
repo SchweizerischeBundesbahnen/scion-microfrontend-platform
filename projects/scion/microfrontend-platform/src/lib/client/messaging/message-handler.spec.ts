@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {MessageClient} from '../../client/messaging/message-client';
-import {expectPromise, waitFor, waitForCondition} from '../../testing/spec.util.spec';
+import {expectPromise, waitFor, waitForCondition, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {IntentMessage, TopicMessage} from '../../messaging.model';
@@ -16,13 +16,20 @@ import {AsyncSubject, concat, Observable, of, ReplaySubject, Subject, throwError
 import {finalize} from 'rxjs/operators';
 import {IntentClient} from './intent-client';
 import {ObserveCaptor} from '@scion/toolkit/testing';
+import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
+import {MicrofrontendFixture} from '../../testing/microfrontend-fixture/microfrontend-fixture';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
 
 describe('Message Handler', () => {
 
+  const disposables = new Set<Disposable>();
+
   beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  afterEach(async () => {
+    await MicrofrontendPlatform.destroy();
+    disposables.forEach(disposable => disposable());
+  });
 
   describe('pub/sub', () => {
 
@@ -489,13 +496,58 @@ describe('Message Handler', () => {
       await expectPromise(requestorFinalize$.toPromise()).toResolve();
       expect(requestorSubscription.closed).toBeTrue();
     });
+
+    it('should complete the requestor\'s Observable when the replier\'s platform is shut down', async () => {
+      await MicrofrontendPlatform.startHost({
+        applications: [
+          {
+            symbolicName: 'replier',
+            manifestUrl: new ManifestFixture({name: 'Replier'}).serve(),
+          },
+        ],
+      });
+
+      // Mount the replier microfrontend.
+      const microfrontendFixture = registerFixture(new MicrofrontendFixture());
+      await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/message-handler.script.ts', 'connectToHostThenMessageClientOnMessage', {symbolicName: 'replier'});
+
+      // Initiate request-reply communication.
+      const replyCaptor = new ObserveCaptor();
+      Beans.get(MessageClient).request$('topic').subscribe(replyCaptor);
+
+      // Wait until the replier has subscribed to the request.
+      await waitUntilSubscriberCount('topic', 1);
+      expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+
+      // Destroy the replier microfrontend.
+      microfrontendFixture.removeIframe();
+
+      // Wait until the replier has been destroyed.
+      await waitUntilSubscriberCount('topic', 0);
+
+      // Expect the requestor's Observable to be completed.
+      expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
+    });
   });
+
+  /**
+   * Registers the fixture for destruction after test execution.
+   */
+  function registerFixture(fixture: MicrofrontendFixture): MicrofrontendFixture {
+    disposables.add(() => fixture.removeIframe());
+    return fixture;
+  }
 });
 
 describe('Intent Handler', () => {
 
+  const disposables = new Set<Disposable>();
+
   beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  afterEach(async () => {
+    await MicrofrontendPlatform.destroy();
+    disposables.forEach(disposable => disposable());
+  });
 
   describe('pub/sub', () => {
 
@@ -1154,5 +1206,50 @@ describe('Intent Handler', () => {
       await expectPromise(requestorFinalize$.toPromise()).toResolve();
       expect(requestorSubscription.closed).toBeTrue();
     });
+
+    it('should complete the requestor\'s Observable when the replier\'s platform is shut down', async () => {
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {name: 'Host', intentions: [{type: 'capability'}]},
+        },
+        applications: [
+          {
+            symbolicName: 'replier',
+            manifestUrl: new ManifestFixture({name: 'Replier', capabilities: [{type: 'capability', private: false}]}).serve(),
+          },
+        ],
+      });
+
+      // Mount the replier microfrontend.
+      const microfrontendFixture = registerFixture(new MicrofrontendFixture());
+      await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/message-handler.script.ts', 'connectToHostThenIntentClientOnIntent', {symbolicName: 'replier'});
+
+      // Initiate request-reply communication.
+      const replyCaptor = new ObserveCaptor();
+      Beans.get(IntentClient).request$({type: 'capability'}).subscribe(replyCaptor);
+
+      // Wait until the replier has subscribed to the request.
+      await replyCaptor.waitUntilEmitCount(1);
+      expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+
+      // Destroy the replier microfrontend.
+      microfrontendFixture.removeIframe();
+
+      // Wait until the replier has been destroyed.
+      await replyCaptor.waitUntilCompletedOrErrored();
+
+      // Expect the requestor's Observable to be completed.
+      expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
+    });
   });
+
+  /**
+   * Registers the fixture for destruction after test execution.
+   */
+  function registerFixture(fixture: MicrofrontendFixture): MicrofrontendFixture {
+    disposables.add(() => fixture.removeIframe());
+    return fixture;
+  }
 });
+
+type Disposable = () => void;

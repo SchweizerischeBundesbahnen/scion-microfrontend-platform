@@ -8,11 +8,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Arrays} from '@scion/toolkit/util';
+import {Arrays, Defined} from '@scion/toolkit/util';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {ConsoleLogger, Logger} from '../logger';
 import {Beans} from '@scion/toolkit/bean-manager';
 import CallInfo = jasmine.CallInfo;
+import {MessageClient} from '../client/messaging/message-client';
+import {first, timeoutWith} from 'rxjs/operators';
+import {throwError} from 'rxjs';
 
 /**
  * Expects the given Promise to either resolve or reject.
@@ -143,4 +146,17 @@ export function getLoggerSpy(severity: 'info' | 'warn' | 'error'): jasmine.Spy {
 
 export function resetLoggerSpy(severity: 'info' | 'warn' | 'error'): void {
   getLoggerSpy(severity).calls.reset();
+}
+
+/**
+ * Waits until the given number of subscribers are subscribed to the given topic, or throws an error otherwise.
+ */
+export async function waitUntilSubscriberCount(topic: string, expectedCount: number, options?: {timeout?: number}): Promise<void> {
+  const timeout = Defined.orElse(options && options.timeout, 1000);
+  await Beans.opt(MessageClient).subscriberCount$(topic)
+    .pipe(
+      first(count => count === expectedCount),
+      timeoutWith(new Date(Date.now() + timeout), throwError('[SpecTimeoutError] Timeout elapsed.')),
+    )
+    .toPromise();
 }

@@ -9,6 +9,7 @@
  */
 
 import {PlatformState} from './platform-state';
+import {Observable} from 'rxjs';
 
 /**
  * Provides access to {@link MicrofrontendPlatform}.
@@ -28,6 +29,11 @@ export abstract class MicrofrontendPlatformRef {
    * @see {@link MicrofrontendPlatform#state}
    */
   public abstract state: PlatformState;
+
+  /**
+   * @see {@link MicrofrontendPlatform#state$}
+   */
+  public abstract state$: Observable<PlatformState>;
 
   /**
    * @see {@link MicrofrontendPlatform#destroy}

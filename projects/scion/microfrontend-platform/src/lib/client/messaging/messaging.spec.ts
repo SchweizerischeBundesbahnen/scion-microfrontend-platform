@@ -12,7 +12,7 @@ import {ConnectableObservable, Observable, Subject, throwError} from 'rxjs';
 import {IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from './message-client';
 import {IntentClient} from './intent-client';
-import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, waitForCondition} from '../../testing/spec.util.spec';
+import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, waitForCondition, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Defined, Objects} from '@scion/toolkit/util';
 import {ClientRegistry} from '../../host/client-registry/client.registry';
@@ -309,8 +309,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).toBeFalse();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should allow receiving a reply for a request (by replying with the status code 200)', async () => {
@@ -324,8 +324,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).toBeFalse();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should allow receiving multiple replies for a request', async () => {
@@ -341,8 +341,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
-    expect(replyCaptor.hasCompleted()).toBeFalse();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should complete the request when replying with the status code 250 (with the first reply)', async () => {
@@ -356,8 +356,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).toBeTrue();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should complete the request when replying with the status code 250 (after multiple replies)', async () => {
@@ -373,8 +373,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
-    expect(replyCaptor.hasCompleted()).toBeTrue();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should error the request when replying with the status code 500', async () => {
@@ -388,10 +388,40 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
-    expect(replyCaptor.getValues()).toEqual([]);
-    expect(replyCaptor.hasCompleted()).toBeFalse();
-    expect(replyCaptor.hasErrored()).toBeTrue();
+    expect(replyCaptor.getValues()).withContext('emissions').toEqual([]);
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeTrue();
     expect(replyCaptor.getError().message).toEqual('PING');
+  });
+
+  it('should not complete the message Observable upon platform shutdown (as per API)', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    // GIVEN
+    const captor = new ObserveCaptor();
+    Beans.get(MessageClient).observe$('topic').subscribe(captor);
+    // WHEN
+    await MicrofrontendPlatform.destroy();
+    // THEN
+    expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(captor.getValues()).withContext('emissions').toEqual([]);
+  });
+
+  it('should not complete the request Observable upon platform shutdown (as per API)', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    // GIVEN
+    const captor = new ObserveCaptor();
+    Beans.get(MessageClient).observe$('topic').subscribe();
+    Beans.get(MessageClient).request$('topic').subscribe(captor);
+    await waitUntilSubscriberCount('topic', 1);
+    // WHEN
+    await MicrofrontendPlatform.destroy();
+    // THEN
+    expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(captor.getValues()).withContext('emissions').toEqual([]);
   });
 
   it('should allow receiving a reply for an intent request (by not replying with a status code)', async () => {
@@ -413,8 +443,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).toBeFalse();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should allow receiving a reply for an intent request (by replying with the status code 200)', async () => {
@@ -436,8 +466,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).toBeFalse();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should allow receiving multiple replies for an intent request', async () => {
@@ -461,8 +491,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
-    expect(replyCaptor.hasCompleted()).toBeFalse();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should complete the intent request when replying with the status code 250 (with the first reply)', async () => {
@@ -484,8 +514,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).toBeTrue();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should complete the intent request when replying with the status code 250 (after multiple replies)', async () => {
@@ -509,8 +539,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
-    expect(replyCaptor.hasCompleted()).toBeTrue();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should error the intent request when replying with the status code 500', async () => {
@@ -532,9 +562,9 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
-    expect(replyCaptor.getValues()).toEqual([]);
-    expect(replyCaptor.hasCompleted()).toBeFalse();
-    expect(replyCaptor.hasErrored()).toBeTrue();
+    expect(replyCaptor.getValues()).withContext('emissions').toEqual([]);
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeTrue();
     expect(replyCaptor.getError().message).toEqual('PING');
   });
 
@@ -566,9 +596,9 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor();
     Beans.get(MessageClient).request$('some-topic').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
-    expect(replyCaptor.getValues()).toEqual([]);
-    expect(replyCaptor.hasCompleted()).toBeFalse();
-    expect(replyCaptor.hasErrored()).toBeTrue();
+    expect(replyCaptor.getValues()).withContext('emissions').toEqual([]);
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeTrue();
     expect(replyCaptor.getError()).toEqual('[RequestReplyError] No client is currently running which could answer the request sent to the topic \'some-topic\'.');
   });
 
@@ -605,8 +635,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).toBeFalse();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should allow an interceptor to handle a \'request-response\' topic message if no replier is running', async () => {
@@ -629,8 +659,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).toBeFalse();
-    expect(replyCaptor.hasErrored()).toBeFalse();
+    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
   it('should reject an intent if no application provides a satisfying capability', async () => {
@@ -738,6 +768,38 @@ describe('Messaging', () => {
     Beans.get(MessageClient).observe$('some-topic').subscribe(messageCaptor);
     await messageCaptor.waitUntilEmitCount(1);
     expect(messageCaptor.getLastValue()).toEqual('payload');
+  });
+
+  it('should receive a message sent to a topic', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    // GIVEN
+    const captor = new ObserveCaptor<TopicMessage, string>(message => message.body);
+    Beans.get(MessageClient).observe$('topic').subscribe(captor);
+    // WHEN
+    await Beans.get(MessageClient).publish('topic', 'message');
+    await captor.waitUntilEmitCount(1);
+    // THEN
+    expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(captor.getValues()).withContext('emissions').toEqual(['message']);
+  });
+
+  it('should receive multiple messages sent to a topic', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    // GIVEN
+    const captor = new ObserveCaptor<TopicMessage, string>(message => message.body);
+    Beans.get(MessageClient).observe$('topic').subscribe(captor);
+    // WHEN
+    await Beans.get(MessageClient).publish('topic', 'message 1');
+    await Beans.get(MessageClient).publish('topic', 'message 2');
+    await Beans.get(MessageClient).publish('topic', 'message 3');
+    await captor.waitUntilEmitCount(3);
+    // THEN
+    expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(captor.getValues()).withContext('emissions').toEqual(['message 1', 'message 2', 'message 3']);
   });
 
   it('should allow multiple subscriptions to the same topic in the same client', async () => {
@@ -1091,6 +1153,21 @@ describe('Messaging', () => {
     subscription3.unsubscribe();
 
     await expectEmissions(subscriberCountCaptor).toEqual([0, 1, 0, 1, 2, 1, 0]);
+    expect(subscriberCountCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+  });
+
+  it('should not complete the "topic subscriber count" Observable upon platform shutdown (as per API)', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    // GIVEN
+    const captor = new ObserveCaptor();
+    Beans.get(MessageClient).subscriberCount$('topic').subscribe(captor);
+    // WHEN
+    await MicrofrontendPlatform.destroy();
+    // THEN
+    expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(captor.getValues()).withContext('emissions').toEqual([]);
   });
 
   it('should set message headers about the sender', async () => {
@@ -1300,33 +1377,62 @@ describe('Messaging', () => {
     it('should complete the source observable when all subscribers unsubscribed', async () => {
       await MicrofrontendPlatform.startHost({applications: []});
 
-      const subscription = Beans.get(MessageClient).observe$('some-topic').subscribe();
-      await waitUntilSubscriberCount('some-topic', 1);
+      const subscription1 = Beans.get(MessageClient).observe$('some-topic').subscribe();
+      const subscription2 = Beans.get(MessageClient).observe$('some-topic').subscribe();
+      await waitUntilSubscriberCount('some-topic', 2);
 
-      const testee = new Subject<void>()
+      const captor = new ObserveCaptor();
+      new Subject<void>()
         .pipe(
           takeUntilUnsubscribe('some-topic'),
           timeoutWith(new Date(Date.now() + 2000), throwError('[SpecTimeoutError] Timeout elapsed.')),
         )
-        .toPromise();
+        .subscribe(captor);
 
-      // unsubscribe from the topic
-      subscription.unsubscribe();
+      // unsubscribe subscription1
+      subscription1.unsubscribe();
+      await waitUntilSubscriberCount('some-topic', 1);
 
-      await expectPromise(testee).toResolve();
+      expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+      expect(captor.getValues()).withContext('emissions').toEqual([]);
+
+      // unsubscribe subscription2
+      subscription2.unsubscribe();
+      await waitUntilSubscriberCount('some-topic', 0);
+
+      expect(captor.hasCompleted()).withContext('hasCompleted').toBeTrue();
+      expect(captor.getValues()).withContext('emissions').toEqual([]);
     });
 
     it('should complete the source observable immediately when no subscriber is subscribed', async () => {
       await MicrofrontendPlatform.startHost({applications: []});
 
-      const testee = new Subject<void>()
-        .pipe(
-          takeUntilUnsubscribe('nobody-subscribed-to-this-topic'),
-          timeoutWith(new Date(Date.now() + 500), throwError('[SpecTimeoutError] Timeout elapsed.')),
-        )
-        .toPromise();
+      const captor = new ObserveCaptor();
+      new Subject<void>()
+        .pipe(takeUntilUnsubscribe('nobody-subscribed-to-this-topic'))
+        .subscribe(captor);
 
-      await expectPromise(testee).toResolve();
+      await waitUntilSubscriberCount('nobody-subscribed-to-this-topic', 0);
+      expect(captor.hasCompleted()).withContext('hasCompleted').toBeTrue();
+      expect(captor.getValues()).withContext('emissions').toEqual([]);
+    });
+
+    it('should not complete the source Observable upon platform shutdown (as per API)', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      // GIVEN
+      const captor = new ObserveCaptor();
+      const subscription = new Subject<void>()
+        .pipe(takeUntilUnsubscribe('nobody-subscribed-to-this-topic'))
+        .subscribe(captor);
+      // WHEN
+      await MicrofrontendPlatform.destroy();
+      // THEN
+      expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+      expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
+      expect(captor.getValues()).withContext('emissions').toEqual([]);
+
+      subscription.unsubscribe();
     });
   });
 
@@ -1583,19 +1689,6 @@ function expectMessage(actual: TopicMessage): {toMatch: (expected: TopicMessage)
       }));
     },
   };
-}
-
-/**
- * Waits until the given number of subscribers are subscribed to the given topic, or throws an error otherwise.
- */
-async function waitUntilSubscriberCount(topic: string, expectedCount: number, options?: {timeout?: number}): Promise<void> {
-  const timeout = Defined.orElse(options && options.timeout, 1000);
-  await Beans.opt(MessageClient).subscriberCount$(topic)
-    .pipe(
-      first(count => count === expectedCount),
-      timeoutWith(new Date(Date.now() + timeout), throwError('[SpecTimeoutError] Timeout elapsed.')),
-    )
-    .toPromise();
 }
 
 /**

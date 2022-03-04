@@ -5,7 +5,9 @@ import {Observable, Subscription, throwError} from 'rxjs';
 import {Observables} from '@scion/toolkit/util';
 import {runSafe} from '../../safe-runner';
 import {stringifyError} from '../../error.util';
-import {filter, finalize} from 'rxjs/operators';
+import {filter, finalize, takeUntil} from 'rxjs/operators';
+import {MicrofrontendPlatformRef} from '../../microfrontend-platform-ref';
+import {PlatformState} from '../../platform-state';
 
 /**
  * Subscribes to messages, passing each message to the callback.
@@ -50,6 +52,7 @@ export class MessageHandler<MSG extends Message, REPLY> {
    */
   private handleMessage(request: MSG): void {
     const replyTo = request.headers.get(MessageHeaders.ReplyTo);
+    const platformStopping$ = Beans.get(MicrofrontendPlatformRef).state$.pipe(filter(state => state === PlatformState.Stopping));
 
     // Invoke the callback to produce value(s).
     let reply: Observable<REPLY> | Promise<REPLY> | REPLY | void;
@@ -66,6 +69,7 @@ export class MessageHandler<MSG extends Message, REPLY> {
       .pipe(
         filter(next => next !== undefined), // filter `undefined` responses, e.g., returned by void callbacks.
         takeUntilUnsubscribe(replyTo), // unsubscribe once the requestor terminates the communication
+        takeUntil(platformStopping$), // terminate the communication when the platform is shutting down.
         finalize(() => {
           // Note that the `finalize` operator is also called when unsubscribing from the observable, e.g. when unsubscribing
           // from the handler. If the observable errors or completes, the `finalize` operator is guaranteed to be called after

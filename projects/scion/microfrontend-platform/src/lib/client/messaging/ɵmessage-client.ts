@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {defer, Observable, Subscription} from 'rxjs';
+import {defer, noop, Observable, Subject, Subscription} from 'rxjs';
 import {IntentMessage, mapToBody, throwOnErrorStatus, TopicMessage} from '../../messaging.model';
 import {BrokerGateway} from './broker-gateway';
 import {MessagingChannel, PlatformTopics} from '../../ɵmessaging.model';
@@ -15,6 +15,7 @@ import {TopicMatcher} from '../../topic-matcher.util';
 import {MessageClient, PublishOptions, RequestOptions} from './message-client';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageHandler} from './message-handler';
+import {takeUntil} from 'rxjs/operators';
 
 export class ɵMessageClient implements MessageClient {
 
@@ -56,7 +57,20 @@ export class ɵMessageClient implements MessageClient {
 
   public subscriberCount$(topic: string): Observable<number> {
     assertTopic(topic, {allowWildcardSegments: false});
-    return this.request$<number>(PlatformTopics.RequestSubscriberCount, topic).pipe(mapToBody());
+    return new Observable<number>(observer => {
+      const unsubscribe$ = new Subject<void>();
+      this.request$<number>(PlatformTopics.RequestSubscriberCount, topic)
+        .pipe(
+          mapToBody(),
+          takeUntil(unsubscribe$),
+        )
+        .subscribe({
+          next: reply => observer.next(reply),
+          error: error => observer.error(error),
+          complete: noop, // As per the API, the Observable never completes, even if receiving a TERMINAL signal.
+        });
+      return (): void => unsubscribe$.next();
+    });
   }
 }
 
