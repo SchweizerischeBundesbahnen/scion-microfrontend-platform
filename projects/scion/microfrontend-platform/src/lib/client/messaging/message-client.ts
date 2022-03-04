@@ -143,7 +143,7 @@ export abstract class MessageClient {
   public abstract onMessage<IN = any, OUT = any>(topic: string, callback: (message: TopicMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription;
 
   /**
-   * Allows observing the number of subscriptions on a topic.
+   * Allows observing the number of subscriptions on a topic. The Observable never completes.
    *
    * @param  topic - Specifies the topic to observe. The topic must be exact, thus not contain wildcards.
    * @return An Observable that, when subscribed, emits the current number of subscribers on it. It never completes and
@@ -154,7 +154,7 @@ export abstract class MessageClient {
 
 /**
  * Returns an Observable that mirrors the source Observable as long as there is at least one subscriber subscribed to the
- * given topic. When the subscription count of the given topic drops to zero, the returned Observable completes. If there
+ * given topic. When the subscription count on the given topic drops to zero, the returned Observable completes. If there
  * is no topic subscription present at the time when subscribing to the Observable, then it completes immediately.
  *
  * This operator is similar to the RxJS {@link takeUntil} operator, but accepts a topic instead of a notifier Observable.
@@ -162,7 +162,7 @@ export abstract class MessageClient {
  * @category Messaging
  */
 export function takeUntilUnsubscribe<T>(topic: string): MonoTypeOperatorFunction<T> {
-  return takeUntil(Beans.get(MessageClient).subscriberCount$(topic).pipe(first(count => count === 0, 0)));
+  return takeUntil(Beans.get(MessageClient).subscriberCount$(topic).pipe(first(count => count === 0)));
 }
 
 /**
