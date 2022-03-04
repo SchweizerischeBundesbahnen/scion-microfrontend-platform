@@ -8,18 +8,26 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {TopicSubscriptionRegistry} from './topic-subscription.registry';
-import {Client} from './client.registry';
+import {ClientRegistry} from '../client-registry/client.registry';
 import {take} from 'rxjs/operators';
 import {expectEmissions} from '../../testing/spec.util.spec';
 import {ObserveCaptor} from '@scion/toolkit/testing';
+import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {Application} from '../../platform.model';
+import {Client} from '../client-registry/client';
+import {ɵClient} from '../client-registry/ɵclient';
+import {VERSION} from '../../version';
 
 describe('TopicSubscriptionRegistry', () => {
 
-  let subscriptionRegistry: TopicSubscriptionRegistry;
-
-  beforeEach(() => subscriptionRegistry = new TopicSubscriptionRegistry());
+  beforeEach(async () => await MicrofrontendPlatform.destroy());
+  afterEach(async () => await MicrofrontendPlatform.destroy());
 
   it('should allow multiple subscriptions on the same topic from different clients', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
     const client1 = newClient('client#1');
     const client2 = newClient('client#2');
     const client3 = newClient('client#3');
@@ -50,6 +58,9 @@ describe('TopicSubscriptionRegistry', () => {
   });
 
   it('should allow multiple subscriptions on the same topic from the same client', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
     const client = newClient('client');
     const subscriptionCountCaptor = new ObserveCaptor();
     subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature').subscribe(subscriptionCountCaptor);
@@ -78,15 +89,24 @@ describe('TopicSubscriptionRegistry', () => {
   });
 
   it('should ignore an unsubscribe attempt if there is no subscription for it', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
     subscriptionRegistry.unsubscribe('does-not-exist');
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
   });
 
   it('should throw if trying to observe a non-exact topic', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
     await expect(() => subscriptionRegistry.subscriptionCount$('myhome/livingroom/:measurement')).toThrowError(/TopicObserveError/);
   });
 
   it('should allow multiple subscriptions on different topics from the same client', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
     const client = newClient('client');
 
     const temperatureSubscriptionCountCaptor = new ObserveCaptor();
@@ -127,6 +147,9 @@ describe('TopicSubscriptionRegistry', () => {
   });
 
   it('should count wildcard subscriptions when observing the subscriber count on a topic', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
     const client1 = newClient('client#1');
     const client2 = newClient('client#2');
 
@@ -196,8 +219,16 @@ describe('TopicSubscriptionRegistry', () => {
   });
 
   it('should remove all subscriptions of a client', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
+
+    const clientRegistry = Beans.get(ClientRegistry);
     const client1 = newClient('client#1');
     const client2 = newClient('client#2');
+    clientRegistry.registerClient(client1);
+    clientRegistry.registerClient(client2);
+
     const subscriptionCountCaptor = new ObserveCaptor();
     subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature').subscribe(subscriptionCountCaptor);
 
@@ -213,16 +244,19 @@ describe('TopicSubscriptionRegistry', () => {
 
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(8);
 
-    subscriptionRegistry.unsubscribeClient(client1.id);
+    clientRegistry.unregisterClient(client1);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(4);
 
-    subscriptionRegistry.unsubscribeClient(client2.id);
+    clientRegistry.unregisterClient(client2);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
     await expectEmissions(subscriptionCountCaptor).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 4, 0]);
   });
 
   it('should resolve subscribers which observe the topic \'myhome/livingroom/temperature\'', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
     const client1 = newClient('client#1');
     const client2 = newClient('client#2');
 
@@ -329,6 +363,9 @@ describe('TopicSubscriptionRegistry', () => {
   });
 
   it('should resolve subscribers which observe the topic \'myhome/kitchen/temperature\'', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
     const client1 = newClient('client#1');
     const client2 = newClient('client#2');
 
@@ -459,13 +496,13 @@ describe('TopicSubscriptionRegistry', () => {
   function expectSubscriptionCount(topic: string): {toBe: (expected: number) => Promise<void>} {
     return {
       toBe: async (expected: any): Promise<void> => {
-        await expect(await subscriptionRegistry.subscriptionCount$(topic).pipe(take(1)).toPromise()).withContext(`topic: ${topic}`).toBe(expected);
+        await expect(await Beans.get(TopicSubscriptionRegistry).subscriptionCount$(topic).pipe(take(1)).toPromise()).withContext(`topic: ${topic}`).toBe(expected);
       },
     };
   }
 
   function newClient(id: string): Client {
-    return new Client({id, window: undefined, application: undefined});
+    return new ɵClient(id, {} as Window, {symbolicName: 'app'} as Application, Beans.get(VERSION));
   }
 });
 

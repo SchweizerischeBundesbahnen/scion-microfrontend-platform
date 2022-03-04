@@ -28,7 +28,7 @@ import {ContextService} from './client/context/context-service';
 import {RouterOutletUrlAssigner} from './client/router-outlet/router-outlet-url-assigner';
 import {APP_IDENTITY, IS_PLATFORM_HOST, ɵAPP_CONFIG} from './platform.model';
 import {RelativePathResolver} from './client/router-outlet/relative-path-resolver';
-import {ClientRegistry} from './host/message-broker/client.registry';
+import {ClientRegistry} from './host/client-registry/client.registry';
 import {FocusTracker} from './host/focus/focus-tracker';
 import {PreferredSizeService} from './client/preferred-size/preferred-size-service';
 import {MouseMoveEventDispatcher} from './client/mouse-event/mouse-move-event-dispatcher';
@@ -42,15 +42,19 @@ import {PlatformState, Runlevel} from './platform-state';
 import {BeanInstanceConstructInstructions, Beans} from '@scion/toolkit/bean-manager';
 import {ɵIntentClient} from './client/messaging/ɵintent-client';
 import {ɵMessageClient} from './client/messaging/ɵmessage-client';
-import {PlatformStateRef} from './platform-state-ref';
+import {MicrofrontendPlatformRef} from './microfrontend-platform-ref';
 import {ProgressMonitor} from './host/progress-monitor/progress-monitor';
 import {ActivatorLoadProgressMonitor, ManifestLoadProgressMonitor} from './host/progress-monitor/progress-monitors';
 import {PlatformTopics} from './ɵmessaging.model';
 import {createHostApplicationConfig} from './host/host-application-config-provider';
 import {HostManifestInterceptor, ɵHostManifestInterceptor} from './host/host-manifest-interceptor';
 import {ApplicationConfig} from './host/application-config';
+import {TopicSubscriptionRegistry} from './host/message-broker/topic-subscription.registry';
+import {CLIENT_HEARTBEAT_INTERVAL, STALE_CLIENT_UNREGISTER_DELAY} from './host/client-registry/client.constants';
+import {MicrofrontendPlatformStopper, ɵMicrofrontendPlatformStopper} from './microfrontend-platform-stopper';
+import {VERSION} from './version';
+import {ɵClientRegistry} from './host/client-registry/ɵclient.registry';
 
-window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {once: true});
 /**
  * Current version of the SCION Microfrontend Platform.
  */
@@ -147,13 +151,16 @@ export class MicrofrontendPlatform {
         registerRunlevel2Initializers();
         registerRunlevel3Initializers();
 
-        Beans.register(VERSION, {useValue: version, destroyOrder: Number.MAX_VALUE});
+        Beans.register(VERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
         Beans.register(APP_IDENTITY, {useValue: config.host?.symbolicName || 'host'});
         Beans.register(MicrofrontendPlatformConfig, {useValue: config});
+        Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
         Beans.register(IS_PLATFORM_HOST, {useValue: true});
         Beans.register(HostManifestInterceptor, {useClass: ɵHostManifestInterceptor, multi: true});
-        Beans.register(ClientRegistry);
-        Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: Number.MAX_VALUE});
+        Beans.register(ClientRegistry, {useClass: ɵClientRegistry, destroyOrder: BeanDestroyOrders.CORE});
+        Beans.registerIfAbsent(CLIENT_HEARTBEAT_INTERVAL, {useValue: (config.heartbeatInterval ?? 60) * 10_000});
+        Beans.registerIfAbsent(STALE_CLIENT_UNREGISTER_DELAY, {useValue: 2_000});
+        Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: BeanDestroyOrders.CORE});
         Beans.register(PlatformPropertyService, {eager: true});
         Beans.registerIfAbsent(HttpClient);
         Beans.register(ManifestRegistry, {useClass: ɵManifestRegistry, eager: true});
@@ -163,11 +170,12 @@ export class MicrofrontendPlatform {
         Beans.register(FocusInEventDispatcher, {eager: true});
         Beans.register(MouseMoveEventDispatcher, {eager: true});
         Beans.register(MouseUpEventDispatcher, {eager: true});
-        Beans.register(MessageBroker, {destroyOrder: Number.MAX_VALUE});
+        Beans.register(MessageBroker, {destroyOrder: BeanDestroyOrders.BROKER});
+        Beans.register(TopicSubscriptionRegistry, {destroyOrder: BeanDestroyOrders.BROKER});
         Beans.registerIfAbsent(OutletRouter);
         Beans.registerIfAbsent(RelativePathResolver);
         Beans.registerIfAbsent(RouterOutletUrlAssigner);
-        Beans.register(PlatformStateRef, {useValue: MicrofrontendPlatform, destroyOrder: Number.MAX_VALUE});
+        Beans.register(MicrofrontendPlatformRef, {useValue: MicrofrontendPlatform, destroyOrder: BeanDestroyOrders.CORE});
         Beans.registerIfAbsent(MessageClient, provideMessageClient());
         Beans.registerIfAbsent(IntentClient, provideIntentClient());
         Beans.register(FocusMonitor);
@@ -275,9 +283,10 @@ export class MicrofrontendPlatform {
 
         Beans.register(IS_PLATFORM_HOST, {useValue: false});
         Beans.register(APP_IDENTITY, {useValue: symbolicName});
-        Beans.register(VERSION, {useValue: version, destroyOrder: Number.MAX_VALUE});
+        Beans.register(VERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
+        Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
         Beans.register(PlatformPropertyService, {eager: true});
-        Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: Number.MAX_VALUE});
+        Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: BeanDestroyOrders.CORE});
         Beans.registerIfAbsent(HttpClient);
         Beans.register(BrokerGateway, provideBrokerGateway(connectOptions));
         Beans.registerIfAbsent(MessageClient, provideMessageClient());
@@ -293,7 +302,7 @@ export class MicrofrontendPlatform {
         Beans.register(ContextService);
         Beans.register(ManifestService);
         Beans.register(KeyboardEventDispatcher, {eager: true});
-        Beans.register(PlatformStateRef, {useValue: MicrofrontendPlatform, destroyOrder: Number.MAX_VALUE});
+        Beans.register(MicrofrontendPlatformRef, {useValue: MicrofrontendPlatform, destroyOrder: BeanDestroyOrders.CORE});
       },
     );
 
@@ -466,7 +475,7 @@ function provideBrokerGateway(connectOptions?: ConnectOptions): BeanInstanceCons
     return {
       useFactory: () => new ɵBrokerGateway(connectOptions),
       eager: true,
-      destroyOrder: Number.MAX_VALUE,
+      destroyOrder: BeanDestroyOrders.MESSAGING,
     };
   }
   return {useClass: NullBrokerGateway};
@@ -477,7 +486,7 @@ function provideMessageClient(): BeanInstanceConstructInstructions {
   return {
     useClass: ɵMessageClient,
     eager: true,
-    destroyOrder: Number.MAX_VALUE,
+    destroyOrder: BeanDestroyOrders.MESSAGING,
   };
 }
 
@@ -486,6 +495,26 @@ function provideIntentClient(): BeanInstanceConstructInstructions {
   return {
     useClass: ɵIntentClient,
     eager: true,
-    destroyOrder: Number.MAX_VALUE,
+    destroyOrder: BeanDestroyOrders.MESSAGING,
   };
+}
+
+/**
+ * Specifies destroy orders of platform-specific beans, enabling controlled termination of the platform.
+ *
+ * @ignore
+ */
+enum BeanDestroyOrders {
+  /**
+   * Use for core platform beans which should be destroyed as the very last beans.
+   */
+  CORE = Number.MAX_SAFE_INTEGER,
+  /**
+   * Use for the {@link MessageBroker}.
+   */
+  BROKER = CORE - 1,
+  /**
+   * Use for messaging-related beans.
+   */
+  MESSAGING = BROKER - 1
 }

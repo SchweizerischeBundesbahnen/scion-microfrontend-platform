@@ -15,10 +15,10 @@ import {ApplicationRegistry} from '../application-registry';
 import {ManifestRegistry} from '../manifest-registry/manifest-registry';
 import {Defined} from '@scion/toolkit/util';
 import {UUID} from '@scion/toolkit/uuid';
-import {Logger} from '../../logger';
+import {Logger, LoggingContext} from '../../logger';
 import {runSafe} from '../../safe-runner';
 import {TopicSubscriptionRegistry} from './topic-subscription.registry';
-import {Client, ClientRegistry} from './client.registry';
+import {ClientRegistry} from '../client-registry/client.registry';
 import {RetainedMessageStore} from './retained-message-store';
 import {TopicMatcher} from '../../topic-matcher.util';
 import {chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
@@ -28,8 +28,11 @@ import {APP_IDENTITY, Capability, ParamDefinition} from '../../platform.model';
 import {bufferUntil} from '@scion/toolkit/operators';
 import {ParamMatcher} from './param-matcher';
 import {filterByChannel, filterByTopicChannel, filterByTransport} from '../../operators';
+import {Client} from '../client-registry/client';
 import semver from 'semver';
 import {VERSION} from '../../version';
+import {CLIENT_HEARTBEAT_INTERVAL} from '../client-registry/client.constants';
+import {ɵClient} from '../client-registry/ɵclient';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -54,18 +57,20 @@ export class MessageBroker implements PreDestroy {
   private readonly _clientMessage$: Observable<MessageEvent<MessageEnvelope>>;
 
   private readonly _clientRegistry = Beans.get(ClientRegistry);
-  private readonly _topicSubscriptionRegistry = new TopicSubscriptionRegistry();
+  private readonly _topicSubscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
   private readonly _retainedMessageRegistry = new RetainedMessageStore();
 
   private readonly _applicationRegistry: ApplicationRegistry;
   private readonly _manifestRegistry: ManifestRegistry;
 
-  private _messagePublisher: PublishInterceptorChain<TopicMessage>;
-  private _intentPublisher: PublishInterceptorChain<IntentMessage>;
+  private readonly _messagePublisher: PublishInterceptorChain<TopicMessage>;
+  private readonly _intentPublisher: PublishInterceptorChain<IntentMessage>;
+  private readonly _heartbeatInterval: number;
 
   constructor() {
     this._applicationRegistry = Beans.get(ApplicationRegistry);
     this._manifestRegistry = Beans.get(ManifestRegistry);
+    this._heartbeatInterval = Beans.get(CLIENT_HEARTBEAT_INTERVAL);
 
     // Construct a stream of messages sent by clients.
     this._clientMessage$ = fromEvent<MessageEvent>(window, 'message')
@@ -106,15 +111,20 @@ export class MessageBroker implements PreDestroy {
         takeUntil(this._destroy$),
       )
       .subscribe((event: MessageEvent) => runSafe(() => {
+        // Ignore stale CONNECT request, e.g. if the origin window has been closed or a page with a different origin has been loaded.
+        if (!event.source) {
+          Beans.get(Logger).debug(`[CONNECT] Ignoring stale connect request from "${event.origin}".`);
+          return;
+        }
+
         const envelope: MessageEnvelope<TopicMessage<void>> = event.data;
-        const clientWindow = event.source as Window;
         const clientAppName = envelope.message.headers.get(MessageHeaders.AppSymbolicName);
-        const clientMessageTarget: MessageTarget = {window: clientWindow, origin: event.origin};
+        const clientMessageTarget = new MessageTarget(event);
         const replyTo = envelope.message.headers.get(MessageHeaders.ReplyTo);
 
         if (!clientAppName) {
           const warning = `Client connect attempt rejected by the message broker: Bad request. [origin='${event.origin}']`;
-          Beans.get(Logger).warn(`[WARNING] ${warning}`);
+          Beans.get(Logger).warn(`[CONNECT] ${warning}`);
           sendTopicMessage<ConnackMessage>(clientMessageTarget, {
             topic: replyTo,
             body: {returnCode: 'refused:bad-request', returnMessage: `[MessageClientConnectError] ${warning}`},
@@ -126,7 +136,7 @@ export class MessageBroker implements PreDestroy {
         const application = this._applicationRegistry.getApplication(clientAppName);
         if (!application) {
           const warning = `Client connect attempt rejected by the message broker: Unknown client. [app='${clientAppName}']`;
-          Beans.get(Logger).warn(`[WARNING] ${warning}`);
+          Beans.get(Logger).warn(`[CONNECT] ${warning}`);
           sendTopicMessage<ConnackMessage>(clientMessageTarget, {
             topic: replyTo,
             body: {returnCode: 'refused:rejected', returnMessage: `[MessageClientConnectError] ${warning}`},
@@ -137,7 +147,7 @@ export class MessageBroker implements PreDestroy {
 
         if (event.origin !== application.origin) {
           const warning = `Client connect attempt blocked by the message broker: Wrong origin [actual='${event.origin}', expected='${application.origin}', app='${application.symbolicName}']`;
-          Beans.get(Logger).warn(`[WARNING] ${warning}`);
+          Beans.get(Logger).warn(`[CONNECT] ${warning}`);
 
           sendTopicMessage<ConnackMessage>(clientMessageTarget, {
             topic: replyTo,
@@ -147,7 +157,7 @@ export class MessageBroker implements PreDestroy {
           return;
         }
 
-        const client = new Client({id: UUID.randomUUID(), application, window: clientWindow, version: envelope.message.headers.get(MessageHeaders.Version)});
+        const client = new ɵClient(UUID.randomUUID(), event.source as Window, application, envelope.message.headers.get(MessageHeaders.Version));
         this._clientRegistry.registerClient(client);
 
         // Check if the client is compatible with the platform version of the host.
@@ -155,9 +165,9 @@ export class MessageBroker implements PreDestroy {
           Beans.get(Logger).warn(`[VersionMismatch] Application '${application.symbolicName}' uses a different major version of the @scion/microfrontend-platform than the host application, which may not be compatible. Please upgrade @scion/microfrontend-platform of application '${application.symbolicName}' from version '${(client.version)}' to version '${(Beans.get<string>(VERSION))}'.`, new LoggingContext(application.symbolicName, client.version));
         }
 
-        sendTopicMessage<ConnackMessage>(clientMessageTarget, {
+        sendTopicMessage<ConnackMessage>(client, {
           topic: replyTo,
-          body: {returnCode: 'accepted', clientId: client.id},
+          body: {returnCode: 'accepted', clientId: client.id, heartbeatInterval: this._heartbeatInterval},
           headers: new Map(),
         });
       }));
@@ -179,7 +189,6 @@ export class MessageBroker implements PreDestroy {
       .subscribe((event: MessageEvent<MessageEnvelope>) => runSafe(() => {
         const client = getSendingClient(event);
         this._clientRegistry.unregisterClient(client);
-        this._topicSubscriptionRegistry.unsubscribeClient(client.id);
       }));
   }
 
@@ -338,7 +347,7 @@ export class MessageBroker implements PreDestroy {
         }
 
         // Find capabilities fulfilling the intent, or send an error otherwise.
-        const capabilities = this._manifestRegistry.resolveCapabilitiesByIntent(intentMessage.intent, intentMessage.headers.get(MessageHeaders.AppSymbolicName));
+        const capabilities = this._manifestRegistry.resolveCapabilitiesByIntent(intentMessage.intent, client.application.symbolicName);
         if (capabilities.length === 0) {
           const error = `[NullProviderError] No application found to provide a capability of the type '${intentMessage.intent.type}' and qualifiers '${JSON.stringify(intentMessage.intent.qualifier || {})}'. Maybe, the capability is not public API or the providing application not available.`;
           sendDeliveryStatusError(client, messageId, error);
@@ -359,8 +368,8 @@ export class MessageBroker implements PreDestroy {
           // Warn about the usage of deprecated params.
           if (paramMatchResult.deprecatedParams.length) {
             paramMatchResult.deprecatedParams.forEach(deprecatedParam => {
-              const warning = constructDeprecatedParamWarning(deprecatedParam, {appSymbolicName: intentMessage.headers.get(MessageHeaders.AppSymbolicName)});
-              Beans.get(Logger).warn(`[ParamDeprecationWarning] ${warning}`, intentMessage.intent);
+              const warning = constructDeprecatedParamWarning(deprecatedParam, {appSymbolicName: client.application.symbolicName});
+              Beans.get(Logger).warn(`[DEPRECATION] ${warning}`, new LoggingContext(client.application.symbolicName, client.version), intentMessage.intent);
             });
             // Continue with params of the matcher with deprecated params mapped to their replacement.
             intentMessage.intent.params = paramMatchResult.params!;
@@ -410,14 +419,16 @@ export class MessageBroker implements PreDestroy {
         throw Error(`[RequestReplyError] No client is currently running which could answer the intent '{type=${message.intent.type}, qualifier=${JSON.stringify(message.intent.qualifier)}}'.`);
       }
 
-      clients.forEach(client => {
-        const envelope: MessageEnvelope<IntentMessage> = {
-          transport: MessagingTransport.BrokerToClient,
-          channel: MessagingChannel.Intent,
-          message: message,
-        };
-        client.window.postMessage(envelope, client.application.origin);
-      });
+      clients
+        .filter(client => !client.stale)
+        .forEach(client => runSafe(() => {
+          const envelope: MessageEnvelope<IntentMessage> = {
+            transport: MessagingTransport.BrokerToClient,
+            channel: MessagingChannel.Intent,
+            message: message,
+          };
+          client.window.postMessage(envelope, client.application.origin);
+        }));
     });
   }
 
@@ -432,20 +443,15 @@ export class MessageBroker implements PreDestroy {
       return false;
     }
 
-    destinations.forEach(resolvedTopicDestination => {
-      const envelope: MessageEnvelope<TopicMessage> = {
-        transport: MessagingTransport.BrokerToClient,
-        channel: MessagingChannel.Topic,
-        message: {
-          ...topicMessage,
-          topic: resolvedTopicDestination.topic,
-          params: resolvedTopicDestination.params,
-          headers: new Map(topicMessage.headers).set(MessageHeaders.ɵTopicSubscriberId, resolvedTopicDestination.subscription.subscriberId),
-        },
-      };
+    destinations.forEach(resolvedTopicDestination => runSafe(() => {
       const client: Client = resolvedTopicDestination.subscription.client;
-      client.window.postMessage(envelope, client.application.origin);
-    });
+      sendTopicMessage(client, {
+        ...topicMessage,
+        topic: resolvedTopicDestination.topic,
+        params: resolvedTopicDestination.params,
+        headers: new Map(topicMessage.headers).set(MessageHeaders.ɵTopicSubscriberId, resolvedTopicDestination.subscription.subscriberId),
+      });
+    }));
 
     return true;
   }
@@ -485,32 +491,40 @@ function getSendingClient(event: MessageEvent<MessageEnvelope>): Client {
  */
 function checkOriginTrusted<T extends Message>(): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
   return mergeMap((event: MessageEvent<MessageEnvelope<T>>): Observable<MessageEvent<MessageEnvelope<T>>> => {
-    if (!event.source) {
-      return EMPTY;
-    }
-
     const envelope: MessageEnvelope = event.data;
     const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
     const clientId = envelope.message.headers.get(MessageHeaders.ClientId);
     const client = Beans.get(ClientRegistry).getByClientId(clientId)!;
 
+    // Assert client registration.
     if (!client) {
-      const sender: MessageTarget = {window: event.source as Window, origin: event.origin};
-      const error = `[MessagingError] Message rejected: Client not registered [origin=${event.origin}]`;
-      sendDeliveryStatusError(sender, messageId, error);
+      if (event.source !== null) {
+        const sender = new MessageTarget(event);
+        const error = `[MessagingError] Message rejected: Client not registered [origin=${event.origin}]`;
+        sendDeliveryStatusError(sender, messageId, error);
+      }
       return EMPTY;
     }
 
-    if (event.source !== client.window) {
-      const sender: MessageTarget = {window: event.source as Window, origin: event.origin};
-      const error = `[MessagingError] Message rejected: Wrong window [origin=${event.origin}]`;
-      sendDeliveryStatusError(sender, messageId, error);
-      return EMPTY;
-    }
-
+    // Assert source origin.
     if (event.origin !== client.application.origin) {
-      const sender: MessageTarget = {window: event.source as Window, origin: event.origin};
-      const error = `[MessagingError] Message rejected: Wrong origin [actual=${event.origin}, expected=${client.application.origin}, application=${client.application.symbolicName}]`;
+      if (event.source !== null) {
+        const sender = new MessageTarget(event);
+        const error = `[MessagingError] Message rejected: Wrong origin [actual=${event.origin}, expected=${client.application.origin}, application=${client.application.symbolicName}]`;
+        sendDeliveryStatusError(sender, messageId, error);
+      }
+      return EMPTY;
+    }
+
+    // Assert source window unless the request is stale, i.e., if the origin window has been closed or a site with a different origin has been loaded.
+    // We still process stale requests to enable proper disconnection of the client, such as delivery of messages published by the client during shutdown,
+    // but mark the client as stale and queue it for later removal.
+    if (event.source === null) {
+      client.markStaleAndQueueForRemoval();
+    }
+    else if (event.source !== client.window) {
+      const sender = new MessageTarget(event);
+      const error = `[MessagingError] Message rejected: Wrong window [origin=${event.origin}]`;
       sendDeliveryStatusError(sender, messageId, error);
       return EMPTY;
     }
@@ -556,11 +570,11 @@ function sendTopicMessage<T>(target: MessageTarget | Client, message: TopicMessa
     headers.set(MessageHeaders.AppSymbolicName, Beans.get<string>(APP_IDENTITY));
   }
 
-  if (target instanceof Client) {
-    target.window.postMessage(envelope, target.application.origin);
+  if (target instanceof MessageTarget) {
+    !target.window.closed && target.window.postMessage(envelope, target.origin);
   }
   else {
-    target.window.postMessage(envelope, target.origin);
+    !target.stale && target.window.postMessage(envelope, target.application.origin);
   }
 }
 
@@ -596,7 +610,13 @@ function constructDeprecatedParamWarning(param: ParamDefinition, metadata: {appS
  *
  * @ignore
  */
-interface MessageTarget {
-  window: Window;
-  origin: string;
+class MessageTarget {
+
+  public readonly window: Window;
+  public readonly origin: string;
+
+  constructor(event: MessageEvent) {
+    this.window = event.source as Window;
+    this.origin = event.origin;
+  }
 }

@@ -15,6 +15,7 @@ export * from './lib/platform.model';
 export * from './lib/messaging.model';
 export * from './lib/platform-property-service';
 export * from './lib/microfrontend-platform';
+export * from './lib/microfrontend-platform-stopper';
 export * from './lib/platform-state';
 export * from './lib/logger';
 export * from './lib/client/public_api';

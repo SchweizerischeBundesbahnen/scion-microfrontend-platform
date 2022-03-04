@@ -446,8 +446,8 @@ describe('ManifestRegistry', () => {
 
       // Assert deprecation warning
       expect(readConsoleLog('warn')).toEqual(jasmine.arrayContaining([
-        `[DEPRECATION WARNING] The 'host-app' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param3', required: true}] }`,
-        `[DEPRECATION WARNING] The 'host-app' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param4', required: false}] }`,
+        `[DEPRECATION] The 'host-app' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param3', required: true}] }`,
+        `[DEPRECATION] The 'host-app' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param4', required: false}] }`,
       ]));
 
       // Assert registration
@@ -485,8 +485,8 @@ describe('ManifestRegistry', () => {
 
       // Assert deprecation warning
       expect(readConsoleLog('warn')).toEqual(jasmine.arrayContaining([
-        `[DEPRECATION WARNING] The 'host-app' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param3', required: true}] }`,
-        `[DEPRECATION WARNING] The 'host-app' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param4', required: false}] }`,
+        `[DEPRECATION] The 'host-app' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param3', required: true}] }`,
+        `[DEPRECATION] The 'host-app' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param4', required: false}] }`,
       ]));
 
       // Assert registration

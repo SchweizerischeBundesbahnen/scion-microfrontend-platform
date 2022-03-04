@@ -61,6 +61,12 @@ export abstract class MicrofrontendPlatformConfig {
    */
   public abstract readonly activatorLoadTimeout?: number;
   /**
+   * Interval (in seconds) at which connected clients must send a heartbeat to indicate connectivity to the host.
+   *
+   * By default, if not set, a heartbeat interval of 60s is used.
+   */
+  public abstract readonly heartbeatInterval?: number;
+  /**
    * Defines user-defined properties which can be read by micro applications via {@link PlatformPropertyService}.
    */
   public abstract readonly properties?: {

@@ -114,6 +114,12 @@ You can set a different timeout per application via <<objects::application-confi
 
 By default, no timeout is set, meaning that if an app fails to signal readiness, e.g., due to an error, that app would block the host startup process indefinitely. It is therefore recommended to specify a timeout accordingly.
 
+| heartbeatInterval
+a| `number`
+| no
+| 60
+| Interval (in seconds) at which connected clients must send a heartbeat to indicate connectivity to the host.
+
 | properties
 a| `Dictionary`
 | no
