@@ -9,20 +9,17 @@
  */
 
 /** @ignore */
-const ABSOLUTE_URL_REGEX = new RegExp('^http[s]?:\/\/');
+const ABSOLUTE_URL_REGEX = /^http[s]?:\/\//;
 
 /**
  * @ignore
  */
-export class Urls {
-
-  private constructor() {
-  }
+export namespace Urls {
 
   /**
    * Returns `true` if the given URL is an absolute URL or the 'about:blank' page.
    */
-  public static isAbsoluteUrl(url: string): boolean {
+  export function isAbsoluteUrl(url: string): boolean {
     return url === 'about:blank' || ABSOLUTE_URL_REGEX.test(url);
   }
 
@@ -42,7 +39,7 @@ export class Urls {
    *
    * We observed this behavior in Chromium and Firefox browsers.
    */
-  public static newUrl(url: string, base?: string): URL {
+  export function newUrl(url: string, base?: string): URL {
     if (base) {
       const baseUrl = new URL(base);
       if (baseUrl.pathname && !baseUrl.pathname.endsWith('/')) {
@@ -57,7 +54,7 @@ export class Urls {
   /**
    * Adds a trailing slash to the given URL, if not already present.
    */
-  public static ensureTrailingSlash(url: string): string {
+  export function ensureTrailingSlash(url: string): string {
     if (!url.endsWith('/')) {
       return url + '/';
     }
