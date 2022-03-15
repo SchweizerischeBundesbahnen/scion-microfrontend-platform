@@ -1,3 +1,19 @@
+# [1.0.0-rc.1](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.20...1.0.0-rc.1) (2022-03-15)
+
+
+### Bug Fixes
+
+* **platform:** allow publishing messages during platform shutdown ([0cc9e2d](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/0cc9e2d1617431b934f35686a68358e8e9aecf14)), closes [#83](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/83)
+* **platform:** comply with the API of `MessageClient` and `IntentClient` regarding termination of its Observables ([9bbc4a5](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/9bbc4a525d770ed66a128f0f7d61258db5ed6be8))
+* **platform:** detect and remove stale client registrations ([1b21bad](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/1b21bad34c46bb0bc829e2797c696d7e71f91bf0))
+
+
+### Features
+
+* **platform:** detect the version of @scion/microfrontend-platform an application has installed ([c891223](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/c891223cebc8133ef7196ca52361562acfbfcfa4))
+
+
+
 # [1.0.0-beta.20](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.19...1.0.0-beta.20) (2022-02-01)
 
 
