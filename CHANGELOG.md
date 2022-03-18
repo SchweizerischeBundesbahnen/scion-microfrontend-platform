@@ -1,3 +1,21 @@
+# [1.0.0-rc.2](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.1...1.0.0-rc.2) (2022-03-18)
+
+
+### deps
+
+* **platform:** migrate @scion/microfrontend-platform to RxJS 7.5 ([c194c5a](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/c194c5ad0f34ad8188d676e34fa6c7e991b900ba)), closes [/github.com/angular/angular/blob/master/CHANGELOG.md#1312-2022-01-12](https://github.com//github.com/angular/angular/blob/master/CHANGELOG.md/issues/1312-2022-01-12) [#108](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/108)
+
+
+### BREAKING CHANGES
+
+* **platform:** Upgrading @scion/microfrontend-platform to RxJS 7.x introduced a breaking change.
+
+  The breaking change only refers to updating RxJS to version 7.5. API and communication protocol have not changed or are backward compatible. Host and clients can be updated independently to the new version.
+
+  To migrate, upgrade your application to RxJS 7.5; for detailed migration instructions, refer to https://rxjs.dev/6-to-7-change-summary.
+
+
+
 # [1.0.0-rc.1](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-beta.20...1.0.0-rc.1) (2022-03-15)
 
 
