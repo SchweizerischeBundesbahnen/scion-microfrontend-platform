@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {EMPTY, firstValueFrom, fromEvent, interval, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout} from 'rxjs';
+import {AsyncSubject, EMPTY, firstValueFrom, fromEvent, interval, lastValueFrom, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout} from 'rxjs';
 import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
 import {finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {filterByChannel, filterByMessageHeader, filterByOrigin, filterByTopicChannel, filterByTransport, pluckMessage} from '../../operators';
@@ -15,14 +15,15 @@ import {UUID} from '@scion/toolkit/uuid';
 import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
 import {Logger, NULL_LOGGER} from '../../logger';
 import {Dictionaries} from '@scion/toolkit/util';
-import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {Beans, Initializer, PreDestroy} from '@scion/toolkit/bean-manager';
 import {APP_IDENTITY, IS_PLATFORM_HOST} from '../../platform.model';
-import {PlatformState, Runlevel} from '../../platform-state';
+import {PlatformState} from '../../platform-state';
 import {ConnectOptions} from '../connect-options';
 import {MicrofrontendPlatformRef} from '../../microfrontend-platform-ref';
 import {MessageClient} from '../../client/messaging/message-client';
 import {runSafe} from '../../safe-runner';
 import {VERSION} from '../../version';
+import {stringifyError} from '../../error.util';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.
@@ -34,13 +35,6 @@ import {VERSION} from '../../version';
  * @ignore
  */
 export abstract class BrokerGateway {
-
-  /**
-   * Returns a Promise that resolves after a connection to the broker could be established, or which rejects otherwise,
-   * e.g., due to an error, or because the gateway is not allowed to connect, or because the `brokerDiscoverTimeout`
-   * time has elapsed. The connect timeout timer only starts after entering runlevel 1.
-   */
-  public abstract whenConnected(): Promise<void>;
 
   /**
    * Returns whether this gateway is connected to the message broker. It never throws a broker discovery timeout error.
@@ -88,10 +82,6 @@ export class NullBrokerGateway implements BrokerGateway {
     return Promise.resolve(true);
   }
 
-  public whenConnected(): Promise<void> {
-    return Promise.resolve();
-  }
-
   public get message$(): Observable<MessageEvent<MessageEnvelope>> {
     return NEVER;
   }
@@ -112,7 +102,7 @@ export class NullBrokerGateway implements BrokerGateway {
 /**
  * @ignore
  */
-export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
+export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
 
   /*
    * This Observable is primarily used as a notifier for the `takeUntil` operator to complete Observable subscriptions when the platform is shutting down.
@@ -123,50 +113,44 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
   private _appSymbolicName: string;
   private _brokerDiscoverTimeout: number;
   private _messageDeliveryTimeout: number;
-  private _whenBrokerInfo: Promise<BrokerInfo>;
   private _brokerInfo: BrokerInfo | null = null;
+  private _brokerInfo$ = new AsyncSubject<BrokerInfo>();
+
   public readonly message$ = new Subject<MessageEvent<MessageEnvelope>>();
 
   constructor(connectOptions?: ConnectOptions) {
     this._appSymbolicName = Beans.get<string>(APP_IDENTITY);
     this._brokerDiscoverTimeout = connectOptions?.brokerDiscoverTimeout ?? 10_000;
     this._messageDeliveryTimeout = connectOptions?.messageDeliveryTimeout ?? 10_000;
-    this._whenBrokerInfo = this.initGateway().then(brokerInfo => this._brokerInfo = brokerInfo);
   }
 
-  private async initGateway(): Promise<BrokerInfo> {
-    // If running in the host, wait connecting to the broker until entering runlevel 1, because in runlevel 0,
-    // the broker is initialized.
-    if (Beans.get(IS_PLATFORM_HOST)) {
-      await Beans.whenRunlevel(Runlevel.One);
+  public async init(): Promise<void> {
+    try {
+      const brokerInfo = await this.connectToBroker();
+      this.installBrokerMessageListener(brokerInfo);
+      this.installHeartbeatPublisher(brokerInfo);
+      this._brokerInfo = brokerInfo;
+      this._brokerInfo$.next(brokerInfo);
+      this._brokerInfo$.complete();
     }
-
-    // Connect to the broker.
-    const brokerInfo = await this.connectToBroker();
-
-    // Subscribes to messages sent to this client.
-    this.installBrokerMessageListener(brokerInfo);
-    // Periodically send a heartbeat to indicate to be connected to the host.
-    this.installHeartbeatPublisher(brokerInfo);
-
-    return brokerInfo;
+    catch (error) {
+      this._brokerInfo$.error(error);
+      throw error;
+    }
   }
 
   public isConnected(): Promise<boolean> {
-    return this._whenBrokerInfo.then(() => true).catch(() => false);
-  }
-
-  public async whenConnected(): Promise<void> {
-    await this._whenBrokerInfo;
+    return lastValueFrom(this._brokerInfo$).then(() => true).catch(() => false);
   }
 
   public async postMessage(channel: MessagingChannel, message: Message): Promise<void> {
     if (isPlatformStopped()) {
-      throw Error('[MessageDispatchError] Platform is stopped. Messages cannot be published or received.');
+      throw GatewayErrors.PLATFORM_STOPPED_ERROR;
     }
 
-    // Wait until connected to the broker.
-    const brokerInfo = this._brokerInfo || await this._whenBrokerInfo; // Do not spawn a microtask when broker info is already available.
+    // If not connected to the broker, wait until connected. If connected, continue execution immediately
+    // without spawning a microtask. Otherwise, messages cannot be published during platform shutdown.
+    const brokerInfo = this._brokerInfo || await lastValueFrom(this._brokerInfo$);
 
     const messageId = UUID.randomUUID();
     const envelope: MessageEnvelope = {
@@ -188,7 +172,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
           filterByTopicChannel<MessageDeliveryStatus>(messageId),
           take(1),
           pluckMessage(),
-          timeout({first: this._messageDeliveryTimeout, with: () => throwError(() => `[MessageDispatchError] Broker did not report message delivery state within the ${this._messageDeliveryTimeout}ms timeout. [envelope=${stringifyEnvelope(envelope)}]`)}),
+          timeout({first: this._messageDeliveryTimeout, with: () => throwError(() => GatewayErrors.MESSAGE_DISPATCH_ERROR(this._messageDeliveryTimeout, envelope))}),
           mergeMap(statusMessage => statusMessage.body!.ok ? EMPTY : throwError(() => statusMessage.body!.details)),
           takeUntil(this._platformStopping$),
         )
@@ -211,7 +195,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
   public requestReply$<T = any>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
     return new Observable((observer: Observer<TopicMessage>): TeardownLogic => {
       if (isPlatformStopped()) {
-        observer.error('[MessageDispatchError] Platform is stopped. Messages cannot be published or received.');
+        observer.error(GatewayErrors.PLATFORM_STOPPED_ERROR);
         return noop;
       }
 
@@ -242,7 +226,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
   public subscribeToTopic$<T>(topic: string): Observable<TopicMessage<T>> {
     return new Observable((observer: Observer<TopicMessage>): TeardownLogic => {
       if (isPlatformStopped()) {
-        observer.error('[MessageDispatchError] Platform is stopped. Messages cannot be published or received.');
+        observer.error(GatewayErrors.PLATFORM_STOPPED_ERROR);
         return noop;
       }
 
@@ -349,8 +333,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
             origin: messageEvent.origin,
           });
         }),
-        timeout({first: this._brokerDiscoverTimeout, with: () => throwError(() => `[ClientConnectError] Message broker not discovered within the ${this._brokerDiscoverTimeout}ms timeout. Messages cannot be published or received.`)}),
-        tap({error: error => Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(error)}), // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
+        timeout({first: this._brokerDiscoverTimeout, with: () => throwError(() => GatewayErrors.BROKER_DISCOVER_ERROR(this._brokerDiscoverTimeout))}),
+        tap({error: error => Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(stringifyError(error))}), // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
         takeUntil(this._platformStopping$),
       ));
 
@@ -395,7 +379,6 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
 
     try {
       this._brokerInfo.window.postMessage(disconnectMessage, this._brokerInfo.origin);
-      this._brokerInfo = null;
     }
     catch (error) {
       Beans.get(Logger, {orElseGet: NULL_LOGGER}).warn(`[ClientDisconnectError] Failed to disconnect from the broker. Caused by: ${error}`);
@@ -425,8 +408,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy {
    * when the platform shuts down.
    */
   public preDestroy(): void {
-    this._platformStopping$.next();
     this.disconnectFromBroker();
+    this._platformStopping$.next();
   }
 }
 
@@ -483,4 +466,18 @@ interface BrokerInfo {
   heartbeatInterval: number;
   origin: string;
   window: Window;
+}
+
+/** @ignore*/
+namespace GatewayErrors {
+
+  export const PLATFORM_STOPPED_ERROR = Error('[GatewayError] Platform is stopped. Messages cannot be published or received.');
+
+  export function MESSAGE_DISPATCH_ERROR(timeout: number, message: MessageEnvelope): Error {
+    return Error(`[GatewayError] No acknowledgement received within ${timeout}ms for a message sent to the broker. [msg=${stringifyEnvelope(message)}]`);
+  }
+
+  export function BROKER_DISCOVER_ERROR(timeout: number): Error {
+    return Error(`[GatewayError] Message broker not discovered within ${timeout}ms. Messages cannot be published or received.`);
+  }
 }

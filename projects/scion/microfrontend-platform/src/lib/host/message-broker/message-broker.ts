@@ -22,7 +22,7 @@ import {ClientRegistry} from '../client-registry/client.registry';
 import {RetainedMessageStore} from './retained-message-store';
 import {TopicMatcher} from '../../topic-matcher.util';
 import {chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
-import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {Beans, Initializer, PreDestroy} from '@scion/toolkit/bean-manager';
 import {Runlevel} from '../../platform-state';
 import {APP_IDENTITY, Capability, ParamDefinition} from '../../platform.model';
 import {bufferUntil} from '@scion/toolkit/operators';
@@ -52,7 +52,7 @@ import {stringifyError} from '../../error.util';
  *
  * @ignore
  */
-export class MessageBroker implements PreDestroy {
+export class MessageBroker implements Initializer, PreDestroy {
 
   private readonly _destroy$ = new Subject<void>();
   private readonly _clientMessage$: Observable<MessageEvent<MessageEnvelope>>;
@@ -100,6 +100,10 @@ export class MessageBroker implements PreDestroy {
     // Assemble message interceptors to a chain of handlers which are called one after another. The publisher is added as terminal handler.
     this._messagePublisher = this.createMessagePublisher();
     this._intentPublisher = this.createIntentPublisher();
+  }
+
+  public init(): Promise<void> {
+    return Promise.resolve();
   }
 
   private installClientConnectListener(): void {

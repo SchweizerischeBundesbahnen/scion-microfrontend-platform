@@ -146,11 +146,7 @@ export class MicrofrontendPlatform {
     return MicrofrontendPlatform.startPlatform(async () => {
         MicrofrontendPlatform.installHostStartupProgressMonitor();
 
-        registerRunlevel0Initializers();
-        registerRunlevel1Initializers();
-        registerRunlevel2Initializers();
-        registerRunlevel3Initializers();
-
+        // Register platform beans.
         Beans.register(VERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
         Beans.register(APP_IDENTITY, {useValue: config.host?.symbolicName || 'host'});
         Beans.register(MicrofrontendPlatformConfig, {useValue: config});
@@ -161,7 +157,7 @@ export class MicrofrontendPlatform {
         Beans.registerIfAbsent(CLIENT_HEARTBEAT_INTERVAL, {useValue: (config.heartbeatInterval ?? 60) * 10_000});
         Beans.registerIfAbsent(STALE_CLIENT_UNREGISTER_DELAY, {useValue: 2_000});
         Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: BeanDestroyOrders.CORE});
-        Beans.register(PlatformPropertyService, {eager: true});
+        Beans.register(PlatformPropertyService);
         Beans.registerIfAbsent(HttpClient);
         Beans.register(ManifestRegistry, {useClass: ɵManifestRegistry, eager: true});
         Beans.register(ApplicationRegistry, {eager: true});
@@ -182,10 +178,18 @@ export class MicrofrontendPlatform {
         Beans.register(PreferredSizeService);
         Beans.register(ManifestService);
         Beans.register(KeyboardEventDispatcher, {eager: true});
-        Beans.register(BrokerGateway, provideBrokerGateway({
+
+        // Register broker gateway.
+        registerBrokerGateway({
           messageDeliveryTimeout: config.host?.messageDeliveryTimeout,
           brokerDiscoverTimeout: config.host?.brokerDiscoverTimeout,
-        }));
+          connectRunlevel: Runlevel.One, // Connect to the broker in runlevel 1, that is, after registration of the applications.
+        });
+
+        // Register initializers.
+        registerRunlevel0Initializers();
+        registerRunlevel2Initializers();
+        registerRunlevel3Initializers();
 
         // Register app configs under the symbol `ɵAPP_CONFIG` in the bean manager.
         new Array<ApplicationConfig>()
@@ -201,48 +205,26 @@ export class MicrofrontendPlatform {
      */
     function registerRunlevel0Initializers(): void {
       // Construct the message broker to buffer connect requests of micro applications.
-      Beans.registerInitializer({useFunction: async () => void (Beans.get(MessageBroker)), runlevel: Runlevel.Zero});
+      Beans.registerInitializer({useExisting: MessageBroker, runlevel: Runlevel.Zero});
       // Fetch manifests.
       Beans.registerInitializer({useClass: ManifestCollector, runlevel: Runlevel.Zero});
-    }
-
-    /**
-     * Registers initializers to run in runlevel 1.
-     */
-    function registerRunlevel1Initializers(): void {
-      // Wait until connected to the message broker, or reject if the maximal broker discovery timeout has elapsed.
-      Beans.registerInitializer({
-        useFunction: () => Beans.get(BrokerGateway).whenConnected(),
-        runlevel: Runlevel.One,
-      });
     }
 
     /**
      * Registers initializers to run in runlevel 2.
      */
     function registerRunlevel2Initializers(): void {
-      // After messaging is enabled, publish platform properties as retained message.
+      // Make platform properties available to micro applications.
       Beans.registerInitializer({
         useFunction: () => Beans.get(MessageClient).publish(PlatformTopics.PlatformProperties, config.properties || {}, {retain: true}),
         runlevel: Runlevel.Two,
       });
-      // After messaging is enabled, publish registered applications as retained message.
+      // Make applications available to micro applications.
       Beans.registerInitializer({
         useFunction: () => Beans.get(MessageClient).publish(PlatformTopics.Applications, Beans.get(ApplicationRegistry).getApplications(), {retain: true}),
         runlevel: Runlevel.Two,
       });
-      // Wait until obtained platform properties so that they can be accessed synchronously by the application via `PlatformPropertyService#properties`.
-      Beans.registerInitializer({
-        useFunction: () => Beans.get(PlatformPropertyService).whenPropertiesLoaded,
-        runlevel: Runlevel.Two,
-      });
-      // Wait until obtained registered applications so that they can be accessed synchronously by the application via `ManifestService#applications`.
-      Beans.registerInitializer({
-        useFunction: () => Beans.get(ManifestService).whenApplicationsLoaded,
-        runlevel: Runlevel.Two,
-      });
-      // Ensure the SciRouterOutlet to be instantiated after initialization of the platform.
-      // Otherwise, the router outlet construction may fail or result in unexpected behavior, for example, because beans are not yet registered.
+      // Register the router outlet after beans have been registered and messaging is enabled.
       Beans.registerInitializer({
         useFunction: () => SciRouterOutletElement.define(),
         runlevel: Runlevel.Two,
@@ -253,6 +235,16 @@ export class MicrofrontendPlatform {
      * Registers initializers to run in runlevel 3.
      */
     function registerRunlevel3Initializers(): void {
+      // Wait until obtained platform properties so that they can be accessed synchronously by the application via `PlatformPropertyService#properties`.
+      Beans.registerInitializer({
+        useExisting: PlatformPropertyService,
+        runlevel: Runlevel.Three,
+      });
+      // Wait until obtained registered applications so that they can be accessed synchronously by the application via `ManifestService#applications`.
+      Beans.registerInitializer({
+        useExisting: ManifestService,
+        runlevel: Runlevel.Three,
+      });
       // Install activator microfrontends.
       Beans.registerInitializer({useClass: ActivatorInstaller, runlevel: Runlevel.Three});
     }
@@ -278,17 +270,14 @@ export class MicrofrontendPlatform {
     return MicrofrontendPlatform.startPlatform(async () => {
         this.installClientStartupProgressMonitor();
 
-        registerRunlevel0Initializers();
-        registerRunlevel2Initializers();
-
+        // Register platform beans.
         Beans.register(IS_PLATFORM_HOST, {useValue: false});
         Beans.register(APP_IDENTITY, {useValue: symbolicName});
         Beans.register(VERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
         Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
-        Beans.register(PlatformPropertyService, {eager: true});
+        Beans.register(PlatformPropertyService);
         Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: BeanDestroyOrders.CORE});
         Beans.registerIfAbsent(HttpClient);
-        Beans.register(BrokerGateway, provideBrokerGateway(connectOptions));
         Beans.registerIfAbsent(MessageClient, provideMessageClient());
         Beans.registerIfAbsent(IntentClient, provideIntentClient());
         Beans.registerIfAbsent(OutletRouter);
@@ -303,19 +292,14 @@ export class MicrofrontendPlatform {
         Beans.register(ManifestService);
         Beans.register(KeyboardEventDispatcher, {eager: true});
         Beans.register(MicrofrontendPlatformRef, {useValue: MicrofrontendPlatform, destroyOrder: BeanDestroyOrders.CORE});
+
+        // Register broker gateway.
+        registerBrokerGateway({...connectOptions, connectRunlevel: Runlevel.Zero});
+
+        // Register initializers.
+        registerRunlevel2Initializers();
       },
     );
-
-    /**
-     * Registers initializers to run in runlevel 0.
-     */
-    function registerRunlevel0Initializers(): void {
-      // Wait until connected to the message broker, or reject if the maximal broker discovery timeout has elapsed.
-      Beans.registerInitializer({
-        useFunction: () => Beans.get(BrokerGateway).whenConnected(),
-        runlevel: Runlevel.Zero,
-      });
-    }
 
     /**
      * Registers initializers to run in runlevel 2.
@@ -323,12 +307,12 @@ export class MicrofrontendPlatform {
     function registerRunlevel2Initializers(): void {
       // Wait until obtained platform properties so that they can be accessed synchronously by the application via `PlatformPropertyService#properties`.
       Beans.registerInitializer({
-        useFunction: () => Beans.get(PlatformPropertyService).whenPropertiesLoaded,
+        useExisting: PlatformPropertyService,
         runlevel: Runlevel.Two,
       });
       // Wait until obtained registered applications so that they can be accessed synchronously by the application via `ManifestService#applications`.
       Beans.registerInitializer({
-        useFunction: () => Beans.get(ManifestService).whenApplicationsLoaded,
+        useExisting: ManifestService,
         runlevel: Runlevel.Two,
       });
       // Ensure the SciRouterOutlet to be instantiated after initialization of the platform.
@@ -474,15 +458,18 @@ export class MicrofrontendPlatform {
 }
 
 /** @ignore */
-function provideBrokerGateway(connectOptions?: ConnectOptions): BeanInstanceConstructInstructions {
-  if (connectOptions?.connect ?? true) {
-    return {
+function registerBrokerGateway(connectOptions: ConnectOptions & {connectRunlevel: number}): void {
+  if (connectOptions.connect ?? true) {
+    Beans.register(ɵBrokerGateway, {
       useFactory: () => new ɵBrokerGateway(connectOptions),
-      eager: true,
       destroyOrder: BeanDestroyOrders.MESSAGING,
-    };
+    });
+    Beans.register(BrokerGateway, {useExisting: ɵBrokerGateway});
+    Beans.registerInitializer({useExisting: ɵBrokerGateway, runlevel: connectOptions.connectRunlevel});
   }
-  return {useClass: NullBrokerGateway};
+  else {
+    Beans.register(BrokerGateway, {useClass: NullBrokerGateway});
+  }
 }
 
 /** @ignore */
