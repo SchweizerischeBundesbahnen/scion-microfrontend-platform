@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {firstValueFrom, lastValueFrom, Observable, Subject} from 'rxjs';
+import {firstValueFrom, lastValueFrom, Observable} from 'rxjs';
 import {MessageClient} from '../messaging/message-client';
 import {Application, Capability, Intention} from '../../platform.model';
 import {take} from 'rxjs/operators';
@@ -16,7 +16,7 @@ import {PlatformTopics} from '../../ɵmessaging.model';
 import {ManifestRegistryTopics} from '../../host/manifest-registry/ɵmanifest-registry';
 import {ManifestObjectFilter} from '../../host/manifest-registry/manifest-object-store';
 import {mapToBody} from '../../messaging.model';
-import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {Beans, Initializer} from '@scion/toolkit/bean-manager';
 import {BrokerGateway, NullBrokerGateway} from '../messaging/broker-gateway';
 
 /**
@@ -32,22 +32,19 @@ import {BrokerGateway, NullBrokerGateway} from '../messaging/broker-gateway';
  * @category Manifest
  * @category Intention API
  */
-export class ManifestService implements PreDestroy {
+export class ManifestService implements Initializer {
 
-  private _destroy$ = new Subject<void>();
   private _applications: Application[] = [];
 
-  /**
-   * Promise that resolves when loaded the applications from the host.
-   * If messaging is disabled, the Promise resolves immediately.
-   *
-   * @internal
-   */
-  public whenApplicationsLoaded: Promise<void>;
-
-  constructor() {
+  public async init(): Promise<void> {
     const messagingDisabled = Beans.get(BrokerGateway) instanceof NullBrokerGateway;
-    this.whenApplicationsLoaded = messagingDisabled ? Promise.resolve() : this.requestApplications();
+    if (messagingDisabled) {
+      return;
+    }
+
+    // Wait until obtained registered applications so that they can be accessed synchronously by the application via `ManifestService#applications`.
+    const applications$ = Beans.get(MessageClient).observe$<Application[]>(PlatformTopics.Applications);
+    this._applications = await firstValueFrom(applications$.pipe(mapToBody()));
   }
 
   /**
@@ -183,17 +180,5 @@ export class ManifestService implements PreDestroy {
         complete: resolve,
       });
     });
-  }
-
-  private async requestApplications(): Promise<void> {
-    const applications$ = Beans.get(MessageClient).observe$<Application[]>(PlatformTopics.Applications);
-    this._applications = await firstValueFrom(applications$.pipe(mapToBody()));
-  }
-
-  /**
-   * @ignore
-   */
-  public preDestroy(): void {
-    this._destroy$.next();
   }
 }

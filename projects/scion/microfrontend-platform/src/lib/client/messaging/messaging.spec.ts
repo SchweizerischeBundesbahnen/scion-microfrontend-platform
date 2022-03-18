@@ -709,7 +709,7 @@ describe('Messaging', () => {
     const startup = MicrofrontendPlatform.connectToHost('client-app', {brokerDiscoverTimeout: 250});
     await expectPromise(startup).toReject(/MicrofrontendPlatformStartupError/);
 
-    await expect(loggerSpy).toHaveBeenCalledWith('[ClientConnectError] Message broker not discovered within the 250ms timeout. Messages cannot be published or received.');
+    await expect(loggerSpy).toHaveBeenCalledWith('[GatewayError] Message broker not discovered within 250ms. Messages cannot be published or received.');
   });
 
   it('should not error with `ClientConnectError` when starting the platform host and if initializers in runlevel 0 take a long time to complete, e.g., to fetch manifests', async () => {

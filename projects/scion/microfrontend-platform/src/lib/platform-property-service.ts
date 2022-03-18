@@ -12,9 +12,9 @@ import {MessageClient} from './client/messaging/message-client';
 import {PlatformTopics} from './ɵmessaging.model';
 import {map} from 'rxjs/operators';
 import {Dictionary, Maps} from '@scion/toolkit/util';
-import {firstValueFrom, Subject} from 'rxjs';
+import {firstValueFrom} from 'rxjs';
 import {mapToBody} from './messaging.model';
-import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {Beans, Initializer} from '@scion/toolkit/bean-manager';
 import {BrokerGateway, NullBrokerGateway} from './client/messaging/broker-gateway';
 
 /**
@@ -22,22 +22,19 @@ import {BrokerGateway, NullBrokerGateway} from './client/messaging/broker-gatewa
  *
  * @category Platform
  */
-export class PlatformPropertyService implements PreDestroy {
+export class PlatformPropertyService implements Initializer {
 
-  private _destroy$ = new Subject<void>();
   private _properties = new Map<string, any>();
 
-  /**
-   * Promise that resolves when loaded the properties from the host.
-   * If messaging is disabled, the Promise resolves immediately.
-   *
-   * @internal
-   */
-  public whenPropertiesLoaded: Promise<void>;
-
-  constructor() {
+  public async init(): Promise<void> {
     const messagingDisabled = Beans.get(BrokerGateway) instanceof NullBrokerGateway;
-    this.whenPropertiesLoaded = messagingDisabled ? Promise.resolve() : this.requestProperties();
+    if (messagingDisabled) {
+      return;
+    }
+
+    // Wait until obtained platform properties so that they can be accessed synchronously by the application via `PlatformPropertyService#properties`.
+    const properties$ = Beans.get(MessageClient).observe$<Dictionary>(PlatformTopics.PlatformProperties);
+    this._properties = await firstValueFrom(properties$.pipe(mapToBody(), map(properties => Maps.coerce(properties))));
   }
 
   /**
@@ -67,17 +64,5 @@ export class PlatformPropertyService implements PreDestroy {
    */
   public properties(): ReadonlyMap<string, any> {
     return this._properties;
-  }
-
-  private async requestProperties(): Promise<void> {
-    const properties$ = Beans.get(MessageClient).observe$<Dictionary>(PlatformTopics.PlatformProperties);
-    this._properties = await firstValueFrom(properties$.pipe(mapToBody(), map(properties => Maps.coerce(properties))));
-  }
-
-  /**
-   * @ignore
-   */
-  public preDestroy(): void {
-    this._destroy$.next();
   }
 }
