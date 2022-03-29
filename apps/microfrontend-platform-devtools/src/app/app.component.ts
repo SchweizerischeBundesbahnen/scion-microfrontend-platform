@@ -14,7 +14,8 @@ import {animate, style, transition, trigger} from '@angular/animations';
 import {ShellService} from './shell.service';
 
 export function isRunningStandalone(): boolean {
-  return window.parent === window;
+  // return window.parent === window;
+  return false;
 }
 
 @Component({
