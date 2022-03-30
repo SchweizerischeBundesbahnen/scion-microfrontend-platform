@@ -114,9 +114,8 @@ export class OutletRouter {
     const outlet = await this.resolveOutlet(options);
     const outletUrlTopic = RouterOutlets.urlTopic(outlet);
     const navigationUrl = this.computeNavigationUrl(url, options);
-    const messageClient = options && options.messageClient || Beans.get(MessageClient);
 
-    return messageClient.publish(outletUrlTopic, navigationUrl, {
+    return Beans.get(MessageClient).publish(outletUrlTopic, navigationUrl, {
       retain: true,
       headers: new Map<string, any>().set(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, options?.pushStateToSessionHistoryStack ?? false),
     });
