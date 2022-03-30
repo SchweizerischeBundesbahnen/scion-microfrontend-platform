@@ -11,7 +11,7 @@ import {BrowserModule} from '@angular/platform-browser';
 import {APP_INITIALIZER, NgModule, NgZone} from '@angular/core';
 
 import {AppRoutingModule} from './app-routing.module';
-import {AppComponent, isRunningStandalone} from './app.component';
+import {AppComponent} from './app.component';
 import {IntentClient, ManifestService, MessageClient, MicrofrontendPlatform, OutletRouter, PlatformState} from '@scion/microfrontend-platform';
 import {NgZoneIntentClientDecorator, NgZoneMessageClientDecorator} from './ng-zone-decorators';
 import {AppDetailsComponent} from './app-details/app-details.component';
@@ -97,10 +97,6 @@ export class AppModule {
 
 export function providePlatformInitializerFn(ngZoneMessageClientDecorator: NgZoneMessageClientDecorator, ngZoneIntentClientDecorator: NgZoneIntentClientDecorator, zone: NgZone): () => Promise<void> {
   return (): Promise<void> => {
-    if (isRunningStandalone()) {
-      return Promise.resolve();
-    }
-
     // Make the platform to run with Angular
     MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
       Beans.registerDecorator(MessageClient, {useValue: ngZoneMessageClientDecorator});
@@ -108,6 +104,6 @@ export function providePlatformInitializerFn(ngZoneMessageClientDecorator: NgZon
     });
 
     // Run the microfrontend platform as client app
-    return zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost('devtools'));
+    return zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost('devtools').catch(() => null));
   };
 }

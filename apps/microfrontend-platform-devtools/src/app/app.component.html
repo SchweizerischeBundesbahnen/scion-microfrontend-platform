@@ -1,4 +1,4 @@
-<sci-sashbox *ngIf="isRunningInMicrofrontendPlatform(); else usageMessage">
+<sci-sashbox *ngIf="connnectedToHost | async; else usageMessage">
   <ng-template sciSash *ngIf="showPrimaryOutlet" size="1">
     <section>
       <header class="primary" (click)="onOpenMenuClick()">
@@ -27,6 +27,11 @@
 <ng-template #usageMessage>
   <section class="usage-message">
     <header>Welcome to SCION Microfrontend Platform DevTools</header>
-    Embed SCION DevTools as microfrontend in your application to inspect micro applications and their dependencies.
+    <p>Embed SCION DevTools as microfrontend in your application to inspect micro applications and their dependencies.</p>
+    <p>DevTools could not connect to the Microfrontend Platform Host.
+    Did you forget to register the DevTools application in the platform?
+    For more information, please visit our <a href="https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:dev-tools">Developer Guide</a>.
+    </p>
+    <img src="assets/scion-microfrontend-platform-logo.svg" alt="SCION Microfrontend Platform" class="logo">
   </section>
 </ng-template>
