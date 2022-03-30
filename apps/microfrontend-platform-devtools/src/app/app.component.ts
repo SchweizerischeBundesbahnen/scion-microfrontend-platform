@@ -12,10 +12,7 @@ import {Observable, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {animate, style, transition, trigger} from '@angular/animations';
 import {ShellService} from './shell.service';
-
-export function isRunningStandalone(): boolean {
-  return window.parent === window;
-}
+import {MicrofrontendPlatform} from '@scion/microfrontend-platform';
 
 @Component({
   selector: 'devtools-root',
@@ -37,6 +34,7 @@ export class AppComponent implements OnDestroy {
   public showPrimaryOutlet = true;
   public showDetailsOutlet = false;
   public menuOpen = false;
+  public readonly connnectedToHost = MicrofrontendPlatform.isConnectedToHost();
 
   private _destroy$ = new Subject<void>();
 
@@ -65,10 +63,6 @@ export class AppComponent implements OnDestroy {
 
   public get detailsTitle$(): Observable<string> {
     return this._shellService.detailsTitle$;
-  }
-
-  public isRunningInMicrofrontendPlatform(): boolean {
-    return !isRunningStandalone();
   }
 
   public onCollapsePrimaryClick(): void {
