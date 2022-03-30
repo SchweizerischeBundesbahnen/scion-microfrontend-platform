@@ -122,6 +122,7 @@ export class MessageBroker implements Initializer, PreDestroy {
           return;
         }
 
+        const eventSource: Window = event.source as Window;
         const envelope: MessageEnvelope<TopicMessage<void>> = event.data;
         const clientAppName = envelope.message.headers.get(MessageHeaders.AppSymbolicName);
         const clientMessageTarget = new MessageTarget(event);
@@ -162,7 +163,19 @@ export class MessageBroker implements Initializer, PreDestroy {
           return;
         }
 
-        const client = new ɵClient(UUID.randomUUID(), event.source as Window, application, envelope.message.headers.get(MessageHeaders.Version));
+        // Check if the client is already connected. If already connected, do nothing. A client can potentially initiate multiple connect requests, for example,
+        // when not receiving connect confirmation in time.
+        const currentClient = this._clientRegistry.getByWindow(eventSource);
+        if (currentClient && currentClient.application.origin === event.origin && currentClient.application.symbolicName === application.symbolicName) {
+          sendTopicMessage<ConnackMessage>(currentClient, {
+            topic: replyTo,
+            body: {returnCode: 'accepted', clientId: currentClient.id, heartbeatInterval: this._heartbeatInterval},
+            headers: new Map(),
+          });
+          return;
+        }
+
+        const client = new ɵClient(UUID.randomUUID(), eventSource, application, envelope.message.headers.get(MessageHeaders.Version));
         this._clientRegistry.registerClient(client);
 
         // Check if the client is compatible with the platform version of the host.
