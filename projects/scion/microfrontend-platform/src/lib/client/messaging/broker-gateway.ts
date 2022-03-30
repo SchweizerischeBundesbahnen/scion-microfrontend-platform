@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {AsyncSubject, EMPTY, firstValueFrom, fromEvent, interval, lastValueFrom, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout} from 'rxjs';
+import {AsyncSubject, EMPTY, firstValueFrom, fromEvent, interval, lastValueFrom, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout, timer} from 'rxjs';
 import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
 import {finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {filterByChannel, filterByMessageHeader, filterByOrigin, filterByTopicChannel, filterByTransport, pluckMessage} from '../../operators';
@@ -100,6 +100,17 @@ export class NullBrokerGateway implements BrokerGateway {
 }
 
 /**
+ * Specifies the interval for sending connect requests to parent windows. If not receiving acknowledgment within the
+ * specified interval, the gateway will try to connect anew.
+ *
+ * A single connect request may not be sufficient if, for example, the microfrontends are to be integrated into a rich client.
+ * For example, an integrator may want to bridge messages to a remote host. If the integrator cannot hook into the message bus
+ * in time, the client's connect request may be lost. Therefore, the gateway initiates the connect request at regular
+ * intervals until it receives an acknowledgement.
+ */
+const CONNECT_INTERVAL = 25;
+
+/**
  * @ignore
  */
 export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
@@ -141,6 +152,10 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
 
   public isConnected(): Promise<boolean> {
     return lastValueFrom(this._brokerInfo$).then(() => true).catch(() => false);
+  }
+
+  public get brokerInfo(): BrokerInfo | null {
+    return this._brokerInfo;
   }
 
   public async postMessage(channel: MessagingChannel, message: Message): Promise<void> {
@@ -315,7 +330,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
    * @return A Promise that, when connected, resolves to information about the broker, or that rejects if the connect attempt
    * failed, either because the broker could not be found or because the application is not allowed to connect.
    */
-  private connectToBroker(): Promise<BrokerInfo> {
+  public connectToBroker(): Promise<BrokerInfo> {
     const replyTo = UUID.randomUUID();
     const connectPromise = firstValueFrom(fromEvent<MessageEvent>(window, 'message')
       .pipe(
@@ -351,7 +366,13 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       },
     };
 
-    this.collectWindowHierarchy().forEach(window => window.postMessage(connectMessage, '*'));
+    const windowHierarchy = this.collectWindowHierarchy();
+    timer(0, CONNECT_INTERVAL)
+      .pipe(takeUntil(connectPromise.catch(() => null)))
+      .subscribe(() => {
+        windowHierarchy.forEach(window => window.postMessage(connectMessage, '*'));
+      });
+
     return connectPromise;
   }
 

@@ -10,13 +10,10 @@
 
 import {MicrofrontendPlatform} from '../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {MessageClient} from './messaging/message-client';
-import {firstValueFrom, Observer} from 'rxjs';
-import {UUID} from '@scion/toolkit/uuid';
-import {map} from 'rxjs/operators';
-import {MessageHeaders} from '../messaging.model';
+import {Observer} from 'rxjs';
 import {MicrofrontendPlatformStopper} from '../microfrontend-platform-stopper';
 import {VERSION} from '../version';
+import {ɵBrokerGateway} from './messaging/broker-gateway';
 
 export async function connectToHost({symbolicName, disconnectOnUnloadDisabled = false, version = undefined}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   if (disconnectOnUnloadDisabled) {
@@ -26,27 +23,19 @@ export async function connectToHost({symbolicName, disconnectOnUnloadDisabled = 
     Beans.register(VERSION, {useValue: version});
   }
   await MicrofrontendPlatform.connectToHost(symbolicName);
-  await sendCurrentClientIdToFixture(observer);
+  observer.next(Beans.get(ɵBrokerGateway).brokerInfo.clientId);
 }
 
 export async function connectToHostThenStopPlatform({symbolicName}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatform.connectToHost(symbolicName);
-  await sendCurrentClientIdToFixture(observer);
+  observer.next(Beans.get(ɵBrokerGateway).brokerInfo.clientId);
   await MicrofrontendPlatform.destroy();
 }
 
 export async function connectToHostThenLocationHref({symbolicName, locationHref}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatform.connectToHost(symbolicName);
-  await sendCurrentClientIdToFixture(observer);
+  observer.next(Beans.get(ɵBrokerGateway).brokerInfo.clientId);
   window.location.href = locationHref;
-}
-
-async function sendCurrentClientIdToFixture(observer: Observer<string>): Promise<void> {
-  const uuid = UUID.randomUUID();
-  const uuid$ = Beans.get(MessageClient).observe$(uuid).pipe(map(message => message.headers.get(MessageHeaders.ClientId)));
-  const clientId = firstValueFrom(uuid$);
-  await Beans.get(MessageClient).publish(uuid);
-  observer.next(await clientId);
 }
 
 class NullMicrofrontendPlatformStopper implements MicrofrontendPlatformStopper {
