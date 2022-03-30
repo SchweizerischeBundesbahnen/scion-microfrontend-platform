@@ -1,5 +1,4 @@
 import {Dictionary} from '@scion/toolkit/util';
-import {MessageClient} from '../messaging/message-client';
 
 /**
  * Options to control outlet navigation.
@@ -25,10 +24,6 @@ export interface NavigationOptions {
    * By default, this behavior is disabled.
    */
   pushStateToSessionHistoryStack?: boolean;
-  /**
-   * @internal
-   */
-  messageClient?: MessageClient;
 }
 
 /**
