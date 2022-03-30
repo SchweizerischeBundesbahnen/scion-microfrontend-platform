@@ -53,7 +53,7 @@ export class ApplicationRegistry {
       manifestUrl: Urls.newUrl(applicationConfig.manifestUrl, Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? applicationConfig.manifestUrl : window.origin).toString(),
       manifestLoadTimeout: applicationConfig.manifestLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).manifestLoadTimeout,
       activatorLoadTimeout: applicationConfig.activatorLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).activatorLoadTimeout,
-      origin: Urls.newUrl(this.computeBaseUrl(applicationConfig, manifest)).origin,
+      messageOrigin: applicationConfig.messageOrigin ?? Urls.newUrl(this.computeBaseUrl(applicationConfig, manifest)).origin,
       scopeCheckDisabled: Defined.orElse(applicationConfig.scopeCheckDisabled, false),
       intentionCheckDisabled: Defined.orElse(applicationConfig.intentionCheckDisabled, false),
       intentionRegisterApiDisabled: Defined.orElse(applicationConfig.intentionRegisterApiDisabled, true),
