@@ -151,8 +151,8 @@ export class MessageBroker implements Initializer, PreDestroy {
           return;
         }
 
-        if (event.origin !== application.origin) {
-          const warning = `Client connect attempt blocked by the message broker: Wrong origin [actual='${event.origin}', expected='${application.origin}', app='${application.symbolicName}']`;
+        if (event.origin !== application.messageOrigin) {
+          const warning = `Client connect attempt blocked by the message broker: Wrong origin [actual='${event.origin}', expected='${application.messageOrigin}', app='${application.symbolicName}']`;
           Beans.get(Logger).warn(`[CONNECT] ${warning}`);
 
           sendTopicMessage<ConnackMessage>(clientMessageTarget, {
@@ -166,7 +166,7 @@ export class MessageBroker implements Initializer, PreDestroy {
         // Check if the client is already connected. If already connected, do nothing. A client can potentially initiate multiple connect requests, for example,
         // when not receiving connect confirmation in time.
         const currentClient = this._clientRegistry.getByWindow(eventSource);
-        if (currentClient && currentClient.application.origin === event.origin && currentClient.application.symbolicName === application.symbolicName) {
+        if (currentClient && currentClient.application.messageOrigin === event.origin && currentClient.application.symbolicName === application.symbolicName) {
           sendTopicMessage<ConnackMessage>(currentClient, {
             topic: replyTo,
             body: {returnCode: 'accepted', clientId: currentClient.id, heartbeatInterval: this._heartbeatInterval},
@@ -445,7 +445,7 @@ export class MessageBroker implements Initializer, PreDestroy {
             channel: MessagingChannel.Intent,
             message: message,
           };
-          client.window.postMessage(envelope, client.application.origin);
+          client.window.postMessage(envelope, client.application.messageOrigin);
         }));
     });
   }
@@ -525,10 +525,10 @@ function checkOriginTrusted<T extends Message>(): MonoTypeOperatorFunction<Messa
     }
 
     // Assert source origin.
-    if (event.origin !== client.application.origin) {
+    if (event.origin !== client.application.messageOrigin) {
       if (event.source !== null) {
         const sender = new MessageTarget(event);
-        const error = `[MessagingError] Message rejected: Wrong origin [actual=${event.origin}, expected=${client.application.origin}, application=${client.application.symbolicName}]`;
+        const error = `[MessagingError] Message rejected: Wrong origin [actual=${event.origin}, expected=${client.application.messageOrigin}, application=${client.application.symbolicName}]`;
         sendDeliveryStatusError(sender, messageId, error);
       }
       return EMPTY;
@@ -592,7 +592,7 @@ function sendTopicMessage<T>(target: MessageTarget | Client, message: TopicMessa
     !target.window.closed && target.window.postMessage(envelope, target.origin);
   }
   else {
-    !target.stale && target.window.postMessage(envelope, target.application.origin);
+    !target.stale && target.window.postMessage(envelope, target.application.messageOrigin);
   }
 }
 

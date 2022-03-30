@@ -25,6 +25,13 @@ export interface ApplicationConfig {
    */
   manifestUrl: string;
   /**
+   * Specifies the origin where message from this application must originate from. Messages of a different origin will be rejected.
+   * If not set, the origin is derived from the manifest URL or the base URL as specified in the manifest file. Setting a different
+   * origin may be necessary if, for example, integrating microfrontends into a rich client, allowing an integrator to bridge
+   * messages to a remote host.
+   */
+  messageOrigin?: string;
+  /**
    * Maximum time (in milliseconds) that the host waits until the manifest for this application is loaded.
    *
    * If set, overrides the global timeout as configured in {@link MicrofrontendPlatformConfig.manifestLoadTimeout}.

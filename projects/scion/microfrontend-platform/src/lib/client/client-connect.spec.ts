@@ -79,6 +79,22 @@ describe('MicrofrontendPlatform', () => {
     expect(clientIdCaptor.getValues()).toEqual([clientId, clientId, clientId]);
   });
 
+  it('should reject messages from wrong origin', async () => {
+    await MicrofrontendPlatform.startHost({
+      applications: [
+        {
+          symbolicName: 'client',
+          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
+          messageOrigin: 'http://wrong-origin.dev'
+        },
+      ],
+    });
+
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
+    const connectPromise = microfrontendFixture.loadScript('./lib/client/client-connect.script.ts', 'connectToHost', {symbolicName: 'client'});
+    await expectAsync(connectPromise).toBeRejectedWithError(/\[MessageClientConnectError] Client connect attempt blocked by the message broker: Wrong origin \[actual='http:\/\/localhost:[\d]+', expected='http:\/\/wrong-origin.dev', app='client'] \[code: 'refused:blocked']/);
+  });
+
   /**
    * Registers the fixture for destruction after test execution.
    */
