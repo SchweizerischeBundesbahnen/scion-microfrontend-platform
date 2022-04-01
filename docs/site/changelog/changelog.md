@@ -5,10 +5,25 @@
 
 ## Changelog
 
+# [1.0.0-rc.3](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.2...1.0.0-rc.3) (2022-04-01)
+
+
+### Bug Fixes
+
+* **devtools:** allow integrating devtools into the browser window ([af142e9](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/af142e9b6665124fa2e7fd17ba6c22479cc978aa))
+* **platform:** connect to the host periodically when starting the platform ([788a444](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/788a444b3b34ecba71749ce73c7d4caad3302d3f))
+
+
+### Features
+
+* **platform:** allow configuring the message origin for an application ([c8a5bf3](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/c8a5bf3154ed87aba179887344609299df7e2133))
+
+
+
 # [1.0.0-rc.2](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.1...1.0.0-rc.2) (2022-03-18)
 
 
-### deps
+### Dependencies
 
 * **platform:** migrate @scion/microfrontend-platform to RxJS 7.5 ([c194c5a](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/c194c5ad0f34ad8188d676e34fa6c7e991b900ba)), closes [/github.com/angular/angular/blob/master/CHANGELOG.md#1312-2022-01-12](https://github.com//github.com/angular/angular/blob/master/CHANGELOG.md/issues/1312-2022-01-12) [#108](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/108)
 
