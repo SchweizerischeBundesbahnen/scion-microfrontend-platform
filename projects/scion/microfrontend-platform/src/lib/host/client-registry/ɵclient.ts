@@ -9,7 +9,7 @@
  */
 import {Subscription, timer} from 'rxjs';
 import {APP_IDENTITY, Application} from '../../platform.model';
-import semver from 'semver';
+import {semver} from '../semver';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageClient} from '../../client/messaging/message-client';
 import {PlatformTopics} from '../../ɵmessaging.model';

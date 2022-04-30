@@ -77,7 +77,6 @@
     "@scion/toolkit.internal": "13.0.0-beta.2",
     "js-sha256": "0.9.0",
     "rxjs": "7.5.5",
-    "semver": "7.3.5",
     "tslib": "2.3.1",
     "zone.js": "0.11.5"
   },
@@ -94,7 +93,6 @@
     "@asciidoctor/core": "2.2.6",
     "@types/jasmine": "4.0.0",
     "@types/node": "17.0.21",
-    "@types/semver": "7.3.9",
     "@typescript-eslint/eslint-plugin": "5.15.0",
     "@typescript-eslint/parser": "5.15.0",
     "@vercel/ncc": "0.33.3",
