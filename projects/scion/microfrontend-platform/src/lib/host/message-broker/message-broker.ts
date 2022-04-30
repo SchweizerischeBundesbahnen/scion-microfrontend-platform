@@ -29,7 +29,7 @@ import {bufferUntil} from '@scion/toolkit/operators';
 import {ParamMatcher} from './param-matcher';
 import {filterByChannel, filterByTopicChannel, filterByTransport} from '../../operators';
 import {Client} from '../client-registry/client';
-import semver from 'semver';
+import {semver} from '../semver';
 import {VERSION} from '../../version';
 import {CLIENT_HEARTBEAT_INTERVAL} from '../client-registry/client.constants';
 import {ɵClient} from '../client-registry/ɵclient';

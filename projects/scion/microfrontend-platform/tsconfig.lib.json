@@ -8,7 +8,6 @@
     "inlineSources": true,
     "types": [],
     "strict": true,
-    "allowSyntheticDefaultImports": true
   },
   "exclude": [
     "src/test.ts",
