@@ -767,8 +767,85 @@ export namespace IntendBasedMessagingSpecs {
       .set('param3', 'false [boolean]')
       .set('param4', '123 [number]')
       .set('param5', '0 [number]')
-      .set('param6', 'null [null]')
-      .set('param7', 'undefined [undefined]'));
+      .set('param6', 'null [null]'));
+  }
+
+  /**
+   * Tests that parameters associated with the value `null` are not removed.
+   */
+  export async function preserveNullParamSpec(): Promise<void> {
+    const testingAppPO = new TestingAppPO();
+
+    const pagePOs = await testingAppPO.navigateTo({
+      registerCapability: RegisterCapabilityPagePO,
+      publisher: PublishMessagePagePO,
+      receiver: ReceiveMessagePagePO,
+    });
+
+    // register the capability
+    const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
+    await registerCapabilityPO.registerCapability({
+      type: 'test',
+      params: [
+        {name: 'param', required: false},
+      ],
+      private: true,
+    });
+
+    // receive the intent
+    const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
+    await receiverPO.selectFlavor(MessagingFlavor.Intent);
+    await receiverPO.enterIntentSelector('test');
+    await receiverPO.clickSubscribe();
+
+    // issue the intent
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
+    await publisherPO.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO.enterIntent('test', undefined, new Map().set('param', '<null>'));
+    await publisherPO.clickPublish();
+
+    // assert the received intent
+    const params = await (await receiverPO.getFirstMessageOrElseReject()).getIntentParams();
+    expect(params).toEqual(new Map().set('param', 'null [null]'));
+  }
+
+  /**
+   * Tests that parameters associated with the value `undefined` are removed.
+   */
+  export async function removeUndefinedParamSpec(): Promise<void> {
+    const testingAppPO = new TestingAppPO();
+
+    const pagePOs = await testingAppPO.navigateTo({
+      registerCapability: RegisterCapabilityPagePO,
+      publisher: PublishMessagePagePO,
+      receiver: ReceiveMessagePagePO,
+    });
+
+    // register the capability
+    const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
+    await registerCapabilityPO.registerCapability({
+      type: 'test',
+      params: [
+        {name: 'param', required: false},
+      ],
+      private: true,
+    });
+
+    // receive the intent
+    const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
+    await receiverPO.selectFlavor(MessagingFlavor.Intent);
+    await receiverPO.enterIntentSelector('test');
+    await receiverPO.clickSubscribe();
+
+    // issue the intent
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
+    await publisherPO.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO.enterIntent('test', undefined, new Map().set('param', '<undefined>'));
+    await publisherPO.clickPublish();
+
+    // assert the received intent
+    const params = await (await receiverPO.getFirstMessageOrElseReject()).getIntentParams();
+    expect(params).toEqual(new Map());
   }
 
   /**

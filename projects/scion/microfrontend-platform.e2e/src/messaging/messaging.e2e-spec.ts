@@ -165,6 +165,14 @@ describe('Messaging', () => {
       await IntendBasedMessagingSpecs.preserveParamDataTypeSpec();
     });
 
+    it('does not remove parameters associated with the value `null`', async () => {
+      await IntendBasedMessagingSpecs.preserveNullParamSpec();
+    });
+
+    it('removes parameters associated with the value `undefined`', async () => {
+      await IntendBasedMessagingSpecs.removeUndefinedParamSpec();
+    });
+
     it('allows passing headers', async () => {
       await IntendBasedMessagingSpecs.passHeadersSpec();
     });

@@ -374,7 +374,14 @@ export class MessageBroker implements Initializer, PreDestroy {
 
         // If the params of the intent do not match the params of every fulfilling capability, send an error.
         for (const capability of capabilities) {
-          // Test params passed with the intent.
+          // Remove params with `undefined` as value.
+          intentMessage.intent.params?.forEach((value, key) => {
+            if (value === undefined) {
+              intentMessage.intent.params!.delete(key);
+            }
+          });
+
+          // Test params passed with the intent to match expected params as declared by the capability.
           const paramMatchResult = new ParamMatcher(capability.params!).match(intentMessage.intent.params);
           if (!paramMatchResult.matches) {
             const intentStringified = JSON.stringify(intentMessage.intent, (key, value) => (key === 'params') ? undefined : value);
@@ -389,7 +396,7 @@ export class MessageBroker implements Initializer, PreDestroy {
               const warning = constructDeprecatedParamWarning(deprecatedParam, {appSymbolicName: client.application.symbolicName});
               Beans.get(Logger).warn(`[DEPRECATION] ${warning}`, new LoggingContext(client.application.symbolicName, client.version), intentMessage.intent);
             });
-            // Continue with params of the matcher with deprecated params mapped to their replacement.
+            // Use the matcher's parameters to have deprecated params mapped to their replacement.
             intentMessage.intent.params = paramMatchResult.params!;
           }
         }
