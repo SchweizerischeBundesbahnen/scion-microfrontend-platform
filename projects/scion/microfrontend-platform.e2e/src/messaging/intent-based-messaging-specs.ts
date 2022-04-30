@@ -632,8 +632,8 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO_app1.clickPublish();
 
     // assert receiving the intent
-    await expect(await (await receiverPO_app3.getFirstMessageOrElseReject()).getIntentParams()).toEqual(new Map<string, any>().set('param', 'value'));
-    await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentParams()).toEqual(new Map<string, any>().set('param', 'value'));
+    await expect(await (await receiverPO_app3.getFirstMessageOrElseReject()).getIntentParams()).toEqual(new Map<string, any>().set('param', 'value [string]'));
+    await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentParams()).toEqual(new Map<string, any>().set('param', 'value [string]'));
 
     await receiverPO_app3.clickClearMessages();
     await receiverPO_app4.clickClearMessages();
@@ -703,6 +703,72 @@ export namespace IntendBasedMessagingSpecs {
 
     // assert intent not to be received
     await expect(await receiverPO_app4.getMessages()).toEqual([]);
+  }
+
+  /**
+   * Tests that data types of passed parameters are preserved.
+   */
+  export async function preserveParamDataTypeSpec(): Promise<void> {
+    const testingAppPO = new TestingAppPO();
+
+    const pagePOs = await testingAppPO.navigateTo({
+      managerOutlet: 'about:blank',
+      publisher_app1: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_1},
+      receiver_app2: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2},
+    });
+
+    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
+
+    // register the intention
+    const intentionManagerPO_app1 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1});
+    await intentionManagerPO_app1.registerIntention({type: 'test'});
+
+    // register the capability
+    const capabilityManagerPO_app2 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_2});
+    await capabilityManagerPO_app2.registerCapability({
+      type: 'test',
+      params: [
+        {name: 'param1', required: false},
+        {name: 'param2', required: false},
+        {name: 'param3', required: false},
+        {name: 'param4', required: false},
+        {name: 'param5', required: false},
+        {name: 'param6', required: false},
+        {name: 'param7', required: false},
+      ],
+      private: false,
+    });
+
+    // receive the intent
+    const receiverPO_app2 = pagePOs.get<ReceiveMessagePagePO>('receiver_app2');
+    await receiverPO_app2.selectFlavor(MessagingFlavor.Intent);
+    await receiverPO_app2.enterIntentSelector('test');
+    await receiverPO_app2.clickSubscribe();
+
+    // issue the intent
+    const publisherPO_app1 = pagePOs.get<PublishMessagePagePO>('publisher_app1');
+    await publisherPO_app1.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO_app1.enterIntent('test', undefined, new Map()
+      .set('param1', '<string>value</string>')
+      .set('param2', '<boolean>true</boolean>')
+      .set('param3', '<boolean>false</boolean>')
+      .set('param4', '<number>123</number>')
+      .set('param5', '<number>0</number>')
+      .set('param6', '<null>')
+      .set('param7', '<undefined>'),
+    );
+    await publisherPO_app1.clickPublish();
+
+    // assert the received intent
+    const params = await (await receiverPO_app2.getFirstMessageOrElseReject()).getIntentParams();
+    expect(params).toEqual(new Map()
+      .set('param1', 'value [string]')
+      .set('param2', 'true [boolean]')
+      .set('param3', 'false [boolean]')
+      .set('param4', '123 [number]')
+      .set('param5', '0 [number]')
+      .set('param6', 'null [null]')
+      .set('param7', 'undefined [undefined]'));
   }
 
   /**

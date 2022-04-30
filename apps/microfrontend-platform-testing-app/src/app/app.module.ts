@@ -43,6 +43,7 @@ import {SciAccordionModule, SciCheckboxModule, SciFormFieldModule, SciListModule
 import {AppShellComponent} from './app-shell/app-shell.component';
 import {DevToolsComponent} from './devtools/devtools.component';
 import {LookupContextValueComponent} from './outlet-context/lookup-context-value/lookup-context-value.component';
+import {AppendParamDataTypePipe} from './messaging/append-param-data-type.pipe';
 
 @NgModule({
   declarations: [
@@ -65,6 +66,7 @@ import {LookupContextValueComponent} from './outlet-context/lookup-context-value
     LookupCapabilityComponent,
     LookupIntentionComponent,
     TopicSubscriberCountPipe,
+    AppendParamDataTypePipe,
     MicrofrontendComponent,
     ScrollableMicrofrontendComponent,
     PreferredSizeComponent,
