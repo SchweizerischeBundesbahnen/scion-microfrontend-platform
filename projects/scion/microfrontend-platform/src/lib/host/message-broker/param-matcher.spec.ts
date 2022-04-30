@@ -105,9 +105,9 @@ describe('ParamMatcher', () => {
       .match(new Map().set('param', 'value')))
       .toEqual({matches: true, missingParams: [], unexpectedParams: [], deprecatedParams: [{name: 'param', deprecated: true, required: true}], params: new Map().set('param', 'value')});
 
-    expect(new ParamMatcher([{name: 'param', required: true, deprecated: true}])
+    expect(new ParamMatcher([{name: 'param', deprecated: true, required: true}])
       .match(new Map().set('param', undefined)))
-      .toEqual({matches: true, missingParams: [], unexpectedParams: [], deprecatedParams: [], params: new Map()});
+      .toEqual({matches: true, missingParams: [], unexpectedParams: [], deprecatedParams: [{name: 'param', deprecated: true, required: true}], params: new Map().set('param', undefined)});
 
     expect(new ParamMatcher([{name: 'param', deprecated: true, required: true}])
       .match(new Map()))

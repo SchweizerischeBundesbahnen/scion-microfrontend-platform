@@ -105,14 +105,25 @@ export function waitForCondition(condition: () => boolean | Promise<boolean>, ti
  * Expects the {@link ObserveCaptor} to capture given emissions. This expectation waits a maximum of 5 seconds until the expected element count
  * is captured.
  */
-export function expectEmissions<T = any, R = T>(captor: ObserveCaptor<T, R>): {toEqual: (expected: R | R[]) => Promise<void>} {
+export function expectEmissions<T = any, R = T>(captor: ObserveCaptor<T, R>): ToEqualMatcher<R | R[]> & {not: ToEqualMatcher<R | R[]>} {
   return {
     toEqual: async (expected: R | R[]): Promise<void> => {
       const expectedValues = Arrays.coerce(expected);
       await captor.waitUntilEmitCount(expectedValues.length, 5000);
       return expect(captor.getValues()).toEqual(expectedValues);
     },
+    not: {
+      toEqual: async (expected: R | R[]): Promise<void> => {
+        const expectedValues = Arrays.coerce(expected);
+        await captor.waitUntilEmitCount(expectedValues.length, 5000);
+        return expect(captor.getValues()).not.toEqual(expectedValues);
+      },
+    }
   };
+}
+
+export interface ToEqualMatcher<T> {
+  toEqual(expected: jasmine.Expected<T>): Promise<void>;
 }
 
 export function installLoggerSpies(): void {

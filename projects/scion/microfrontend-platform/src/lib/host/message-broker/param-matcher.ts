@@ -49,13 +49,6 @@ export class ParamMatcher {
       deprecatedParams: [],
     };
 
-    // Remove params with `undefined` as value.
-    params.forEach((value, key) => {
-      if (value === undefined) {
-        params.delete(key);
-      }
-    });
-
     // Test if deprecated params are passed and map them to their substitute, if any.
     this._deprecatedParamDefs
       .filter(paramDef => params.has(paramDef.name))
@@ -72,7 +65,7 @@ export class ParamMatcher {
 
     // Test if required params are passed.
     this._requiredParamDefs
-      .filter(paramDef => !params.has(paramDef.name))
+      .filter(paramDef => !params.has(paramDef.name) || params.get(paramDef.name) === undefined)
       .filter(paramDef => !this._deprecatedParamDefs.includes(paramDef))
       .forEach(paramDef => {
         matcherResult.matches = false;
