@@ -161,6 +161,10 @@ describe('Messaging', () => {
       await IntendBasedMessagingSpecs.publisherNotMatchingParamsSpec();
     });
 
+    it('preserves data type of passed parameters', async () => {
+      await IntendBasedMessagingSpecs.preserveParamDataTypeSpec();
+    });
+
     it('allows passing headers', async () => {
       await IntendBasedMessagingSpecs.passHeadersSpec();
     });

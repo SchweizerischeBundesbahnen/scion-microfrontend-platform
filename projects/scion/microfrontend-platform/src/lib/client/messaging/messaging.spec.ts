@@ -1457,6 +1457,68 @@ describe('Messaging', () => {
       await expectEmissions(observeCaptor).toEqual(new Map().set('param1', 'value1').set('param2', 'value2'));
     });
 
+    it('should preserve data type of passed intent parameters', async () => {
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host Application',
+            capabilities: [
+              {
+                type: 'capability',
+                params: [{name: 'param', required: false}],
+              },
+            ],
+          },
+        },
+        applications: [],
+      });
+
+      const observeCaptor = new ObserveCaptor(paramsExtractFn);
+      Beans.get(IntentClient).observe$<void>({type: 'capability'}).subscribe(observeCaptor);
+
+      // publish intent with a string param
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param', 'string')});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param', 'string'));
+
+      // publish intent with a numeric param
+      observeCaptor.reset();
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param', 123)});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param', 123));
+
+      // publish intent with a boolean param
+      observeCaptor.reset();
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param', true)});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param', true));
+
+      // publish intent with a `null` param
+      observeCaptor.reset();
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param', null)});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param', null));
+
+      // publish intent with an `undefined` param
+      observeCaptor.reset();
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param', undefined)});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param', undefined));
+
+      // publish intent with an object literal param
+      observeCaptor.reset();
+      const objectLiteralParam = {stringProperty: 'string', numericProperty: 123, booleanProperty: true, undefinedProperty: undefined, nullProperty: null};
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param', objectLiteralParam)});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param', objectLiteralParam));
+
+      // publish intent with a `Map` param
+      observeCaptor.reset();
+      const mapParam = new Map().set('stringProperty', 'string').set('numericProperty', 123).set('booleanProperty', true).set('undefinedProperty', undefined).set('nullProperty', null);
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param', mapParam)});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param', mapParam));
+
+      // publish intent with a `Set` param
+      observeCaptor.reset();
+      const setParam = new Set().add('string').add(123).add(true).add(false).add(undefined).add(null);
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param', setParam)});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param', setParam));
+    });
+
     it('should allow issuing an intent without passing optional parameters', async () => {
       await MicrofrontendPlatform.startHost({
         host: {

@@ -14,6 +14,7 @@ import {Subject, Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith, takeUntil} from 'rxjs/operators';
 import {SciParamsEnterComponent} from '@scion/toolkit.internal/widgets';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {coerceBooleanProperty, coerceNumberProperty} from '@angular/cdk/coercion';
 
 export const FLAVOR = 'flavor';
 export const DESTINATION = 'destination';
@@ -170,6 +171,9 @@ export class PublishMessageComponent implements OnDestroy {
     const qualifier: Qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(DESTINATION).get(QUALIFIER) as FormArray);
     const params: Map<string, any> = SciParamsEnterComponent.toParamsMap(this.form.get(DESTINATION).get(PARAMS) as FormArray);
 
+    // Convert entered params to their actual values.
+    params?.forEach((paramValue, paramName) => params.set(paramName, convertValueFromUI(paramValue)));
+
     const message = this.form.get(MESSAGE).value === '' ? undefined : this.form.get(MESSAGE).value;
     const requestReply = this.form.get(REQUEST_REPLY).value;
     const headers = SciParamsEnterComponent.toParamsMap(this.form.get(HEADERS) as FormArray);
@@ -211,3 +215,43 @@ export class PublishMessageComponent implements OnDestroy {
     this.unsubscribe();
   }
 }
+
+/**
+ * Converts the value entered via the UI to its actual type.
+ *
+ * Examples:
+ * - '<undefined>' => undefined
+ * - '<null>' => null
+ * - '<number>123</number>' => 123
+ * - '<boolean>true</boolean>' => true
+ * - '<string>value</string>' => 'value'
+ * - '<json>{"key": "value"}</json>' => {"key": "value"}
+ * - 'value' => 'value'
+ */
+function convertValueFromUI(value: string): string | number | boolean | object | undefined | null {
+  if ('<undefined>' === value) {
+    return undefined;
+  }
+  else if ('<null>' === value) {
+    return null;
+  }
+  const paramMatch = value.match(/<(?<type>.+)>(?<value>.+)<\/\k<type>>/);
+  switch (paramMatch?.groups['type']) {
+    case 'number': {
+      return coerceNumberProperty(paramMatch.groups['value']);
+    }
+    case 'boolean': {
+      return coerceBooleanProperty(paramMatch.groups['value']);
+    }
+    case 'string': {
+      return paramMatch.groups['value'];
+    }
+    case 'json': {
+      return JSON.parse(paramMatch.groups['value']);
+    }
+    default: {
+      return value;
+    }
+  }
+}
+

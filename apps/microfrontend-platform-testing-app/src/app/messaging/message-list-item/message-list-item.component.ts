@@ -31,4 +31,12 @@ export class MessageListItemComponent implements OnChanges {
   public ngOnChanges(changes: SimpleChanges): void {
     this.capability = (this.isTopicMessage ? undefined : JSON.stringify((this.message as IntentMessage).capability, null, 2));
   }
+
+  public get intentMessage(): IntentMessage {
+    return this.message as IntentMessage;
+  }
+
+  public get topicMessage(): TopicMessage {
+    return this.message as TopicMessage;
+  }
 }
