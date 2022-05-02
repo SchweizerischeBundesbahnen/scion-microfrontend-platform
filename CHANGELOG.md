@@ -1,3 +1,13 @@
+# [1.0.0-rc.4](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.3...1.0.0-rc.4) (2022-05-02)
+
+
+### Bug Fixes
+
+* **platform:** discard intent parameter if set to `undefined` ([873541d](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/873541d80cb6cb260cc10ef9452b8473292092ca)), closes [#146](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/146)
+* **platform:** remove `semver` dependency to avoid bundle optimization bailouts ([bf44720](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/bf44720617b41497603b63b068210349342bb5d5)), closes [#141](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/141)
+
+
+
 # [1.0.0-rc.3](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.2...1.0.0-rc.3) (2022-04-01)
 
 
