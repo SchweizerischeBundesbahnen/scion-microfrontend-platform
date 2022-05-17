@@ -1,4 +1,4 @@
-@use 'sci-toolkit-styles' as sci-toolkit-styles;
+@use '@scion/components.internal' as sci-ɵcomponents;
 
 :host {
   display: grid;
@@ -14,7 +14,7 @@
 
     > span.no-provider-found {
       font-weight: bold;
-      @include sci-toolkit-styles.chip(rgba(255, 0, 0, .75), rgba(255, 0, 0, .1), rgba(255, 0, 0, .75));
+      @include sci-ɵcomponents.theme-chip(rgba(255, 0, 0, .75), rgba(255, 0, 0, .1), rgba(255, 0, 0, .75));
     }
   }
 }

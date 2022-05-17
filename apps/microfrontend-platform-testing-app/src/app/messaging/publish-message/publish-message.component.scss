@@ -1,4 +1,4 @@
-@use 'sci-toolkit-styles' as sci-toolkit-styles;
+@use '@scion/components.internal' as sci-ɵcomponents;
 
 :host {
   display: flex;
@@ -20,7 +20,7 @@
     div.subscriber-badge {
       display: flex;
       margin: 2px 0 10px 0;
-      @include sci-toolkit-styles.chip(var(--sci-color-primary), var(--sci-color-P100), var(--sci-color-primary));
+      @include sci-ɵcomponents.theme-chip(var(--sci-color-primary), var(--sci-color-P100), var(--sci-color-primary));
       padding: .25em 1em;
 
       > span.count {

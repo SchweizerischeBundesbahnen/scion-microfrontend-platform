@@ -1,4 +1,4 @@
-@use 'sci-toolkit-styles' as sci-toolkit-styles;
+@use '@scion/components.internal' as sci-ɵcomponents;
 
 :host {
   > header {
@@ -54,7 +54,7 @@
       padding: .5em;
 
       > input {
-        @include sci-toolkit-styles.input-field();
+        @include sci-ɵcomponents.theme-input-field();
       }
 
       &.value {

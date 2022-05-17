@@ -10,7 +10,7 @@
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {FormArray, FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {NavigationOptions, OutletRouter} from '@scion/microfrontend-platform';
-import {SciParamsEnterComponent} from '@scion/toolkit.internal/widgets';
+import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 export const OUTLET = 'outlet';

@@ -1,4 +1,4 @@
-@use 'sci-toolkit-styles' as sci-toolkit-styles;
+@use '@scion/components.internal' as sci-ɵcomponents;
 
 :host {
   display: grid;
@@ -18,7 +18,7 @@
     }
 
     > input {
-      @include sci-toolkit-styles.input-field();
+      @include sci-ɵcomponents.theme-input-field();
     }
 
     > h2 {

@@ -1,4 +1,4 @@
-@use 'sci-toolkit-styles' as sci-toolkit-styles;
+@use '@scion/components.internal' as sci-ɵcomponents;
 
 :host {
   display: grid;
@@ -33,7 +33,7 @@
         flex: none;
         align-self: flex-start;
         font-weight: bold;
-        @include sci-toolkit-styles.chip(var(--sci-color-accent), null, var(--sci-color-accent));
+        @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
         user-select: text;
       }
 

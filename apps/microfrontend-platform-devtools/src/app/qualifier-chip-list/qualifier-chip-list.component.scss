@@ -1,4 +1,4 @@
-@use 'sci-toolkit-styles' as sci-toolkit-styles;
+@use '@scion/components.internal' as sci-ɵcomponents;
 
 :host {
   > ul {
@@ -13,7 +13,7 @@
       align-items: center;
 
       &.app-symbolic-name {
-        @include sci-toolkit-styles.chip(var(--sci-color-P600), var(--sci-color-P600), var(--sci-color-P900));
+        @include sci-ɵcomponents.theme-chip(var(--sci-color-P600), var(--sci-color-P600), var(--sci-color-P900));
         justify-content: center;
         padding: .25em 1.25em;
 
@@ -28,7 +28,7 @@
       }
 
       &.type {
-        @include sci-toolkit-styles.chip(var(--sci-color-P500), var(--sci-color-P200), var(--sci-color-P900));
+        @include sci-ɵcomponents.theme-chip(var(--sci-color-P500), var(--sci-color-P200), var(--sci-color-P900));
         padding: .25em 1.25em;
 
         > span.type {
@@ -40,7 +40,7 @@
       }
 
       &.qualifier {
-        @include sci-toolkit-styles.chip(var(--sci-color-P500), #FFFFFF, var(--sci-color-P900));
+        @include sci-ɵcomponents.theme-chip(var(--sci-color-P500), #FFFFFF, var(--sci-color-P900));
         padding: .25em 1.25em;
 
         > span.key {

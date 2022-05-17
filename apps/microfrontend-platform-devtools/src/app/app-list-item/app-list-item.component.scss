@@ -1,4 +1,4 @@
-@use 'sci-toolkit-styles' as sci-toolkit-styles;
+@use '@scion/components.internal' as sci-ɵcomponents;
 
 :host {
   display: grid;
@@ -38,7 +38,7 @@
     justify-content: flex-end;
 
     > span.chip {
-      @include sci-toolkit-styles.chip(var(--sci-color-P200), transparent, var(--sci-color-P700));
+      @include sci-ɵcomponents.theme-chip(var(--sci-color-P200), transparent, var(--sci-color-P700));
     }
   }
 }

@@ -10,16 +10,9 @@ This short manual helps to install the SCION Microfrontend Platform and describe
 1. **Install `SCION Microfrontend Platform` using the NPM command-line tool**
 
    ```console
-   npm install @scion/microfrontend-platform --save
+   npm install @scion/microfrontend-platform @scion/toolkit --save
    ```
-
-1. **Install `SCION Toolkit` using the NPM command-line tool**
-
-   ```console
-   npm install @scion/toolkit --save
-   ```
-
-   > SCION Microfrontend Platform requires some tools of the module [SCION Toolkit][link-scion-toolkit]. SCION Toolkit has different entry points. Please note that the toolkit has an optional peer dependency on the Angular framework, as some tools are Angular-specific. However, the SCION Microfrontend Platform only uses framework-agnostic tools. **So do not be misled by the warning that Angular is missing. The platform does not depend on the Angular framework.**
+   > SCION Microfrontend Platform requires some tools of the module [@scion/toolkit][link-scion-toolkit]. By using the above command, those are installed as well.
 
 1. **Start the platform**
 
@@ -108,4 +101,4 @@ This short manual helps to install the SCION Microfrontend Platform and describe
 
 [link-developer-guide#configuration]: https://scion-microfrontend-platform-developer-guide.vercel.app#chapter:configuration
 [link-developer-guide#angular_integration_guide]: https://scion-microfrontend-platform-developer-guide.vercel.app#chapter:angular_integration_guide
-[link-scion-toolkit]: https://github.com/SchweizerischeBundesbahnen/scion-toolkit/blob/master/README.md
+[link-scion-toolkit]: https://www.npmjs.com/package/@scion/toolkit

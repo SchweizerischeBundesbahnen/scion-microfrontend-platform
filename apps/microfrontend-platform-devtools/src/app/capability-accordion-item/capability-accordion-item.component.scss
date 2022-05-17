@@ -1,4 +1,4 @@
-@use 'sci-toolkit-styles' as sci-toolkit-styles;
+@use '@scion/components.internal' as sci-ɵcomponents;
 
 :host {
   display: grid;
@@ -25,7 +25,7 @@
       }
 
       > span.app-symbolic-name {
-        @include sci-toolkit-styles.chip(var(--sci-color-accent), null, var(--sci-color-accent));
+        @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
         font-weight: bold;
         display: flex;
         align-items: center;

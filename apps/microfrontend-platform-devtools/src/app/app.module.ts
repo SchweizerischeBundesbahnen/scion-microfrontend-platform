@@ -16,18 +16,23 @@ import {IntentClient, ManifestService, MessageClient, MicrofrontendPlatform, Out
 import {NgZoneIntentClientDecorator, NgZoneMessageClientDecorator} from './ng-zone-decorators';
 import {AppDetailsComponent} from './app-details/app-details.component';
 import {AppListComponent} from './app-list/app-list.component';
-import {SciViewportModule} from '@scion/toolkit/viewport';
-import {SciAccordionModule, SciFilterFieldModule, SciFormFieldModule, SciListModule, SciParamsEnterModule, SciPropertyModule, SciTabbarModule} from '@scion/toolkit.internal/widgets';
+import {SciViewportModule} from '@scion/components/viewport';
+import {SciAccordionModule} from '@scion/components.internal/accordion';
+import {SciFilterFieldModule} from '@scion/components.internal/filter-field';
+import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciListModule} from '@scion/components.internal/list';
+import {SciParamsEnterModule} from '@scion/components.internal/params-enter';
+import {SciPropertyModule} from '@scion/components.internal/property';
+import {SciTabbarModule} from '@scion/components.internal/tabbar';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {CapabilityAccordionPanelComponent} from './capability-accordion-panel/capability-accordion-panel.component';
 import {CapabilityAccordionItemComponent} from './capability-accordion-item/capability-accordion-item.component';
 import {IntentionAccordionPanelComponent} from './intention-accordion-panel/intention-accordion-panel.component';
 import {IntentionAccordionItemComponent} from './intention-accordion-item/intention-accordion-item.component';
 import {QualifierChipListComponent} from './qualifier-chip-list/qualifier-chip-list.component';
-import {SciDimensionModule} from '@scion/toolkit/dimension';
 import {FindCapabilitiesComponent} from './find-capabilities/find-capabilities.component';
 import {ReactiveFormsModule} from '@angular/forms';
-import {SciSashboxModule} from '@scion/toolkit/sashbox';
+import {SciSashboxModule} from '@scion/components/sashbox';
 import {FilterFieldComponent} from './find-capabilities/filter-field/filter-field.component';
 import {AppListItemComponent} from './app-list-item/app-list-item.component';
 import {CapabilityFilterResultComponent} from './capability-filter-result/capability-filter-result.component';
@@ -74,7 +79,6 @@ import {CustomParamMetadataPipe} from './custom-param-metadata.pipe';
     SciParamsEnterModule,
     SciPropertyModule,
     SciTabbarModule,
-    SciDimensionModule,
     SciFormFieldModule,
     SciSashboxModule,
   ],

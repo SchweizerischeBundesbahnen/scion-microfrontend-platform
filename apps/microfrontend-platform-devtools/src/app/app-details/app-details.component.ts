@@ -16,7 +16,7 @@ import {ActivatedRoute, NavigationEnd, Router, UrlSegmentGroup} from '@angular/r
 import {filterManifestObjects} from '../manifest-object-filter.utils';
 import {ShellService} from '../shell.service';
 import {FormControl} from '@angular/forms';
-import {SciTabbarComponent} from '@scion/toolkit.internal/widgets';
+import {SciTabbarComponent} from '@scion/components.internal/tabbar';
 import {Arrays} from '@scion/toolkit/util';
 import {bufferUntil} from '@scion/toolkit/operators';
 
