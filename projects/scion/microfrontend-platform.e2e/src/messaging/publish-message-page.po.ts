@@ -12,9 +12,9 @@ import {enterText, selectOption} from '../spec.util';
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
 import {Qualifier} from '@scion/microfrontend-platform';
 import {MessageListItemPO} from './message-list-item.po';
-import {SciListPO, WaitUntil} from '../../deps/scion/toolkit.internal/list/list.po';
-import {SciParamsEnterPO} from '../../deps/scion/toolkit.internal/params-enter/params-enter.po';
-import {SciCheckboxPO} from '../../deps/scion/toolkit.internal/checkbox/checkbox.po';
+import {SciListPO, WaitUntil} from '../../deps/scion/components.internal/list.po';
+import {SciParamsEnterPO} from '../../deps/scion/components.internal/params-enter.po';
+import {SciCheckboxPO} from '../../deps/scion/components.internal/checkbox.po';
 
 export enum MessagingFlavor {
   Topic = 'Topic', Intent = 'Intent',

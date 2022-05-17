@@ -1,4 +1,4 @@
-@use 'sci-toolkit-styles' as sci-toolkit-styles;
+@use '@scion/components.internal' as sci-ɵcomponents;
 
 $h-margin: 2em;
 
@@ -61,13 +61,13 @@ $h-margin: 2em;
           flex: none;
           margin-right: .25em;
           width: 100px;
-          @include sci-toolkit-styles.input-field();
+          @include sci-ɵcomponents.theme-input-field();
         }
 
         > input.value {
           flex: auto;
           margin-right: .25em;
-          @include sci-toolkit-styles.input-field();
+          @include sci-ɵcomponents.theme-input-field();
         }
 
         > button.add {

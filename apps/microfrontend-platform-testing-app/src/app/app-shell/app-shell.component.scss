@@ -1,4 +1,4 @@
-@use 'sci-toolkit-styles' as sci-toolkit-styles;
+@use '@scion/components.internal' as sci-ɵcomponents;
 
 :host {
   display: flex;
@@ -37,20 +37,20 @@
       flex: none;
 
       &.focus-within {
-        @include sci-toolkit-styles.chip(var(--sci-color-accent), null, var(--sci-color-accent));
+        @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
         padding: .25em 1.5em;
         font-size: 1.1rem;
       }
 
       &.app-name {
-        @include sci-toolkit-styles.chip(var(--sci-color-accent), var(--sci-color-A50), var(--sci-color-accent));
+        @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), var(--sci-color-A50), var(--sci-color-accent));
         padding: .25em 1.5em;
         font-size: 1.1rem;
         font-weight: bold;
       }
 
       &.devtools {
-        @include sci-toolkit-styles.chip(var(--sci-color-accent), null, var(--sci-color-accent));
+        @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
         padding: .1em 1em;
         font-size: 1rem;
         font-weight: bold;

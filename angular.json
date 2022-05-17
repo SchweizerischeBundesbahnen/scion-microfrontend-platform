@@ -98,11 +98,6 @@
             "styles": [
               "apps/microfrontend-platform-testing-app/src/styles.scss"
             ],
-            "stylePreprocessorOptions": {
-              "includePaths": [
-                "node_modules/@scion/toolkit.internal/widgets"
-              ]
-            },
             "scripts": []
           },
           "configurations": {
@@ -199,11 +194,6 @@
             "styles": [
               "apps/microfrontend-platform-devtools/src/styles.scss"
             ],
-            "stylePreprocessorOptions": {
-              "includePaths": [
-                "node_modules/@scion/toolkit.internal/widgets"
-              ]
-            },
             "scripts": []
           },
           "configurations": {

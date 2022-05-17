@@ -9,7 +9,7 @@
  */
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
 import {ElementFinder} from 'protractor';
-import {SciListItemPO} from '../../deps/scion/toolkit.internal/list/list-item.po';
+import {SciListItemPO} from '../../deps/scion/components.internal/list.po';
 
 export class ContextEntryListItemPO {
 

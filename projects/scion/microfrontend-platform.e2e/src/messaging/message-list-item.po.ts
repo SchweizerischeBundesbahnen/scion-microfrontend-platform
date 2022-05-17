@@ -10,8 +10,8 @@
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
 import {ElementFinder} from 'protractor';
 import {Capability, Qualifier} from '@scion/microfrontend-platform';
-import {SciListItemPO} from '../../deps/scion/toolkit.internal/list/list-item.po';
-import {SciPropertyPO} from '../../deps/scion/toolkit.internal/property/property.po';
+import {SciListItemPO} from '../../deps/scion/components.internal/list.po';
+import {SciPropertyPO} from '../../deps/scion/components.internal/property.po';
 
 export class MessageListItemPO {
 

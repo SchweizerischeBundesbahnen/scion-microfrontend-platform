@@ -10,7 +10,7 @@
 import {ElementFinder} from 'protractor';
 import {ContextEntryListItemPO} from './context-entry-list-item.po';
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {SciListPO, WaitUntil} from '../../deps/scion/toolkit.internal/list/list.po';
+import {SciListPO, WaitUntil} from '../../deps/scion/components.internal/list.po';
 
 export class ContextListPO {
 

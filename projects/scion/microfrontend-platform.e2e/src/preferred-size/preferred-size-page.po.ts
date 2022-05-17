@@ -11,7 +11,7 @@ import {$} from 'protractor';
 import {enterText} from '../spec.util';
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
 import {ISize} from 'selenium-webdriver';
-import {SciCheckboxPO} from '../../deps/scion/toolkit.internal/checkbox/checkbox.po';
+import {SciCheckboxPO} from '../../deps/scion/components.internal/checkbox.po';
 
 export class PreferredSizePagePO {
 

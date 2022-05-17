@@ -35,11 +35,17 @@ import {MicrofrontendComponent} from './microfrontend/microfrontend.component';
 import {ScrollableMicrofrontendComponent} from './scrollable-microfrontend/scrollable-microfrontend.component';
 import {PreferredSizeComponent} from './preferred-size/preferred-size.component';
 import {PlatformPropertiesComponent} from './platform-properties/platform-properties.component';
-import {SciSashboxModule} from '@scion/toolkit/sashbox';
-import {SciViewportModule} from '@scion/toolkit/viewport';
+import {SciSashboxModule} from '@scion/components/sashbox';
+import {SciViewportModule} from '@scion/components/viewport';
 import {A11yModule} from '@angular/cdk/a11y';
 import {OverlayModule} from '@angular/cdk/overlay';
-import {SciAccordionModule, SciCheckboxModule, SciFormFieldModule, SciListModule, SciParamsEnterModule, SciPropertyModule, SciQualifierChipListModule} from '@scion/toolkit.internal/widgets';
+import {SciAccordionModule} from '@scion/components.internal/accordion';
+import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciListModule} from '@scion/components.internal/list';
+import {SciParamsEnterModule} from '@scion/components.internal/params-enter';
+import {SciPropertyModule} from '@scion/components.internal/property';
+import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-chip-list';
 import {AppShellComponent} from './app-shell/app-shell.component';
 import {DevToolsComponent} from './devtools/devtools.component';
 import {LookupContextValueComponent} from './outlet-context/lookup-context-value/lookup-context-value.component';
@@ -79,7 +85,6 @@ import {AppendParamDataTypePipe} from './messaging/append-param-data-type.pipe';
     BrowserAnimationsModule,
     FormsModule,
     ReactiveFormsModule,
-    SciSashboxModule,
     SciViewportModule,
     SciListModule,
     SciSashboxModule,

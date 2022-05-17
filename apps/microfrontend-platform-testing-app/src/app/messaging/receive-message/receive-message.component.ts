@@ -12,7 +12,7 @@ import {IntentClient, IntentMessage, MessageClient, MessageHeaders, Qualifier, T
 import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {Subject, Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith, takeUntil} from 'rxjs/operators';
-import {SciParamsEnterComponent} from '@scion/toolkit.internal/widgets';
+import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 export const FLAVOR = 'flavor';

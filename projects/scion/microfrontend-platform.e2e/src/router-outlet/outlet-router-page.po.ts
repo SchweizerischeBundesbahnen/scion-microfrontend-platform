@@ -10,8 +10,8 @@
 import {$} from 'protractor';
 import {enterText} from '../spec.util';
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {SciParamsEnterPO} from '../../deps/scion/toolkit.internal/params-enter/params-enter.po';
-import {SciCheckboxPO} from '../../deps/scion/toolkit.internal/checkbox/checkbox.po';
+import {SciParamsEnterPO} from '../../deps/scion/components.internal/params-enter.po';
+import {SciCheckboxPO} from '../../deps/scion/components.internal/checkbox.po';
 
 export class OutletRouterPagePO {
 

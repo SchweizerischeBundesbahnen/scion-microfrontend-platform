@@ -11,9 +11,9 @@ import {$} from 'protractor';
 import {enterText} from '../spec.util';
 import {ManifestObjectFilter} from '@scion/microfrontend-platform';
 import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {SciListPO, WaitUntil} from '../../deps/scion/toolkit.internal/list/list.po';
-import {SciCheckboxPO} from '../../deps/scion/toolkit.internal/checkbox/checkbox.po';
-import {SciParamsEnterPO} from '../../deps/scion/toolkit.internal/params-enter/params-enter.po';
+import {SciListPO, WaitUntil} from '../../deps/scion/components.internal/list.po';
+import {SciCheckboxPO} from '../../deps/scion/components.internal/checkbox.po';
+import {SciParamsEnterPO} from '../../deps/scion/components.internal/params-enter.po';
 
 export class LookupIntentionPagePO {
 
