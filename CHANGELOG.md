@@ -1,3 +1,25 @@
+# [1.0.0-rc.5](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.4...1.0.0-rc.5) (2022-05-18)
+
+
+### Dependencies
+
+* **platform:** migrate to the framework-agnostic package `@scion/toolkit` ([2b53137](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/2b5313784c67168bbd0a9283f5f9b82c679ad21c))
+
+
+### BREAKING CHANGES
+
+* **platform:** Migrating to the framework-agnostic package `@scion/toolkit` introduced a breaking change.
+
+  Previously, framework-agnostic and Angular-specific tools were published in the same NPM package `@scion/toolkit`, which often led to confusion and prevented framework-agnostic tools from having a release cycle independent of the Angular project. Therefore, Angular-specific tools have been moved to the NPM package `@scion/components`. Framework-agnostic tools continue to be released under `@scion/toolkit`, but now starting with version `1.0.0` instead of pre-release versions.
+
+  The breaking change only refers to updating `@scion/toolkit` to version `1.0.0`. API and communication protocol have not changed or are backward compatible. Host and clients can be updated independently to the new version.
+
+  To migrate:
+  - Install the NPM package `@scion/toolkit` in version `1.0.0` using the following command: `npm install @scion/toolkit@latest --save`. Note that the toolkit was previously released as pre-releases of version `13.0.0` or older.
+  - For further instructions on how to migrate Angular-specific tools that have been moved to `@scion/components`, refer to https://github.com/SchweizerischeBundesbahnen/scion-toolkit/blob/master/docs/site/changelog-components/changelog.md#migration-of-angular-specific-components-and-directives.
+
+
+
 # [1.0.0-rc.4](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.3...1.0.0-rc.4) (2022-05-02)
 
 
