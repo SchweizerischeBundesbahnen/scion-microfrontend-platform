@@ -54,6 +54,8 @@ import {CLIENT_HEARTBEAT_INTERVAL, STALE_CLIENT_UNREGISTER_DELAY} from './host/c
 import {MicrofrontendPlatformStopper, ɵMicrofrontendPlatformStopper} from './microfrontend-platform-stopper';
 import {VERSION} from './version';
 import {ɵClientRegistry} from './host/client-registry/ɵclient.registry';
+import {IntentInterceptor} from './host/message-broker/message-interception';
+import {MicrofrontendIntentInterceptor} from './host/router/microfrontend-intent.interceptor';
 
 /**
  * Current version of the SCION Microfrontend Platform.
@@ -178,6 +180,7 @@ export class MicrofrontendPlatform {
         Beans.register(PreferredSizeService);
         Beans.register(ManifestService);
         Beans.register(KeyboardEventDispatcher, {eager: true});
+        Beans.register(IntentInterceptor, {useClass: MicrofrontendIntentInterceptor, multi: true});
 
         // Register broker gateway.
         registerBrokerGateway({

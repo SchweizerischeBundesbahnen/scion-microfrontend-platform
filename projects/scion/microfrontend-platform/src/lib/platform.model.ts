@@ -109,8 +109,8 @@ export interface Application {
  * The term capability refers to the Intention API of the SCION Microfrontend Platform.
  *
  * A capability represents some functionality of a micro application that is available to qualified micro applications through the Intention API.
- * A micro application declares its capabilities in its manifest. Qualified micro applications can then browse the capabilities, or interact with
- * provided capabilities via intent.
+ * A micro application declares its capabilities in its manifest. Qualified micro applications can browse capabilities similar to a catalog, or
+ * interact with capabilities via intent.
  *
  * A capability is formulated in an abstract way consisting of a type and optionally a qualifier. The type categorizes a capability in terms of its
  * functional semantics. A capability may also define a qualifier to differentiate different capabilities of the same type.
@@ -269,17 +269,22 @@ export abstract class IS_PLATFORM_HOST {
  */
 export enum PlatformCapabilityTypes {
   /**
-   * Classifier to register an activator capability.
+   * Type for registering an activator capability.
    *
-   * @see Activator
+   * @see ActivatorCapability
    */
-  Activator = 'activator'
+  Activator = 'activator',
+  /**
+   * Type for registering a microfrontend capability.
+   *
+   * @see MicrofrontendCapability
+   */
+  Microfrontend = 'microfrontend',
 }
 
 /**
  * An activator allows a micro application to initialize and connect to the platform upon host application's startup,
  * i.e., when the user loads the web application into the browser.
- *
  *
  * In the broadest sense, an activator is a kind of microfrontend, i.e. an HTML page that runs in an iframe. In contrast
  * to regular microfrontends, however, at platform startup, the platform loads activator microfrontends into hidden iframes
@@ -334,7 +339,7 @@ export enum PlatformCapabilityTypes {
  *
  * @category Platform
  */
-export interface Activator extends Capability {
+export interface ActivatorCapability extends Capability {
   type: PlatformCapabilityTypes.Activator;
   private: false;
   properties: {
@@ -354,6 +359,63 @@ export interface Activator extends Capability {
      * the startup of the platform host.
      */
     readinessTopics?: string | string[];
+  };
+}
+
+/**
+ * Represents a microfrontend that can be loaded into a <sci-router-outlet> using the {@link OutletRouter}.
+ */
+export interface MicrofrontendCapability extends Capability {
+  type: PlatformCapabilityTypes.Microfrontend;
+  properties: {
+    /**
+     * Specifies the path of the microfrontend.
+     *
+     * The path is relative to the base URL, as specified in the application manifest. If the
+     * application does not declare a base URL, it is relative to the origin of the manifest file.
+     *
+     * In the path, you can reference qualifier and parameter values in the form of named parameters.
+     * Named parameters begin with a colon (`:`) followed by the parameter or qualifier name, and are allowed in path segments, query parameters, matrix parameters
+     * and the fragment part. The router will substitute named parameters in the URL accordingly.
+     *
+     * #### Usage of named parameters in the path:
+     * ```json
+     * {
+     *   "type": "microfrontend",
+     *   "qualifier": {
+     *     "entity": "product"
+     *   },
+     *   "params": [
+     *     {"name": "id", "required": true}
+     *   ]
+     *   "properties": {
+     *     "path": "product/:id",
+     *   }
+     * }
+     * ```
+     *
+     * #### Path parameter example:
+     * segment/:param1/segment/:param2
+     *
+     * #### Matrix parameter example:
+     * segment/segment;matrixParam1=:param1;matrixParam2=:param2
+     *
+     * #### Query parameter example:
+     * segment/segment?queryParam1=:param1&queryParam2=:param2
+     */
+    path: string;
+    /**
+     * Specifies the preferred outlet to load this microfrontend into.
+     * Note that this preference is only a hint that will be ignored if the navigator
+     * specifies an outlet for navigation.
+     *
+     * The precedence is as follows:
+     * - Outlet as specified by navigator via {@link NavigationOptions#outlet}.
+     * - Preferred outlet as specified in the microfrontend capability.
+     * - Current outlet if navigating in the context of an outlet.
+     * - {@link PRIMARY_OUTLET primary} outlet.
+     */
+    outlet?: string;
   };
 }
 

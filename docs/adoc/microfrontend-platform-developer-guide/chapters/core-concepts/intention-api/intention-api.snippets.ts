@@ -18,7 +18,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
       }
     },
     {
-      "description": "Opens the product microfrontend.",
+      "description": "Microfrontend to display a product.",
       "type": "microfrontend",
       "qualifier": {
         "entity": "product"
@@ -75,8 +75,8 @@ import {Beans} from '@scion/toolkit/bean-manager';
 {
 // tag::intent-handling[]
   const selector: IntentSelector = {
-    type: 'microfrontend',
-    qualifier: {entity: 'product'},
+    type: 'wizard',
+    qualifier: {process: 'checkout'},
   };
 
   Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => {
@@ -88,20 +88,29 @@ import {Beans} from '@scion/toolkit/bean-manager';
 {
 // tag::issue-intent[]
   Beans.get(IntentClient).publish({
-    type: 'microfrontend',
-    qualifier: {entity: 'product'},
-    params: new Map().set('productId', '500f3dba-a638-4d1c-a73c-d9c1b6a8f812'),
+    type: 'wizard',
+    qualifier: {process: 'checkout'},
   });
 // end::issue-intent[]
+}
+
+{
+// tag::issue-intent-with-params[]
+  Beans.get(IntentClient).publish({
+    type: 'wizard',
+    qualifier: {process: 'checkout'},
+    params: new Map().set('correlationId', '2b504c06-f38d-4c65-b96b-d683742b6f61'),
+  });
+// end::issue-intent-with-params[]
 }
 
 {
 // tag::capability-lookup-toolbar-items[]
   // Filter toolbar item capabilities.
   const toolbarItemFilter: ManifestObjectFilter = {
-    type: 'toolbar-item',
+    type: 'menu-item',
     qualifier: {
-      toolbar: 'main',
+      location: 'toolbar:main',
       action: '*',
     },
   };
@@ -134,7 +143,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 
     // Inform the user about planned maintenance.
     const capabilityId = await Beans.get(ManifestService).registerCapability({ // <1>
-      type: 'user-notification',
+      type: 'notification',
       description: 'Informs the user about planned system maintenance',
       private: false,
       properties: {
@@ -154,7 +163,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 
 {
 // tag::capability-lookup-notification[]
-  const filter: ManifestObjectFilter = {type: 'user-notification'};
+  const filter: ManifestObjectFilter = {type: 'notification'};
   Beans.get(ManifestService).lookupCapabilities$(filter).subscribe(notifications => { // <1>
     // Clear present notifications.
     const notificationList = document.querySelector('ul.notifications');

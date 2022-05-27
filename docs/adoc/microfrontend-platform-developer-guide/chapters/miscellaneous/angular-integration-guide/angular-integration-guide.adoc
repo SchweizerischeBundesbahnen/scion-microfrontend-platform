@@ -111,6 +111,13 @@ We recommend using hash-based routing over HTML 5 push-state routing in micro ap
 include::angular-integration-guide.snippets.ts[tags=configure-hash-based-routing]
 ----
 
+If you use hash-based routing, do not forget to set the base URL of the application to `#` in the manifest, as follows:
+
+[source,json]
+----
+include::angular-integration-guide.snippets.ts[tags=configure-hash-based-routing-set-baseurl]
+----
+
 ====
 TIP: Read chapter <<chapter:miscellaneous:routing-in-micro-applications>> to learn more about why to prefer hash-based routing.
 ====
@@ -182,8 +189,6 @@ Activator can perform activation tasks in the constructor.
 ----
 include::activator.snippets.ts[tags=activator-services]
 ----
-
-For implementing the `MicrofrontendRouter`, refer to chapter <<chapter:activator:routing-in-the-activator>>.
 
 [[chapter:angular-integration-guide:providing-platform-beans-for-dependency-injection]]
 [discrete]

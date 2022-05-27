@@ -152,6 +152,49 @@ export function expectToBeRejectedWithError(promise: Promise<any>, expected?: Re
 }
 
 /**
+ * Expects the given Promise to either resolve or reject.
+ *
+ * Prefer this expectation over Jasmine `expectAsync` as we experienced unexpected behavior. The `expectAsync` expectation was added to Jasmine in version 3.5.
+ *
+ * - Jasmine `toBeRejectedWithError` matcher does not support to test against a regular expression if the error is not of type 'Error'
+ * - Jasmine `toBeResolved` sometimes does not wait for the Promise to resolve. We did not investigate this further.
+ *
+ * @see https://jasmine.github.io/api/3.5/async-matchers.html
+ */
+export function expectPromise(actual: Promise<any>): PromiseMatcher {
+  return {
+    toResolve: async (expected?: any): Promise<void> => {
+      try {
+        const value = await actual;
+        if (expected !== undefined) {
+          expect(value).toEqual(expected);
+        }
+        else {
+          expect(true).toBe(true);
+        }
+      }
+      catch (reason) {
+        fail(`Promise expected to be resolved but was rejected: ${reason}`);
+      }
+    },
+    toReject: async (expected?: RegExp): Promise<void> => {
+      try {
+        const value = await actual;
+        fail(`Promise expected to be rejected but was resolved: ${value}`);
+      }
+      catch (reason) {
+        if (expected && !stringifyError(reason).match(expected)) {
+          fail(`Expected promise to be rejected with a reason matching '${expected.source}', but was '${(stringifyError(reason))}'.`);
+        }
+        else {
+          expect(true).toBe(true);
+        }
+      }
+    },
+  };
+}
+
+/**
  * Expects the resolved map to contain at least the given map entries.
  *
  * Jasmine 3.5 provides 'mapContaining' matcher.
@@ -274,3 +317,25 @@ export async function getUrlOfCurrentWebDriverExecutionContext(): Promise<string
   return runOutsideAngularSynchronization((): Promise<string> => browser.executeScript('return window.location.href') as Promise<string>);
 }
 
+/**
+ * Returns the error message if given an error object, or the `toString` representation otherwise.
+ */
+export function stringifyError(error: any): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return error?.toString();
+}
+
+export interface PromiseMatcher {
+  /**
+   * Expects the Promise to resolve. If passing an expected value, also performs an equality test.
+   * You can wrap your expectation inside the `objectContaining` or `mapContaining` matcher to test for partial equality.
+   */
+  toResolve(expected?: any): Promise<void>;
+
+  /**
+   * Expects the Promise to reject. If passing a regular expression, also tests the error to match the regex.
+   */
+  toReject(expected?: RegExp): Promise<void>;
+}

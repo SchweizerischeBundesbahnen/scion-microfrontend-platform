@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Activator, PlatformCapabilityTypes} from '../../platform.model';
+import {ActivatorCapability, PlatformCapabilityTypes} from '../../platform.model';
 import {first} from 'rxjs/operators';
 import {ApplicationRegistry} from '../application-registry';
 import {OutletRouter} from '../../client/router-outlet/outlet-router';
@@ -37,7 +37,7 @@ export class ActivatorInstaller implements Initializer {
 
   public async init(): Promise<void> {
     // Lookup activators.
-    const activators: Activator[] = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$<Activator>({type: PlatformCapabilityTypes.Activator}));
+    const activators: ActivatorCapability[] = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$<ActivatorCapability>({type: PlatformCapabilityTypes.Activator}));
 
     const monitor = Beans.get(ActivatorLoadProgressMonitor);
     if (!activators.length) {
@@ -46,9 +46,9 @@ export class ActivatorInstaller implements Initializer {
     }
 
     // Group activators by their providing application.
-    const activatorsGroupedByApp: Map<string, Activator[]> = activators
+    const activatorsGroupedByApp: Map<string, ActivatorCapability[]> = activators
       .filter(this.skipInvalidActivators())
-      .reduce((grouped, activator) => Maps.addListValue(grouped, activator.metadata!.appSymbolicName, activator), new Map<string, Activator[]>());
+      .reduce((grouped, activator) => Maps.addListValue(grouped, activator.metadata!.appSymbolicName, activator), new Map<string, ActivatorCapability[]>());
 
     // Create Promises that wait for activators to signal ready.
     const subMonitors = monitor.splitEven(activatorsGroupedByApp.size);
@@ -59,7 +59,7 @@ export class ActivatorInstaller implements Initializer {
       }, [] as Promise<void>[]);
 
     // Mount activators in hidden iframes
-    activatorsGroupedByApp.forEach((sameAppActivators: Activator[]) => {
+    activatorsGroupedByApp.forEach((sameAppActivators: ActivatorCapability[]) => {
       // Nominate one activator of each app as primary activator.
       const primaryActivator = sameAppActivators[0];
       sameAppActivators.forEach(activator => this.mountActivator(activator, activator === primaryActivator));
@@ -69,8 +69,8 @@ export class ActivatorInstaller implements Initializer {
     await Promise.all(activatorReadyPromises);
   }
 
-  private skipInvalidActivators(): (activator: Activator) => boolean {
-    return (activator: Activator): boolean => {
+  private skipInvalidActivators(): (activator: ActivatorCapability) => boolean {
+    return (activator: ActivatorCapability): boolean => {
       if (!activator.properties || !activator.properties.path) {
         Beans.get(Logger).error(`[ActivatorError] Failed to activate the application '${activator.metadata!.appSymbolicName}'. Missing required 'path' property in the provided activator capability.`, activator);
         return false;
@@ -82,7 +82,7 @@ export class ActivatorInstaller implements Initializer {
   /**
    * Creates a Promise that resolves when given activators signal ready.
    */
-  private async waitForActivatorsToSignalReady(appSymbolicName: string, activators: Activator[], monitor: ProgressMonitor): Promise<void> {
+  private async waitForActivatorsToSignalReady(appSymbolicName: string, activators: ActivatorCapability[], monitor: ProgressMonitor): Promise<void> {
     const t0 = Date.now();
     const activatorLoadTimeout = Beans.get(ApplicationRegistry).getApplication(appSymbolicName)!.activatorLoadTimeout;
     const readinessPromises: Promise<void>[] = activators
@@ -119,7 +119,7 @@ export class ActivatorInstaller implements Initializer {
   /**
    * Mounts a hidden <sci-router-outlet> and loads the activator endpoint.
    */
-  private mountActivator(activator: Activator, primary: boolean): void {
+  private mountActivator(activator: ActivatorCapability, primary: boolean): void {
     const application = Beans.get(ApplicationRegistry).getApplication(activator.metadata!.appSymbolicName)!;
 
     // Create the router outlet and navigate to the activator endpoint.
@@ -179,5 +179,5 @@ export interface ActivationContext {
   /**
    * Metadata about the activator that activated the microfrontend.
    */
-  activator: Activator;
+  activator: ActivatorCapability;
 }

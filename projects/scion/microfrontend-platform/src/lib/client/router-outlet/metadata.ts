@@ -7,16 +7,19 @@ import {Dictionary} from '@scion/toolkit/util';
  */
 export interface NavigationOptions {
   /**
-   * Specifies the routing target. If not specifying an outlet, then the navigation refers to the outlet of the current
-   * outlet context, if any, or to the {@link PRIMARY_OUTLET primary} outlet otherwise.
+   * Specifies the routing target. If not specifying an outlet and if navigating in the context of an outlet, that outlet will be used as the
+   * navigation target, or the {@link PRIMARY_OUTLET primary} outlet otherwise.
    */
   outlet?: string;
   /**
    * Specifies the base URL to resolve a relative url. If not specified, the current window location is used to resolve a relative path.
+   *
+   * Note that this property has no effect if navigating via intent.
    */
   relativeTo?: string;
   /**
-   * Specifies parameters which will be used for the substitution of named URL parameters.
+   * Specifies the parameters that, if navigating via URL, are used to substitute named URL parameters or that are passed along with the intent
+   * if navigating via intent.
    */
   params?: Map<string, any> | Dictionary;
   /**

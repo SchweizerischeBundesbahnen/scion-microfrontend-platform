@@ -18,6 +18,7 @@ const TYPE = 'type';
 const QUALIFIER = 'qualifier';
 const PARAMS = 'params';
 const PRIVATE = 'private';
+const PROPERTIES = 'properties';
 const ID = 'id';
 const NILQUALIFIER_IF_EMPTY = 'nilQualifierIfEmpty';
 const APP_SYMBOLIC_NAME = 'appSymbolicName';
@@ -33,6 +34,7 @@ export class RegisterCapabilityComponent {
   public readonly QUALIFIER = QUALIFIER;
   public readonly PARAMS = PARAMS;
   public readonly PRIVATE = PRIVATE;
+  public readonly PROPERTIES = PROPERTIES;
   public readonly ID = ID;
   public readonly NILQUALIFIER_IF_EMPTY = NILQUALIFIER_IF_EMPTY;
   public readonly APP_SYMBOLIC_NAME = APP_SYMBOLIC_NAME;
@@ -54,6 +56,7 @@ export class RegisterCapabilityComponent {
       [QUALIFIER]: fb.array([]),
       [PARAMS]: new FormControl(''),
       [PRIVATE]: new FormControl(false),
+      [PROPERTIES]: fb.array([]),
     });
 
     this.unregisterForm = fb.group({
@@ -77,6 +80,7 @@ export class RegisterCapabilityComponent {
       qualifier: SciParamsEnterComponent.toParamsDictionary(this.registerForm.get(QUALIFIER) as FormArray),
       params: params ? JSON.parse(params) : undefined,
       private: this.registerForm.get(PRIVATE).value,
+      properties: SciParamsEnterComponent.toParamsDictionary(this.registerForm.get(PROPERTIES) as FormArray, false),
     };
 
     Beans.get(ManifestService).registerCapability(capability)

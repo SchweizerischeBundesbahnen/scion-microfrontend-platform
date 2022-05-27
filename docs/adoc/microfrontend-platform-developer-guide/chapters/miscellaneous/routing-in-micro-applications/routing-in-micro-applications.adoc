@@ -10,3 +10,9 @@ When routing between microfrontends, the router outlet sets the iframe location 
 
 Refer to the documentation of the UI framework of the micro application on how to activate hash-based routing.
 
+If you use hash-based routing, do not forget to set the base URL of the application to `#` in the manifest, as follows:
+
+[source,json]
+----
+include::routing-in-micro-applications.snippets.ts[tags=configure-hash-based-routing-set-baseurl]
+----

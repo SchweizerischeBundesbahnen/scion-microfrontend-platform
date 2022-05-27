@@ -132,7 +132,6 @@ In this section, we will embed the `products`, `shopping cart` and `devtools` mi
 
    For illustration purposes, unlike to embedding the `products` microfrontend, we publish a message to show the `shopping cart` microfrontend. As of now, nothing would happen when the user clicks on that button, because we did not register a message listener yet. It is important to understand that the platform transports that message to all micro applications. Later, when implementing the `shopping cart` micro application, we will subscribe to such messages and navigate accordingly. Of course, we could also use the `OutletRouter` directly. For illustrative purposes, however, we use an alternative approach, which further has the advantage that we do not have to know the URL of the microfrontend to embed it. Instead, we let the providing micro application perform the routing, keeping the microfrontend URL an implementation detail of the micro application that provides the microfrontend.
    
-   > Note: It would be even better to use the Intention API for showing a microfrontend, which, however, would go beyond the scope of this Getting Started Guide. For more information, refer to the [Developer Guide][link-developer-guide#routing-in-the-activator].
 1. Finally, we want to route the devtools router outlet to display the `devtools` microfrontend, as follows:
 
    ```ts
@@ -275,7 +274,6 @@ new HostController().init();
 
 [menu-getting-started]: /docs/site/getting-started/getting-started.md
 [link-getting-started#installation]: /docs/site/getting-started/getting-started.md#how-to-complete-this-guide
-[link-developer-guide#routing-in-the-activator]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:activator:routing-in-the-activator
 [link-developer-guide#routing]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:embedding-microfrontends
 [link-developer-guide#manifest]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:intention-api:manifest
 [link-getting-started:products-app]: /docs/site/getting-started/getting-started-products-app.md

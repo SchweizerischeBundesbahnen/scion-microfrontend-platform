@@ -61,12 +61,12 @@ export class BrowserOutletPO {
       case OutletDescriptorTypes.PAGE_OBJECT_CLASS: {
         const pageObjectClass = command as OutletPageObjectClass;
         await this.enterUrlAndNavigate(new URL(`#/${pageObjectClass.pageUrl}`, TestingAppOrigins.APP_1).toString());
-        return new pageObjectClass((): Promise<void> => this.switchToOutletIframe(true));
+        return new pageObjectClass((): Promise<void> => this.switchToOutletIframe({trace: true}));
       }
       case OutletDescriptorTypes.PAGE_OBJECT_DESCRIPTOR: {
         const {useClass, origin} = command as OutletPageObjectDescriptor;
         await this.enterUrlAndNavigate(new URL(`#/${useClass.pageUrl}`, origin).toString());
-        return new useClass((): Promise<void> => this.switchToOutletIframe(true));
+        return new useClass((): Promise<void> => this.switchToOutletIframe({trace: true}));
       }
       default: {
         throw Error('[OutletNavigateError] Outlet navigation failed because entered an invalid command object. Supported command objects are: URL in the form of a string, `OutletPageObjectClass` or `OutletDescriptor`.');
@@ -114,7 +114,8 @@ export class BrowserOutletPO {
    * Elements contained within iframes can not be accessed from inside the root execution context.
    * Instead, the execution context must first be switched to the iframe.
    */
-  public async switchToOutletIframe(trace: boolean = true): Promise<void> {
+  public async switchToOutletIframe(options?: {trace?: boolean}): Promise<void> {
+    const trace = options?.trace ?? true;
     // Do not wait for Angular as the page must not necessarily be an Angular page, e.g. 'about:blank'.
     await runOutsideAngularSynchronization(async (): Promise<void> => {
       // Check if the WebDriver execution context for this document is already active.
@@ -131,7 +132,7 @@ export class BrowserOutletPO {
         trace && console.log('Switched WebDriver execution context to the root page.');
       }
       else {
-        await this._parentOutletPO.switchToOutletIframe(false);
+        await this._parentOutletPO.switchToOutletIframe({trace: false});
       }
 
       // Get the iframe from the custom element (inside shadow DOM)
