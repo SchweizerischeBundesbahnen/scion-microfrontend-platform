@@ -10,13 +10,62 @@ import {Beans} from '@scion/toolkit/bean-manager';
 }
 
 {
-  // tag::outlet-router[]
-  Beans.get(OutletRouter).navigate('https://micro-frontends.org', {outlet: 'aside'});
-  // end::outlet-router[]
+  // tag::navigate-via-url[]
+  Beans.get(OutletRouter).navigate('https://micro-frontends.org', {
+    outlet: 'aside', // <1>
+  });
+  // end::navigate-via-url[]
 }
 
 {
-  // tag::relative-navigation[]
+  // tag::navigate-via-intent[]
+  Beans.get(OutletRouter).navigate({entity: 'product'}, { // <1>
+    outlet: 'aside', // <2>
+    params: new Map().set('id', 123), // <3>
+  });
+  // end::navigate-via-intent[]
+}
+
+{
+  `
+  // tag::provide-microfrontend-capability[]
+  {
+    "type": "microfrontend", <1>
+    "qualifier": {
+      "entity": "product" <2>
+    },
+    "description": "Displays a product.", <3>
+    "params": [
+      {"name": "id", "required": true} <4>
+    ],
+    "private": false, <5>
+    "properties": { <6>
+      "path": "product/:id", <7>
+    }
+  }  
+  // end::provide-microfrontend-capability[]
+  `
+}
+
+{
+  `
+  // tag::provide-microfrontend-capability-with-preferred-outlet[]
+  {
+    "type": "microfrontend",
+    "qualifier": {
+      "entity": "products"
+    },
+    "properties": {
+      "path": "products",
+      "outlet": "aside", // <1>
+    }
+  }  
+  // end::provide-microfrontend-capability-with-preferred-outlet[]
+  `
+}
+
+{
+  // tag::relative-url-navigation[]
   // Navigation relative to the root path segment
   Beans.get(OutletRouter).navigate('/products/:id', {outlet: PRIMARY_OUTLET});
 
@@ -28,7 +77,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
     outlet: PRIMARY_OUTLET,
     relativeTo: 'https://product-catalog.webshop.io/',
   });
-  // end::relative-navigation[]
+  // end::relative-url-navigation[]
 }
 
 {

@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {browserNavigateBack, consumeBrowserLog, expectMap, waitUntilLocation} from '../spec.util';
+import {browserNavigateBack, consumeBrowserLog, expectMap, expectPromise, waitUntilLocation} from '../spec.util';
 import {TestingAppOrigins, TestingAppPO} from '../testing-app.po';
 import {browser, logging} from 'protractor';
 import {OutletRouterPagePO} from './outlet-router-page.po';
@@ -17,7 +17,10 @@ import {BrowserOutletPO} from '../browser-outlet/browser-outlet.po';
 import {Microfrontend1PagePO} from '../microfrontend/microfrontend-1-page.po';
 import {Microfrontend2PagePO} from '../microfrontend/microfrontend-2-page.po';
 import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
+import {RegisterCapabilityPagePO} from '../manifest/register-capability-page.po';
+import {RegisterIntentionPagePO} from '../manifest/register-intention-page.po';
 import Level = logging.Level;
+import {MicrofrontendCapability} from '@scion/microfrontend-platform';
 
 describe('RouterOutlet', () => {
 
@@ -46,7 +49,7 @@ describe('RouterOutlet', () => {
     // Navigate to another site (microfrontend-1) inside the outlet under test
     const testeePO = new OutletRouterPagePO((): Promise<void> => routerOutletPO.switchToRouterOutletIframe());
     await testeePO.enterUrl(`../${Microfrontend1PagePO.pageUrl}`); // do not specify a target outlet
-    await testeePO.clickNavigate();
+    await testeePO.clickNavigate({evalNavigateResponse: false});
 
     await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend1PagePO.pageUrl}));
   });
@@ -1132,6 +1135,526 @@ describe('RouterOutlet', () => {
     await expect(await consumeBrowserLog(Level.DEBUG, /BrowserOutletComponent::sci-router-outlet:onfocuswithin/)).toEqual(jasmine.arrayWithExactContents([
       `[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=testee, focuswithin=true]`,
     ]));
+  });
+
+  describe('Intent-based Routing', () => {
+
+    it('should navigate to a microfrontend of the same app', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: OutletRouterPagePO,
+        routerOutlet: RouterOutletPagePO,
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+
+      // open router outlet page
+      const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await routerOutletPO.enterOutletName('microfrontend-outlet');
+      await routerOutletPO.clickApply();
+
+      // register "microfrontend" capability
+      const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
+      await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+        properties: {
+          path: 'microfrontend-1',
+        },
+      });
+
+      // Navigate to the microfrontend via intent-based routing
+      const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO.enterOutletName('microfrontend-outlet');
+      await routerPO.enterIntentQualifier({entity: 'person'});
+      await routerPO.clickNavigate();
+
+      // Verify that navigation was successful
+      await expect(await routerOutletPO.isEmpty()).toBe(false);
+      await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+    });
+
+    it('should navigate to a microfrontend provided by another app', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: {useClass: OutletRouterPagePO, origin: TestingAppOrigins.APP_1},
+        routerOutlet: {useClass: RouterOutletPagePO, origin: TestingAppOrigins.APP_1},
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+
+      // open router outlet page in app-1
+      const routerOutletPO_app1 = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await routerOutletPO_app1.enterOutletName('microfrontend-outlet');
+      await routerOutletPO_app1.clickApply();
+
+      // register "microfrontend" capability in app-2
+      const registerCapabilityPO_app2 = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_2});
+      await registerCapabilityPO_app2.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+        private: false,
+        properties: {
+          path: 'microfrontend-1',
+        },
+      });
+
+      // register intention in app-1
+      const registerIntentionPO_app1 = await controllerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1});
+      await registerIntentionPO_app1.registerIntention({type: 'microfrontend', qualifier: {entity: 'person'}});
+
+      // Navigate to the microfrontend via intent-based routing
+      const routerPO_app1 = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO_app1.enterOutletName('microfrontend-outlet');
+      await routerPO_app1.enterIntentQualifier({entity: 'person'});
+      await routerPO_app1.clickNavigate();
+
+      // Verify that navigation was successful
+      await expect(await routerOutletPO_app1.isEmpty()).toBe(false);
+      await expectRouterOutletUrl(routerOutletPO_app1).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_2}));
+    });
+
+    it('should reject navigation to a microfrontend of another app if missing the intention', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: {useClass: OutletRouterPagePO, origin: TestingAppOrigins.APP_1},
+        routerOutlet: {useClass: RouterOutletPagePO, origin: TestingAppOrigins.APP_1},
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+
+      // open router outlet page in app-1
+      const routerOutletPO_app1 = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await routerOutletPO_app1.enterOutletName('microfrontend-outlet');
+      await routerOutletPO_app1.clickApply();
+
+      // register "microfrontend" capability in app-2
+      const registerCapabilityPO_app2 = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_2});
+      await registerCapabilityPO_app2.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+        private: false,
+        properties: {
+          path: 'microfrontend-1',
+        },
+      });
+
+      // Try navigating to the microfrontend via intent-based routing
+      const routerPO_app1 = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO_app1.enterOutletName('microfrontend-outlet');
+      await routerPO_app1.enterIntentQualifier({entity: 'person'});
+      const navigate = routerPO_app1.clickNavigate();
+
+      // Verify that the navigation failed
+      await expectPromise(navigate).toReject(/\[NotQualifiedError]/);
+      await expect(await routerOutletPO_app1.isEmpty()).toBe(true);
+      await expectRouterOutletUrl(routerOutletPO_app1).toEqual('about:blank');
+    });
+
+    it('should reject navigation to a microfrontend of another app if the microfrontend capability is private', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: {useClass: OutletRouterPagePO, origin: TestingAppOrigins.APP_1},
+        routerOutlet: {useClass: RouterOutletPagePO, origin: TestingAppOrigins.APP_1},
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+
+      // open router outlet page in app-1
+      const routerOutletPO_app1 = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await routerOutletPO_app1.enterOutletName('microfrontend-outlet');
+      await routerOutletPO_app1.clickApply();
+
+      // register intention in app-1
+      const registerIntentionPO_app1 = await controllerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1});
+      await registerIntentionPO_app1.registerIntention({type: 'microfrontend', qualifier: {entity: 'person'}});
+
+      // register "microfrontend" capability in app-2
+      const registerCapabilityPO_app2 = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_2});
+      await registerCapabilityPO_app2.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+        private: true,
+        properties: {
+          path: 'microfrontend-1',
+        },
+      });
+
+      // Try navigating to the microfrontend via intent-based routing
+      const routerPO_app1 = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO_app1.enterOutletName('microfrontend-outlet');
+      await routerPO_app1.enterIntentQualifier({entity: 'person'});
+      const navigate = routerPO_app1.clickNavigate();
+
+      // Verify that the navigation failed
+      await expectPromise(navigate).toReject(/\[NullProviderError]/);
+      await expect(await routerOutletPO_app1.isEmpty()).toBe(true);
+      await expectRouterOutletUrl(routerOutletPO_app1).toEqual('about:blank');
+    });
+
+    it('should reject navigation if the microfrontend does not exist', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: {useClass: OutletRouterPagePO, origin: TestingAppOrigins.APP_1},
+        routerOutlet: {useClass: RouterOutletPagePO, origin: TestingAppOrigins.APP_1},
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+
+      // open router outlet page in app-1
+      const routerOutletPO_app1 = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await routerOutletPO_app1.enterOutletName('microfrontend-outlet');
+      await routerOutletPO_app1.clickApply();
+
+      // register intention in app-1
+      const registerIntentionPO_app1 = await controllerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1});
+      await registerIntentionPO_app1.registerIntention({type: 'microfrontend', qualifier: {entity: 'person'}});
+
+      // Try navigating to the microfrontend via intent-based routing
+      const routerPO_app1 = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO_app1.enterOutletName('microfrontend-outlet');
+      await routerPO_app1.enterIntentQualifier({entity: 'person'});
+      const navigate = routerPO_app1.clickNavigate();
+
+      // Verify that the navigation failed
+      await expectPromise(navigate).toReject(/\[NullProviderError]/);
+      await expect(await routerOutletPO_app1.isEmpty()).toBe(true);
+      await expectRouterOutletUrl(routerOutletPO_app1).toEqual('about:blank');
+    });
+
+    it('should substitute matrix params when navigating', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: OutletRouterPagePO,
+        routerOutlet: RouterOutletPagePO,
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+      const microfrontendPO = new Microfrontend1PagePO((): Promise<void> => routerOutletPO.switchToRouterOutletIframe());
+
+      // open router outlet page
+      const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await routerOutletPO.enterOutletName('microfrontend-outlet');
+      await routerOutletPO.clickApply();
+
+      // register "microfrontend" capability
+      const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
+      await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+        params: [
+          {name: 'id', required: true},
+        ],
+        properties: {
+          path: 'microfrontend-1;id=:id',
+        },
+      });
+
+      // Navigate to the microfrontend via intent-based routing
+      const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO.enterOutletName('microfrontend-outlet');
+      await routerPO.enterIntentQualifier({entity: 'person'});
+      await routerPO.enterParams(new Map().set('id', '123'));
+      await routerPO.clickNavigate();
+
+      // Verify that navigation was successful
+      await expect(await microfrontendPO.getMatrixParams()).toEqual(new Map().set('id', '123'));
+      await expect(await microfrontendPO.getQueryParams()).toEqual(new Map());
+    });
+
+    it('should substitute query params when navigating', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: OutletRouterPagePO,
+        routerOutlet: RouterOutletPagePO,
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+      const microfrontendPO = new Microfrontend1PagePO((): Promise<void> => routerOutletPO.switchToRouterOutletIframe());
+
+      // open router outlet page
+      const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await routerOutletPO.enterOutletName('microfrontend-outlet');
+      await routerOutletPO.clickApply();
+
+      // register "microfrontend" capability
+      const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
+      await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+        params: [
+          {name: 'id', required: true},
+        ],
+        properties: {
+          path: 'microfrontend-1?id=:id',
+        },
+      });
+
+      // Navigate to the microfrontend via intent-based routing
+      const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO.enterOutletName('microfrontend-outlet');
+      await routerPO.enterIntentQualifier({entity: 'person'});
+      await routerPO.enterParams(new Map().set('id', '123'));
+      await routerPO.clickNavigate();
+
+      // Verify that navigation was successful
+      await expect(await microfrontendPO.getQueryParams()).toEqual(new Map().set('id', '123'));
+      await expect(await microfrontendPO.getMatrixParams()).toEqual(new Map());
+    });
+
+    it('should reject navigation if not passing required params', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: OutletRouterPagePO,
+        routerOutlet: RouterOutletPagePO,
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+
+      // open router outlet page
+      const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await routerOutletPO.enterOutletName('microfrontend-outlet');
+      await routerOutletPO.clickApply();
+
+      // register "microfrontend" capability
+      const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
+      await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+        params: [
+          {name: 'id', required: true},
+        ],
+        properties: {
+          path: 'microfrontend-1?id=:id',
+        },
+      });
+
+      // Navigate to the microfrontend via intent-based routing
+      const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO.enterOutletName('microfrontend-outlet');
+      await routerPO.enterIntentQualifier({entity: 'person'});
+      const navigate = routerPO.clickNavigate();
+
+      // Verify that the navigation failed
+      await expectPromise(navigate).toReject(/\[ParamMismatchError]/);
+      await expect(await routerOutletPO.isEmpty()).toBe(true);
+      await expectRouterOutletUrl(routerOutletPO).toEqual('about:blank');
+    });
+
+    it('should reject navigation if passing params that are not defined by the capability', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: OutletRouterPagePO,
+        routerOutlet: RouterOutletPagePO,
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+
+      // open router outlet page
+      const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await routerOutletPO.enterOutletName('microfrontend-outlet');
+      await routerOutletPO.clickApply();
+
+      // register "microfrontend" capability
+      const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
+      await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+        properties: {
+          path: 'microfrontend-1',
+        },
+      });
+
+      // Navigate to the microfrontend via intent-based routing
+      const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO.enterOutletName('microfrontend-outlet');
+      await routerPO.enterIntentQualifier({entity: 'person'});
+      await routerPO.enterParams(new Map().set('id', '123'));
+      const navigate = routerPO.clickNavigate();
+
+      // Verify that the navigation failed
+      await expectPromise(navigate).toReject(/\[ParamMismatchError]/);
+      await expect(await routerOutletPO.isEmpty()).toBe(true);
+      await expectRouterOutletUrl(routerOutletPO).toEqual('about:blank');
+    });
+
+    it('should reject navigation if the microfrontend capability does not define the path to the microfrontend', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: OutletRouterPagePO,
+        routerOutlet: RouterOutletPagePO,
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+
+      // open router outlet page
+      const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await routerOutletPO.enterOutletName('microfrontend-outlet');
+      await routerOutletPO.clickApply();
+
+      // register "microfrontend" capability
+      const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
+      await registerCapabilityPO.registerCapability({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+      });
+
+      // Navigate to the microfrontend via intent-based routing
+      const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO.enterOutletName('microfrontend-outlet');
+      await routerPO.enterIntentQualifier({entity: 'person'});
+      const navigate = routerPO.clickNavigate();
+
+      // Verify that the navigation failed
+      await expectPromise(navigate).toReject(/\[OutletRouterError]\[NullPathError]/);
+      await expect(await routerOutletPO.isEmpty()).toBe(true);
+      await expectRouterOutletUrl(routerOutletPO).toEqual('about:blank');
+    });
+
+    it('should navigate to a microfrontend in the specified outlet', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: OutletRouterPagePO,
+        routerOutlet: RouterOutletPagePO,
+        preferredOutlet: RouterOutletPagePO,
+        primaryOutlet: RouterOutletPagePO,
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+
+      // open router outlet page
+      const outletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await outletPO.enterOutletName('outlet');
+      await outletPO.clickApply();
+
+      // open preferred router outlet page
+      const preferredOutletPO = pagePOs.get<RouterOutletPagePO>('preferredOutlet');
+      await preferredOutletPO.enterOutletName('preferred-outlet');
+      await preferredOutletPO.clickApply();
+
+      // register "microfrontend" capability
+      const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
+      await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+        properties: {
+          path: 'microfrontend-1',
+          outlet: 'preferred-outlet',
+        },
+      });
+
+      // Prepare the primary outlet
+      const primaryOutlet = pagePOs.get<RouterOutletPagePO>('primaryOutlet');
+      await primaryOutlet.enterOutletName('primary');
+      await primaryOutlet.clickApply();
+
+      // Navigate to the microfrontend via intent-based routing
+      const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO.enterOutletName('outlet');
+      await routerPO.enterIntentQualifier({entity: 'person'});
+      await routerPO.clickNavigate();
+
+      // Verify that navigation was successful
+      await expect(await outletPO.isEmpty()).toBe(false);
+      await expectRouterOutletUrl(outletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+
+      // Verify the specified outlet not to be routed
+      await expect(await preferredOutletPO.isEmpty()).toBe(true);
+      await expectRouterOutletUrl(preferredOutletPO).toEqual('about:blank');
+      // Verify the primary outlet not to be routed
+      await expectPromise(primaryOutlet.getRouterOutletUrl()).toResolve('about:blank');
+    });
+
+    it('should navigate to a microfrontend in the preferred outlet', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: OutletRouterPagePO,
+        preferredOutlet: RouterOutletPagePO,
+        primaryOutlet: RouterOutletPagePO,
+        controller: 'about:blank',
+      });
+
+      const controllerOutlet = pagePOs.get<BrowserOutletPO>('controller');
+
+      // open preferred router outlet page
+      const preferredOutletPO = pagePOs.get<RouterOutletPagePO>('preferredOutlet');
+      await preferredOutletPO.enterOutletName('preferred-outlet');
+      await preferredOutletPO.clickApply();
+
+      // register "microfrontend" capability
+      const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
+      await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+        properties: {
+          path: 'microfrontend-1',
+          outlet: 'preferred-outlet',
+        },
+      });
+
+      // Prepare the primary outlet
+      const primaryOutlet = pagePOs.get<RouterOutletPagePO>('primaryOutlet');
+      await primaryOutlet.enterOutletName('primary');
+      await primaryOutlet.clickApply();
+
+      // Navigate to the microfrontend via intent-based routing
+      const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO.enterIntentQualifier({entity: 'person'});
+      await routerPO.clickNavigate();
+
+      // Verify the preferred outlet not to be routed
+      await expect(await preferredOutletPO.isEmpty()).toBe(false);
+      await expectRouterOutletUrl(preferredOutletPO).toEqual(getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1}));
+      // Verify the primary outlet not to be routed
+      await expectPromise(primaryOutlet.getRouterOutletUrl()).toResolve('about:blank');
+    });
+
+    it('should navigate to a microfrontend in the current outlet', async () => {
+      const testingAppPO = new TestingAppPO();
+      const pagePOs = await testingAppPO.navigateTo({
+        router: OutletRouterPagePO,
+        registerCapability: RegisterCapabilityPagePO,
+        primaryOutlet: RouterOutletPagePO,
+      });
+
+      const microfrontend1Url = await getPageUrl({path: Microfrontend1PagePO.pageUrl, origin: TestingAppOrigins.APP_1});
+
+      // register "microfrontend" capability
+      const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
+      await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend' as any,
+        qualifier: {entity: 'person'},
+        properties: {
+          path: 'microfrontend-1',
+        },
+      });
+
+      // Prepare the primary outlet
+      const primaryOutlet = pagePOs.get<RouterOutletPagePO>('primaryOutlet');
+      await primaryOutlet.enterOutletName('primary');
+      await primaryOutlet.clickApply();
+
+      // Navigate to the microfrontend via intent-based routing
+      const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO.enterIntentQualifier({entity: 'person'});
+      await routerPO.clickNavigate({evalNavigateResponse: false});
+
+      // Verify that the navigation replaced the current outlet
+      await expectPromise(waitUntilLocation(microfrontend1Url)).toResolve();
+      // Verify the primary outlet not to be routed
+      await expectPromise(primaryOutlet.getRouterOutletUrl()).toResolve('about:blank');
+    });
   });
 });
 

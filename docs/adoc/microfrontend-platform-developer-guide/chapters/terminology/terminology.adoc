@@ -22,9 +22,9 @@ The bean manager is the central point to get references to platform services, su
 Capability::
 The term `capability` refers to the <<terminology:intention-api,Intention API>> of the SCION Microfrontend Platform.
 +
-A capability represents some functionality of a <<terminology:micro-application,micro application>> that is available to qualified micro applications through the <<terminology:intention-api,Intention API>>. A micro application declares its capabilities in its <<terminology:manifest,manifest>>. Qualified micro applications can then browse the capabilities, or interact with provided capabilities via <<terminology:intent,intent>>.
+A capability represents some functionality of a <<terminology:micro-application,micro application>> that is available to qualified micro applications through the <<terminology:intention-api,Intention API>>. A micro application declares its capabilities in its <<terminology:manifest,manifest>>. Qualified micro applications can browse capabilities similar to a catalog, or interact with capabilities via <<terminology:intent,intent>>.
 +
-A capability is formulated in an abstract way consisting of a _type_ and optionally a _qualifier_. The _type_ categorizes a capability in terms of its functional semantics. A capability may also define a _qualifier_ to differentiate different capabilities of the same _type_.
+A capability is formulated in an abstract way consisting of a _type_ and optionally a _qualifier_. The _type_ categorizes a capability in terms of its functional semantics (e.g., `microfrontend` if providing a microfrontend). Multiple capabilities can be of the same _type_. In addition to the _type_, a capability can define a <<terminology:qualifier,qualifier>> to differentiate the different capabilities of the same _type_.
 +
 A capability can have private or public visibility. If private, the capability is not visible to other micro applications.
 +
@@ -37,7 +37,7 @@ Cross-origin messaging means the communication between web content loaded from d
 [#terminology:host-app]
 Host Application::
 +
-The host application, sometimes also called the container application, provides the top-level integration container for <<terminology:microfrontend,microfrontends>>. Typically, it is the web app which the user loads into his browser that provides the main application shell, defining areas to embed <<terminology:microfrontend,microfrontends>>.
+include::{terminologydir}/host-application.adoc[]
 +
 The host app starts the <<terminology:platform,platform>> host and registers <<terminology:micro-application,micro applications>>. As with micro applications, the host can provide a manifest to interact with other micro applications and contribute behavior in the form of <<terminology:capability,capabilities>>.
 
@@ -55,7 +55,7 @@ An intent is formulated in an abstract way, having assigned a _type_, and option
 Intention::
 The term `intention` refers to the <<terminology:intention-api,Intention API>> of the SCION Microfrontend Platform.
 +
-An intention refers to one or more <<terminology:capability,capabilities>> that a <<terminology:micro-application,micro application>> wants to interact with.
+An intention refers to one or more <<terminology:capability,capabilities>> that a <<terminology:micro-application,micro application>> wants to interact with. Manifesting intentions allows us to see dependencies between applications down to the functional level.
 +
 Intentions are declared in the application's <<terminology:manifest,manifest>> and are formulated in an abstract way, consisting of a _type_ and optionally a qualifier. The qualifier is used to differentiate capabilities of the same type.
 
@@ -104,6 +104,8 @@ The publish/subscribe pattern (also known as pub/sub) decouples the client that 
 [#terminology:qualifier]
 Qualifier::
 The qualifier is a dictionary of arbitrary key-value pairs to differentiate <<terminology:capability,capabilities>> of the same _type_.
++
+To better understand the concept of the qualifier, a bean manager can be used as an analogy. If there is more than one bean of the same type, a qualifier can be used to control which bean to inject.
 
 [#terminology:router]
 Router::

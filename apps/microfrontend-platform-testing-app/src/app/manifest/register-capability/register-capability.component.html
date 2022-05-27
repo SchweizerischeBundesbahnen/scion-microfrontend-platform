@@ -13,6 +13,9 @@
     <sci-form-field label="Private" direction="column">
       <sci-checkbox [formControlName]="PRIVATE" class="e2e-private"></sci-checkbox>
     </sci-form-field>
+    <sci-form-field label="Properties" direction="column">
+      <sci-params-enter [paramsFormArray]="$any(registerForm.get(PROPERTIES))" [addable]="true" [removable]="true" class="e2e-properties"></sci-params-enter>
+    </sci-form-field>
     <button type="submit" (click)="onRegister()" [disabled]="registerForm.invalid" class="e2e-register">Register</button>
   </form>
 

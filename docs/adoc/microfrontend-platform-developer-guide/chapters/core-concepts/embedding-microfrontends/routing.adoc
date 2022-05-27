@@ -11,9 +11,12 @@ Routing refers to the navigation in a router outlet using the router of the SCIO
 In this Chapter
 
 - <<chapter:outlet-router:concepts-and-usage>>
-- <<chapter:outlet-router:relative-navigation>>
+- <<chapter:outlet-router:navigation-via-url>>
+* <<chapter:outlet-router:relative-url-navigation>>
+* <<chapter:outlet-router:named-url-parameters>>
+- <<chapter:outlet-router:navigation-via-intent>>
+* <<chapter:outlet-router:providing-microfrontend-capability>>
 - <<chapter:outlet-router:persistent-navigation>>
-- <<chapter:outlet-router:named-url-parameters>>
 - <<chapter:outlet-router:unloading-outlet-content>>
 - <<chapter:outlet-router:browsing-history-and-session-history>>
 ****
@@ -22,35 +25,115 @@ In this Chapter
 [[chapter:outlet-router:concepts-and-usage]]
 [discrete]
 === Concepts and Usage
-In SCION Microfrontend Platform, routing means instructing a `<sci-router-outlet>` to display the content of a URL. Routing works across microfrontend and micro application boundaries, allowing the URL of an outlet to be set from anywhere in the application. The web content displayed in an outlet can be any HTML document that has not set the HTTP header `X-Frame-Options`. Routing is sometimes also referred to as navigating.
+In SCION Microfrontend Platform, routing means instructing a `<sci-router-outlet>` to display the content of a URL. Routing works across microfrontend and micro application boundaries, allowing the URL of an outlet to be set from anywhere in the application. The web content displayed in an outlet can be any HTML document that has not set the HTTP header `X-Frame-Options`. Routing is also referred to as navigating.
 
 The router supports multiple outlets in the same application to co-exist. By giving an outlet a name, you can reference it as the routing target. If not naming an outlet, its name defaults to _primary_. If multiple outlets have the same name, they all show the same content. If routing in the context of a router outlet, that is inside a microfrontend, and not specifying a routing target, the content of the current outlet is replaced.
 
 An outlet does not necessarily have to exist at the time of routing. When adding the outlet to the DOM, the outlet displays the last URL routed for it. When repeating routing for an outlet, its content is replaced.
 
-The following code snippet illustrates how to instruct the router outlet named _aside_ to show the content of link:https://micro-frontends.org[window=\"_blank\"].
-
-[source,typescript]
-----
-include::routing.snippets.ts[tags=outlet-router]
-----
-
-The outlet is defined as follows.
+A router outlet is defined as follows. If no navigation has been performed for the outlet yet, then its content is empty.
 
 [source,html]
 ----
 include::routing.snippets.ts[tags=router-outlet]
 ----
 
-[[chapter:outlet-router:relative-navigation]]
+The router supports navigating via URL or intent as described below.
+
+[[chapter:outlet-router:navigation-via-url]]
 [discrete]
-=== Relative Navigation
+=== Navigating via URL
+The URL of the page to be loaded into the router outlet is passed to the router, as follows:
+
+[source,typescript]
+----
+include::routing.snippets.ts[tags=navigate-via-url]
+----
+<1> Specifies the routing target. If not specifying an outlet and if navigating in the context of an outlet, that outlet will be used as the navigation target, or the _primary_ outlet otherwise.
+
+[[chapter:outlet-router:relative-url-navigation]]
+.Relative Navigation
 The router allows to use both absolute and relative paths. A relative path begins with a navigational symbol `/`, `./`, or `../`. By default, relative navigation is relative to the current window location of the navigating application, unless specifying a base path for the navigation.
 
 [source,typescript]
 ----
-include::routing.snippets.ts[tags=relative-navigation]
+include::routing.snippets.ts[tags=relative-url-navigation]
 ----
+
+[[chapter:outlet-router:named-url-parameters]]
+.Named URL Parameters
+The URL being passed to the router can contain named parameters which the router replaces with values of the passed params object. A named parameter begins with a colon (`:`) and is allowed in path segments, query parameters, matrix parameters and the fragment part, e.g., `product/:id` or `product;id=:id` or `products?id=:id`.
+
+[source,typescript]
+----
+include::routing.snippets.ts[tags=named-url-parameter]
+----
+<1> Instructs the outlet router to load the page `/products/:id`. If not specifying an absolute URL, the path is relative to the base URL of the micro application as specified in the manifest.
+<2> Specifies in which router outlet to display the page.
+<3> Passes params for named parameter substitution. In this example, the URL contains the named path segment `:id`, which the router replaces with `123`.
+
+[[chapter:outlet-router:navigation-via-intent]]
+[discrete]
+=== Navigating via Intent
+As an alternative to navigating directly to a URL, the router supports navigation to a microfrontend capability via an intent. We refer to this as intent-based routing.
+
+We recommend using intent-based routing over url-based routing, especially for cross-application navigations, since the navigation flows are explicit, i.e., declared in the manifest, and to keep the microfrontend URLs an implementation detail of the micro applications that provide the microfrontends.
+
+NOTE: If the microfrontend is provided by another micro application, the navigating app must manifest an intention. Also, the navigating app can only navigate to public microfrontend capabilities. See chapter <<chapter:intention-api:intention>> for more information.
+
+The following code snippet illustrates how to display the _product_ microfrontend in the `aside` outlet. Note that you only need to pass the qualifier of the microfrontend capability and not its type. The capability type, which is always `microfrontend`, is implicitly set by the router.
+
+[source,typescript]
+----
+include::routing.snippets.ts[tags=navigate-via-intent]
+----
+<1> Qualifies the microfrontend which to load into the outlet.
+<2> Specifies the routing target. See <<chapter:outlet-router:outlet-resolution-rules>> which outlet is used if not specifying an outlet.
+<3> Passes parameters as defined by the microfrontend capability. If not passing all required parameters, the router throws an error.
+
+[[chapter:outlet-router:providing-microfrontend-capability]]
+.Providing a Microfrontend Capability
+Applications can provide microfrontend capabilities through their manifest. A microfrontend can be either application private or exposed to other micro applications. The platform requires all microfrontend capabilities to be of type `microfrontend`. A particular microfrontend can be identified using its qualifier.
+
+[source,json]
+----
+include::routing.snippets.ts[tags=provide-microfrontend-capability]
+----
+<1> Categorizes the capability as a microfrontend.
+<2> Qualifies the microfrontend capability, allows navigating to this microfrontend using the qualifier `{entity: 'product'}`.
+<3> Describes the capability.
+<4> Declares optional and required parameter(s) of this capability. Required parameters must be  passed when navigating to this microfrontend. Parameters can be referenced in the `path` in the form of named parameters using the colon syntax (`:`).
+<5> Makes this a public microfrontend, allowing other micro applications to navigate to this microfrontend. By default, capabilities have _application-private_ scope.
+<6> Section to associate metadata with a capability.
+<7> Metadata specific to the `microfrontend` capability, specifying the path to the microfrontend.
++
+The path is relative to the application's base URL, as specified in the application manifest. If the
+application does not declare a base URL, it is relative to the origin of the manifest file. +
+In the path, you can reference qualifier and parameter values in the form of named parameters.
+Named parameters begin with a colon (`:`) followed by the parameter or qualifier name, and are allowed in path segments, query parameters, matrix parameters
+and the fragment part. The router will substitute named parameters in the URL accordingly.
+
+The microfrontend capability can also declare a preferred target outlet, as follows:
+
+[source,json]
+----
+include::routing.snippets.ts[tags=provide-microfrontend-capability-with-preferred-outlet]
+----
+<1> Specifies the preferred outlet to load this microfrontend into. Note that this preference is only a hint that will be ignored if the navigator specifies an outlet for navigation.
+
+====
+Note that the providing micro application does not need to install an intent handler for its microfrontend capabilities. The platform intercepts microfrontend intents and performs the navigation.
+====
+
+[[chapter:outlet-router:outlet-resolution-rules]]
+.Outlet Resolution Rules
+When navigating via intent, the target outlet is resolved as follows:
+
+- Outlet as specified by navigator via `NavigationOptions#outlet`.
+- Preferred outlet as specified in the microfrontend capability.
+- Current outlet if navigating in the context of an outlet.
+- primary outlet.
+
 
 [[chapter:outlet-router:persistent-navigation]]
 [discrete]
@@ -78,24 +161,6 @@ include::routing.snippets.ts[tags=persistent-navigation:replay]
 ----
 <1> Loads persisted navigations, e.g., from the top-level URL.
 <2> Replays persisted navigations, instructing outlets to restore their content.
-
-[[chapter:outlet-router:named-url-parameters]]
-[discrete]
-=== Named URL Parameters
-The URL being passed to the router can contain named parameters which the router replaces with values of the passed params object. A named parameter begins with a colon (`:`) and is allowed in path segments, query parameters, matrix parameters and the fragment part, e.g., `product/:id` or `product;id=:id` or `products?id=:id`.
-
-The following example illustrates how to pass params to the router to substitute named path segments.
-
-[source,typescript]
-----
-include::routing.snippets.ts[tags=named-url-parameter]
-----
-<1> Instructs the outlet router to load the page '/products/:id'. If not specifying an absolute URL, the path is relative to the base URL of the micro application as specified in the manifest.
-<2> Specifies in which router outlet to display the page.
-<3> Passes params for the router to substitute named path segments in the URL. In this example, the URL contains the named path segment `:id`, which the router replaces with `500f3dba-a638-4d1c-a73c-d9c1b6a8f812`.
-
-Parameter substitution is useful if reading the URL from a capability to display a microfrontend. You can then pass the params of the intent as the params object to replace named path segments with actual values from the intent params. See chapter <<chapter:activator:routing-in-the-activator>> for an example.
-
 
 [[chapter:outlet-router:unloading-outlet-content]]
 [discrete]

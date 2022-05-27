@@ -40,7 +40,7 @@ The following code snippet shows how to publish a message to a topic destination
 
 [source,typescript]
 ----
-include::topic-based-communication.snippets.ts[tags=publish]
+include::topic-based-messaging.snippets.ts[tags=publish]
 ----
 <1> Specifies the topic where to publish the message to.
 <2> Looks up the  `MessageClient` from the bean manager and publishes the message.
@@ -54,7 +54,7 @@ A microfrontend can receive messages published to a topic as following.
 
 [source,typescript]
 ----
-include::topic-based-communication.snippets.ts[tags=subscribe]
+include::topic-based-messaging.snippets.ts[tags=subscribe]
 ----
 <1> Specifies the topic which to observe.
 <2> Prints the body of the received message to the console, which is `22 °C` in this example.
@@ -68,7 +68,7 @@ For example, subscribing to the topic `myhome/:room/temperature` receives messag
 
 [source,typescript]
 ----
-include::topic-based-communication.snippets.ts[tags=subscribe-with-wildcard-segments]
+include::topic-based-messaging.snippets.ts[tags=subscribe-with-wildcard-segments]
 ----
 <1> Specifies the topic which to observe; the second segment `:room` is a wildcard segment that matches any value (colon syntax).
 <2> Prints substituted segment values to the console: `{"room" => "livingroom"}` when receiving a message sent to the topic `myhome/livingroom/temperature`.
@@ -82,7 +82,7 @@ The following example shows how to publish a message as a _retained_ message.
 
 [source,typescript]
 ----
-include::topic-based-communication.snippets.ts[tags=publish-retained-message]
+include::topic-based-messaging.snippets.ts[tags=publish-retained-message]
 ----
 <1> Sets the `retain` flag to `true`, instructing the message broker to store this message as a retained message.
 
@@ -93,7 +93,7 @@ The platform allows publishing a message with message headers, which the receive
 
 [source,typescript]
 ----
-include::topic-based-communication.snippets.ts[tags=publish-message-with-headers]
+include::topic-based-messaging.snippets.ts[tags=publish-message-with-headers]
 ----
 <1> Adds a custom message header.
 
@@ -103,7 +103,7 @@ The recipient can then access the message headers via the `headers` property on 
 
 [source,typescript]
 ----
-include::topic-based-communication.snippets.ts[tags=receive-message-with-headers]
+include::topic-based-messaging.snippets.ts[tags=receive-message-with-headers]
 ----
 <1> Prints received message headers to the console: `{"sensor-type" => "analog"}`.
 
@@ -129,7 +129,7 @@ The communication is initiated by the publisher by sending a request (instead of
 The following code snippet shows how to initiate a _request-response_ communication and receiving replies.
 [source,typescript]
 ----
-include::topic-based-communication.snippets.ts[tags=request]
+include::topic-based-messaging.snippets.ts[tags=request]
 ----
 <1> Initiates a _request-response_ communication by invoking the `request$` method on the `MessageClient`.
 <2> Prints the received replies to the console.
@@ -151,7 +151,7 @@ _As an illustration, in the following example, a temperature sensor is subscribe
 
 [source,typescript]
 ----
-include::topic-based-communication.snippets.ts[tags=reply]
+include::topic-based-messaging.snippets.ts[tags=reply]
 ----
 <1> Reads the `ReplyTo` topic from the request where to send replies to.
 <2> Sends the temperature to the requestor.
@@ -168,7 +168,7 @@ The message client provides the `onMessage` method as a convenience to the `obse
 
 [source,typescript]
 ----
-include::topic-based-communication.snippets.ts[tags=onMessage]
+include::topic-based-messaging.snippets.ts[tags=onMessage]
 ----
 
 For each message received, the specified callback function is called. When used in request-response communication, the callback function can return the response either directly or in the form of a Promise or Observable. Returning a Promise allows the response to be computed asynchronously, and an Observable allows to return one or more responses, e.g., for streaming data. In either case, when the final response is produced, the handler terminates the communication, completing the requestor's Observable. If the callback throws an error, or the returned Promise or Observable errors, the error is transported to the requestor, erroring the requestor's Observable.

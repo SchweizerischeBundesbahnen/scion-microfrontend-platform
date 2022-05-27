@@ -26,6 +26,15 @@ const routes: Routes = [];
 RouterModule.forRoot(routes, {useHash: true});
 // end::configure-hash-based-routing[]
 
+`
+// tag::configure-hash-based-routing-set-baseurl[]
+{
+  "name": "Your App",
+  "baseUrl": "#"
+}
+// end::configure-hash-based-routing-set-baseurl[]
+`
+
 // tag::add-custom-elements-schema[]
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 

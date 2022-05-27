@@ -1,16 +1,16 @@
-import {Intent, IntentClient, IntentMessage, IntentSelector, MessageClient, MessageHeaders, OutletRouter, PRIMARY_OUTLET, ResponseStatusCodes, takeUntilUnsubscribe, TopicMessage} from '@scion/microfrontend-platform';
+import {Intent, IntentClient, IntentMessage, IntentSelector, MessageClient, MessageHeaders, OutletRouter, ResponseStatusCodes, takeUntilUnsubscribe} from '@scion/microfrontend-platform';
 import {Subject} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {map, take} from 'rxjs/operators';
+import {take} from 'rxjs/operators';
 
 `
 // tag::intention-declaration[]
 {
-  "intentions": [ // <1>
+  "intentions": [
     {
-      "type": "microfrontend", // <2>
+      "type": "wizard", // <1>
       "qualifier": {
-        "entity": "product"
+        "process": "checkout"
       }
     }
   ]
@@ -21,21 +21,14 @@ import {map, take} from 'rxjs/operators';
 `
 // tag::capability-declaration[]
 {
-  "capabilities": [ // <1>
+  "capabilities": [
     {
-      "description": "Opens the product microfrontend.", // <2>
-      "type": "microfrontend", // <3>
-      "qualifier": { // <4>
-        "entity": "product"
+      "description": "Starts the checkout wizard.", // <1>
+      "type": "wizard", // <2>
+      "qualifier": { // <3>
+        "process": "checkout"
       },
-      "params": [ // <5>
-        {"name": "productId", "required": true, "description": "Identifies the product to display."},
-        {"name": "outlet", "required": false, "description": "Controls in which router outlet to display the microfrontend."},
-      ],
-      "private": false, // <6>
-      "properties": {
-        "path": "/products/:productId", // <7>
-      }
+      "private": false, // <4>
     }
   ]
 }
@@ -45,44 +38,36 @@ import {map, take} from 'rxjs/operators';
 {
 // tag::handle-intent[]
   const selector: IntentSelector = { // <1>
-    type: 'microfrontend',
-    qualifier: {entity: 'product'},
+    type: 'wizard',
+    qualifier: {process: 'checkout'},
   };
 
-  Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => { // <2>
-    const microfrontendPath = message.capability.properties.path; // <3>
-
-    // Instruct the router to display the microfrontend in an outlet.
-    Beans.get(OutletRouter).navigate(microfrontendPath, { // <4>
-      outlet: message.intent.params.get('outlet'), // <5>
-      params: message.intent.params, // <6>
+  Beans.get(IntentClient).observe$(selector) // <2>
+    .subscribe((message: IntentMessage) => {
+      // start the checkout wizard
     });
-  });
 // end::handle-intent[]
 }
 
 {
 // tag::issue-intent[]
   const intent: Intent = { // <1>
-    type: 'microfrontend',
-    qualifier: {entity: 'product'},
-    params: new Map()
-      .set('productId', '500f3dba-a638-4d1c-a73c-d9c1b6a8f812') // <2>
-      .set('outlet', 'primary'), // <3>
+    type: 'wizard',
+    qualifier: {process: 'checkout'},
   };
 
-  Beans.get(IntentClient).publish(intent); // <4>
+  Beans.get(IntentClient).publish(intent); // <2>
 // end::issue-intent[]
 }
 
 {
   // tag::request[]
-  const authTokenIntent: Intent = {
+  const accessTokenIntent: Intent = {
     type: 'auth',
-    qualifier: {entity: 'user-access-token'},
+    qualifier: {object: 'access-token'},
   };
 
-  Beans.get(IntentClient).request$(authTokenIntent).subscribe(reply => { // <1>
+  Beans.get(IntentClient).request$(accessTokenIntent).subscribe(reply => { // <1>
     console.log(`token: ${reply.body}`); // <2>
   });
   // end::request[]
@@ -96,7 +81,7 @@ import {map, take} from 'rxjs/operators';
   // tag::reply[]
   const selector: IntentSelector = {
     type: 'auth',
-    qualifier: {entity: 'user-access-token'},
+    qualifier: {object: 'access-token'},
   };
 
   // Stream data as long as the requestor is subscribed to receive replies.
@@ -133,7 +118,7 @@ import {map, take} from 'rxjs/operators';
   // tag::onIntent[]
   const selector: IntentSelector = {
     type: 'auth',
-    qualifier: {entity: 'user-access-token'},
+    qualifier: {object: 'access-token'},
   };
 
   // Stream data as long as the requestor is subscribed to receive replies.

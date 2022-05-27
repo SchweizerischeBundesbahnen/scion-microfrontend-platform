@@ -7,14 +7,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {Component} from '@angular/core';
 import {FormArray, FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {NavigationOptions, OutletRouter} from '@scion/microfrontend-platform';
 import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 export const OUTLET = 'outlet';
+export const USE_INTENT = 'useIntent';
 export const URL = 'url';
+export const QUALIFIER = 'qualifier';
 export const PARAMS = 'params';
 export const PUSH_SESSION_HISTORY_STATE = 'pushSessionHistoryState';
 
@@ -22,28 +24,32 @@ export const PUSH_SESSION_HISTORY_STATE = 'pushSessionHistoryState';
   selector: 'app-outlet-router',
   templateUrl: './outlet-router.component.html',
   styleUrls: ['./outlet-router.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OutletRouterComponent {
 
   public OUTLET = OUTLET;
+  public USE_INTENT = USE_INTENT;
   public URL = URL;
+  public QUALIFIER = QUALIFIER;
   public PARAMS = PARAMS;
   public PUSH_SESSION_HISTORY_STATE = PUSH_SESSION_HISTORY_STATE;
 
   public form: FormGroup;
+  public navigateError: string;
+  public navigated = false;
 
   constructor(formBuilder: FormBuilder) {
     this.form = formBuilder.group({
       [OUTLET]: new FormControl(''),
+      [USE_INTENT]: new FormControl(false),
       [URL]: new FormControl(''),
+      [QUALIFIER]: formBuilder.array([]),
       [PARAMS]: formBuilder.array([]),
       [PUSH_SESSION_HISTORY_STATE]: new FormControl(false),
     });
   }
 
-  public onNavigateClick(): boolean {
-    const url = this.form.get(URL).value;
+  public async onNavigateClick(): Promise<void> {
     const options: NavigationOptions = {
       outlet: this.form.get(OUTLET).value || undefined,
       params: SciParamsEnterComponent.toParamsMap(this.form.get(PARAMS) as FormArray),
@@ -52,9 +58,25 @@ export class OutletRouterComponent {
       options.pushStateToSessionHistoryStack = true;
     }
 
-    Beans.get(OutletRouter).navigate(url ? url : null, options).then();
-    this.form.reset();
-    this.form.setControl(PARAMS, new FormArray([]));
-    return false;
+    this.navigateError = undefined;
+    this.navigated = false;
+    try {
+      if (this.form.get(USE_INTENT).value) {
+        const qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(QUALIFIER) as FormArray);
+        await Beans.get(OutletRouter).navigate(qualifier, options);
+      }
+      else {
+        const url = this.form.get(URL).value || null;
+        await Beans.get(OutletRouter).navigate(url, options);
+      }
+
+      this.navigated = true;
+      this.form.reset();
+      this.form.setControl(PARAMS, new FormArray([]));
+      this.form.setControl(QUALIFIER, new FormArray([]));
+    }
+    catch (error) {
+      this.navigateError = error;
+    }
   }
 }
