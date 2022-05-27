@@ -34,8 +34,8 @@ export class ApplicationRegistry {
    * Throws an error if the application's symbolic name is not unique or contains illegal characters.
    */
   public registerApplication(applicationConfig: ApplicationConfig, manifest: Manifest): void {
-    Defined.orElseThrow(applicationConfig.symbolicName, () => Error('[ApplicationRegistrationError] Missing symbolic name'));
-    Defined.orElseThrow(applicationConfig.manifestUrl, () => Error('[ApplicationRegistrationError] Missing manifest URL'));
+    Defined.orElseThrow(applicationConfig.symbolicName, () => Error(`[ApplicationRegistrationError] Invalid application config. Missing required property \'symbolicName\'. [appConfig="${JSON.stringify(applicationConfig)}", manifest="${JSON.stringify(manifest)}"]`));
+    Defined.orElseThrow(applicationConfig.manifestUrl, () => Error(`[ApplicationRegistrationError] Invalid application config. Missing required property \'manifestUrl\'. [appConfig="${JSON.stringify(applicationConfig)}", manifest="${JSON.stringify(manifest)}"]`));
 
     if (!ApplicationRegistry.SYMBOLIC_NAME_REGEXP.test(applicationConfig.symbolicName)) {
       throw Error(`[ApplicationRegistrationError] Symbolic name must be lowercase and contain alphanumeric and dash characters [symbolicName='${applicationConfig.symbolicName}'].`);
@@ -48,7 +48,7 @@ export class ApplicationRegistry {
 
     this._applications.set(applicationConfig.symbolicName, {
       symbolicName: applicationConfig.symbolicName,
-      name: manifest.name,
+      name: manifest.name ?? applicationConfig.symbolicName,
       baseUrl: this.computeBaseUrl(applicationConfig, manifest),
       manifestUrl: Urls.newUrl(applicationConfig.manifestUrl, Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? applicationConfig.manifestUrl : window.origin).toString(),
       manifestLoadTimeout: applicationConfig.manifestLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).manifestLoadTimeout,

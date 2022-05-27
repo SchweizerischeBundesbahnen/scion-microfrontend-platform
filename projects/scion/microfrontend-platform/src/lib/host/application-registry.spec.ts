@@ -187,4 +187,10 @@ describe('ApplicationRegistry', () => {
       });
     }
   });
+
+  it('should use the application\'s symbolic name as application name if not configured in the manifest', () => {
+    registry.registerApplication({symbolicName: 'app', manifestUrl: 'http://app.com/manifest'}, {name: undefined!});
+    expect(registry.getApplication('app').name).toEqual('app');
+    expect(registry.getApplication('app').symbolicName).toEqual('app');
+  });
 });
