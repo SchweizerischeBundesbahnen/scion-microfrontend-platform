@@ -46,8 +46,12 @@ export class ManifestCollector implements Initializer {
 
   private async fetchAndRegisterManifest(appConfig: ApplicationConfig, monitor: ProgressMonitor): Promise<void> {
     try {
+      if (!appConfig.symbolicName) {
+        Beans.get(Logger).error('[AppConfigError] Invalid application config. Missing required property \'symbolicName\'.', appConfig);
+        return;
+      }
       if (!appConfig.manifestUrl) {
-        Beans.get(Logger).error(`[AppConfigError] Failed to fetch manifest for application '${appConfig.symbolicName}'. Manifest URL must not be empty.`);
+        Beans.get(Logger).error(`[AppConfigError] Invalid application config passed for application '${appConfig.symbolicName}'. Missing required property 'manifestUrl'.`, appConfig);
         return;
       }
 

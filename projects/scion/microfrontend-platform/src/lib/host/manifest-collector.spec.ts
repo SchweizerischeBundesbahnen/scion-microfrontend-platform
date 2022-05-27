@@ -130,6 +130,49 @@ describe('ManifestCollector', () => {
     expect(loggerSpy.error).toHaveBeenCalledWith('[ManifestFetchError] Failed to fetch manifest for application \'app-1\'. Maybe the application is currently unavailable.', 'Timeout of 300ms elapsed.');
     expect(loggerSpy.error).toHaveBeenCalledWith('[ManifestFetchError] Failed to fetch manifest for application \'app-3\'. Maybe the application is currently unavailable.', 'Timeout of 500ms elapsed.');
   });
+
+  it('should log an error if passing an invalid application config', async () => {
+    // mock {HttpClient}
+    const httpClientSpy = jasmine.createSpyObj(HttpClient.name, ['fetch']);
+    httpClientSpy.fetch
+      .withArgs('http://www.app-1/manifest').and.returnValue(okAnswer({body: {name: 'Application 1', intentions: [], capabilities: []}, delay: 0}))
+      .withArgs('http://www.app-2/manifest').and.returnValue(okAnswer({body: {name: 'Application 2', intentions: [], capabilities: []}, delay: 0}))
+      .withArgs('http://www.app-3/manifest').and.returnValue(okAnswer({body: {name: 'Application 3', intentions: [], capabilities: []}, delay: 0}))
+      .withArgs('http://www.app-4/manifest').and.returnValue(okAnswer({body: {name: 'Application 4', intentions: [], capabilities: []}, delay: 0}))
+      .withArgs('http://www.app-5/manifest').and.returnValue(okAnswer({body: {name: undefined!, intentions: [], capabilities: []}, delay: 0})) // missing app name
+      .and.callFake((arg) => fetch(arg)); // fetches the manifest of the host app
+    Beans.register(HttpClient, {useValue: httpClientSpy});
+
+    // mock {Logger}
+    const loggerSpy = jasmine.createSpyObj(Logger.name, ['info', 'warn', 'error']);
+    Beans.register(Logger, {useValue: loggerSpy});
+
+    // start the platform
+    await MicrofrontendPlatform.startHost({
+      host: {
+        symbolicName: 'host-app',
+        manifest: new ManifestFixture({name: 'Host Application'}).serve(),
+      },
+      applications: [
+        {symbolicName: undefined!, manifestUrl: 'http://www.app-1/manifest'}, // missing symbolic name
+        {symbolicName: 'app-2', manifestUrl: 'http://www.app-2/manifest'},
+        {symbolicName: 'app-3', manifestUrl: undefined!}, // missing manifest URL
+        {symbolicName: 'app-4', manifestUrl: 'http://www.app-4/manifest'},
+        {symbolicName: 'app-5', manifestUrl: 'http://www.app-5/manifest'},
+      ],
+    });
+
+    // assert application registrations
+    expect(Beans.get(ManifestService).applications).toEqual(jasmine.arrayWithExactContents([
+      jasmine.objectContaining({symbolicName: 'host-app', name: 'Host Application'}),
+      jasmine.objectContaining({symbolicName: 'app-2', name: 'Application 2'}),
+      jasmine.objectContaining({symbolicName: 'app-4', name: 'Application 4'}),
+      jasmine.objectContaining({symbolicName: 'app-5', name: 'app-5'}), // using the app's symbolic name as application name
+    ]));
+    expect(loggerSpy.error.calls.count()).toEqual(2);
+    expect(loggerSpy.error).toHaveBeenCalledWith('[AppConfigError] Invalid application config. Missing required property \'symbolicName\'.', jasmine.anything());
+    expect(loggerSpy.error).toHaveBeenCalledWith('[AppConfigError] Invalid application config passed for application \'app-3\'. Missing required property \'manifestUrl\'.', jasmine.anything());
+  });
 });
 
 function okAnswer(answer: {body: Manifest; delay: number}): Promise<Partial<Response>> {
