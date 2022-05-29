@@ -374,9 +374,10 @@ export interface MicrofrontendCapability extends Capability {
      * The path is relative to the base URL, as specified in the application manifest. If the
      * application does not declare a base URL, it is relative to the origin of the manifest file.
      *
-     * In the path, you can reference qualifier and parameter values in the form of named parameters.
-     * Named parameters begin with a colon (`:`) followed by the parameter or qualifier name, and are allowed in path segments, query parameters, matrix parameters
-     * and the fragment part. The router will substitute named parameters in the URL accordingly.
+     * The path allows the use of navigational symbols and named parameters to reference qualifier and parameter values.
+     * A named parameter begins with a colon (`:`) followed by the qualifier or parameter name, and is allowed in path segments,
+     * query parameters, matrix parameters and the fragment part. Named query and matrix parameters without a replacement are removed,
+     * e.g., if referencing an optional parameter.
      *
      * #### Usage of named parameters in the path:
      * ```json

@@ -137,15 +137,322 @@ describe('OutletRouter', () => {
       });
 
       it('should substitute falsy params', async () => {
-        const url = navigate(`${basePath}a?orderId=:orderId&flag=:flag&object=:object&undefined=:undefined`, {
+        const url = navigate(`${basePath}a?0=:0&false=:false&null=:null&undefined=:undefined`, {
           params: new Map()
-            .set('orderId', 0)
-            .set('flag', false)
-            .set('object', null)
+            .set('0', 0)
+            .set('false', false)
+            .set('null', null)
             .set('undefined', undefined),
           relativeTo: options.relativeTo,
         });
-        await expectPromise(url).toResolve(`${options.expectedBasePath}a?orderId=0&flag=false&object=null&undefined=undefined`);
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a?0=0&false=false&null=null`);
+      });
+
+      it('should format array values as comma-separated list (query param) (1)', async () => {
+        const url = navigate(`${basePath}order?array=:array`, {
+          params: new Map().set('array', ['a', 'b', 'c']),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?array=a,b,c`);
+      });
+
+      it('should format array values as comma-separated list (query param) (2)', async () => {
+        const url = navigate(`${basePath}order?array=:array&a=b`, {
+          params: new Map().set('array', ['a', 'b', 'c']),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?array=a,b,c&a=b`);
+      });
+
+      it('should format array values as comma-separated list (matrix param) (1)', async () => {
+        const url = navigate(`${basePath}order;array=:array`, {
+          params: new Map().set('array', ['a', 'b', 'c']),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order;array=a,b,c`);
+      });
+
+      it('should format array values as comma-separated list (matrix param) (2)', async () => {
+        const url = navigate(`${basePath}order;array=:array;a=b`, {
+          params: new Map().set('array', ['a', 'b', 'c']),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order;array=a,b,c;a=b`);
+      });
+
+      it('should not remove missing path params (1)', async () => {
+        const url = navigate(`${basePath}:a/b/c`, {
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}:a/b/c`);
+      });
+
+      it('should not remove missing path params (2)', async () => {
+        const url = navigate(`${basePath}a/:b/c`, {
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a/:b/c`);
+      });
+
+      it('should not remove missing path params (3)', async () => {
+        const url = navigate(`${basePath}a/b/:c`, {
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a/b/:c`);
+      });
+
+      it('should not remove missing path params (4)', async () => {
+        const url = navigate(`${basePath}a/b/:c?a=b`, {
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a/b/:c?a=b`);
+      });
+
+      it('should not remove missing path params (5)', async () => {
+        const url = navigate(`${basePath}a/b/:c;a=b`, {
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a/b/:c;a=b`);
+      });
+
+      it('should remove missing query params (1)', async () => {
+        const url = navigate(`${basePath}order?qp1=:qp1&qp2=qp2`, {
+          params: new Map().set('qp1', 'QP1'),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?qp1=QP1&qp2=qp2`);
+      });
+
+      it('should remove missing query params (2a)', async () => {
+        const url = navigate(`${basePath}order?qp1=:qp1&qp2=qp2`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?qp2=qp2`);
+      });
+
+      it('should remove missing query params (2b)', async () => {
+        const url = navigate(`${basePath}order?qp1=:qp1&qp2=qp2`, {
+          params: new Map().set('qp1', undefined),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?qp2=qp2`);
+      });
+
+      it('should remove missing query params (3)', async () => {
+        const url = navigate(`${basePath}order?qp1=qp1&qp2=:qp2`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?qp1=qp1`);
+      });
+
+      it('should remove missing query params (4)', async () => {
+        const url = navigate(`${basePath}order?qp1=qp1&qp2=:qp2&qp3=qp3`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?qp1=qp1&qp3=qp3`);
+      });
+
+      it('should remove missing query params (5)', async () => {
+        const url = navigate(`${basePath}order?qp1=:qp1&qp2=:qp2&qp3=:qp3`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order`);
+      });
+
+      it('should remove missing query params (6)', async () => {
+        const url = navigate(`${basePath}order?qp1=:qp1&qp2=:qp2&qp3=:qp3`, {
+          params: new Map().set('qp1', 'QP1').set('qp2', 'QP2'),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?qp1=QP1&qp2=QP2`);
+      });
+
+      it('should remove missing query params (7)', async () => {
+        const url = navigate(`${basePath}order?qp1=:qp1&qp2=:qp2#fragment`, {
+          params: new Map().set('qp1', 'QP1'),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?qp1=QP1#fragment`);
+      });
+
+      it('should remove missing query params (8)', async () => {
+        const url = navigate(`${basePath}order?qp1=:qp1&qp2=:qp2#fragment`, {
+          params: new Map().set('qp2', 'QP2'),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?qp2=QP2#fragment`);
+      });
+
+      it('should remove missing query params (9)', async () => {
+        const url = navigate(`${basePath}order?qp1=:qp1&qp2=:qp2#fragment`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order#fragment`);
+      });
+
+      it('should remove missing matrix params (1)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=mp2`, {
+          params: new Map().set('mp1', 'MP1'),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order;mp1=MP1;mp2=mp2`);
+      });
+
+      it('should remove missing matrix params (2a)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=mp2`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order;mp2=mp2`);
+      });
+
+      it('should remove missing matrix params (2b)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=mp2`, {
+          params: new Map().set('mp1', undefined),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order;mp2=mp2`);
+      });
+
+      it('should remove missing matrix params (3)', async () => {
+        const url = navigate(`${basePath}order;mp1=mp1;mp2=:mp2`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order;mp1=mp1`);
+      });
+
+      it('should remove missing matrix params (4)', async () => {
+        const url = navigate(`${basePath}order;mp1=mp1;mp2=:mp2;mp3=mp3`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order;mp1=mp1;mp3=mp3`);
+      });
+
+      it('should remove missing matrix params (5)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=:mp2;mp3=:mp3`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order`);
+      });
+
+      it('should remove missing matrix params (6)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=:mp2;mp3=:mp3`, {
+          params: new Map().set('mp1', 'MP1').set('mp2', 'MP2'),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order;mp1=MP1;mp2=MP2`);
+      });
+
+      it('should remove missing matrix params (7)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=:mp2#fragment`, {
+          params: new Map().set('mp1', 'MP1'),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order;mp1=MP1#fragment`);
+      });
+
+      it('should remove missing matrix params (8)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=:mp2#fragment`, {
+          params: new Map().set('mp2', 'MP2'),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order;mp2=MP2#fragment`);
+      });
+
+      it('should remove missing matrix params (9)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=:mp2#fragment`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order#fragment`);
+      });
+
+      it('should remove missing matrix params (10)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=:mp2?a=b`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?a=b`);
+      });
+
+      it('should remove missing matrix params (11)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=:mp2#fragment`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order#fragment`);
+      });
+
+      it('should remove missing matrix params (12)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=:mp2?qp1=:qp1&qp2=:qp2#fragment`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order#fragment`);
+      });
+
+      it('should remove missing matrix params (13)', async () => {
+        const url = navigate(`${basePath}order;mp1=:mp1;mp2=:mp2?qp1=:qp1&qp2=:qp2#fragment`, {
+          params: new Map().set('qp2', 'QP2'),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}order?qp2=QP2#fragment`);
+      });
+
+      it('should remove missing matrix params (14)', async () => {
+        const url = navigate(`${basePath}a/:b;mp1=:mp1;mp2=mp2/c`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a/:b;mp2=mp2/c`);
+      });
+
+      it('should remove missing matrix params (15)', async () => {
+        const url = navigate(`${basePath}a/:b;mp1=:mp1;mp2=mp2/c`, {
+          params: new Map().set('b', 'b'),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a/b;mp2=mp2/c`);
+      });
+
+      it('should remove missing matrix params (16)', async () => {
+        const url = navigate(`${basePath}a/:b;mp1=:mp1;mp2=:mp2/c`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a/:b/c`);
+      });
+
+      it('should remove missing matrix params (17)', async () => {
+        const url = navigate(`${basePath}a/:b;mp1=:mp1/c`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a/:b/c`);
+      });
+
+      it('should remove missing matrix params (18)', async () => {
+        const url = navigate(`${basePath}a/:b;mp1=:mp1`, {
+          params: new Map(),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a/:b`);
+      });
+
+      it('should remove missing matrix params (19)', async () => {
+        const url = navigate(`${basePath}a/:b;mp1=:mp1`, {
+          params: new Map().set('mp1', 'MP1'),
+          relativeTo: options.relativeTo,
+        });
+        await expectPromise(url).toResolve(`${options.expectedBasePath}a/:b;mp1=MP1`);
       });
     }
 
