@@ -155,7 +155,8 @@ export class OutletRouter {
    * @param  url - Specifies the URL of the page to be loaded into the router outlet. To clear the outlet, pass `null` as the URL.
    *         The URL allows the use of navigational symbols and named parameters. A named parameter begins with a colon (`:`)
    *         and is allowed in path segments, query parameters, matrix parameters and the fragment part. Named parameters
-   *         are replaced with values passed via {@link NavigationOptions#params}.
+   *         are replaced with values passed via {@link NavigationOptions#params}. Named query and matrix parameters without
+   *         a replacement are removed.
    *         Examples:
    *         - `product/:id` // named path parameter
    *         - `product;id=:id` // named matrix parameter
@@ -225,15 +226,13 @@ export class OutletRouter {
     }
   }
 
-  private computeNavigationUrl(url: string | null | undefined, options?: NavigationOptions): string {
-    if (url === undefined || url === null) { // empty path is a valid url
+  private computeNavigationUrl(urlPattern: string | null | undefined, options?: NavigationOptions): string {
+    if (urlPattern === undefined || urlPattern === null) { // empty path is a valid url
       return 'about:blank';
     }
 
     const params = Maps.coerce(options?.params);
-    if (params.size) {
-      url = this.substituteNamedParameters(url, params);
-    }
+    const url = this.substituteNamedParameters(urlPattern, params);
     if (Urls.isAbsoluteUrl(url)) {
       return url;
     }
@@ -256,15 +255,30 @@ export class OutletRouter {
    * Named parameters begin with a colon (`:`) and are allowed in path segments, query parameters, matrix parameters
    * and the fragment part.
    *
+   * Empty query and matrix params are removed, but not empty path params.
+   *
    * Some examples about the usage of named parameters:
    * /segment/:param1/segment/:param2 // path params
    * /segment/segment;matrixParam1=:param1;matrixParam2=:param2 // matrix params
    * /segment/segment?queryParam1=:param1&queryParam2=:param2 // query params
    */
   private substituteNamedParameters(path: string, params: Map<string, any>): string {
-    // A named parameter can be followed by another path segment (`/`), by a query param (`?` or `&`), by a matrix param (`;`)
-    // or by the fragment part (`#`).
-    return path.replace(/:([^/;&?#]+)/g, (match, $1) => params.has($1) ? params.get($1) : match);
+    return path
+      // 1. Replace named params contained in the params map.
+      .replace(/:([^/;&?#]+)/g, (match, paramName) => params.get(paramName) !== undefined ? params.get(paramName) : match)
+      // 2. Remove named matrix params not contained in the params map.
+      .replace(/(?<delimiter>;)(?<paramName>[^=]+)=:(?<placeholder>[^;#?/]+)/g, () => {
+        return '';
+      })
+      // 3. Remove named query params not contained in the params map. Replaces the first query param
+      //    with a special marker for later substitution.
+      .replace(/(?<delimiter>[?&])(?<paramName>[^=]+)=:(?<placeholder>[^&#]+)/g, (match, delimiter) => {
+        return (delimiter === '?') ? 'ɵ__?__' : '';
+      })
+      // 4. Replace the marker with the question mark if at least one query parameter is present.
+      .replace(/ɵ__\?__&/, '?')
+      // 5. Remove marker if no query params are present.
+      .replace(/ɵ__\?__/, '');
   }
 }
 
