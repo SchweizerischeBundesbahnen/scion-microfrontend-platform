@@ -15,6 +15,5 @@ export * from './microfrontend-platform-config';
 export * from './host-config';
 export * from './application-config';
 export * from './manifest-registry/public_api';
-export * from './activator/public_api';
 export * from './message-broker/public_api';
 export {HostManifestInterceptor} from './host-manifest-interceptor';

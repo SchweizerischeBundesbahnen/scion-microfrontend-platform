@@ -19,8 +19,9 @@ import {Microfrontend2PagePO} from '../microfrontend/microfrontend-2-page.po';
 import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
 import {RegisterCapabilityPagePO} from '../manifest/register-capability-page.po';
 import {RegisterIntentionPagePO} from '../manifest/register-intention-page.po';
-import Level = logging.Level;
+import {MessagingFlavor, PublishMessagePagePO} from '../messaging/publish-message-page.po';
 import {MicrofrontendCapability} from '@scion/microfrontend-platform';
+import Level = logging.Level;
 
 describe('RouterOutlet', () => {
 
@@ -1137,6 +1138,81 @@ describe('RouterOutlet', () => {
     ]));
   });
 
+  it('should route the primary outlet if in the context of an activator and if not specifying a target outlet', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      messageClient: PublishMessagePagePO,
+      routerOutlet: RouterOutletPagePO,
+    }, {queryParams: new Map().set('manifestClassifier', 'activator-routing')});
+
+    // prepare the router outlet
+    const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+    await routerOutletPO.clickApply();
+
+    // send message to the activator to navigate to 'microfrontend-1'
+    const messageClientPO = pagePOs.get<PublishMessagePagePO>('messageClient');
+    await messageClientPO.selectFlavor(MessagingFlavor.Topic);
+    await messageClientPO.enterTopic('activators/navigate-via-url');
+    await messageClientPO.enterHeaders(new Map().set('path', `/${Microfrontend1PagePO.pageUrl}`));
+    await messageClientPO.clickPublish();
+
+    // expect the primary router outlet to be navigated to 'microfrontend-1'
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend1PagePO.pageUrl}));
+
+    // repeat the navigation to ensure the activator outlet not to be unloaded
+
+    // send message to the activator to navigate to 'microfrontend-2'
+    await messageClientPO.enterHeaders(new Map().set('path', `/${Microfrontend2PagePO.pageUrl}`));
+    await messageClientPO.clickPublish();
+
+    // expect the primary router outlet to be navigated to 'microfrontend-2'
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend2PagePO.pageUrl}));
+  });
+
+  it('should route the specified outlet if in the context of an activator', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      messageClient: PublishMessagePagePO,
+      primaryRouterOutlet: RouterOutletPagePO,
+      secondaryRouterOutlet: RouterOutletPagePO,
+    }, {queryParams: new Map().set('manifestClassifier', 'activator-routing')});
+
+    // prepare the router outlets
+    const primaryRouterOutletPO = pagePOs.get<RouterOutletPagePO>('primaryRouterOutlet');
+    await primaryRouterOutletPO.clickApply();
+
+    const secondaryRouterOutletPO = pagePOs.get<RouterOutletPagePO>('secondaryRouterOutlet');
+    await secondaryRouterOutletPO.enterOutletName('secondary');
+    await secondaryRouterOutletPO.clickApply();
+
+    // send message to the activator to navigate to 'microfrontend-1'
+    const messageClientPO = pagePOs.get<PublishMessagePagePO>('messageClient');
+    await messageClientPO.selectFlavor(MessagingFlavor.Topic);
+    await messageClientPO.enterTopic('activators/navigate-via-url');
+    await messageClientPO.enterHeaders(new Map()
+      .set('outlet', 'secondary')
+      .set('path', `/${Microfrontend1PagePO.pageUrl}`));
+    await messageClientPO.clickPublish();
+
+    // expect the primary router outlet not to be navigated
+    await expectRouterOutletUrl(primaryRouterOutletPO).toEqual('about:blank');
+    // expect the secondary router outlet to be navigated
+    await expectRouterOutletUrl(secondaryRouterOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend1PagePO.pageUrl}));
+
+    // repeat the navigation to ensure the activator outlet not to be unloaded
+
+    // send message to the activator to navigate to 'microfrontend-2'
+    await messageClientPO.enterHeaders(new Map()
+      .set('outlet', 'secondary')
+      .set('path', `/${Microfrontend2PagePO.pageUrl}`));
+    await messageClientPO.clickPublish();
+
+    // expect the primary router outlet not to be navigated
+    await expectRouterOutletUrl(primaryRouterOutletPO).toEqual('about:blank');
+    // expect the secondary router outlet to be navigated
+    await expectRouterOutletUrl(secondaryRouterOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend2PagePO.pageUrl}));
+  });
+
   describe('Intent-based Routing', () => {
 
     it('should navigate to a microfrontend of the same app', async () => {
@@ -1656,9 +1732,181 @@ describe('RouterOutlet', () => {
       await expectPromise(primaryOutlet.getRouterOutletUrl()).toResolve('about:blank');
     });
   });
+
+  it('should route the primary outlet if in the context of an activator and if not specifying a target outlet', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      messageClient: PublishMessagePagePO,
+      routerOutlet: RouterOutletPagePO,
+      registerCapability: RegisterCapabilityPagePO,
+    }, {queryParams: new Map().set('manifestClassifier', 'activator-routing')});
+
+    // prepare the router outlet
+    const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+    await routerOutletPO.clickApply();
+
+    // register "microfrontend" capability
+    const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
+    await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+      type: 'microfrontend' as any,
+      qualifier: {comp: 'microfrontend-1'},
+      properties: {
+        path: Microfrontend1PagePO.pageUrl,
+      },
+    });
+    await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+      type: 'microfrontend' as any,
+      qualifier: {comp: 'microfrontend-2'},
+      properties: {
+        path: Microfrontend2PagePO.pageUrl,
+      },
+    });
+
+    // send message to the activator to navigate to 'microfrontend-1'
+    const messageClientPO = pagePOs.get<PublishMessagePagePO>('messageClient');
+    await messageClientPO.selectFlavor(MessagingFlavor.Topic);
+    await messageClientPO.enterTopic('activators/navigate-via-intent');
+    await messageClientPO.enterHeaders(new Map().set('qualifier', JSON.stringify({comp: 'microfrontend-1'})));
+    await messageClientPO.clickPublish();
+
+    // expect the primary router outlet to be navigated to 'microfrontend-1'
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend1PagePO.pageUrl}));
+
+    // repeat the navigation to ensure the activator outlet not to be unloaded
+
+    // send message to the activator to navigate to 'microfrontend-2'
+    await messageClientPO.enterHeaders(new Map().set('qualifier', JSON.stringify({comp: 'microfrontend-2'})));
+    await messageClientPO.clickPublish();
+
+    // expect the primary router outlet to be navigated to 'microfrontend-2'
+    await expectRouterOutletUrl(routerOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend2PagePO.pageUrl}));
+  });
+
+  it('should route the specified outlet if in the context of an activator', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      messageClient: PublishMessagePagePO,
+      primaryRouterOutlet: RouterOutletPagePO,
+      secondaryRouterOutlet: RouterOutletPagePO,
+      registerCapability: RegisterCapabilityPagePO,
+    }, {queryParams: new Map().set('manifestClassifier', 'activator-routing')});
+
+    // prepare the router outlets
+    const primaryRouterOutletPO = pagePOs.get<RouterOutletPagePO>('primaryRouterOutlet');
+    await primaryRouterOutletPO.clickApply();
+
+    const secondaryRouterOutletPO = pagePOs.get<RouterOutletPagePO>('secondaryRouterOutlet');
+    await secondaryRouterOutletPO.enterOutletName('secondary');
+    await secondaryRouterOutletPO.clickApply();
+
+    // register "microfrontend" capability
+    const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
+    await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+      type: 'microfrontend' as any,
+      qualifier: {comp: 'microfrontend-1'},
+      properties: {
+        path: Microfrontend1PagePO.pageUrl,
+      },
+    });
+    await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+      type: 'microfrontend' as any,
+      qualifier: {comp: 'microfrontend-2'},
+      properties: {
+        path: Microfrontend2PagePO.pageUrl,
+      },
+    });
+
+    // send message to the activator to navigate to 'microfrontend-1'
+    const messageClientPO = pagePOs.get<PublishMessagePagePO>('messageClient');
+    await messageClientPO.selectFlavor(MessagingFlavor.Topic);
+    await messageClientPO.enterTopic('activators/navigate-via-intent');
+    await messageClientPO.enterHeaders(new Map()
+      .set('outlet', 'secondary')
+      .set('qualifier', JSON.stringify({comp: 'microfrontend-1'})));
+    await messageClientPO.clickPublish();
+
+    // expect the primary router outlet not to be navigated
+    await expectRouterOutletUrl(primaryRouterOutletPO).toEqual('about:blank');
+    // expect the secondary router outlet to be navigated
+    await expectRouterOutletUrl(secondaryRouterOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend1PagePO.pageUrl}));
+
+    // repeat the navigation to ensure the activator outlet not to be unloaded
+
+    // send message to the activator to navigate to 'microfrontend-2'
+    await messageClientPO.enterHeaders(new Map()
+      .set('outlet', 'secondary')
+      .set('qualifier', JSON.stringify({comp: 'microfrontend-2'})));
+    await messageClientPO.clickPublish();
+
+    // expect the primary router outlet not to be navigated
+    await expectRouterOutletUrl(primaryRouterOutletPO).toEqual('about:blank');
+    // expect the secondary router outlet to be navigated
+    await expectRouterOutletUrl(secondaryRouterOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend2PagePO.pageUrl}));
+  });
+
+  it('should route the preferred outlet if in the context of an activator', async () => {
+    const testingAppPO = new TestingAppPO();
+    const pagePOs = await testingAppPO.navigateTo({
+      messageClient: PublishMessagePagePO,
+      primaryRouterOutlet: RouterOutletPagePO,
+      secondaryRouterOutlet: RouterOutletPagePO,
+      registerCapability: RegisterCapabilityPagePO,
+    }, {queryParams: new Map().set('manifestClassifier', 'activator-routing')});
+
+    // prepare the router outlets
+    const primaryRouterOutletPO = pagePOs.get<RouterOutletPagePO>('primaryRouterOutlet');
+    await primaryRouterOutletPO.clickApply();
+
+    const secondaryRouterOutletPO = pagePOs.get<RouterOutletPagePO>('secondaryRouterOutlet');
+    await secondaryRouterOutletPO.enterOutletName('secondary');
+    await secondaryRouterOutletPO.clickApply();
+
+    // register "microfrontend" capability
+    const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
+    await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+      type: 'microfrontend' as any,
+      qualifier: {comp: 'microfrontend-1'},
+      properties: {
+        path: Microfrontend1PagePO.pageUrl,
+        outlet: 'secondary'
+      },
+    });
+    await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+      type: 'microfrontend' as any,
+      qualifier: {comp: 'microfrontend-2'},
+      properties: {
+        path: Microfrontend2PagePO.pageUrl,
+        outlet: 'secondary'
+      },
+    });
+
+    // send message to the activator to navigate to 'microfrontend-1'
+    const messageClientPO = pagePOs.get<PublishMessagePagePO>('messageClient');
+    await messageClientPO.selectFlavor(MessagingFlavor.Topic);
+    await messageClientPO.enterTopic('activators/navigate-via-intent');
+    await messageClientPO.enterHeaders(new Map().set('qualifier', JSON.stringify({comp: 'microfrontend-1'})));
+    await messageClientPO.clickPublish();
+
+    // expect the primary router outlet not to be navigated
+    await expectRouterOutletUrl(primaryRouterOutletPO).toEqual('about:blank');
+    // expect the secondary router outlet to be navigated
+    await expectRouterOutletUrl(secondaryRouterOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend1PagePO.pageUrl}));
+
+    // repeat the navigation to ensure the activator outlet not to be unloaded
+
+    // send message to the activator to navigate to 'microfrontend-2'
+    await messageClientPO.enterHeaders(new Map().set('qualifier', JSON.stringify({comp: 'microfrontend-2'})));
+    await messageClientPO.clickPublish();
+
+    // expect the primary router outlet not to be navigated
+    await expectRouterOutletUrl(primaryRouterOutletPO).toEqual('about:blank');
+    // expect the secondary router outlet to be navigated
+    await expectRouterOutletUrl(secondaryRouterOutletPO).toEqual(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend2PagePO.pageUrl}));
+  });
 });
 
 async function getPageUrl(parts: {origin: string; path: string}): Promise<string> {
+  await browser.switchTo().defaultContent();
   const origin = new URL(await browser.getCurrentUrl()).origin;
   const url = new URL(`/#/${parts.path}`, origin);
   url.port = new URL(parts.origin).port;

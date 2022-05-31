@@ -18,7 +18,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {Intent, mapToBody, RequestError} from '../../messaging.model';
 import {lastValueFrom} from 'rxjs';
 import {IntentClient} from '../messaging/intent-client';
-import {PlatformCapabilityTypes, Qualifier} from '../../platform.model';
+import {ACTIVATION_CONTEXT, PlatformCapabilityTypes, Qualifier} from '../../platform.model';
 
 /**
  * Allows navigating to a web page or microfrontend in a {@link SciRouterOutletElement `<sci-router-outlet>`} element.
@@ -244,6 +244,10 @@ export class OutletRouter {
   }
 
   private async resolveContextualOutlet(): Promise<string | undefined> {
+    // If navigating in the context of an activator, do not use that outlet as contextual outlet.
+    if (await Beans.get(ContextService).isPresent(ACTIVATION_CONTEXT)) {
+      return undefined;
+    }
     return (await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT))?.name;
   }
 
