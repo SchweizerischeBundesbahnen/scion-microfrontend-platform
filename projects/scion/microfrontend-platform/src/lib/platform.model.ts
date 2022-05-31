@@ -458,3 +458,40 @@ export const ɵAPP_CONFIG = Symbol('ɵAPP_CONFIG');
  * Symbol to get the application's symbolic name from the bean manager.
  */
 export const APP_IDENTITY = Symbol('APP_IDENTITY');
+
+/**
+ * Key for obtaining the current activation context using {@link ContextService}.
+ *
+ * The activation context is only available to microfrontends loaded by an activator.
+ *
+ * @see {@link ActivationContext}
+ * @see {@link ContextService}
+ * @category Platform
+ */
+export const ACTIVATION_CONTEXT = 'ɵACTIVATION_CONTEXT';
+
+/**
+ * Information about the activator that loaded a microfrontend.
+ *
+ * This context is available to a microfrontend if loaded by an application activator.
+ * This object can be obtained from the {@link ContextService} using the name {@link ACTIVATION_CONTEXT}.
+ *
+ * ```ts
+ * const ctx = await Beans.get(ContextService).lookup<ActivationContext>(ACTIVATION_CONTEXT);
+ * ```
+ *
+ * @see {@link ACTIVATION_CONTEXT}
+ * @see {@link ContextService}
+ * @category Platform
+ */
+export interface ActivationContext {
+  /**
+   * Indicates whether running in the context of the primary activator.
+   * The platform nominates one activator of each app as primary activator.
+   */
+  primary: boolean;
+  /**
+   * Metadata about the activator that activated the microfrontend.
+   */
+  activator: ActivatorCapability;
+}

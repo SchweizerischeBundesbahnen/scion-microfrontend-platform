@@ -48,7 +48,7 @@ export class RouterOutletComponent {
   }
 
   public onApplyClick(): boolean {
-    this.outletName = this.form.get(OUTLET_NAME).value;
+    this.outletName = this.form.get(OUTLET_NAME).value || undefined;
     return false;
   }
 
