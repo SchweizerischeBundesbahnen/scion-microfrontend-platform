@@ -10,9 +10,9 @@ import {Beans} from '@scion/toolkit/bean-manager';
       // register the 'devtools' micro application
       {
         symbolicName: 'devtools',
-        manifestUrl: 'https://scion-microfrontend-platform-devtools-<version>.vercel.app/assets/manifest.json', // <1>
-        intentionCheckDisabled: true, // <2>
-        scopeCheckDisabled: true, // <2>
+        manifestUrl: 'https://scion-microfrontend-platform-devtools-<version>.vercel.app/assets/manifest.json',
+        intentionCheckDisabled: true,
+        scopeCheckDisabled: true,
       },
     ],
   });
@@ -26,7 +26,25 @@ import {Beans} from '@scion/toolkit/bean-manager';
 `;
 
 {
-  // tag::dev-tools:dev-tools-navigation[]
+  // tag::dev-tools:integrate-via-url[]
   Beans.get(OutletRouter).navigate('https://scion-microfrontend-platform-devtools-<version>.vercel.app', {outlet: 'devtools'});
-  // end::dev-tools:dev-tools-navigation[]
+  // end::dev-tools:integrate-via-url[]
 }
+
+{
+  // tag::dev-tools:integrate-via-intent[]
+  Beans.get(OutletRouter).navigate({component: 'devtools', vendor: 'scion'}, {outlet: 'devtools'});
+  // end::dev-tools:integrate-via-intent[]
+}
+
+`
+// tag::dev-tools:intention-declaration[]
+{
+  "type": "microfrontend",
+  "qualifier": {
+    "component": "devtools",
+    "vendor": "scion"
+  }
+}
+// end::dev-tools:intention-declaration[]
+`;
