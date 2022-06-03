@@ -1,4 +1,32 @@
 {
-  "name": "SCION Microfrontend Platform DevTools",
-  "baseUrl": "#"
+  "name": "Developer Tools for SCION Microfrontend Platform",
+  "baseUrl": "#",
+  "capabilities": [
+    {
+      "type": "microfrontend",
+      "qualifier": {
+        "component": "devtools",
+        "vendor": "scion"
+      },
+      "private": false,
+      "description": "Provides an overview of the installed micro applications, their intentions and capabilities, and shows dependencies between applications.",
+      "properties": {
+        "path": ""
+      }
+    },
+    {
+      "type": "view",
+      "qualifier": {
+        "component": "devtools",
+        "vendor": "scion"
+      },
+      "private": false,
+      "description": "Provides an overview of the installed micro applications, their intentions and capabilities, and shows dependencies between applications.",
+      "properties": {
+        "path": "",
+        "title": "Developer Tools",
+        "heading": "SCION Microfrontend Platform"
+      }
+    }
+  ]
 }

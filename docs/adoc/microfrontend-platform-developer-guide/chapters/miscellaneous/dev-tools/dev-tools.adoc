@@ -2,31 +2,63 @@
 include::{basedir}/_common.adoc[]
 
 [[chapter:dev-tools]]
-== DevTools
-The DevTools allow you to inspect integrated micro applications, browse available capabilities, analyze dependencies between micro applications, and more.
-They are implemented as a microfrontend that you can integrate analogous to other microfrontends. We publish the DevTools on Vercel for free use.
-With each release of the SCION Microfrontend Platform, we also publish a new version of the DevTools.
-We strongly recommend integrating the DevTools via the versioned URL to be compatible with your platform version.
+== SCION DevTools
+The SCION DevTools is a microfrontend that allows inspecting installed micro applications, their intentions and capabilities, and shows dependencies between applications. You can integrate the SCION DevTools microfrontend in your application as follows:
 
-You can register the DevTools micro application as follows:
+
+.1. Register the SCION DevTools as micro application
 
 [source,typescript]
 ----
 include::dev-tools.snippets.ts[tags=dev-tools:register-dev-tools]
 ----
-<1> Replace `<version>` with the version of the DevTools compatible with your platform version, e.g. `v1-2-3`.
-<2> Allow the DevTools to read all available capabilities.
 
-Then, create a router outlet for the DevTools, as following:
+IMPORTANT: Note that we need to disable some checks for the SCION DevTools to have access to private capabilities. We strongly recommend not to do this for regular micro applications.
+
+[NOTE]
+====
+With each release of the SCION Microfrontend Platform, we also publish a new version of the SCION DevTools. We strongly recommend integrating the SCION DevTools via the versioned URL to be compatible with your platform version.
+
+Example: https://scion-microfrontend-platform-devtools-v{revnumber-dasherized}.vercel.app/assets/manifest.json
+====
+
+.2. Create a router outlet to display the SCION DevTools
 
 [source,html]
 ----
 include::dev-tools.snippets.ts[tags=dev-tools:dev-tools-outlet]
 ----
 
-Finally, load the DevTools into the router outlet created above, as following:
+.3. Load SCION DevTools into the router outlet
+
+Using the `OutletRouter` you can navigate to the SCION DevTools microfrontend. You can either navigate via URL or via intent. We recommend using intent-based routing to make navigation flows explicit.
+
+    - *Integrate SCION DevTools via Intent*
++
+--
+The SCION DevTools provide a `microfrontend` capability with the following qualifier: `{component: 'devtools', vendor: 'scion'}`.
+
+First, you need to declare an intention in your manifest, as follows:
+[source,json]
+----
+include::dev-tools.snippets.ts[tags=dev-tools:intention-declaration]
+----
+
+Then you can route as following:
 [source,typescript]
 ----
-include::dev-tools.snippets.ts[tags=dev-tools:dev-tools-navigation]
+include::dev-tools.snippets.ts[tags=dev-tools:integrate-via-intent]
 ----
+--
+
+    - *Integrate SCION DevTools via URL* +
++
+--
+Pass the URL to the router. Do not forget to replace the version with your actual SCION Microfrontend Platform version, e.g., `v{revnumber-dasherized}`.
+
+[source,typescript]
+----
+include::dev-tools.snippets.ts[tags=dev-tools:integrate-via-url]
+----
+--
 
