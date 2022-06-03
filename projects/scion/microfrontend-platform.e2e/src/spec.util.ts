@@ -311,6 +311,13 @@ export async function waitUntilLocation(url: string, timeout: number = 5000): Pr
 }
 
 /**
+ * Navigates the currently active WebDriver execution context to the given URL via `location.href`.
+ */
+export async function setLocation(url: string): Promise<void> {
+  await browser.executeScript('window.location.href = arguments[0]', url);
+}
+
+/**
  * URL of the currently active WebDriver execution context.
  */
 export async function getUrlOfCurrentWebDriverExecutionContext(): Promise<string> {

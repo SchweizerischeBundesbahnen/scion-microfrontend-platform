@@ -371,7 +371,6 @@ export class SciRouterOutletElement extends HTMLElement {
       .pipe(
         switchMap(outlet => outletNavigate$(outlet).pipe(startWith(null! as Navigation))), // start with a `null` navigation in case no navigation took place yet
         tap(navigation => this._empty$.next(!navigation || navigation.url === 'about:blank')),
-        distinctUntilChanged((url1, url2) => url1 === url2, navigation => navigation?.url),
         pairwise(),
         takeUntil(this._disconnect$),
       )
