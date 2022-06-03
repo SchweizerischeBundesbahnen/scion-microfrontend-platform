@@ -10,7 +10,7 @@ This short manual helps to install the SCION Microfrontend Platform and describe
 1. **Install `SCION Microfrontend Platform` using the NPM command-line tool**
 
    ```console
-   npm install @scion/microfrontend-platform @scion/toolkit --save
+   npm install @scion/microfrontend-platform @scion/toolkit rxjs@^7.5.0 --save
    ```
    > SCION Microfrontend Platform requires some tools of the module [@scion/toolkit][link-scion-toolkit]. By using the above command, those are installed as well.
 
@@ -30,7 +30,7 @@ This short manual helps to install the SCION Microfrontend Platform and describe
      await MicrofrontendPlatform.startHost({
        applications: [
          {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
-         {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
+         {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
        ],
      });
      ```
@@ -54,7 +54,7 @@ This short manual helps to install the SCION Microfrontend Platform and describe
        },
        applications: [
          {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
-         {symbolicName: 'shopping-cart-app', manifestUrl: 'http://localhost:4202/manifest.json'},
+         {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
        ],
      });
      ```
