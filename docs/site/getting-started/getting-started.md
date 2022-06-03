@@ -4,24 +4,21 @@
 | --- | --- | --- | --- | --- |
 
 ## [SCION Microfrontend Platform][menu-home] > Getting Started
-This Getting Started Guide introduces you to the essentials of the SCION Microfrontend Platform by developing a simple webshop. The webshop consists of a products page and a shopping cart, which are implemented as independent microfrontends.
+This Getting Started Guide introduces you to the basics of the SCION Microfrontend Platform by developing a simple [eCommerce web application](https://scion-microfrontend-platform-getting-started.vercel.app), allowing us to view our products, our customers and the products a customer has purchased.
 
-<p align="center">
-  <a href="https://scion-microfrontend-platform-getting-started.vercel.app"><img src="webshop.svg" alt="Getting Started Webshop"></a>
-</p>
+In the course of this tutorial, we will create two independent applications, also referred to as micro apps, the *Products App* and the *Customers App*, each providing two microfrontends. We will also create a host app to integrate the two micro apps.
 
-In total we have 3 applications:
+- **Host App**\
+  Provides the top-level integration container for microfrontends. It is the web app which the user loads into his browser that provides the main application shell, defining areas to embed microfrontends.
 
-- **Host Application (gray, [localhost:4200](http://localhost:4200))**\
-  App which the user loads into his browser that provides the main application layout of the webshop.
-- **Products Application (green, [localhost:4201](http://localhost:4201))**\
-  Provides the products microfrontend, so that the user can view the products of our webshop.
-- **Shopping Cart Application (blue, [localhost:4202](http://localhost:4202))**\
-  Provides the shopping cart microfrontend, allowing the user to add products into the shopping cart.
+- **Products App**\
+  Provides the *ProductList Microfrontend* and *Product Microfrontend*, so that we can view our products.
 
-The applications we are developing in this guide are pure TypeScript applications, i.e., they do not depend on a web framework like [Angular][link-angular],  [React][link-react], [Vue.js][link-vuejs], or similar.
+- **Customers Apps**\
+  Provides the *CustomerList Microfrontend* and *Customer Microfrontend*, so that we can view our customers. The *Customer Microfrontend* further embeds the *ProductList Microfrontend* to show the products purchased by a customer.
 
- 
+**When you have finished this guide, the app should look as follows: https://scion-microfrontend-platform-getting-started.vercel.app.**
+
 ***
 
 #### How to complete this guide
@@ -30,7 +27,6 @@ We recommend cloning the source code repository for this guide. It contains mini
 
 <details>
     <summary><strong>Follow these step-by-step instructions to get you ready</strong></summary>
-    <br>
 
 1. Clone the Git repository for this guide:
    ```console
@@ -51,32 +47,48 @@ We recommend cloning the source code repository for this guide. It contains mini
    
    <details>
        <summary>The directory structure should look like this.</summary>
-       <br>
    
    ```
    scion-microfrontend-platform-getting-started
    ├── host-app
    │   ├── src
    │   │   ├── index.html // HTML template
-   │   │   ├── host-controller.ts // TypeScript file
-   │   │   └── styles.scss // Sass stylesheet
+   │   │   ├── host.ts // TypeScript file
+   │   │   └── host.scss // SASS stylesheet
    │   ├── package.json
    │   └── tsconfig.json
    │
    ├── products-app
    │   ├── src
-   │   │   ├── products.html
-   │   │   ├── products-controller.ts
-   │   │   └── styles.scss
+   │   │   ├── product // Product Microfrontend
+   │   │   │    ├── product.html
+   │   │   │    ├── product.ts
+   │   │   │    └── product.scss
+   │   │   ├── product-list  // ProductList Microfrontend
+   │   │   │    ├── product-list.html
+   │   │   │    ├── product-list.ts
+   │   │   │    └── product-list.scss
+   │   │   ├── index.html
+   │   │   ├── product.data.json
+   │   │   ├── product.service.ts
+   │   │   └── query-params.ts
    │   ├── package.json
    │   └── tsconfig.json
    │
-   ├── shopping-cart-app
+   ├── customers-app
    │   ├── src
-   │   │   ├── shopping-cart.html
-   │   │   ├── shopping-cart-controller.ts
-   │   │   ├── shopping-cart-service.ts // service to store products added to the cart in the session storage
-   │   │   └── styles.scss
+   │   │   ├── customer  // Customer Microfrontend
+   │   │   │    ├── customer.html
+   │   │   │    ├── customer.ts
+   │   │   │    └── customer.scss
+   │   │   ├── customer-list  // CustomerList Microfrontend
+   │   │   │    ├── customer-list.html
+   │   │   │    ├── customer-list.ts
+   │   │   │    └── customer-list.scss
+   │   │   ├── index.html
+   │   │   ├── customer.data.json
+   │   │   ├── customer.service.ts
+   │   │   └── query-params.ts
    │   ├── package.json
    │   └── tsconfig.json
    │
@@ -84,7 +96,7 @@ We recommend cloning the source code repository for this guide. It contains mini
    ```
    </details>
    
-1. Install required modules using the npm install command. This can take some time as the modules have to be installed for all three applications. 
+1. Install required modules using the `npm install` command. This can take some time as the modules have to be installed for all three applications. 
    ```console
    npm install
    ```
@@ -96,27 +108,32 @@ We recommend cloning the source code repository for this guide. It contains mini
 
 </details>
 
+<details>
+    <summary><strong>Good to know</strong></summary>
+
+- The source code of the final app you find on [Github](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform-getting-started) on the `master` branch.
+- You can start the app using the `npm run start` command.
+- We use [Parcel][link-parcel] as web application bundler to build and serve the apps.
+- When you have finished this guide, the app should look as follows: https://scion-microfrontend-platform-getting-started.vercel.app.
+- The applications are served at the following URLs:
+  - Host App: http://localhost:4200
+  - Products App: http://localhost:4201
+  - Customers App: http://localhost:4202
+</details>
+
 ***
 
-We can now move on to the development of the host and micro applications. If you have started with the skeleton as described above, the CSS files are already prepared and provide basic styling. In the following, we will not go any further into the CSS content.
+We can now move on to the development of the host and micro apps. The applications we are developing are pure TypeScript applications, i.e., they do not depend on a web framework like [Angular][link-angular],  [React][link-react], [Vue.js][link-vuejs], or similar. If you have started with the skeleton as described above, the CSS files are already prepared and provide basic styling. In the following, we will not go any further into the CSS content.
  
-**Good to know:** 
-
-- The source code of the final webshop you find in the Git repo [scion-microfrontend-platform-getting-started](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform-getting-started) on the `master` branch.
-
-- You can start the webshop using the `npm run start` command.
-
-- We use [Parcel][link-parcel] as web application bundler to build and serve the webshop. Sometimes, Parcel hot module reloading fails, mostly when adding new files or changing JSON files. Then, serve the webshop anew using the `npm run start` command.
-
-- When you have finished this guide, the webshop should look as follows: https://scion-microfrontend-platform-getting-started.vercel.app.
-
-**Let's get started!**
-
-- #### [Start developing the `Host Application`][link-getting-started:host-app]
-
-- #### [Start developing the `Products Micro Application`][link-getting-started:products-app]
-
-- #### [Start developing the `Shopping Cart Micro Application`][link-getting-started:shopping-cart-app]
+1. #### [Create the *Host Application*][link-getting-started:01:host-app]
+2. #### [Create the *Products Application*][link-getting-started:02:products-app]
+3. #### [Create the *Customers Application*][link-getting-started:03:customers-app]
+4. #### [Learn how to navigate to a microfrontend][link-getting-started:04:microfrontend-routing]
+5. #### [Learn how to embed a microfrontend][link-getting-started:05:embed-microfrontend]
+6. #### [Learn how to navigate via intent][link-getting-started:06:navigate-via-intent]
+7. #### [Learn how to integrate the SCION DevTools][link-getting-started:07:devtools]
+8. #### [Learn how to browse the catalog of capabilities][link-getting-started:08:browse-capabilities]
+9. #### [Summary][link-getting-started:09:summary]
 
 
 [menu-home]: /README.md
@@ -130,6 +147,13 @@ We can now move on to the development of the host and micro applications. If you
 [link-vuejs]: https://vuejs.org/
 [link-parcel]: https://parceljs.org/
 
-[link-getting-started:host-app]: getting-started-host-app.md
-[link-getting-started:products-app]: getting-started-products-app.md
-[link-getting-started:shopping-cart-app]: getting-started-shopping-cart-app.md
+[menu-getting-started]: /docs/site/getting-started/getting-started.md
+[link-getting-started:01:host-app]: 01-getting-started-host-app.md
+[link-getting-started:02:products-app]: 02-getting-started-products-app.md
+[link-getting-started:03:customers-app]: 03-getting-started-customers-app.md
+[link-getting-started:04:microfrontend-routing]: 04-getting-started-microfrontend-routing.md
+[link-getting-started:05:embed-microfrontend]: 05-getting-started-embed-microfrontend.md
+[link-getting-started:06:navigate-via-intent]: 06-getting-started-navigate-via-intent.md
+[link-getting-started:07:devtools]: 07-getting-started-devtools.md
+[link-getting-started:08:browse-capabilities]: 08-getting-started-browse-capabilities.md
+[link-getting-started:09:summary]: 09-getting-started-summary.md
