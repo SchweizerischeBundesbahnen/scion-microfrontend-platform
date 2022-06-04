@@ -5,6 +5,24 @@
 
 ## Changelog
 
+# [1.0.0-rc.6](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.5...1.0.0-rc.6) (2022-06-04)
+
+
+### Bug Fixes
+
+* **platform/config:** use the application's symbolic name as application name if not configured ([2058d99](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/2058d9939887e3297af7a5e21fc6eb657d69a8a4))
+* **platform/router:** do not discard supposedly identical navigations ([5adba59](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/5adba59b55dd2bda0bcd69d6ad00990bd2912da3))
+* **platform/router:** route the primary outlet if in the context of an activator and if not specified a target outlet ([e99ee13](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/e99ee131c2997dcfba4b8b2710786187421c6a26))
+
+
+### Features
+
+* **platform/devtools:** facilitate integration in a router outlet or workbench view using intent-based navigation ([bcc0718](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/bcc0718cb5cfd434eeb6420ec36bfcbdd90b6875)), closes [#45](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/45)
+* **platform/router:** facilitate intent-based navigation ([052dd4c](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/052dd4cf8ead6991090a09017b46f0d27156f545)), closes [#154](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/154)
+* **platform/router:** remove matrix and query parameters not passed for substitution ([b424647](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/b4246476de36bdf03ad555b6af20048773d120c3)), closes [#155](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/155)
+
+
+
 # [1.0.0-rc.5](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.4...1.0.0-rc.5) (2022-05-18)
 
 
