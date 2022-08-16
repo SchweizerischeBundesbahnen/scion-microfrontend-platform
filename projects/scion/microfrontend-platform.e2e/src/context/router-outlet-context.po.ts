@@ -1,57 +1,51 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
- * available under the terms from the Eclipse Public License 2.0
+ * available under the terms of the Eclipse Public License 2.0
  * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {$, ElementFinder} from 'protractor';
-import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {enterText, findAsync} from '../spec.util';
+
+import {findAsync} from '../testing.util';
 import {ContextListPO} from './context-list.po';
+import {FrameLocator, Locator, Page} from '@playwright/test';
 
 /**
  * Page object for {@link RouterOutletContextComponent}.
  */
 export class RouterOutletContextPO {
 
-  private readonly _contextOverlayFinder = $('.e2e-router-outlet-context-overlay app-router-outlet-context');
+  private readonly _overlayLocator: Locator;
+  private readonly _contextListPO: ContextListPO;
 
-  constructor(private _pageFinder: ElementFinder, private _switchToIframeFn: SwitchToIframeFn) {
-  }
-
-  public async open(): Promise<void> {
-    await this._switchToIframeFn();
-    await this._pageFinder.$('button.e2e-context-define').click();
+  constructor(pageOrFrameLocator: Page | FrameLocator) {
+    this._overlayLocator = pageOrFrameLocator.locator('.e2e-router-outlet-context-overlay app-router-outlet-context');
+    this._contextListPO = new ContextListPO(this._overlayLocator.locator('sci-list.e2e-context'));
   }
 
   public async close(): Promise<void> {
-    await this._switchToIframeFn();
-    await this._contextOverlayFinder.$('header.e2e-header button.e2e-close').click();
+    await this._overlayLocator.locator('header.e2e-header button.e2e-close').click();
   }
 
   public async addContextValue(key: string, value: string | undefined | null): Promise<void> {
-    await this._switchToIframeFn();
-    const addEntrySectionFinder = this._contextOverlayFinder.$('section.e2e-new-context-entry');
-    await enterText(key, addEntrySectionFinder.$('input.e2e-name'));
+    const addEntrySectionLocator = this._overlayLocator.locator('section.e2e-new-context-entry');
+    await addEntrySectionLocator.locator('input.e2e-name').fill(key);
     if (value === undefined) {
-      await enterText('<undefined>', addEntrySectionFinder.$('input.e2e-value'));
+      await addEntrySectionLocator.locator('input.e2e-value').fill('<undefined>');
     }
     else if (value === null) {
-      await enterText('<null>', addEntrySectionFinder.$('input.e2e-value'));
+      await addEntrySectionLocator.locator('input.e2e-value').fill('<null>');
     }
     else {
-      await enterText(value, addEntrySectionFinder.$('input.e2e-value'));
+      await addEntrySectionLocator.locator('input.e2e-value').fill(value);
     }
-    await addEntrySectionFinder.$('button.e2e-add').click();
+    await addEntrySectionLocator.locator('button.e2e-add').click();
   }
 
   public async removeContextValue(key: string): Promise<void> {
-    await this._switchToIframeFn();
-    const contextListPO = new ContextListPO(this._contextOverlayFinder.$('sci-list.e2e-context'), this._switchToIframeFn);
-    const contextListItemPOs = await contextListPO.getContextListItemPOs();
+    const contextListItemPOs = await this._contextListPO.getContextListItemPOs();
     const contextListItemPO = await findAsync(contextListItemPOs, async listItemPO => (await listItemPO.getKey()) === key);
     await contextListItemPO.clickRemove();
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,67 +7,66 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {$, browser, WebElement} from 'protractor';
-import {enterText, getUrlOfCurrentWebDriverExecutionContext, isCssClassPresent, switchToIframe} from '../spec.util';
-import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {RouterOutletContextPO} from '../context/router-outlet-context.po';
-import {ISize} from 'selenium-webdriver';
+
+import {getLocationHref, isCssClassPresent, isPresent, setLocationHref} from '../testing.util';
 import {RouterOutletSettingsPO} from '../settings/router-outlet-settings.po';
+import {FrameLocator, Locator} from '@playwright/test';
+import {ElementSelectors} from '../element-selectors';
+import {RouterOutletContextPO} from '../context/router-outlet-context.po';
+import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
-export class RouterOutletPagePO {
+export class RouterOutletPagePO implements OutletPageObject {
 
-  public static readonly pageUrl = 'router-outlet'; // path to the page; required by {@link TestingAppPO}
+  public static readonly PATH = 'router-outlet';
+  public readonly path = RouterOutletPagePO.PATH;
 
-  private _pageFinder = $('app-router-outlet');
+  private readonly _locator: Locator;
+  private readonly _routerOutletFrameLocator: FrameLocator;
 
-  /**
-   * Allows defining the context of this outlet.
-   */
-  public readonly outletContextPO: RouterOutletContextPO;
-
-  /**
-   * Allows configuring the settings of this outlet.
-   */
-  public readonly outletSettingsPO: RouterOutletSettingsPO;
-
-  constructor(private _switchToIframeFn: SwitchToIframeFn) {
-    this.outletContextPO = new RouterOutletContextPO(this._pageFinder, this._switchToIframeFn);
-    this.outletSettingsPO = new RouterOutletSettingsPO(this._pageFinder, this._switchToIframeFn);
+  constructor(private readonly _frameLocator: FrameLocator) {
+    this._locator = this._frameLocator.locator('app-router-outlet');
+    this._routerOutletFrameLocator = this._locator.frameLocator(ElementSelectors.routerOutletFrame());
   }
 
   public async enterOutletName(outlet: string): Promise<void> {
-    await this._switchToIframeFn();
-    await enterText(outlet, this._pageFinder.$('input.e2e-outlet-name'));
+    await this._locator.locator('input.e2e-outlet-name').fill(outlet);
   }
 
   public async clickApply(): Promise<void> {
-    await this._switchToIframeFn();
-    await this._pageFinder.$('button.e2e-apply').click();
+    await this._locator.locator('button.e2e-apply').click();
   }
 
   /**
-   * Returns the URL of the embedded web content.
+   * Returns the URL of embedded content by invoking `location.href`.
    */
-  public async getRouterOutletUrl(): Promise<string> {
-    await this.switchToRouterOutletIframe();
-    return getUrlOfCurrentWebDriverExecutionContext();
+  public getEmbeddedContentUrl(): Promise<string> {
+    return getLocationHref(this._routerOutletFrameLocator);
+  }
+
+  /**
+   * Sets the URL in the browsing context of embedded content by invoking `location.href`.
+   */
+  public async setEmbeddedContentUrl(url: string): Promise<void> {
+    await setLocationHref(this._routerOutletFrameLocator, url);
   }
 
   /**
    * Returns the size of the router outlet.
    */
-  public async getRouterOutletSize(): Promise<ISize> {
-    await this._switchToIframeFn();
-    return this._pageFinder.$('sci-router-outlet').getSize();
+  public async getRouterOutletSize(): Promise<Size> {
+    const boundingBox = await this._locator.locator('sci-router-outlet').boundingBox();
+    return {
+      width: boundingBox?.width ?? 0,
+      height: boundingBox?.height ?? 0,
+    };
   }
 
   /**
    * Returns `true` if the outlet is showing no content, or `false` otherwise.
    */
   public async isEmpty(): Promise<boolean> {
-    await this._switchToIframeFn();
-    const isEmpty = await this._pageFinder.$('div.e2e-empty').isPresent();
-    const isEmptyCssClassPresent = await isCssClassPresent(this._pageFinder.$('sci-router-outlet'), 'sci-empty');
+    const isEmpty = await isPresent(this._locator.locator('div.e2e-empty'));
+    const isEmptyCssClassPresent = await isCssClassPresent(this._locator.locator('sci-router-outlet'), 'sci-empty');
 
     if (isEmpty !== isEmptyCssClassPresent) {
       throw Error(`[IllegalStateError] Expected CSS class 'sci-empty' on 'sci-router-outlet' HTML element to by in sync with the empty property on the 'SciRouterOutletElement' DOM element [emptyProperty=${isEmpty}, cssClassPresent=${isEmptyCssClassPresent}]`);
@@ -76,16 +75,30 @@ export class RouterOutletPagePO {
   }
 
   /**
-   * Switches the WebDriver execution context to the iframe of the `<sci-router-outlet>`. When resolved,
-   * future Protractor commands are sent to that iframe.
+   * Displays the context of the <sci-router-outlet> contained in this router outlet.
    */
-  public async switchToRouterOutletIframe(): Promise<void> {
-    await this._switchToIframeFn();
-
-    // Get the iframe from the custom element (inside shadow DOM)
-    const iframe = await browser.executeScript<WebElement>('return arguments[0].iframe', this._pageFinder.$('sci-router-outlet').getWebElement());
-
-    // Activate this iframe's WebDriver execution context.
-    await switchToIframe(iframe);
+  public async openRouterOutletContext(): Promise<RouterOutletContextPO> {
+    await this._locator.locator('button.e2e-context-define').click();
+    return new RouterOutletContextPO(this._frameLocator);
   }
+
+  /**
+   * Displays the settings of the <sci-router-outlet> contained in this router outlet.
+   */
+  public async openRouterOutletSettings(): Promise<RouterOutletSettingsPO> {
+    await this._locator.locator('button.e2e-settings').click();
+    return new RouterOutletSettingsPO(this._frameLocator);
+  }
+
+  /**
+   * Reference to the {@link FrameLocator} of the <sci-router-outlet> contained in this router outlet.
+   */
+  public get routerOutletFrameLocator(): FrameLocator {
+    return this._routerOutletFrameLocator;
+  }
+}
+
+export interface Size {
+  width: number;
+  height: number;
 }

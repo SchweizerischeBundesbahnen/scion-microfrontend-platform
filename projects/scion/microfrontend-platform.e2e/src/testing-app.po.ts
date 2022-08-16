@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,14 +7,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {$, browser} from 'protractor';
-import {BrowserOutletPO, OutletDescriptorTypes, OutletPageObjectClass, OutletPageObjectDescriptor, SwitchToIframeFn} from './browser-outlet/browser-outlet.po';
-import {isCssClassPresent, runOutsideAngularSynchronization, waitUntilTestingAppInteractableElseNoop} from './spec.util';
+
+import {FrameLocator, Page} from '@playwright/test';
+import {BrowserOutletPO, OutletDescriptorTypes, OutletPageObject, OutletPageObjectConstructor, OutletPageObjectDescriptor} from './browser-outlet/browser-outlet.po';
+import {isCssClassPresent, isPresent} from './testing.util';
+import {ElementSelectors} from './element-selectors';
 
 /**
  * The central page object of the testing app to perform the initial navigation.
  */
 export class TestingAppPO {
+
+  constructor(private readonly _page: Page) {
+  }
 
   /**
    * Navigates to the testing app with a given microfrontend setup.
@@ -27,11 +32,9 @@ export class TestingAppPO {
    * reference to the page object of that microfrontend. To get a reference to the containing outlet, append the outlet name with the suffix ':outlet'.
    *
    * A page object class must meet the following requirements:
-   * - must provide a single-arg constructor with an argument of the type {@link SwitchToIframeFn}.
-   *   Save that function in the page object and call it when to interact with the page.
-   *   It switches the WebDriver execution context, causing Protractor to send future commands to that iframe.
-   * - must provide a static readonly field named `pageUrl` initialized with the relative path of its microfrontend.
-   *
+   * - must implement the interface {@link OutletPageObject}.
+   * - must provide a single-arg constructor with an argument of the type {@link FrameLocator}.
+   *   Use the frame locator to access elements, such as buttons, inputs, etc. on your microfrontend.
    *
    * ## Examples:
    *
@@ -54,17 +57,17 @@ export class TestingAppPO {
    * ### Page object class:
    *
    * ```
-   * export class MicrofrontendPagePO {
+   * export class MicrofrontendPagePO implements OutletPageObject {
    *
-   *   public static readonly pageUrl = 'relative/path/to/the/microfrontend';
+   *   public readonly path = 'path/to/the/microfrontend';
+   *   private readonly _locator: Locator;
    *
-   *   constructor(private _switchToIframeFn: SwitchToIframeFn) {
+   *   constructor(frameLocator: FrameLocator) {
+   *     this._locator = frameLocator.locator('app-page-selector');
    *   }
    *
    *   public async doSomething(): Promise<void> {
-   *     await this._switchToIframeFn();
-   *
-   *     ...
+   *     this._locator.locator('input').fill('some text');
    *   }
    * }
    * ```
@@ -96,58 +99,44 @@ export class TestingAppPO {
    */
   public async navigateTo(outlets: Outlets, options?: {queryParams?: Map<string, string>}): Promise<OutletPageObjectMap> {
     // Navigate to the 'about:blank' page before setting up the test case to have a clean application state.
-    await browser.driver.switchTo().defaultContent();
-    await browser.driver.get('about:blank');
+    await this._page.goto('about:blank');
 
     // Setup the test case
-    const outletPageObjectMap = await this.configureTestingApp(outlets, options);
-    await waitUntilTestingAppInteractableElseNoop();
-    return outletPageObjectMap;
+    const queryParams = options?.queryParams ?? new Map<string, string>();
+    const queryParamsEncoded = (queryParams.size ? `?${new URLSearchParams([...queryParams]).toString()}` : '');
+    await this._page.goto(`/#/browser-outlets;names=${Object.keys(outlets).join(',')}${queryParamsEncoded}`);
+    // Wait until started the host app.
+    await this._page.locator('*[ng-version]').waitFor({state: 'attached'});
+
+    return this.configureTestingApp(outlets, this._page);
   }
 
-  private async configureTestingApp(outlets: Outlets, options?: {parentOutletPO?: BrowserOutletPO; queryParams?: Map<string, string>}): Promise<OutletPageObjectMap> {
-    const parentOutletPO = options && options.parentOutletPO;
-    const queryParams = options && options.queryParams || new Map<string, string>();
+  private async configureTestingApp(outlets: Outlets, locator: Page | FrameLocator): Promise<OutletPageObjectMap> {
+    const outletPageObjectMap = new Map<string, OutletPageObject>();
+    for (const outletName of Object.keys(outlets)) {
+      const outletDescriptor: string | OutletPageObjectConstructor | OutletPageObjectDescriptor | Outlets = outlets[outletName];
 
-    // For root outlets, perform the initial page navigation, for child outlets navigate to the outlets page.
-    const outletNames = Object.keys(outlets);
-
-    // Run outside Angular to avoid Protractor from crashing when the app takes long time to initialize, e.g., if activators delay the startup.
-    await runOutsideAngularSynchronization(async () => {
-      if (parentOutletPO) {
-        await parentOutletPO.enterOutletsUrl(TestingAppOrigins.APP_1, outletNames);
-      }
-      else {
-        const queryParamsEncoded = (queryParams.size ? `?${new URLSearchParams([...queryParams]).toString()}` : '');
-        await browser.get(`/#/browser-outlets;names=${outletNames.join(',')}${queryParamsEncoded}`);
-      }
-    });
-    await waitUntilTestingAppInteractableElseNoop();
-
-    const browserOutletPOs = outletNames.map(outletName => new BrowserOutletPO(outletName, parentOutletPO));
-    const pageObjectMap = new Map<string, any>();
-
-    // Load the microfrontend of every outlet.
-    for (const browserOutletPO of browserOutletPOs) {
-      const outletDescriptor: string | OutletPageObjectClass | OutletPageObjectDescriptor | Outlets = outlets[browserOutletPO.outletName];
+      const browserOutletPO = new BrowserOutletPO(locator, outletName);
 
       switch (OutletDescriptorTypes.of(outletDescriptor)) {
         case OutletDescriptorTypes.URL: {
           await browserOutletPO.enterUrl(outletDescriptor as string);
-          putIfAbsentOrElseThrow(pageObjectMap, `${browserOutletPO.outletName}`, browserOutletPO);
+          putIfAbsentOrElseThrow(outletPageObjectMap, outletName, browserOutletPO);
           break;
         }
         case OutletDescriptorTypes.PAGE_OBJECT_CLASS:
         case OutletDescriptorTypes.PAGE_OBJECT_DESCRIPTOR: {
-          const pageObject = await browserOutletPO.enterUrl<any>(outletDescriptor as OutletPageObjectClass | OutletPageObjectDescriptor);
-          putIfAbsentOrElseThrow(pageObjectMap, `${browserOutletPO.outletName}:outlet`, browserOutletPO);
-          putIfAbsentOrElseThrow(pageObjectMap, browserOutletPO.outletName, pageObject);
+          const pageObject = await browserOutletPO.enterUrl(outletDescriptor as OutletPageObjectConstructor | OutletPageObjectDescriptor);
+          putIfAbsentOrElseThrow(outletPageObjectMap, `${outletName}:outlet`, browserOutletPO);
+          putIfAbsentOrElseThrow(outletPageObjectMap, outletName, pageObject);
           break;
         }
         case OutletDescriptorTypes.OUTLETS: {
-          putIfAbsentOrElseThrow(pageObjectMap, browserOutletPO.outletName, browserOutletPO);
-          const pageObjects = await this.configureTestingApp(outletDescriptor as Outlets, {parentOutletPO: browserOutletPO});
-          pageObjects.outlets().forEach(outlet => putIfAbsentOrElseThrow(pageObjectMap, outlet, pageObjects.get(outlet)));
+          const childOutlets = outletDescriptor as Outlets;
+          await browserOutletPO.enterOutletsUrl(TestingAppOrigins.APP_1, Object.keys(childOutlets));
+          const pageObjects = await this.configureTestingApp(childOutlets, locator.frameLocator(ElementSelectors.routerOutletFrame(outletName)));
+          pageObjects.outlets().forEach(outlet => putIfAbsentOrElseThrow(outletPageObjectMap, outlet, pageObjects.get(outlet)));
+          putIfAbsentOrElseThrow(outletPageObjectMap, outletName, browserOutletPO);
           break;
         }
       }
@@ -156,11 +145,11 @@ export class TestingAppPO {
     return new class implements OutletPageObjectMap {
 
       public outlets(): string[] {
-        return Array.from(pageObjectMap.keys());
+        return Array.from(outletPageObjectMap.keys());
       }
 
-      public get<T>(outlet: string): T {
-        const pageObject = pageObjectMap.get(outlet) as T;
+      public get<T extends OutletPageObject>(outlet: string): T {
+        const pageObject = outletPageObjectMap.get(outlet) as T;
         if (!pageObject) {
           throw Error(`[OutletNotFoundError] No outlet found with the given name '${outlet}'.`);
         }
@@ -170,31 +159,21 @@ export class TestingAppPO {
   }
 
   /**
-   * Returns `true` if the document in the specified iframe or its embedded web content has received focus, or `false` if not.
-   *
-   * If not specifying a 'switchTo' function, the root context is checked if it has the focus.
+   * Returns `true` if the testing app has received focus, or `false` if not.
    */
-  public async isFocusWithin(switchToIframeFn?: SwitchToIframeFn): Promise<boolean> {
-    if (switchToIframeFn) {
-      await switchToIframeFn();
-    }
-    else {
-      await browser.switchTo().defaultContent();
-    }
-
-    return $('app-root').$('.e2e-focus-within').isPresent();
+  public async isFocusWithin(): Promise<boolean> {
+    return isPresent(this._page.locator('app-root').locator('.e2e-focus-within'));
   }
 
   /**
    * Returns `true` if the devtools is present in the current configuration.
    */
   public async isDevtoolsEnabled(): Promise<boolean> {
-    await browser.switchTo().defaultContent();
-    return isCssClassPresent($('app-shell'), 'e2e-devtools-enabled');
+    return isCssClassPresent(this._page.locator('app-shell'), 'e2e-devtools-enabled');
   }
 }
 
-function putIfAbsentOrElseThrow(map: Map<string, any>, outletName: string, pageObject: any): void {
+function putIfAbsentOrElseThrow(map: Map<string, OutletPageObject>, outletName: string, pageObject: OutletPageObject): void {
   if (map.has(outletName)) {
     throw Error(`[OutletUniqueError] Another outlet already registered under the same name. [outlet=${outletName}]`);
   }
@@ -210,7 +189,7 @@ function putIfAbsentOrElseThrow(map: Map<string, any>, outletName: string, pageO
  * a {@link OutletPageObjectDescriptor} object to configure the microfrontend instead.
  */
 export interface Outlets {
-  [outletName: string]: OutletPageObjectClass | OutletPageObjectDescriptor | Outlets | string;
+  [outletName: string]: OutletPageObjectConstructor | OutletPageObjectDescriptor | Outlets | string;
 }
 
 /**
@@ -224,7 +203,7 @@ export interface OutletPageObjectMap {
   /**
    * Returns the page object for the given outlet, or throws an error if not found.
    */
-  get<T>(outlet: string): T;
+  get<T extends OutletPageObject>(outlet: string): T;
 }
 
 /**

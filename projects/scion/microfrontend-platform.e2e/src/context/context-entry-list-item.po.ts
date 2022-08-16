@@ -1,36 +1,33 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
- * available under the terms from the Eclipse Public License 2.0
+ * available under the terms of the Eclipse Public License 2.0
  * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {ElementFinder} from 'protractor';
-import {SciListItemPO} from '../../deps/scion/components.internal/list.po';
+
+import {Locator} from '@playwright/test';
+import {SciListItemPO} from '../components.internal/list.po/list-item.po';
 
 export class ContextEntryListItemPO {
 
-  private _contentFinder: ElementFinder;
+  private readonly _locator: Locator;
 
-  constructor(private _listItemPO: SciListItemPO, private _switchToIframeFn: SwitchToIframeFn) {
-    this._contentFinder = this._listItemPO.contentFinder.$('app-context-entry');
+  constructor(private readonly _listItemPO: SciListItemPO) {
+    this._locator = this._listItemPO.contentLocator.locator('app-context-entry');
   }
 
   public async getKey(): Promise<string> {
-    await this._switchToIframeFn();
-    return this._contentFinder.$('span.e2e-key').getText();
+    return this._locator.locator('span.e2e-key').innerText();
   }
 
   public async getValue(): Promise<string> {
-    await this._switchToIframeFn();
-    return this._contentFinder.$('span.e2e-value').getText();
+    return this._locator.locator('span.e2e-value').innerText();
   }
 
   public async clickRemove(): Promise<void> {
-    await this._switchToIframeFn();
     await this._listItemPO.clickAction('e2e-remove');
   }
 }

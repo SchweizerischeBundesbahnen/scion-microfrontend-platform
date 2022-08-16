@@ -33,8 +33,8 @@ export class Keystroke {
     parts.push(eventType);
     if (modifiers) {
       modifiers.control && parts.push('control');
-      modifiers.shift && parts.push('shift');
       modifiers.alt && parts.push('alt');
+      modifiers.shift && parts.push('shift');
       modifiers.meta && parts.push('meta');
     }
     parts.push(key.toLowerCase());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,196 +7,195 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
+
 import {TestingAppOrigins} from '../testing-app.po';
 import {TopicBasedMessagingSpecs} from './topic-based-messaging-specs';
 import {IntendBasedMessagingSpecs} from './intent-based-messaging-specs';
-import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
+import {test} from '../fixtures';
 
-describe('Messaging', () => {
+test.describe('Messaging', () => {
 
-  installSeleniumWebDriverClickFix();
+  test.describe('topic-based', () => {
 
-  describe('topic-based', () => {
+    test.describe(`[same-origin]`, (): void => {
 
-    describe(`[same-origin]`, (): void => {
-
-      it('allows publishing and receiving a message in root outlets', async () => {
-        await TopicBasedMessagingSpecs.RootOutlets.publishSpec(TestingAppOrigins.APP_2, TestingAppOrigins.APP_2);
+      test('allows publishing and receiving a message in root outlets', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.RootOutlets.publishSpec(testingAppPO, TestingAppOrigins.APP_2, TestingAppOrigins.APP_2);
       });
 
-      it('allows publishing and receiving a message in child outlets', async () => {
-        await TopicBasedMessagingSpecs.ChildOutlets.publishSpec(TestingAppOrigins.APP_2, TestingAppOrigins.APP_2);
+      test('allows publishing and receiving a message in child outlets', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.ChildOutlets.publishSpec(testingAppPO, TestingAppOrigins.APP_2, TestingAppOrigins.APP_2);
       });
 
-      it('allows replying to a message in root outlets', async () => {
-        await TopicBasedMessagingSpecs.RootOutlets.replySpec(TestingAppOrigins.APP_2, TestingAppOrigins.APP_2);
+      test('allows replying to a message in root outlets', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.RootOutlets.replySpec(testingAppPO, TestingAppOrigins.APP_2, TestingAppOrigins.APP_2);
       });
 
-      it('allows replying to a message in child outlets', async () => {
-        await TopicBasedMessagingSpecs.ChildOutlets.replySpec(TestingAppOrigins.APP_2, TestingAppOrigins.APP_2);
+      test('allows replying to a message in child outlets', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.ChildOutlets.replySpec(testingAppPO, TestingAppOrigins.APP_2, TestingAppOrigins.APP_2);
       });
     });
 
-    describe(`[cross-origin]`, (): void => {
+    test.describe(`[cross-origin]`, (): void => {
 
-      it('allows publishing and receiving a message in root outlets', async () => {
-        await TopicBasedMessagingSpecs.RootOutlets.publishSpec(TestingAppOrigins.APP_2, TestingAppOrigins.APP_3);
+      test('allows publishing and receiving a message in root outlets', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.RootOutlets.publishSpec(testingAppPO, TestingAppOrigins.APP_2, TestingAppOrigins.APP_3);
       });
 
-      it('allows publishing and receiving a message in child outlets', async () => {
-        await TopicBasedMessagingSpecs.ChildOutlets.publishSpec(TestingAppOrigins.APP_2, TestingAppOrigins.APP_3);
+      test('allows publishing and receiving a message in child outlets', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.ChildOutlets.publishSpec(testingAppPO, TestingAppOrigins.APP_2, TestingAppOrigins.APP_3);
       });
 
-      it('allows replying to a message in root outlets', async () => {
-        await TopicBasedMessagingSpecs.RootOutlets.replySpec(TestingAppOrigins.APP_2, TestingAppOrigins.APP_3);
+      test('allows replying to a message in root outlets', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.RootOutlets.replySpec(testingAppPO, TestingAppOrigins.APP_2, TestingAppOrigins.APP_3);
       });
 
-      it('allows replying to a message in child outlets', async () => {
-        await TopicBasedMessagingSpecs.ChildOutlets.replySpec(TestingAppOrigins.APP_2, TestingAppOrigins.APP_3);
+      test('allows replying to a message in child outlets', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.ChildOutlets.replySpec(testingAppPO, TestingAppOrigins.APP_2, TestingAppOrigins.APP_3);
       });
     });
 
-    it('allows tracking the topic subscriber count', async () => {
-      await TopicBasedMessagingSpecs.subscriberCountSpec();
+    test('allows tracking the topic subscriber count', async ({testingAppPO}) => {
+      await TopicBasedMessagingSpecs.subscriberCountSpec(testingAppPO);
     });
 
-    it('allows replying from multiple subscribers', async () => {
-      await TopicBasedMessagingSpecs.subscribersReplySpec();
+    test('allows replying from multiple subscribers', async ({testingAppPO}) => {
+      await TopicBasedMessagingSpecs.subscribersReplySpec(testingAppPO);
     });
 
-    it('allows publishing a message to multiple subscribers', async () => {
-      await TopicBasedMessagingSpecs.subscribersReceiveSpec();
+    test('allows publishing a message to multiple subscribers', async ({testingAppPO}) => {
+      await TopicBasedMessagingSpecs.subscribersReceiveSpec(testingAppPO);
     });
 
-    it('throws an error when no replier is found to reply a request', async () => {
-      await TopicBasedMessagingSpecs.throwIfNoReplierFoundSpec();
+    test('throws an error when no replier is found to reply a request', async ({testingAppPO}) => {
+      await TopicBasedMessagingSpecs.throwIfNoReplierFoundSpec(testingAppPO);
     });
 
-    it('allows receiving retained messages', async () => {
-      await TopicBasedMessagingSpecs.receiveRetainedMessagesSpec();
+    test('allows receiving retained messages', async ({testingAppPO}) => {
+      await TopicBasedMessagingSpecs.receiveRetainedMessagesSpec(testingAppPO);
     });
 
-    it('allows receiving messages without a payload', async () => {
-      await TopicBasedMessagingSpecs.receiveMessagesWithoutPayloadSpec();
+    test('allows receiving messages without a payload', async ({testingAppPO}) => {
+      await TopicBasedMessagingSpecs.receiveMessagesWithoutPayloadSpec(testingAppPO);
     });
 
-    it('allows subscribing to multiple topics simultaneously (using the colon syntax)', async () => {
-      await TopicBasedMessagingSpecs.subscribeToMultipleTopicsSimultaneouslySpec();
+    test('allows subscribing to multiple topics simultaneously (using the colon syntax)', async ({testingAppPO}) => {
+      await TopicBasedMessagingSpecs.subscribeToMultipleTopicsSimultaneouslySpec(testingAppPO);
     });
 
-    it('allows passing headers', async () => {
-      await TopicBasedMessagingSpecs.passHeadersSpec();
+    test('allows passing headers', async ({testingAppPO}) => {
+      await TopicBasedMessagingSpecs.passHeadersSpec(testingAppPO);
     });
 
-    describe('message-interception', () => {
+    test.describe('message-interception', () => {
 
-      it('allows intercepting messages', async () => {
-        await TopicBasedMessagingSpecs.interceptMessageSpec();
+      test('allows intercepting messages', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.interceptMessageSpec(testingAppPO);
       });
 
-      it('allows rejecting messages', async () => {
-        await TopicBasedMessagingSpecs.interceptMessageRejectSpec();
+      test('allows rejecting messages', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.interceptMessageRejectSpec(testingAppPO);
       });
 
-      it('allows swallowing messages', async () => {
-        await TopicBasedMessagingSpecs.interceptMessageSwallowSpec();
+      test('allows swallowing messages', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.interceptMessageSwallowSpec(testingAppPO);
       });
     });
   });
 
-  describe('intent-based', () => {
+  test.describe('intent-based', () => {
 
-    describe('scope-check', () => {
+    test.describe('scope-check', () => {
 
-      it('rejects intent if not qualified', async () => {
-        await IntendBasedMessagingSpecs.publisherNotQualifiedSpec();
+      test('rejects intent if not qualified', async ({testingAppPO}) => {
+        await IntendBasedMessagingSpecs.publisherNotQualifiedSpec(testingAppPO);
       });
 
-      it('rejects intent if not fulfilled', async () => {
-        await IntendBasedMessagingSpecs.intentNotFulfilledSpec();
+      test('rejects intent if not fulfilled', async ({testingAppPO}) => {
+        await IntendBasedMessagingSpecs.intentNotFulfilledSpec(testingAppPO);
       });
 
-      it('allows issuing intents to own private capabilities with implicit intention', async () => {
-        await IntendBasedMessagingSpecs.dispatchToOwnPrivateCapabilitiesSpec();
+      test('allows issuing intents to own private capabilities with implicit intention', async ({testingAppPO}) => {
+        await IntendBasedMessagingSpecs.dispatchToOwnPrivateCapabilitiesSpec(testingAppPO);
       });
 
-      it('allows issuing intents to own public capabilities with implicit intention', async () => {
-        await IntendBasedMessagingSpecs.dispatchToOwnPublicCapabilitiesSpec();
+      test('allows issuing intents to own public capabilities with implicit intention', async ({testingAppPO}) => {
+        await IntendBasedMessagingSpecs.dispatchToOwnPublicCapabilitiesSpec(testingAppPO);
       });
 
-      it('rejects intents issued to private capabilities of other applications', async () => {
-        await IntendBasedMessagingSpecs.rejectDispatchingToPrivateForeignCapabilitiesSpec();
+      test('rejects intents issued to private capabilities of other applications', async ({testingAppPO}) => {
+        await IntendBasedMessagingSpecs.rejectDispatchingToPrivateForeignCapabilitiesSpec(testingAppPO);
       });
 
-      it('allows issuing intents to public capabilities of other applications', async () => {
-        await IntendBasedMessagingSpecs.dispatchToPublicForeignCapabilitiesSpec();
+      test('allows issuing intents to public capabilities of other applications', async ({testingAppPO}) => {
+        await IntendBasedMessagingSpecs.dispatchToPublicForeignCapabilitiesSpec(testingAppPO);
       });
     });
 
-    it('allows issuing intents to multiple applications', async () => {
-      await IntendBasedMessagingSpecs.dispatchToMultipleSubscribersSpec();
+    test('allows issuing intents to multiple applications', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.dispatchToMultipleSubscribersSpec(testingAppPO);
     });
 
-    it('allows receiving multiple intents', async () => {
-      await IntendBasedMessagingSpecs.receiveMultipleIntentsSpecs();
+    test('allows receiving multiple intents', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.receiveMultipleIntentsSpecs(testingAppPO);
     });
 
-    it('allows replying to an intent', async () => {
-      await IntendBasedMessagingSpecs.replySpec();
+    test('allows replying to an intent', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.replySpec(testingAppPO);
     });
 
-    it('allows subscribing to intents using a qualifier selector which contains wildcards', async () => {
-      await IntendBasedMessagingSpecs.receiveAndFilterSpec();
+    test('allows subscribing to intents using a qualifier selector which contains wildcards', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.receiveAndFilterSpec(testingAppPO);
     });
 
-    it('allows receiving intents for a capability which declares wildcards in its qualifier', async () => {
-      await IntendBasedMessagingSpecs.receiveIfMatchingCapabilityWildcardQualifierSpec();
+    test('allows receiving intents for a capability which declares wildcards in its qualifier', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.receiveIfMatchingCapabilityWildcardQualifierSpec(testingAppPO);
     });
 
-    it('allows receiving intents for a capability which declares required and optional params', async () => {
-      await IntendBasedMessagingSpecs.receiveIfMatchingCapabilityParamsSpec();
+    test('allows receiving intents for a capability which declares required and optional params', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.receiveIfMatchingCapabilityParamsSpec(testingAppPO);
     });
 
-    it('rejects intent if params not matching params of capability', async () => {
-      await IntendBasedMessagingSpecs.publisherNotMatchingParamsSpec();
+    test('rejects intent if params not matching params of capability', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.publisherNotMatchingParamsSpec(testingAppPO);
     });
 
-    it('preserves data type of passed parameters', async () => {
-      await IntendBasedMessagingSpecs.preserveParamDataTypeSpec();
+    test('preserves data type of passed parameters', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.preserveParamDataTypeSpec(testingAppPO);
     });
 
-    it('does not remove parameters associated with the value `null`', async () => {
-      await IntendBasedMessagingSpecs.preserveNullParamSpec();
+    test('does not remove parameters associated with the value `null`', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.preserveNullParamSpec(testingAppPO);
     });
 
-    it('removes parameters associated with the value `undefined`', async () => {
-      await IntendBasedMessagingSpecs.removeUndefinedParamSpec();
+    test('removes parameters associated with the value `undefined`', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.removeUndefinedParamSpec(testingAppPO);
     });
 
-    it('allows passing headers', async () => {
-      await IntendBasedMessagingSpecs.passHeadersSpec();
+    test('allows passing headers', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.passHeadersSpec(testingAppPO);
     });
 
-    it('resolves to the fulfilling capability', async () => {
-      await IntendBasedMessagingSpecs.resolveCapabilitySpec();
+    test('resolves to the fulfilling capability', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.resolveCapabilitySpec(testingAppPO);
     });
 
-    describe('intent-interception', () => {
+    test.describe('intent-interception', () => {
 
-      it('allows intercepting intents', async () => {
-        await IntendBasedMessagingSpecs.interceptIntentSpec();
+      test('allows intercepting intents', async ({testingAppPO}) => {
+        await IntendBasedMessagingSpecs.interceptIntentSpec(testingAppPO);
       });
 
-      it('allows rejecting intents', async () => {
-        await IntendBasedMessagingSpecs.interceptIntentRejectSpec();
+      test('allows rejecting intents', async ({testingAppPO}) => {
+        await IntendBasedMessagingSpecs.interceptIntentRejectSpec(testingAppPO);
       });
 
-      it('allows swallowing intents', async () => {
-        await IntendBasedMessagingSpecs.interceptIntentSwallowSpec();
+      test('allows swallowing intents', async ({testingAppPO}) => {
+        await IntendBasedMessagingSpecs.interceptIntentSwallowSpec(testingAppPO);
       });
 
-      it('contains the resolved capability in the intent', async () => {
-        await IntendBasedMessagingSpecs.interceptIntentCapabilityPresentSpec();
+      test('contains the resolved capability in the intent', async ({testingAppPO}) => {
+        await IntendBasedMessagingSpecs.interceptIntentCapabilityPresentSpec(testingAppPO);
       });
     });
   });

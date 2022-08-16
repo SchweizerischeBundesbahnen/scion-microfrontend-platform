@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,23 +7,25 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {$} from 'protractor';
-import {enterText} from '../spec.util';
+
+import {FrameLocator, Locator} from '@playwright/test';
 import {Capability, ManifestObjectFilter} from '@scion/microfrontend-platform';
-import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {SciListPO, WaitUntil} from '../../deps/scion/components.internal/list.po';
-import {SciCheckboxPO} from '../../deps/scion/components.internal/checkbox.po';
-import {SciParamsEnterPO} from '../../deps/scion/components.internal/params-enter.po';
+import {isPresent} from '../testing.util';
+import {SciCheckboxPO} from '../components.internal/checkbox.po/checkbox.po';
+import {SciParamsEnterPO} from '../components.internal/params-enter.po/params-enter.po';
+import {SciListPO} from '../components.internal/list.po/list.po';
+import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
-export class LookupCapabilityPagePO {
+export class LookupCapabilityPagePO implements OutletPageObject {
 
-  public static readonly pageUrl = 'lookup-capability'; // path to the page; required by {@link TestingAppPO}
+  public readonly path = 'lookup-capability';
 
-  private _pageFinder = $('app-lookup-capability');
-  private _capabilityListPO: SciListPO;
+  private readonly _locator: Locator;
+  private readonly _capabilityListPO: SciListPO;
 
-  constructor(private _switchToIframeFn: SwitchToIframeFn) {
-    this._capabilityListPO = new SciListPO(this._pageFinder.$('sci-list.e2e-capabilities'));
+  constructor(frameLocator: FrameLocator) {
+    this._locator = frameLocator.locator('app-lookup-capability');
+    this._capabilityListPO = new SciListPO(this._locator.locator('sci-list.e2e-capabilities'));
   }
 
   /**
@@ -31,44 +33,43 @@ export class LookupCapabilityPagePO {
    * Looked up capabilities can be read via {@link getLookedUpCapabilities} method.
    */
   public async lookup(filter?: ManifestObjectFilter): Promise<void> {
-    await this._switchToIframeFn();
-
-    if (await this._pageFinder.$('button.e2e-cancel-lookup').isPresent()) {
-      await this._pageFinder.$('button.e2e-cancel-lookup').click();
+    if (await isPresent(this._locator.locator('button.e2e-cancel-lookup'))) {
+      await this._locator.locator('button.e2e-cancel-lookup').click();
     }
-    await this._pageFinder.$('button.e2e-reset').click();
+    if (await this._locator.locator('button.e2e-reset').isEnabled()) {
+      await this._locator.locator('button.e2e-reset').click();
+    }
 
     if (filter && Object.keys(filter).length) {
       if (filter.id) {
-        await enterText(filter.id, this._pageFinder.$('input.e2e-id'));
+        await this._locator.locator('input.e2e-id').fill(filter.id);
       }
       if (filter.type) {
-        await enterText(filter.type, this._pageFinder.$('input.e2e-type'));
+        await this._locator.locator('input.e2e-type').fill(filter.type);
       }
       if (filter.qualifier && Object.keys(filter.qualifier).length === 0) {
-        await new SciCheckboxPO(this._pageFinder.$('sci-checkbox.e2e-nilqualifier-if-empty')).toggle(true);
+        await new SciCheckboxPO(this._locator.locator('sci-checkbox.e2e-nilqualifier-if-empty')).toggle(true);
       }
       else if (filter.qualifier) {
-        await new SciParamsEnterPO(this._pageFinder.$('sci-params-enter.e2e-qualifier')).enterParams(filter.qualifier);
+        await new SciParamsEnterPO(this._locator.locator('sci-params-enter.e2e-qualifier')).enterParams(filter.qualifier);
       }
       if (filter.appSymbolicName) {
-        await enterText(filter.appSymbolicName, this._pageFinder.$('input.e2e-app-symbolic-name'));
+        await this._locator.locator('input.e2e-app-symbolic-name').fill(filter.appSymbolicName);
       }
     }
 
-    await this._pageFinder.$('button.e2e-lookup').click();
+    await this._locator.locator('button.e2e-lookup').click();
   }
 
   /**
    * Returns looked up capabilities.
    */
-  public async getLookedUpCapabilities(waitUntil?: WaitUntil): Promise<Capability[]> {
-    await this._switchToIframeFn();
-    const listItemPOs = await this._capabilityListPO.getListItems(waitUntil);
+  public async getLookedUpCapabilities(): Promise<Capability[]> {
+    const listItemPOs = await this._capabilityListPO.getListItems();
 
     const capabilities: Capability[] = [];
     for (const listItemPO of listItemPOs) {
-      const capability = await listItemPO.contentFinder.$('[data-e2e-capability]').getAttribute('data-e2e-capability');
+      const capability = await listItemPO.contentLocator.locator('[data-e2e-capability]').getAttribute('data-e2e-capability');
       capabilities.push(JSON.parse(capability));
     }
     return capabilities;
@@ -77,8 +78,8 @@ export class LookupCapabilityPagePO {
   /**
    * Returns the identity of the looked up capabilities.
    */
-  public async getLookedUpCapabilityIds(waitUntil?: WaitUntil): Promise<string[]> {
-    const capabilities = await this.getLookedUpCapabilities(waitUntil);
+  public async getLookedUpCapabilityIds(): Promise<string[]> {
+    const capabilities = await this.getLookedUpCapabilities();
     return capabilities.map(capability => capability.metadata.id);
   }
 }

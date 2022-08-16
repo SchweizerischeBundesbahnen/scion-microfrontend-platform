@@ -10,7 +10,7 @@
 
 import {Capability, Intention, ParamDefinition} from '../../platform.model';
 import {sha256} from 'js-sha256';
-import {ManifestObjectFilter, ManifestObjectStore} from './manifest-object-store';
+import {ManifestObjectStore} from './manifest-object-store';
 import {defer, merge, of, Subject} from 'rxjs';
 import {distinctUntilChanged, expand, mergeMap, take, takeUntil} from 'rxjs/operators';
 import {Intent, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
@@ -23,6 +23,7 @@ import {assertExactQualifier, QualifierMatcher} from '../../qualifier-matcher';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {stringifyError} from '../../error.util';
 import {LoggingContext, Logger} from '../../logger';
+import {ManifestObjectFilter} from './manifest-object.model';
 
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 

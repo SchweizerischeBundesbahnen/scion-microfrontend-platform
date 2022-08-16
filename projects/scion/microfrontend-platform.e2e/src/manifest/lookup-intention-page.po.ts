@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,23 +7,25 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {$} from 'protractor';
-import {enterText} from '../spec.util';
+
+import {FrameLocator, Locator} from '@playwright/test';
 import {ManifestObjectFilter} from '@scion/microfrontend-platform';
-import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {SciListPO, WaitUntil} from '../../deps/scion/components.internal/list.po';
-import {SciCheckboxPO} from '../../deps/scion/components.internal/checkbox.po';
-import {SciParamsEnterPO} from '../../deps/scion/components.internal/params-enter.po';
+import {isPresent} from '../testing.util';
+import {SciParamsEnterPO} from '../components.internal/params-enter.po/params-enter.po';
+import {SciListPO} from '../components.internal/list.po/list.po';
+import {SciCheckboxPO} from '../components.internal/checkbox.po/checkbox.po';
+import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
-export class LookupIntentionPagePO {
+export class LookupIntentionPagePO implements OutletPageObject {
 
-  public static readonly pageUrl = 'lookup-intention'; // path to the page; required by {@link TestingAppPO}
+  public readonly path = 'lookup-intention';
 
-  private _pageFinder = $('app-lookup-intention');
-  private _intentionsListPO: SciListPO;
+  private readonly _locator: Locator;
+  private readonly _intentionsListPO: SciListPO;
 
-  constructor(private _switchToIframeFn: SwitchToIframeFn) {
-    this._intentionsListPO = new SciListPO(this._pageFinder.$('sci-list.e2e-intentions'));
+  constructor(frameLocator: FrameLocator) {
+    this._locator = frameLocator.locator('app-lookup-intention');
+    this._intentionsListPO = new SciListPO(this._locator.locator('sci-list.e2e-intentions'));
   }
 
   /**
@@ -31,40 +33,39 @@ export class LookupIntentionPagePO {
    * Looked up intentions can be read via {@link getLookedUpIntentionIds} method.
    */
   public async lookup(filter?: ManifestObjectFilter): Promise<void> {
-    await this._switchToIframeFn();
-
-    if (await this._pageFinder.$('button.e2e-cancel-lookup').isPresent()) {
-      await this._pageFinder.$('button.e2e-cancel-lookup').click();
+    if (await isPresent(this._locator.locator('button.e2e-cancel-lookup'))) {
+      await this._locator.locator('button.e2e-cancel-lookup').click();
     }
-    await this._pageFinder.$('button.e2e-reset').click();
+    if (await this._locator.locator('button.e2e-reset').isEnabled()) {
+      await this._locator.locator('button.e2e-reset').click();
+    }
 
     if (filter && Object.keys(filter).length) {
       if (filter.id) {
-        await enterText(filter.id, this._pageFinder.$('input.e2e-id'));
+        await this._locator.locator('input.e2e-id').fill(filter.id);
       }
       if (filter.type) {
-        await enterText(filter.type, this._pageFinder.$('input.e2e-type'));
+        await this._locator.locator('input.e2e-type').fill(filter.type);
       }
       if (filter.qualifier && Object.keys(filter.qualifier).length === 0) {
-        await new SciCheckboxPO(this._pageFinder.$('sci-checkbox.e2e-nilqualifier-if-empty')).toggle(true);
+        await new SciCheckboxPO(this._locator.locator('sci-checkbox.e2e-nilqualifier-if-empty')).toggle(true);
       }
       else if (filter.qualifier) {
-        await new SciParamsEnterPO(this._pageFinder.$('sci-params-enter.e2e-qualifier')).enterParams(filter.qualifier);
+        await new SciParamsEnterPO(this._locator.locator('sci-params-enter.e2e-qualifier')).enterParams(filter.qualifier);
       }
       if (filter.appSymbolicName) {
-        await enterText(filter.appSymbolicName, this._pageFinder.$('input.e2e-app-symbolic-name'));
+        await this._locator.locator('input.e2e-app-symbolic-name').fill(filter.appSymbolicName);
       }
     }
 
-    await this._pageFinder.$('button.e2e-lookup').click();
+    await this._locator.locator('button.e2e-lookup').click();
   }
 
   /**
    * Returns the identity of the looked up intentions.
    */
-  public async getLookedUpIntentionIds(waitUntil?: WaitUntil): Promise<string[]> {
-    await this._switchToIframeFn();
-    const listItemPOs = await this._intentionsListPO.getListItems(waitUntil);
-    return Promise.all(listItemPOs.map(listItemPO => listItemPO.contentFinder.$('span.e2e-id').getText()));
+  public async getLookedUpIntentionIds(): Promise<string[]> {
+    const listItemPOs = await this._intentionsListPO.getListItems();
+    return Promise.all(listItemPOs.map(listItemPO => listItemPO.contentLocator.locator('span.e2e-id').innerText()));
   }
 }

@@ -1,19 +1,18 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
- * available under the terms from the Eclipse Public License 2.0
+ * available under the terms of the Eclipse Public License 2.0
  * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
  */
+
 import {Outlets, TestingAppOrigins, TestingAppPO} from '../testing-app.po';
 import {MessagingFlavor, PublishMessagePagePO} from './publish-message-page.po';
 import {ReceiveMessagePagePO} from './receive-message-page.po';
 import {BrowserOutletPO} from '../browser-outlet/browser-outlet.po';
-import {expectToBeRejectedWithError} from '../spec.util';
-import {MessageListItemPO} from './message-list-item.po';
-import {TopicMessage} from '@scion/microfrontend-platform';
+import {expect} from '@playwright/test';
 
 /**
  * Contains Specs for topic-based messaging.
@@ -25,8 +24,8 @@ export namespace TopicBasedMessagingSpecs {
     /**
      * Tests that messages can be published and received.
      */
-    export async function publishSpec(publisherOrigin: string, receiverOrigin: string): Promise<void> {
-      await testPublishInternal({
+    export async function publishSpec(testingAppPO: TestingAppPO, publisherOrigin: string, receiverOrigin: string): Promise<void> {
+      await testPublishInternal(testingAppPO, {
         publisher: {useClass: PublishMessagePagePO, origin: publisherOrigin},
         receiver: {useClass: ReceiveMessagePagePO, origin: receiverOrigin},
       });
@@ -35,8 +34,8 @@ export namespace TopicBasedMessagingSpecs {
     /**
      * Tests that an application can reply to a message.
      */
-    export async function replySpec(publisherOrigin: string, receiverOrigin: string): Promise<void> {
-      await testReplyInternal({
+    export async function replySpec(testingAppPO: TestingAppPO, publisherOrigin: string, receiverOrigin: string): Promise<void> {
+      await testReplyInternal(testingAppPO, {
         publisher: {useClass: PublishMessagePagePO, origin: publisherOrigin},
         receiver: {useClass: ReceiveMessagePagePO, origin: receiverOrigin},
       });
@@ -48,8 +47,8 @@ export namespace TopicBasedMessagingSpecs {
     /**
      * Tests that messages can be published and received.
      */
-    export async function publishSpec(publisherOrigin: string, receiverOrigin: string): Promise<void> {
-      await testPublishInternal({
+    export async function publishSpec(testingAppPO: TestingAppPO, publisherOrigin: string, receiverOrigin: string): Promise<void> {
+      await testPublishInternal(testingAppPO, {
         outlet1: {
           outlet2: {
             publisher: {useClass: PublishMessagePagePO, origin: publisherOrigin},
@@ -68,8 +67,8 @@ export namespace TopicBasedMessagingSpecs {
     /**
      * Tests that an application can reply to a message.
      */
-    export async function replySpec(publisherOrigin: string, receiverOrigin: string): Promise<void> {
-      await testReplyInternal({
+    export async function replySpec(testingAppPO: TestingAppPO, publisherOrigin: string, receiverOrigin: string): Promise<void> {
+      await testReplyInternal(testingAppPO, {
         outlet1: {
           outlet2: {
             publisher: {useClass: PublishMessagePagePO, origin: publisherOrigin},
@@ -89,8 +88,7 @@ export namespace TopicBasedMessagingSpecs {
   /**
    * Tests that messages can be published and received.
    */
-  async function testPublishInternal(testSetup: Outlets): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  async function testPublishInternal(testingAppPO: TestingAppPO, testSetup: Outlets): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo(testSetup);
 
     const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
@@ -141,8 +139,7 @@ export namespace TopicBasedMessagingSpecs {
   /**
    * Tests that an application can reply to a message.
    */
-  async function testReplyInternal(testSetup: Outlets): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  async function testReplyInternal(testingAppPO: TestingAppPO, testSetup: Outlets): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo(testSetup);
 
     const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
@@ -195,8 +192,7 @@ export namespace TopicBasedMessagingSpecs {
   /**
    * Tests that a message is dispatched to multiple subscribers.
    */
-  export async function subscribersReceiveSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function subscribersReceiveSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_2},
       receiver1: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2},
@@ -248,8 +244,7 @@ export namespace TopicBasedMessagingSpecs {
   /**
    * Tests that publishing a request to a topic throws an error when no replier is subscribed to the topic.
    */
-  export async function throwIfNoReplierFoundSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function throwIfNoReplierFoundSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_2},
     });
@@ -260,14 +255,13 @@ export namespace TopicBasedMessagingSpecs {
     await publisherPO.toggleRequestReply(true);
     await publisherPO.clickPublish();
 
-    await expect(publisherPO.getPublishError()).toContain('[RequestReplyError]');
+    await expect(await publisherPO.getPublishError()).toContain('[RequestReplyError]');
   }
 
   /**
    * Tests receiving replies of multiple message subscribers.
    */
-  export async function subscribersReplySpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function subscribersReplySpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_2},
       receiver1: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2},
@@ -316,8 +310,7 @@ export namespace TopicBasedMessagingSpecs {
   /**
    * Tests topic subscription count to work as expected.
    */
-  export async function subscriberCountSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function subscriberCountSpec(testingAppPO: TestingAppPO): Promise<void> {
 
     const pagePOs = await testingAppPO.navigateTo({
       publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_2},
@@ -436,8 +429,7 @@ export namespace TopicBasedMessagingSpecs {
   /**
    * Tests receiving messages which are retained on the broker.
    */
-  export async function receiveRetainedMessagesSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function receiveRetainedMessagesSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher_app2: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_2},
       receiver: 'about:blank',
@@ -473,7 +465,7 @@ export namespace TopicBasedMessagingSpecs {
     await publisherPO.clickPublish();
 
     // expect the empty message not to be dispatched
-    await expectToBeRejectedWithError(receiverApp2PO.getFirstMessageOrElseReject(1000), /[TimeoutError]/);
+    await expect(receiverApp2PO.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
 
     // test not to receive the retained message in app-4
     receiverApp2PO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4});
@@ -481,14 +473,13 @@ export namespace TopicBasedMessagingSpecs {
     await receiverApp2PO.enterTopic('some-topic');
     await receiverApp2PO.clickSubscribe();
 
-    await expectToBeRejectedWithError(receiverApp2PO.getFirstMessageOrElseReject(1000), /[TimeoutError1]/);
+    await expect(receiverApp2PO.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
   }
 
   /**
    * Tests receiving messages without a payload.
    */
-  export async function receiveMessagesWithoutPayloadSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function receiveMessagesWithoutPayloadSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher_app2: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_2},
       receiver_app3: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_3},
@@ -512,8 +503,7 @@ export namespace TopicBasedMessagingSpecs {
   /**
    * Tests receiving multiple message simultaneously if specifying wildcard topic segments.
    */
-  export async function subscribeToMultipleTopicsSimultaneouslySpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function subscribeToMultipleTopicsSimultaneouslySpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_1},
       receiver_1: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_1},
@@ -550,21 +540,21 @@ export namespace TopicBasedMessagingSpecs {
     await publisherPO.clickPublish();
 
     // Verify receiver 1 subscribed to 'myhome/livingroom/temperature'
-    await expectMessage(receiver1PO.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver1PO.getFirstMessageOrElseReject()).toMatchTopicMessage({
       topic: 'myhome/livingroom/temperature',
       body: '25°C',
       params: new Map(),
       headers: new Map(),
     });
     // Verify receiver 2 subscribed to 'myhome/:room/temperature'
-    await expectMessage(receiver2PO.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver2PO.getFirstMessageOrElseReject()).toMatchTopicMessage({
       topic: 'myhome/livingroom/temperature',
       body: '25°C',
       params: new Map().set('room', 'livingroom'),
       headers: new Map(),
     });
     // Verify receiver 3 subscribed to 'myhome/:room/:measurement'
-    await expectMessage(receiver3PO.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver3PO.getFirstMessageOrElseReject()).toMatchTopicMessage({
       topic: 'myhome/livingroom/temperature',
       body: '25°C',
       params: new Map().set('room', 'livingroom').set('measurement', 'temperature'),
@@ -587,21 +577,21 @@ export namespace TopicBasedMessagingSpecs {
     // Verify receiver 1 subscribed to 'myhome/livingroom/temperature'
     await expect(await receiver1PO.getMessages()).toEqual([]);
     // Verify receiver 2 subscribed to 'myhome/:room/temperature'
-    await expectMessage(receiver2PO.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver2PO.getFirstMessageOrElseReject()).toMatchTopicMessage({
       topic: 'myhome/kitchen/temperature',
       body: '20°C',
       params: new Map().set('room', 'kitchen'),
       headers: new Map(),
     });
     // Verify receiver 3 subscribed to 'myhome/:room/:measurement'
-    await expectMessage(receiver3PO.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver3PO.getFirstMessageOrElseReject()).toMatchTopicMessage({
       topic: 'myhome/kitchen/temperature',
       body: '20°C',
       params: new Map().set('room', 'kitchen').set('measurement', 'temperature'),
       headers: new Map(),
     });
     // Verify receiver 4 subscribed to 'myhome/kitchen/:measurement'
-    await expectMessage(receiver4PO.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver4PO.getFirstMessageOrElseReject()).toMatchTopicMessage({
       topic: 'myhome/kitchen/temperature',
       body: '20°C',
       params: new Map().set('measurement', 'temperature'),
@@ -612,8 +602,7 @@ export namespace TopicBasedMessagingSpecs {
   /**
    * Tests to set headers on a message.
    */
-  export async function passHeadersSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function passHeadersSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher: PublishMessagePagePO,
       receiver: ReceiveMessagePagePO,
@@ -628,10 +617,10 @@ export namespace TopicBasedMessagingSpecs {
     await publisherPO.selectFlavor(MessagingFlavor.Topic);
     await publisherPO.enterTopic('some-topic');
     await publisherPO.enterMessage('some-payload');
-    await publisherPO.enterHeaders(new Map().set('header1', 'value').set('header2', '42'));
+    await publisherPO.enterHeaders({'header1': 'value', 'header2': '42'});
     await publisherPO.clickPublish();
 
-    await expectMessage(receiverPO.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiverPO.getFirstMessageOrElseReject()).toMatchTopicMessage({
       topic: 'some-topic',
       body: 'some-payload',
       headers: new Map().set('header1', 'value').set('header2', '42'),
@@ -643,8 +632,7 @@ export namespace TopicBasedMessagingSpecs {
    * Tests message interception by changing the message body to upper case characters.
    * The testing app is configured to uppercase messages sent to the topic 'uppercase'.
    */
-  export async function interceptMessageSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function interceptMessageSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher: PublishMessagePagePO,
       receiver: ReceiveMessagePagePO,
@@ -661,7 +649,7 @@ export namespace TopicBasedMessagingSpecs {
     await publisherPO.enterMessage('payload');
     await publisherPO.clickPublish();
 
-    await expectMessage(receiverPO.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiverPO.getFirstMessageOrElseReject()).toMatchTopicMessage({
       topic: 'uppercase',
       body: 'PAYLOAD',
       headers: new Map(),
@@ -673,8 +661,7 @@ export namespace TopicBasedMessagingSpecs {
    * Tests message rejection.
    * The testing app is configured to reject messages sent to the topic 'reject'.
    */
-  export async function interceptMessageRejectSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function interceptMessageRejectSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher: PublishMessagePagePO,
       receiver: ReceiveMessagePagePO,
@@ -699,8 +686,7 @@ export namespace TopicBasedMessagingSpecs {
    * Tests swallowing a message.
    * The testing app is configured to swallow messages sent to the topic 'swallow'.
    */
-  export async function interceptMessageSwallowSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function interceptMessageSwallowSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher: PublishMessagePagePO,
       receiver: ReceiveMessagePagePO,
@@ -719,21 +705,5 @@ export namespace TopicBasedMessagingSpecs {
 
     await expect(await publisherPO.getPublishError()).toBeNull();
     await expect(await receiverPO.getMessages()).toEqual([]);
-  }
-
-  /**
-   * Expects the message to equal the expected message with its headers to contain at minimum the given map entries.
-   */
-  function expectMessage(actual: Promise<MessageListItemPO>): {toEqual: (expected: TopicMessage) => void} {
-    return {
-      toEqual: async (expected: TopicMessage): Promise<void> => {
-        const actualMessage = await actual;
-        await expect(await actualMessage.getTopic()).toEqual(expected.topic);
-        await expect(await actualMessage.getBody()).toEqual(expected.body);
-        await expect(await actualMessage.getParams()).toEqual(expected.params);
-        // Jasmine 3.5 provides 'mapContaining' matcher; when updated, this custom matcher can be removed.
-        await expect([...await actualMessage.getHeaders()]).toEqual(jasmine.arrayContaining([...expected.headers]));
-      },
-    };
   }
 }

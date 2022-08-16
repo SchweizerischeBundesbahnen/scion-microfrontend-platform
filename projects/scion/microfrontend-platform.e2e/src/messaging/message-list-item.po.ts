@@ -1,78 +1,68 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
- * available under the terms from the Eclipse Public License 2.0
+ * available under the terms of the Eclipse Public License 2.0
  * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {ElementFinder} from 'protractor';
+
 import {Capability, Qualifier} from '@scion/microfrontend-platform';
-import {SciListItemPO} from '../../deps/scion/components.internal/list.po';
-import {SciPropertyPO} from '../../deps/scion/components.internal/property.po';
+import {Locator} from '@playwright/test';
+import {isPresent} from '../testing.util';
+import {SciListItemPO} from '../components.internal/list.po/list-item.po';
+import {SciPropertyPO} from '../components.internal/property.po/property.po';
 
 export class MessageListItemPO {
 
-  private _contentFinder: ElementFinder;
+  private readonly _locator: Locator;
 
-  constructor(private _listItemPO: SciListItemPO, private _switchToIframeFn: SwitchToIframeFn) {
-    this._contentFinder = this._listItemPO.contentFinder.$('app-message-list-item');
+  constructor(private readonly _listItemPO: SciListItemPO) {
+    this._locator = this._listItemPO.contentLocator.locator('app-message-list-item');
   }
 
   public async getTopic(): Promise<string> {
-    await this._switchToIframeFn();
-    return this._contentFinder.$('span.e2e-topic').getText();
+    return this._locator.locator('span.e2e-topic').innerText();
   }
 
-  public async getParams(): Promise<Map<string, string>> {
-    await this._switchToIframeFn();
-    if (!await this._contentFinder.$('sci-property.e2e-params').isPresent()) {
-      return new Map<string, string>();
+  public async getParams(): Promise<Record<string, string>> {
+    if (!await isPresent(this._locator.locator('sci-property.e2e-params'))) {
+      return {};
     }
-    return new SciPropertyPO(this._contentFinder.$('sci-property.e2e-params')).readAsMap();
+    return new SciPropertyPO(this._locator.locator('sci-property.e2e-params')).readProperties();
   }
 
-  public async getHeaders(): Promise<Map<string, string>> {
-    await this._switchToIframeFn();
-    return new SciPropertyPO(this._contentFinder.$('sci-property.e2e-headers')).readAsMap();
+  public async getHeaders(): Promise<Record<string, string>> {
+    return new SciPropertyPO(this._locator.locator('sci-property.e2e-headers')).readProperties();
   }
 
   public async getBody(): Promise<string> {
-    await this._switchToIframeFn();
-    return this._contentFinder.$('span.e2e-body').getText();
+    return this._locator.locator('span.e2e-body').innerText();
   }
 
   public async getReplyTo(): Promise<string | undefined> {
-    await this._switchToIframeFn();
-    const replyToFinder = this._contentFinder.$('span.e2e-reply-to');
-    const isPresent = await replyToFinder.isPresent();
-    return isPresent ? replyToFinder.getText() : undefined;
+    const replyToLocator = this._locator.locator('span.e2e-reply-to');
+    return await isPresent(replyToLocator) ? replyToLocator.innerText() : undefined;
   }
 
   public async getIntentType(): Promise<string> {
-    await this._switchToIframeFn();
-    return this._contentFinder.$('span.e2e-intent-type').getText();
+    return this._locator.locator('span.e2e-intent-type').innerText();
   }
 
   public async getIntentQualifier(): Promise<Qualifier> {
-    await this._switchToIframeFn();
-    return new SciPropertyPO(this._contentFinder.$('sci-property.e2e-intent-qualifier')).readAsDictionary();
+    return new SciPropertyPO(this._locator.locator('sci-property.e2e-intent-qualifier')).readProperties();
   }
 
-  public async getIntentParams(): Promise<Map<string, any>> {
-    await this._switchToIframeFn();
-    return new SciPropertyPO(this._contentFinder.$('sci-property.e2e-intent-params')).readAsMap();
+  public async getIntentParams(): Promise<Record<string, string>> {
+    return new SciPropertyPO(this._locator.locator('sci-property.e2e-intent-params')).readProperties();
   }
 
   public async getCapability(): Promise<Capability> {
-    await this._switchToIframeFn();
-    return JSON.parse(await this._listItemPO.contentFinder.$('[data-e2e-capability]').getAttribute('data-e2e-capability'));
+    return JSON.parse(await this._listItemPO.contentLocator.locator('[data-e2e-capability]').getAttribute('data-e2e-capability'));
   }
 
   public async clickReply(): Promise<void> {
-    await this._switchToIframeFn();
     await this._listItemPO.clickAction('e2e-reply');
   }
 }

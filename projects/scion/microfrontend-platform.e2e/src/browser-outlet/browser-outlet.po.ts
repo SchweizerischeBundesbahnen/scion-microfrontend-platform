@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,66 +7,51 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {$, browser, ElementFinder, WebElement} from 'protractor';
-import {enterText, getUrlOfCurrentWebDriverExecutionContext, runOutsideAngularSynchronization, setAttribute, switchToIframe, waitUntilLocation} from '../spec.util';
-import {Outlets, TestingAppOrigins, TestingAppPO} from '../testing-app.po';
+
+import {Outlets, TestingAppOrigins} from '../testing-app.po';
 import {RouterOutletContextPO} from '../context/router-outlet-context.po';
+import {FrameLocator, Locator, Page} from '@playwright/test';
+import {getLocationHref, isPresent, parseKeystroke} from '../testing.util';
+import {ElementSelectors} from '../element-selectors';
 import {RouterOutletSettingsPO} from '../settings/router-outlet-settings.po';
-import {UUID} from '../../deps/scion/toolkit/uuid.util';
+import {ConsoleLogs} from '../console-logs';
 
 /**
  * Page object for {@link BrowserOutletComponent} to show a microfrontend in an iframe inside `<sci-router-outlet>`.
  */
-export class BrowserOutletPO {
+export class BrowserOutletPO implements OutletPageObject {
 
-  private static ATTR_WEBDRIVER_EXECUTION_CONTEXT_ID = 'webdriverExecutionContextId';
+  public readonly path = 'browser-outlets';
 
-  private readonly _outletFinder: ElementFinder;
-  private _url: string;
+  private readonly _locator: Locator;
 
-  /**
-   * Unique iframe identity to determine if to switch the WebDriver execution context when interacting with the iframe.
-   * The identity is computed and set when interacting with the iframe for the first time.
-   */
-  private _webdriverExecutionContextId: string;
-
-  /**
-   * Allows defining the context of this outlet.
-   */
-  public readonly outletContextPO: RouterOutletContextPO;
-
-  /**
-   * Allows configuring the settings of this outlet.
-   */
-  public readonly outletSettingsPO: RouterOutletSettingsPO;
-
-  constructor(public outletName: string, private _parentOutletPO?: BrowserOutletPO) {
-    this._outletFinder = $(`app-browser-outlet#${this.outletName}`);
-    this.outletContextPO = new RouterOutletContextPO(this._outletFinder, (): Promise<void> => this.switchToOutlet());
-    this.outletSettingsPO = new RouterOutletSettingsPO(this._outletFinder, (): Promise<void> => this.switchToOutlet());
+  constructor(private readonly _pageOrFrameLocator: Page | FrameLocator, private outletName: string) {
+    this._locator = this._pageOrFrameLocator.locator(`app-browser-outlet#${outletName}`);
   }
 
   /**
    * Loads the given site into the outlet's iframe.
    *
-   * @param command the target of the microfrontend; can be either a URL in the form of a {@link string}, a {@link OutletPageObjectClass} or a {@link OutletPageObjectDescriptor}.
+   * @param command the target of the microfrontend; can be either a URL in the form of a {@link string}, a {@link OutletPageObjectConstructor} or a {@link OutletPageObjectDescriptor}.
    * @return Promise which resolves to the page object instance. If given a URL, the promise resolves to `undefined`.
    */
-  public async enterUrl<T = void>(command: string | OutletPageObjectClass | OutletPageObjectDescriptor): Promise<T> {
+  public async enterUrl<T extends OutletPageObject | never>(command: string | OutletPageObjectConstructor | OutletPageObjectDescriptor): Promise<T> {
     switch (OutletDescriptorTypes.of(command)) {
       case OutletDescriptorTypes.URL: {
         await this.enterUrlAndNavigate(command as string);
         return undefined;
       }
       case OutletDescriptorTypes.PAGE_OBJECT_CLASS: {
-        const pageObjectClass = command as OutletPageObjectClass;
-        await this.enterUrlAndNavigate(new URL(`#/${pageObjectClass.pageUrl}`, TestingAppOrigins.APP_1).toString());
-        return new pageObjectClass((): Promise<void> => this.switchToOutletIframe({trace: true}));
+        const clazz = command as OutletPageObjectConstructor<T>;
+        const instance = new clazz(this.routerOutletFrameLocator);
+        await this.enterUrlAndNavigate(new URL(`#/${instance.path}`, TestingAppOrigins.APP_1).toString());
+        return instance;
       }
       case OutletDescriptorTypes.PAGE_OBJECT_DESCRIPTOR: {
-        const {useClass, origin} = command as OutletPageObjectDescriptor;
-        await this.enterUrlAndNavigate(new URL(`#/${useClass.pageUrl}`, origin).toString());
-        return new useClass((): Promise<void> => this.switchToOutletIframe({trace: true}));
+        const {useClass: clazz, origin} = command as OutletPageObjectDescriptor<T>;
+        const instance = new clazz(this.routerOutletFrameLocator);
+        await this.enterUrlAndNavigate(new URL(`#/${instance.path}`, origin).toString());
+        return instance;
       }
       default: {
         throw Error('[OutletNavigateError] Outlet navigation failed because entered an invalid command object. Supported command objects are: URL in the form of a string, `OutletPageObjectClass` or `OutletDescriptor`.');
@@ -83,139 +68,123 @@ export class BrowserOutletPO {
    *        list of outlets for which to create an outlet. Each outlet has an iframe to show some microfrontend.
    */
   public async enterOutletsUrl(origin: string, outletNames: string[]): Promise<void> {
-    await this.enterUrl(new URL(`#/browser-outlets;names=${outletNames.join(',')}`, origin).toString());
+    await this.enterUrl(new URL(`#/${this.path};names=${outletNames.join(',')}`, origin).toString());
   }
 
   /**
-   * Switches the WebDriver execution context to this outlet. When resolved,
-   * future Protractor commands are sent to this outlet.
-   *
-   * Elements contained within iframes can not be accessed from inside the root execution context.
-   * Instead, the execution context must first be switched to the iframe.
+   * Displays the context of the <sci-router-outlet> contained in this browser outlet.
    */
-  public async switchToOutlet(): Promise<void> {
-    if (await this._outletFinder.isPresent()) {
-      return; // WebDriver execution context for this iframe is already active
-    }
-
-    if (!this._parentOutletPO) {
-      await browser.switchTo().defaultContent();
-      console.log('Switched WebDriver execution context to the root page.');
-    }
-    else {
-      await this._parentOutletPO.switchToOutletIframe();
-    }
+  public async openRouterOutletContext(): Promise<RouterOutletContextPO> {
+    await this._locator.locator('button.e2e-context-define').click();
+    return new RouterOutletContextPO(this._pageOrFrameLocator);
   }
 
   /**
-   * Switches the WebDriver execution context to the iframe of this outlet. When resolved,
-   * future Protractor commands are sent to that iframe.
-   *
-   * Elements contained within iframes can not be accessed from inside the root execution context.
-   * Instead, the execution context must first be switched to the iframe.
+   * Displays the settings of the <sci-router-outlet> contained in this browser outlet.
    */
-  public async switchToOutletIframe(options?: {trace?: boolean}): Promise<void> {
-    const trace = options?.trace ?? true;
-    // Do not wait for Angular as the page must not necessarily be an Angular page, e.g. 'about:blank'.
-    await runOutsideAngularSynchronization(async (): Promise<void> => {
-      // Check if the WebDriver execution context for this document is already active.
-      if (this._webdriverExecutionContextId
-        && this._webdriverExecutionContextId === await $('body').getAttribute(BrowserOutletPO.ATTR_WEBDRIVER_EXECUTION_CONTEXT_ID)
-        && this._url === await getUrlOfCurrentWebDriverExecutionContext()) {
-        return;
-      }
-
-      // In order to activate this iframe's WebDriver execution context, its parent iframe execution contexts must be activated first,
-      // one by one, starting with the root context.
-      if (!this._parentOutletPO) {
-        await browser.switchTo().defaultContent();
-        trace && console.log('Switched WebDriver execution context to the root page.');
-      }
-      else {
-        await this._parentOutletPO.switchToOutletIframe({trace: false});
-      }
-
-      // Get the iframe from the custom element (inside shadow DOM)
-      const iframe: WebElement = await browser.executeScript('return arguments[0].iframe', this._outletFinder.$('sci-router-outlet').getWebElement());
-
-      // Activate this iframe's WebDriver execution context.
-      await switchToIframe(iframe);
-      await waitUntilLocation(this._url);
-      trace && console.log(`Switched WebDriver execution context to the iframe: ${this.iframePath.join(' > ')}. [${this._url}}`);
-
-      // Set the webdriver execution context identity as attribute to the document's body element (if not already set).
-      // It will be used by later interactions to decide if a context switch is required.
-      if (!this._webdriverExecutionContextId) {
-        this._webdriverExecutionContextId = UUID.randomUUID();
-        await setAttribute($('body'), BrowserOutletPO.ATTR_WEBDRIVER_EXECUTION_CONTEXT_ID, this._webdriverExecutionContextId);
-      }
-    });
+  public async openRouterOutletSettings(): Promise<RouterOutletSettingsPO> {
+    await this._locator.locator('button.e2e-settings').click();
+    return new RouterOutletSettingsPO(this._pageOrFrameLocator);
   }
 
   /**
-   * Clicks the URL field to gain focus.
+   * Focuses the URL field.
    */
-  public async clickUrl(): Promise<void> {
-    await this.switchToOutlet();
-    await this._outletFinder.$('input.e2e-url').click();
+  public async focusUrl(): Promise<void> {
+    await this._locator.locator('input.e2e-url').focus();
   }
 
   /**
    * Returns `true` if the embedded web content or any descendant element has received focus, or `false` if not.
    */
   public async isFocusWithinIframe(): Promise<boolean> {
-    return new TestingAppPO().isFocusWithin(() => this.switchToOutletIframe());
+    return isPresent(this.routerOutletFrameLocator.locator('app-root').locator('.e2e-focus-within'));
+  }
+
+  public get routerOutletFrameLocator(): FrameLocator {
+    return this._locator.frameLocator(ElementSelectors.routerOutletFrame());
+  }
+
+  /**
+   * Returns the URL of embedded content by invoking `location.href`.
+   */
+  public getEmbeddedContentUrl(): Promise<string> {
+    return getLocationHref(this.routerOutletFrameLocator);
   }
 
   /**
    * Instructs embedded content to propagate keyboard events for the given keystrokes.
-   * The keystrokes are set to the 'keystrokes' attribute in the HTML template.
+   *
+   * Keystrokes can be registered either via attribute in the HTML template, or via property on the DOM element.
    */
-  public async setKeystrokesViaAttr(keystrokes: string): Promise<void> {
-    await this.switchToOutlet();
-    await setAttribute(this._outletFinder.$('sci-router-outlet'), 'keystrokes', keystrokes);
-  }
+  public async registerKeystrokes(keystrokes: string[], options: {registration: 'ATTR' | 'DOM'}): Promise<void> {
+    const consoleLogs = new ConsoleLogs(this._locator.page());
+    const sciRouterOutletLocator = this._locator.locator(ElementSelectors.routerOutlet());
+    try {
+      switch (options.registration) {
+        // Register keystrokes via 'keystrokes' attribute in the HTML template.
+        case 'ATTR': {
+          const pageFunction = (element, argument): void => element.setAttribute('keystrokes', argument);
+          await sciRouterOutletLocator.evaluate(pageFunction, keystrokes.join(','));
+          break;
+        }
+        // Register keystrokes via 'keystrokes' property on the DOM element.
+        case 'DOM': {
+          const pageFunction = (element, argument): void => void (element['keystrokes'] = argument);
+          await sciRouterOutletLocator.evaluate(pageFunction, keystrokes);
+          break;
+        }
+        default: {
+          throw Error(`[IllegalArgumentError] Expected registration to be one of ['ATTR', 'DOM'], but was '${options.registration}'`);
+        }
+      }
 
-  /**
-   * Instructs embedded content to propagate keyboard events for the given keystrokes.
-   * The keystrokes are set to the 'keystrokes' property in the DOM element.
-   */
-  public async setKeystrokesViaDom(keystrokes: string[]): Promise<void> {
-    await this.switchToOutlet();
-    await browser.executeScript('arguments[0].keystrokes = arguments[1];', this._outletFinder.$('sci-router-outlet').getWebElement(), keystrokes);
-  }
-
-  private get iframePath(): string[] {
-    const iframeIdentity = this.outletName;
-
-    if (this._parentOutletPO) {
-      return this._parentOutletPO.iframePath.concat(iframeIdentity);
+      // Wait for the keystrokes to be installed in the embedded microfrontend.
+      for (const keystroke of keystrokes) {
+        await consoleLogs.get({
+          severity: 'debug',
+          filter: new RegExp(`\\[AppShellComponent::keystroke:${parseKeystroke(keystroke).parts}.*?\].*\\[outlet=${this.outletName}\]`),
+        });
+      }
     }
-    return [iframeIdentity];
+    finally {
+      consoleLogs.dispose();
+    }
   }
 
   private async enterUrlAndNavigate(url: string): Promise<void> {
-    await this.switchToOutlet();
-
-    this._url = url;
-    await enterText(url, this._outletFinder.$('input.e2e-url'));
-    await this._outletFinder.$('button.e2e-go').click();
+    await this._locator.locator('input.e2e-url').fill(url);
+    await this._locator.locator('button.e2e-go').click();
   }
 }
 
 /**
- * Declares the minimal requirements of a page object class used as an outlet.
+ * Contract that a page object must implement in order to be used as outlet in the test setup.
+ *
+ * - must provide a single-arg constructor with an argument of the type {@link FrameLocator}. See {@link OutletPageObjectConstructor}.
+ *   Use the frame locator to access elements, such as buttons, inputs, etc. on your microfrontend.
+ * - must provide a readonly field named `path` initialized with the path to the page.
+ *
+ * @see OutletPageObjectConstructor
  */
-export interface OutletPageObjectClass extends Function {
-  pageUrl: string;
+export interface OutletPageObject {
+  /**
+   * Specifies the path to the page.
+   */
+  readonly path: string;
+}
 
-  new(switchToIframeFn: SwitchToIframeFn): any;
+/**
+ * Required constructor of a page object in order to be used as outlet in the test setup.
+ */
+export interface OutletPageObjectConstructor<T extends OutletPageObject = OutletPageObject> extends Function {
+  new(frameLocator: FrameLocator): T;
 }
 
 /**
  * Describes the microfrontend to load in an outlet.
  */
-export interface OutletPageObjectDescriptor {
+export interface OutletPageObjectDescriptor<T extends OutletPageObject = OutletPageObject> {
   /**
    * Origin of the microfrontend.
    */
@@ -223,13 +192,8 @@ export interface OutletPageObjectDescriptor {
   /**
    * Page object class which represents the microfrontend.
    */
-  useClass: OutletPageObjectClass;
+  useClass: OutletPageObjectConstructor<T>;
 }
-
-/**
- * Switches the WebDriver execution context, causing Protractor to send future commands to that iframe.
- */
-export declare type SwitchToIframeFn = () => Promise<void>;
 
 /**
  * Represents types of outlet descriptors.
@@ -244,7 +208,7 @@ export namespace OutletDescriptorTypes {
   /**
    * Resolves the given descriptor to its type.
    */
-  export function of(descriptor: string | OutletPageObjectClass | OutletPageObjectDescriptor | Outlets): string {
+  export function of(descriptor: string | OutletPageObjectConstructor | OutletPageObjectDescriptor | Outlets): string {
     if (typeof descriptor === 'string') {
       return URL;
     }

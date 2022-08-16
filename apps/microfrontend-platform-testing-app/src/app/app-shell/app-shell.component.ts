@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component, HostBinding, OnDestroy} from '@angular/core';
-import {asapScheduler, Subject, switchMap} from 'rxjs';
+import {asapScheduler, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {takeUntil} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
@@ -36,6 +36,7 @@ export class AppShellComponent implements OnDestroy {
 
     this.installFocusWithinListener();
     this.installRouteActivateListener();
+    this.installKeystrokeRegisterLogger();
   }
 
   private installRouteActivateListener(): void {
@@ -47,6 +48,24 @@ export class AppShellComponent implements OnDestroy {
       .subscribe(outletContext => {
         const context = outletContext?.name ?? 'n/a';
         console.debug(`[AppShellComponent::router-outlet:onactivate] [app=${this.appSymbolicName}, location=${window.location.href}, outletContext=${context}]]`);
+      });
+  }
+
+  /**
+   * Logs when a keystroke is to be installed in this app instance.
+   */
+  private installKeystrokeRegisterLogger(): void {
+    const outletName$ = Beans.get(ContextService).observe$<OutletContext>(OUTLET_CONTEXT)
+      .pipe(mergeMap(context => context ? of(context.name) : EMPTY));
+
+    Beans.get(ContextService).names$()
+      .pipe(
+        mergeMap(contextKeys => from(Array.from(contextKeys).filter(key => key.startsWith('keystroke:')))),
+        withLatestFrom(outletName$),
+        takeUntil(this._destroy$),
+      )
+      .subscribe(([keystroke, outletName]) => {
+        console.debug(`[AppShellComponent::${keystroke}][app=${this.appSymbolicName}][location=${window.location.href}][outlet=${outletName}]`);
       });
   }
 
