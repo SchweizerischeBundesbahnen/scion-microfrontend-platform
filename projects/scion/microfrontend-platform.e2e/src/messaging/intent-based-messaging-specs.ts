@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,18 +7,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
+
 import {TestingAppOrigins, TestingAppPO} from '../testing-app.po';
 import {MessagingFlavor, PublishMessagePagePO} from './publish-message-page.po';
 import {ReceiveMessagePagePO} from './receive-message-page.po';
 import {RegisterIntentionPagePO} from '../manifest/register-intention-page.po';
 import {RegisterCapabilityPagePO} from '../manifest/register-capability-page.po';
 import {BrowserOutletPO} from '../browser-outlet/browser-outlet.po';
-import {expectToBeRejectedWithError} from '../spec.util';
-import {MessageListItemPO} from './message-list-item.po';
-import {Capability, IntentMessage} from '@scion/microfrontend-platform';
 import {LookupCapabilityPagePO} from '../manifest/lookup-capability-page.po';
-
-const anyCapability: Capability = {} as any;
+import {expect} from '@playwright/test';
 
 /**
  * Contains Specs for intent-based messaging.
@@ -28,9 +25,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that an intent can only be issued if having declared a respective intention.
    */
-  export async function publisherNotQualifiedSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function publisherNotQualifiedSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher: PublishMessagePagePO,
     });
@@ -41,15 +36,13 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO.enterIntent('testing', {key: 'value'});
     await publisherPO.clickPublish();
 
-    await expect(publisherPO.getPublishError()).toContain('[NotQualifiedError]');
+    await expect(await publisherPO.getPublishError()).toContain('[NotQualifiedError]');
   }
 
   /**
    * Tests that an intent can only be issued if there is one application at minimum providing a respective capability.
    */
-  export async function intentNotFulfilledSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function intentNotFulfilledSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       publisher: PublishMessagePagePO,
       intentionManager: RegisterIntentionPagePO,
@@ -65,16 +58,14 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO.enterIntent('testing', {key: 'value'});
     await publisherPO.clickPublish();
 
-    await expect(publisherPO.getPublishError()).toContain('[NullProviderError]');
+    await expect(await publisherPO.getPublishError()).toContain('[NullProviderError]');
   }
 
   /**
    * Tests that an application can issue intents to its private capabilities without registering an intention.
    * However, because not explicitly registered an intention, the intent should not be transported to other applications which provide a matching, public capability.
    */
-  export async function dispatchToOwnPrivateCapabilitiesSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function dispatchToOwnPrivateCapabilitiesSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_3},
@@ -113,7 +104,7 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO_app3.enterMessage('some payload');
     await publisherPO_app3.clickPublish();
 
-    await expect(publisherPO_app3.getPublishError()).toBeNull();
+    await expect(await publisherPO_app3.getPublishError()).toBeNull();
 
     // assert intent to be received in app-3
     const intent = await receiverPO_app3.getFirstMessageOrElseReject();
@@ -129,9 +120,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that an application cannot issue intents to private capabilities of other applications.
    */
-  export async function rejectDispatchingToPrivateForeignCapabilitiesSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function rejectDispatchingToPrivateForeignCapabilitiesSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_3},
@@ -162,7 +151,7 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO_app3.clickPublish();
 
     // assert intent not to be dispatched
-    await expect(publisherPO_app3.getPublishError()).toContain('[NullProviderError]');
+    await expect(await publisherPO_app3.getPublishError()).toContain('[NullProviderError]');
 
     // assert intent not to be received
     await expect(await receiverPO_app4.getMessages()).toEqual([]);
@@ -172,9 +161,7 @@ export namespace IntendBasedMessagingSpecs {
    * Tests that an application can issue intents to its public capabilities without registering an intention.
    * However, because not explicitly registered an intention, the intent should not be transported to other applications which provide a matching, public capability.
    */
-  export async function dispatchToOwnPublicCapabilitiesSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function dispatchToOwnPublicCapabilitiesSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_3},
@@ -213,7 +200,7 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO.enterMessage('some payload');
     await publisherPO.clickPublish();
 
-    await expect(publisherPO.getPublishError()).toBeNull();
+    await expect(await publisherPO.getPublishError()).toBeNull();
 
     // assert intent to be received in app-3
     const intent = await receiverPO.getFirstMessageOrElseReject();
@@ -229,9 +216,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that an application can issue intents to public capabilities of other applications.
    */
-  export async function dispatchToPublicForeignCapabilitiesSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function dispatchToPublicForeignCapabilitiesSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_3},
@@ -261,7 +246,7 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO_app3.enterMessage('some payload');
     await publisherPO_app3.clickPublish();
 
-    await expect(publisherPO_app3.getPublishError()).toBeNull();
+    await expect(await publisherPO_app3.getPublishError()).toBeNull();
 
     // assert intent to be received
     const intent = await receiverPO_app4.getFirstMessageOrElseReject();
@@ -274,9 +259,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that an intent is dispatched to multiple applications.
    */
-  export async function dispatchToMultipleSubscribersSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function dispatchToMultipleSubscribersSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app2: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_2},
@@ -324,7 +307,7 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO_app2.enterMessage('some payload');
     await publisherPO_app2.clickPublish();
 
-    await expect(publisherPO_app2.getPublishError()).toBeNull();
+    await expect(await publisherPO_app2.getPublishError()).toBeNull();
 
     // assert intent to be received by app-2
     const intent_app2 = await receiverPO_app2.getFirstMessageOrElseReject();
@@ -351,9 +334,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that an application can receive intents from multiple applications.
    */
-  export async function receiveMultipleIntentsSpecs(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function receiveMultipleIntentsSpecs(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_3},
@@ -409,9 +390,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that an application can reply to an intent.
    */
-  export async function replySpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function replySpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_3},
@@ -465,9 +444,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that intents of interest can be filtered.
    */
-  export async function receiveAndFilterSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function receiveAndFilterSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_3},
@@ -527,9 +504,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that intent routing for capabilities declaring wildcard characters works as expected.
    */
-  export async function receiveIfMatchingCapabilityWildcardQualifierSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function receiveIfMatchingCapabilityWildcardQualifierSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app1: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_1},
@@ -581,7 +556,7 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO_app1.clickPublish();
 
     // assert receiving the intent
-    await expectToBeRejectedWithError(receiverPO_app3.getFirstMessageOrElseReject(), /[TimeoutError]/);
+    await expect(receiverPO_app3.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
     await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentQualifier()).toEqual({'key1': 'value1'});
     await receiverPO_app3.clickClearMessages();
     await receiverPO_app4.clickClearMessages();
@@ -590,9 +565,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that intent routing for capabilities declaring params works as expected.
    */
-  export async function receiveIfMatchingCapabilityParamsSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function receiveIfMatchingCapabilityParamsSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app1: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_1},
@@ -628,12 +601,12 @@ export namespace IntendBasedMessagingSpecs {
     // issue the intent: {param: 'value'}
     const publisherPO_app1 = pagePOs.get<PublishMessagePagePO>('publisher_app1');
     await publisherPO_app1.selectFlavor(MessagingFlavor.Intent);
-    await publisherPO_app1.enterIntent('testing', undefined, new Map<string, any>().set('param', 'value'));
+    await publisherPO_app1.enterIntent('testing', undefined, {'param': 'value'});
     await publisherPO_app1.clickPublish();
 
     // assert receiving the intent
-    await expect(await (await receiverPO_app3.getFirstMessageOrElseReject()).getIntentParams()).toEqual(new Map<string, any>().set('param', 'value [string]'));
-    await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentParams()).toEqual(new Map<string, any>().set('param', 'value [string]'));
+    await expect(await (await receiverPO_app3.getFirstMessageOrElseReject()).getIntentParams()).toEqual({'param': 'value [string]'});
+    await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentParams()).toEqual({'param': 'value [string]'});
 
     await receiverPO_app3.clickClearMessages();
     await receiverPO_app4.clickClearMessages();
@@ -644,7 +617,7 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO_app1.clickPublish();
 
     // assert intent not to be dispatched
-    await expect(publisherPO_app1.getPublishError()).toContain('[ParamMismatchError]');
+    await expect(await publisherPO_app1.getPublishError()).toContain('[ParamMismatchError]');
 
     // assert intent not to be received
     await expect(await receiverPO_app3.getMessages()).toEqual([]);
@@ -654,9 +627,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that an application cannot issue intents if params do not match the params of the capability.
    */
-  export async function publisherNotMatchingParamsSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function publisherNotMatchingParamsSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app3: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_3},
@@ -682,24 +653,24 @@ export namespace IntendBasedMessagingSpecs {
     // issue the intent with required param missing: {'param2': 'value'}
     const publisherPO_app3 = pagePOs.get<PublishMessagePagePO>('publisher_app3');
     await publisherPO_app3.selectFlavor(MessagingFlavor.Intent);
-    await publisherPO_app3.enterIntent('testing', undefined, new Map<string, any>().set('param2', 'value'));
+    await publisherPO_app3.enterIntent('testing', undefined, {'param2': 'value'});
     await publisherPO_app3.enterMessage('some payload');
     await publisherPO_app3.clickPublish();
 
     // assert intent not to be dispatched
-    await expect(publisherPO_app3.getPublishError()).toContain('[ParamMismatchError]');
+    await expect(await publisherPO_app3.getPublishError()).toContain('[ParamMismatchError]');
 
     // assert intent not to be received
     await expect(await receiverPO_app4.getMessages()).toEqual([]);
 
     // issue the intent with additional param: {'param1': 'value', 'unsupported-param': 'value'}
     await publisherPO_app3.selectFlavor(MessagingFlavor.Intent);
-    await publisherPO_app3.enterIntent('testing', undefined, new Map<string, any>().set('param1', 'value').set('unsupported-param', 'value'));
+    await publisherPO_app3.enterIntent('testing', undefined, {'param1': 'value', 'unsupported-param': 'value'});
     await publisherPO_app3.enterMessage('some payload');
     await publisherPO_app3.clickPublish();
 
     // assert intent not to be dispatched
-    await expect(publisherPO_app3.getPublishError()).toContain('[ParamMismatchError]');
+    await expect(await publisherPO_app3.getPublishError()).toContain('[ParamMismatchError]');
 
     // assert intent not to be received
     await expect(await receiverPO_app4.getMessages()).toEqual([]);
@@ -708,9 +679,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that data types of passed parameters are preserved.
    */
-  export async function preserveParamDataTypeSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function preserveParamDataTypeSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app1: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_1},
@@ -748,34 +717,33 @@ export namespace IntendBasedMessagingSpecs {
     // issue the intent
     const publisherPO_app1 = pagePOs.get<PublishMessagePagePO>('publisher_app1');
     await publisherPO_app1.selectFlavor(MessagingFlavor.Intent);
-    await publisherPO_app1.enterIntent('test', undefined, new Map()
-      .set('param1', '<string>value</string>')
-      .set('param2', '<boolean>true</boolean>')
-      .set('param3', '<boolean>false</boolean>')
-      .set('param4', '<number>123</number>')
-      .set('param5', '<number>0</number>')
-      .set('param6', '<null>')
-      .set('param7', '<undefined>'),
-    );
+    await publisherPO_app1.enterIntent('test', undefined, {
+      'param1': '<string>value</string>',
+      'param2': '<boolean>true</boolean>',
+      'param3': '<boolean>false</boolean>',
+      'param4': '<number>123</number>',
+      'param5': '<number>0</number>',
+      'param6': '<null>',
+      'param7': '<undefined>',
+    });
     await publisherPO_app1.clickPublish();
 
     // assert the received intent
     const params = await (await receiverPO_app2.getFirstMessageOrElseReject()).getIntentParams();
-    expect(params).toEqual(new Map()
-      .set('param1', 'value [string]')
-      .set('param2', 'true [boolean]')
-      .set('param3', 'false [boolean]')
-      .set('param4', '123 [number]')
-      .set('param5', '0 [number]')
-      .set('param6', 'null [null]'));
+    expect(params).toEqual({
+      'param1': 'value [string]',
+      'param2': 'true [boolean]',
+      'param3': 'false [boolean]',
+      'param4': '123 [number]',
+      'param5': '0 [number]',
+      'param6': 'null [null]',
+    });
   }
 
   /**
    * Tests that parameters associated with the value `null` are not removed.
    */
-  export async function preserveNullParamSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function preserveNullParamSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       registerCapability: RegisterCapabilityPagePO,
       publisher: PublishMessagePagePO,
@@ -801,20 +769,18 @@ export namespace IntendBasedMessagingSpecs {
     // issue the intent
     const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
     await publisherPO.selectFlavor(MessagingFlavor.Intent);
-    await publisherPO.enterIntent('test', undefined, new Map().set('param', '<null>'));
+    await publisherPO.enterIntent('test', undefined, {'param': '<null>'});
     await publisherPO.clickPublish();
 
     // assert the received intent
     const params = await (await receiverPO.getFirstMessageOrElseReject()).getIntentParams();
-    expect(params).toEqual(new Map().set('param', 'null [null]'));
+    expect(params).toEqual({'param': 'null [null]'});
   }
 
   /**
    * Tests that parameters associated with the value `undefined` are removed.
    */
-  export async function removeUndefinedParamSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
-
+  export async function removeUndefinedParamSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       registerCapability: RegisterCapabilityPagePO,
       publisher: PublishMessagePagePO,
@@ -840,19 +806,18 @@ export namespace IntendBasedMessagingSpecs {
     // issue the intent
     const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
     await publisherPO.selectFlavor(MessagingFlavor.Intent);
-    await publisherPO.enterIntent('test', undefined, new Map().set('param', '<undefined>'));
+    await publisherPO.enterIntent('test', undefined, {'param': '<undefined>'});
     await publisherPO.clickPublish();
 
     // assert the received intent
     const params = await (await receiverPO.getFirstMessageOrElseReject()).getIntentParams();
-    expect(params).toEqual(new Map());
+    expect(params).toEqual({});
   }
 
   /**
    * Tests to set headers on a message.
    */
-  export async function passHeadersSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function passHeadersSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       capabilityManager: RegisterCapabilityPagePO,
       publisher: PublishMessagePagePO,
@@ -869,14 +834,13 @@ export namespace IntendBasedMessagingSpecs {
     const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
     await publisherPO.selectFlavor(MessagingFlavor.Intent);
     await publisherPO.enterIntent('testing', {q1: 'v1', q2: 'v2'});
-    await publisherPO.enterHeaders(new Map().set('header1', 'value').set('header2', '42'));
+    await publisherPO.enterHeaders({'header1': 'value', 'header2': '42'});
     await publisherPO.clickPublish();
 
-    await expectIntent(receiverPO.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiverPO.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testing', qualifier: {q1: 'v1', q2: 'v2'}},
       body: '',
       headers: new Map().set('header1', 'value').set('header2', '42'),
-      capability: anyCapability,
     });
   }
 
@@ -884,8 +848,7 @@ export namespace IntendBasedMessagingSpecs {
    * Tests intent interception by changing the intent body to upper case characters.
    * The testing app is configured to uppercase the intent body of intents of the type 'uppercase'.
    */
-  export async function interceptIntentSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function interceptIntentSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       registrator: RegisterCapabilityPagePO,
       publisher: PublishMessagePagePO,
@@ -906,11 +869,10 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO.enterMessage('payload');
     await publisherPO.clickPublish();
 
-    await expectIntent(receiverPO.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiverPO.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'uppercase', qualifier: {}},
       body: 'PAYLOAD',
       headers: new Map(),
-      capability: anyCapability,
     });
   }
 
@@ -918,8 +880,7 @@ export namespace IntendBasedMessagingSpecs {
    * Tests intent rejection.
    * The testing app is configured to reject intents of the type 'reject'.
    */
-  export async function interceptIntentRejectSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function interceptIntentRejectSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       registrator: RegisterCapabilityPagePO,
       publisher: PublishMessagePagePO,
@@ -948,8 +909,7 @@ export namespace IntendBasedMessagingSpecs {
    * Tests swallowing an intent.
    * The testing app is configured to swallow intents of the type 'swallow'.
    */
-  export async function interceptIntentSwallowSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function interceptIntentSwallowSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       registrator: RegisterCapabilityPagePO,
       publisher: PublishMessagePagePO,
@@ -976,8 +936,7 @@ export namespace IntendBasedMessagingSpecs {
   /**
    * Tests that the platform resolves to the satisfying capability.
    */
-  export async function resolveCapabilitySpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function resolveCapabilitySpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app: PublishMessagePagePO,
@@ -1041,28 +1000,28 @@ export namespace IntendBasedMessagingSpecs {
     await expect(capabilityId_app2).not.toEqual(capabilityId_app3);
 
     // verify intent received in app-2 with resolved capability `capabilityId_app2` (client-1)
-    await expectIntent(receiver1_app2.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver1_app2.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
       capability: capability_app2,
     });
 
     // verify intent received in app-2 with resolved capability `capabilityId_app2` (client-2)
-    await expectIntent(receiver2_app2.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver2_app2.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
       capability: capability_app2,
     });
 
     // verify intent received in app-3 with resolved capability `capabilityId_app3` (client-1)
-    await expectIntent(receiver1_app3.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver1_app3.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
       capability: capability_app3,
     });
 
     // verify intent received in app-3 with resolved capability `capabilityId_app3` (client-2)
-    await expectIntent(receiver2_app3.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver2_app3.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
       capability: capability_app3,
@@ -1073,8 +1032,7 @@ export namespace IntendBasedMessagingSpecs {
    * Tests that the capability is present on the intent message to be intercepted.
    * The interceptor continues the interceptor chain with the message body replaced with the stringified capability.
    */
-  export async function interceptIntentCapabilityPresentSpec(): Promise<void> {
-    const testingAppPO = new TestingAppPO();
+  export async function interceptIntentCapabilityPresentSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
       managerOutlet: 'about:blank',
       publisher_app: PublishMessagePagePO,
@@ -1123,7 +1081,7 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO.clickPublish();
 
     // verify the interceptor to have replaced the message body with the stringified capability.
-    await expectIntent(receiver_app2.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver_app2.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testee', qualifier: {}},
       body: JSON.stringify(capability_app2),
       headers: new Map(),
@@ -1131,32 +1089,11 @@ export namespace IntendBasedMessagingSpecs {
     });
 
     // verify the interceptor to have replaced the message body with the stringified capability.
-    await expectIntent(receiver_app3.getFirstMessageOrElseReject()).toEqual({
+    await expect(receiver_app3.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testee', qualifier: {}},
       body: JSON.stringify(capability_app3),
       headers: new Map(),
       capability: capability_app3,
     });
-  }
-
-  /**
-   * Expects the intent to equal the expected intent with its headers to contain at minimum the given map entries.
-   */
-  function expectIntent(actual: Promise<MessageListItemPO>): {toEqual: (expected: IntentMessage) => void} {
-    return {
-      toEqual: async (expected: IntentMessage): Promise<void> => {
-        const actualMessage = await actual;
-        await expect(await actualMessage.getIntentType()).toEqual(expected.intent.type);
-        await expect(await actualMessage.getIntentQualifier()).toEqual(expected.intent.qualifier);
-        if (expected.body !== undefined) {
-          await expect(actualMessage.getBody()).toEqual(expected.body);
-        }
-        if (expected.capability !== anyCapability) {
-          await expect(await actualMessage.getCapability()).toEqual(expected.capability);
-        }
-        // Jasmine 3.5 provides 'mapContaining' matcher; when updated, this custom matcher can be removed.
-        await expect([...await actualMessage.getHeaders()]).toEqual(jasmine.arrayContaining([...expected.headers]));
-      },
-    };
   }
 }

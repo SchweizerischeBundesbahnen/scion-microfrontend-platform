@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,22 +7,20 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {expectToBeRejectedWithError} from '../spec.util';
-import {TestingAppOrigins, TestingAppPO} from '../testing-app.po';
+
+import {TestingAppOrigins} from '../testing-app.po';
 import {RegisterCapabilityPagePO} from './register-capability-page.po';
 import {LookupCapabilityPagePO} from './lookup-capability-page.po';
 import {RegisterIntentionPagePO} from './register-intention-page.po';
 import {LookupIntentionPagePO} from './lookup-intention-page.po';
-import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
+import {test} from '../fixtures';
+import {expect} from '@playwright/test';
 
-describe('Manifest Registry', () => {
+test.describe('Manifest Registry', () => {
 
-  installSeleniumWebDriverClickFix();
+  test.describe('Register capabilities', () => {
 
-  describe('Register capabilities', () => {
-
-    it('should allow to register a capability', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to register a capability', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -39,10 +37,9 @@ describe('Manifest Registry', () => {
     });
   });
 
-  describe('Unregister capabilities', () => {
+  test.describe('Unregister capabilities', () => {
 
-    it('should allow to unregister a capability by id', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister a capability by id', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -54,7 +51,7 @@ describe('Manifest Registry', () => {
       const capability1Id = await registratorPO.registerCapability({type: 'type', qualifier: {key: 'value1'}, private: true});
       const capability2Id = await registratorPO.registerCapability({type: 'type', qualifier: {key: 'value2'}, private: true});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id]);
 
       // Unregister capability1
       await registratorPO.unregisterCapability({id: capability1Id});
@@ -65,8 +62,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
-    it('should allow to unregister a capability by type', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister a capability by type', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -80,19 +76,18 @@ describe('Manifest Registry', () => {
       const capability3Id = await registratorPO.registerCapability({type: 'type2', qualifier: {key: 'value1'}, private: true});
       const capability4Id = await registratorPO.registerCapability({type: 'type2', qualifier: {key: 'value2'}, private: true});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id]);
 
       // Unregister by 'type1'
       await registratorPO.unregisterCapability({type: 'type1'});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability3Id, capability4Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability3Id, capability4Id]);
 
       // Unregister by 'type2'
       await registratorPO.unregisterCapability({type: 'type2'});
       await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
-    it('should allow to unregister a capability by qualifier', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister a capability by qualifier', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -109,31 +104,30 @@ describe('Manifest Registry', () => {
       const capability6Id = await registratorPO.registerCapability({type: 'type6', qualifier: {key: 'c'}, private: true});
       const capability7Id = await registratorPO.registerCapability({type: 'type7', qualifier: {key: 'd'}, private: true});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
 
       // Unregister by qualifier {}
       await registratorPO.unregisterCapability({qualifier: {}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
 
       // Unregister by qualifier {key: 'a'}
       await registratorPO.unregisterCapability({qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability4Id, capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability4Id, capability5Id, capability6Id, capability7Id]);
 
       // Unregister by qualifier {key: 'b'}
       await registratorPO.unregisterCapability({qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability5Id, capability6Id, capability7Id]);
 
       // Unregister by qualifier {key: 'c'}
       await registratorPO.unregisterCapability({qualifier: {key: 'c'}});
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability7Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability7Id]);
 
       // Unregister by qualifier {key: 'd'}
       await registratorPO.unregisterCapability({qualifier: {key: 'd'}});
       await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
-    it('should allow to unregister a capability by type and qualifier', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister a capability by type and qualifier', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -149,23 +143,23 @@ describe('Manifest Registry', () => {
       const capability5Id = await registratorPO.registerCapability({type: 'type3', qualifier: {key: 'a'}, private: true});
       const capability6Id = await registratorPO.registerCapability({type: 'type3', qualifier: {key: 'b'}, private: true});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id]);
 
       // Unregister by type 'type1' and qualifier {key: 'a'}
       await registratorPO.unregisterCapability({type: 'type1', qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability2Id, capability3Id, capability4Id, capability5Id, capability6Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability2Id, capability3Id, capability4Id, capability5Id, capability6Id]);
 
       // Unregister by type 'type1' and qualifier {key: 'b'}
       await registratorPO.unregisterCapability({type: 'type1', qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability3Id, capability4Id, capability5Id, capability6Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability3Id, capability4Id, capability5Id, capability6Id]);
 
       // Unregister by type 'type2' and qualifier {key: 'a'}
       await registratorPO.unregisterCapability({type: 'type2', qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability4Id, capability5Id, capability6Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability4Id, capability5Id, capability6Id]);
 
       // Unregister by type 'type2' and qualifier {key: 'b'}
       await registratorPO.unregisterCapability({type: 'type2', qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability5Id, capability6Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability5Id, capability6Id]);
 
       // Unregister by type 'type3' and qualifier {key: 'a'}
       await registratorPO.unregisterCapability({type: 'type3', qualifier: {key: 'a'}});
@@ -176,8 +170,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
-    it('should allow to unregister capabilities by qualifier containing wildcard (*) value', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister capabilities by qualifier containing wildcard (*) value', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -195,15 +188,14 @@ describe('Manifest Registry', () => {
       const capability7Id = await registratorPO.registerCapability({type: 'type7', qualifier: {key: '?'}, private: true});
       const capability8Id = await registratorPO.registerCapability({type: 'type8', qualifier: {otherKey: '?'}, private: true});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id, capability8Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id, capability8Id]);
 
       // Unregister by qualifier {key: '*'}
       await registratorPO.unregisterCapability({qualifier: {key: '*'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability8Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability8Id]);
     });
 
-    it('should interpret the question mark (?) as value (and not as wildcard) when removing capabilities', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should interpret the question mark (?) as value (and not as wildcard) when removing capabilities', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -221,15 +213,14 @@ describe('Manifest Registry', () => {
       const capability7Id = await registratorPO.registerCapability({type: 'type7', qualifier: {key: '?'}, private: true});
       const capability8Id = await registratorPO.registerCapability({type: 'type8', qualifier: {otherKey: '?'}, private: true});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id, capability8Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id, capability8Id]);
 
       // Unregister by qualifier {key: '?'}
       await registratorPO.unregisterCapability({qualifier: {key: '?'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability8Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability8Id]);
     });
 
-    it('should allow to unregister all capabilities by `AnyQualifier`', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister all capabilities by `AnyQualifier`', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -247,15 +238,14 @@ describe('Manifest Registry', () => {
       const capability7Id = await registratorPO.registerCapability({type: 'type7', qualifier: {key: '?'}, private: true});
       const capability8Id = await registratorPO.registerCapability({type: 'type8', qualifier: {otherKey: '?'}, private: true});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id, capability8Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id, capability8Id]);
 
       // Unregister by qualifier {'*': '*'}
       await registratorPO.unregisterCapability({qualifier: {'*': '*'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([]);
     });
 
-    it('should not allow to unregister capabilities if qualifier key is missing in filter', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should not allow to unregister capabilities if qualifier key is missing in filter', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -272,23 +262,22 @@ describe('Manifest Registry', () => {
       const capability6Id = await registratorPO.registerCapability({type: 'type6', qualifier: {key: '*', otherKey: '*'}, private: true});
       const capability7Id = await registratorPO.registerCapability({type: 'type7', qualifier: {key: '?', otherKey: '?'}, private: true});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
 
       // Unregister by qualifier {key: '*'}
       await registratorPO.unregisterCapability({qualifier: {key: '*'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
 
       // Unregister by qualifier {key: '?'}
       await registratorPO.unregisterCapability({qualifier: {key: '?'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
 
       // Unregister by qualifier {'*': '*'}
       await registratorPO.unregisterCapability({qualifier: {'*': '*'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([]);
     });
 
-    it('should not allow to unregister capabilities if filter contains additional qualifier key', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should not allow to unregister capabilities if filter contains additional qualifier key', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -305,27 +294,26 @@ describe('Manifest Registry', () => {
       const capability6Id = await registratorPO.registerCapability({type: 'type6', qualifier: {key: '*'}, private: true});
       const capability7Id = await registratorPO.registerCapability({type: 'type7', qualifier: {key: '?'}, private: true});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
 
       // Unregister by qualifier {key: '*', otherKey: '*'}
       await registratorPO.unregisterCapability({qualifier: {key: '*', otherKey: '*'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
 
       // Unregister by qualifier {key: '?', otherKey: '*'}
       await registratorPO.unregisterCapability({qualifier: {key: '?', otherKey: '*'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
 
       // Unregister by qualifier {key: '*', otherKey: '?'}
       await registratorPO.unregisterCapability({qualifier: {key: '*', otherKey: '?'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
 
       // Unregister by qualifier {key: '?', otherKey: '?'}
       await registratorPO.unregisterCapability({qualifier: {key: '?', otherKey: '?'}});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
     });
 
-    it('should not allow to unregister capabilities from other applications', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should not allow to unregister capabilities from other applications', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator_app2: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_2},
         registrator_app3: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3},
@@ -362,10 +350,9 @@ describe('Manifest Registry', () => {
     });
   });
 
-  describe('Lookup capabilities', () => {
+  test.describe('Lookup capabilities', () => {
 
-    it('should allow to look up capabilities of the requesting application', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up capabilities of the requesting application', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator_app1: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_1},
         registrator_app3: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3},
@@ -387,11 +374,10 @@ describe('Manifest Registry', () => {
 
       // Verify the lookup when setting the app explicitly via filter
       await lookupApp1PO.lookup({appSymbolicName: 'app-1'});
-      await expect(lookupApp1PO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id]));
+      await expect(await lookupApp1PO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id]);
     });
 
-    it('should allow to look up capabilities by id', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up capabilities by id', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -417,8 +403,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability3Id]);
     });
 
-    it('should allow to look up capabilities by type', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up capabilities by type', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -444,8 +429,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability3Id]);
     });
 
-    it('should allow to look up capabilities by qualifier', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up capabilities by qualifier', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -471,8 +455,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability3Id]);
     });
 
-    it('should allow to look up capabilities by type and qualifier', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up capabilities by type and qualifier', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -513,8 +496,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpCapabilityIds()).toEqual([capability6Id]);
     });
 
-    it('should allow to look up public capabilities from other apps for which the requesting app has declared an intention', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up public capabilities from other apps for which the requesting app has declared an intention', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         capabilityRegistrator_app1: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_1},
         intentionRegistrator_app2: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_2},
@@ -538,8 +520,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupApp2PO.getLookedUpCapabilityIds()).toEqual([publicCapabilityApp1Id]);
     });
 
-    it('should not allow to look up private capabilities from other apps for which the requesting app has declared an intention', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should not allow to look up private capabilities from other apps for which the requesting app has declared an intention', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         capabilityRegistrator_app1: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_1},
         intentionRegistrator_app2: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_2},
@@ -560,8 +541,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupApp2PO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
-    it('should not allow to look up public capabilities from other apps for which the requesting app has not declared an intention', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should not allow to look up public capabilities from other apps for which the requesting app has not declared an intention', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         capabilityRegistrator_app1: {useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_1},
         lookup_app2: {useClass: LookupCapabilityPagePO, origin: TestingAppOrigins.APP_2},
@@ -577,8 +557,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupApp2PO.getLookedUpCapabilityIds()).toEqual([]);
     });
 
-    it('should allow observing capabilities', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow observing capabilities', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterCapabilityPagePO,
         lookup: LookupCapabilityPagePO,
@@ -593,15 +572,15 @@ describe('Manifest Registry', () => {
 
       // Register a capability
       const capability2Id = await registratorPO.registerCapability({type: 'type2', qualifier: {key: 'b'}, private: true});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id]);
 
       // Register a capability
       const capability3Id = await registratorPO.registerCapability({type: 'type3', qualifier: {key: 'c'}, private: true});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id, capability3Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id]);
 
       // Unregister a capability3Id
       await registratorPO.unregisterCapability({id: capability3Id});
-      await expect(lookupPO.getLookedUpCapabilityIds()).toEqual(jasmine.arrayWithExactContents([capability1Id, capability2Id]));
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id]);
 
       // Unregister a capability2Id
       await registratorPO.unregisterCapability({id: capability2Id});
@@ -613,10 +592,9 @@ describe('Manifest Registry', () => {
     });
   });
 
-  describe('Register intentions', () => {
+  test.describe('Register intentions', () => {
 
-    it('should allow to register an intention if the API to manage intentions is enabled for the requesting application', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to register an intention if the API to manage intentions is enabled for the requesting application', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3},
         lookup: {useClass: LookupIntentionPagePO, origin: TestingAppOrigins.APP_3},
@@ -633,33 +611,30 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intentionId]);
     });
 
-    it('should not allow to register an intention if the API to manage intentions is disabled for the requesting application', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should not allow to register an intention if the API to manage intentions is disabled for the requesting application', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_4},
       }, {queryParams: new Map().set('intentionRegisterApiDisabled', 'app-4').set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
 
       // Try to register the intention
-      await expectToBeRejectedWithError(registratorPO.registerIntention({type: 'type', qualifier: {key: 'value'}}), /IntentionRegisterError/);
+      await expect(registratorPO.registerIntention({type: 'type', qualifier: {key: 'value'}})).rejects.toThrow( /IntentionRegisterError/);
     });
   });
 
-  describe('Unregister intentions', () => {
+  test.describe('Unregister intentions', () => {
 
-    it('should not allow to unregister an intention if the API to manage intentions is disabled for the requesting application', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should not allow to unregister an intention if the API to manage intentions is disabled for the requesting application', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_4},
       }, {queryParams: new Map().set('intentionRegisterApiDisabled', 'app-4').set('activatorApiDisabled', true)});
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
 
       // Try to unregister an intention
-      await expectToBeRejectedWithError(registratorPO.unregisterIntentions({type: 'type', qualifier: {key: 'value'}}), /IntentionRegisterError/);
+      await expect(registratorPO.unregisterIntentions({type: 'type', qualifier: {key: 'value'}})).rejects.toThrow(/IntentionRegisterError/);
     });
 
-    it('should allow to unregister an intention by id', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister an intention by id', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -671,7 +646,7 @@ describe('Manifest Registry', () => {
       const intention1Id = await registratorPO.registerIntention({type: 'type', qualifier: {key: 'value1'}});
       const intention2Id = await registratorPO.registerIntention({type: 'type', qualifier: {key: 'value2'}});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id]);
 
       // Unregister intention1Id
       await registratorPO.unregisterIntentions({id: intention1Id});
@@ -682,8 +657,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
 
-    it('should allow to unregister an intention by type', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister an intention by type', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -697,19 +671,18 @@ describe('Manifest Registry', () => {
       const intention3Id = await registratorPO.registerIntention({type: 'type2', qualifier: {key: 'value1'}});
       const intention4Id = await registratorPO.registerIntention({type: 'type2', qualifier: {key: 'value2'}});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id, intention3Id, intention4Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id]);
 
       // Unregister by 'type1'
       await registratorPO.unregisterIntentions({type: 'type1'});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention3Id, intention4Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention3Id, intention4Id]);
 
       // Unregister by 'type2'
       await registratorPO.unregisterIntentions({type: 'type2'});
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
 
-    it('should allow to unregister an intention by qualifier', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister an intention by qualifier', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -726,19 +699,19 @@ describe('Manifest Registry', () => {
       const intention6Id = await registratorPO.registerIntention({type: 'type6', qualifier: {key: 'c'}});
       const intention7Id = await registratorPO.registerIntention({type: 'type7', qualifier: {key: 'd'}});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id]);
 
       // Unregister by qualifier {}
       await registratorPO.unregisterIntentions({qualifier: {}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention3Id, intention4Id, intention5Id, intention6Id, intention7Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention3Id, intention4Id, intention5Id, intention6Id, intention7Id]);
 
       // Unregister by qualifier {key: 'a'}
       await registratorPO.unregisterIntentions({qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention4Id, intention5Id, intention6Id, intention7Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention4Id, intention5Id, intention6Id, intention7Id]);
 
       // Unregister by qualifier {key: 'b'}
       await registratorPO.unregisterIntentions({qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention5Id, intention6Id, intention7Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention5Id, intention6Id, intention7Id]);
 
       // Unregister by qualifier {key: 'c'}
       await registratorPO.unregisterIntentions({qualifier: {key: 'c'}});
@@ -749,8 +722,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
 
-    it('should allow to unregister an intention by type and qualifier', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister an intention by type and qualifier', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -766,23 +738,23 @@ describe('Manifest Registry', () => {
       const intention5Id = await registratorPO.registerIntention({type: 'type3', qualifier: {key: 'a'}});
       const intention6Id = await registratorPO.registerIntention({type: 'type3', qualifier: {key: 'b'}});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id]);
 
       // Unregister by type 'type1' and qualifier {key: 'a'}
       await registratorPO.unregisterIntentions({type: 'type1', qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention2Id, intention3Id, intention4Id, intention5Id, intention6Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention2Id, intention3Id, intention4Id, intention5Id, intention6Id]);
 
       // Unregister by type 'type1' and qualifier {key: 'b'}
       await registratorPO.unregisterIntentions({type: 'type1', qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention3Id, intention4Id, intention5Id, intention6Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention3Id, intention4Id, intention5Id, intention6Id]);
 
       // Unregister by type 'type2' and qualifier {key: 'a'}
       await registratorPO.unregisterIntentions({type: 'type2', qualifier: {key: 'a'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention4Id, intention5Id, intention6Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention4Id, intention5Id, intention6Id]);
 
       // Unregister by type 'type2' and qualifier {key: 'b'}
       await registratorPO.unregisterIntentions({type: 'type2', qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention5Id, intention6Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention5Id, intention6Id]);
 
       // Unregister by type 'type3' and qualifier {key: 'a'}
       await registratorPO.unregisterIntentions({type: 'type3', qualifier: {key: 'a'}});
@@ -793,8 +765,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
 
-    it('should allow to unregister intentions by qualifier containing wildcard (*) value', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister intentions by qualifier containing wildcard (*) value', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -814,15 +785,14 @@ describe('Manifest Registry', () => {
       const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*'}});
       const intention10Id = await registratorPO.registerIntention({type: 'type10', qualifier: {'*': '*', 'key': '*'}});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id, intention10Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id, intention10Id]);
 
       // Unregister by qualifier {key: '*'}
       await registratorPO.unregisterIntentions({qualifier: {key: '*'}});
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention8Id, intention9Id, intention10Id]);
     });
 
-    it('should interpret the question mark (?) as value (and not as wildcard) when removing intentions', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should interpret the question mark (?) as value (and not as wildcard) when removing intentions', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -842,15 +812,14 @@ describe('Manifest Registry', () => {
       const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*'}});
       const intention10Id = await registratorPO.registerIntention({type: 'type10', qualifier: {'*': '*', 'key': '*'}});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id, intention10Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id, intention10Id]);
 
       // Unregister by qualifier {key: '?'}
       await registratorPO.unregisterIntentions({qualifier: {key: '?'}});
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention8Id, intention9Id, intention10Id]);
     });
 
-    it('should allow to unregister intentions by `AnyQualifier`', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to unregister intentions by `AnyQualifier`', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -870,15 +839,14 @@ describe('Manifest Registry', () => {
       const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*'}});
       const intention10Id = await registratorPO.registerIntention({type: 'type10', qualifier: {'*': '*', 'key': '*'}});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id, intention10Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id, intention10Id]);
 
       // Unregister by qualifier {'*': '*'}
       await registratorPO.unregisterIntentions({qualifier: {'*': '*'}});
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
 
-    it('should not allow to unregister intentions if qualifier key is missing in filter', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should not allow to unregister intentions if qualifier key is missing in filter', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -897,7 +865,7 @@ describe('Manifest Registry', () => {
       const intention8Id = await registratorPO.registerIntention({type: 'type8', qualifier: {'*': '*'}});
       const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*', 'key': '*'}});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
 
       // Unregister by qualifier {key: '*'}
       await registratorPO.unregisterIntentions({qualifier: {key: '*'}});
@@ -912,8 +880,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
 
-    it('should not allow to unregister intentions if filter contains additional qualifier key', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should not allow to unregister intentions if filter contains additional qualifier key', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -932,7 +899,7 @@ describe('Manifest Registry', () => {
       const intention8Id = await registratorPO.registerIntention({type: 'type8', qualifier: {'*': '*'}});
       const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*', 'key': '*'}});
       await lookupPO.lookup();
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
 
       // Unregister by qualifier {key: '*', otherKey: '*'}
       await registratorPO.unregisterIntentions({qualifier: {key: '*', otherKey: '*'}});
@@ -959,8 +926,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([]);
     });
 
-    it('should not allow to unregister intentions from other applications', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should not allow to unregister intentions from other applications', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator_app2: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_2},
         registrator_app3: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3},
@@ -993,10 +959,9 @@ describe('Manifest Registry', () => {
     });
   });
 
-  describe('Lookup intentions', () => {
+  test.describe('Lookup intentions', () => {
 
-    it('should allow to look up intentions of the requesting application', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up intentions of the requesting application', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator_app1: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1},
         registrator_app2: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_3},
@@ -1018,11 +983,10 @@ describe('Manifest Registry', () => {
 
       // Verify the lookup when setting the app explicitly via filter
       await lookupApp1PO.lookup({appSymbolicName: 'app-1'});
-      await expect(lookupApp1PO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id, intention3Id]));
+      await expect(await lookupApp1PO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id]);
     });
 
-    it('should allow to look up intentions by id', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up intentions by id', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -1048,8 +1012,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention3Id]);
     });
 
-    it('should allow to look up intentions by type', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up intentions by type', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -1075,8 +1038,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention3Id]);
     });
 
-    it('should allow to look up intentions by qualifier', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up intentions by qualifier', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -1102,8 +1064,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention3Id]);
     });
 
-    it('should allow to look up intentions by type and qualifier', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up intentions by type and qualifier', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -1144,8 +1105,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention6Id]);
     });
 
-    it('should allow to look up intentions from other apps', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow to look up intentions from other apps', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator_app1: {useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1},
         lookup_app2: {useClass: LookupIntentionPagePO, origin: TestingAppOrigins.APP_2},
@@ -1164,8 +1124,7 @@ describe('Manifest Registry', () => {
       await expect(await lookupApp2PO.getLookedUpIntentionIds()).toEqual([intentionApp1Id]);
     });
 
-    it('should allow observing intentions', async () => {
-      const testingAppPO = new TestingAppPO();
+    test('should allow observing intentions', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         registrator: RegisterIntentionPagePO,
         lookup: LookupIntentionPagePO,
@@ -1180,15 +1139,15 @@ describe('Manifest Registry', () => {
 
       // Register a intention
       const intention2Id = await registratorPO.registerIntention({type: 'type2', qualifier: {key: 'b'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id]);
 
       // Register a intention
       const intention3Id = await registratorPO.registerIntention({type: 'type3', qualifier: {key: 'c'}});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id, intention3Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id]);
 
       // Unregister a intention3Id
       await registratorPO.unregisterIntentions({id: intention3Id});
-      await expect(lookupPO.getLookedUpIntentionIds()).toEqual(jasmine.arrayWithExactContents([intention1Id, intention2Id]));
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id]);
 
       // Unregister a intention2Id
       await registratorPO.unregisterIntentions({id: intention2Id});

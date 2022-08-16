@@ -14,10 +14,10 @@ import {Application, Capability, Intention} from '../../platform.model';
 import {take} from 'rxjs/operators';
 import {PlatformTopics} from '../../ɵmessaging.model';
 import {ManifestRegistryTopics} from '../../host/manifest-registry/ɵmanifest-registry';
-import {ManifestObjectFilter} from '../../host/manifest-registry/manifest-object-store';
 import {mapToBody} from '../../messaging.model';
 import {Beans, Initializer} from '@scion/toolkit/bean-manager';
 import {BrokerGateway, NullBrokerGateway} from '../messaging/broker-gateway';
+import {ManifestObjectFilter} from '../../host/manifest-registry/manifest-object.model';
 
 /**
  * Allows browsing the catalog of capabilities and managing the capabilities of the application.

@@ -132,17 +132,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suite:
-          - activator
-          - startupProgress
-          - context
-          - focus
-          - keyboardEvent
-          - manifest
-          - messaging
-          - preferredSize
-          - properties
-          - routing
+        shard: [ 1/10, 2/10, 3/10, 4/10, 5/10, 6/10, 7/10, 8/10, 9/10, 10/10 ]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -163,7 +153,7 @@ jobs:
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      - run: npm run e2e:headless -- --suite ${{ matrix.suite }}
+      - run: npm run e2e:headless -- --shard=${{ matrix.shard }}
   release-guard:
     name: 'Should release?'
     if: github.ref == 'refs/heads/master'

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,17 +7,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {TestingAppPO} from '../testing-app.po';
+
 import {BrowserOutletPO} from '../browser-outlet/browser-outlet.po';
 import {Microfrontend1PagePO} from '../microfrontend/microfrontend-1-page.po';
-import {installSeleniumWebDriverClickFix} from '../selenium-webdriver-click-fix';
+import {test} from '../fixtures';
+import {expect} from '@playwright/test';
 
-describe('Focus', () => {
+test.describe('Focus', () => {
 
-  installSeleniumWebDriverClickFix();
-
-  it('should track the focus across microfrontends [This test only works if the browser window keeps the focus while executing the test, i.e. the browser window is the active window or the test runs headless.]', async () => {
-    const testingAppPO = new TestingAppPO();
+  test('should track the focus across microfrontends [This test only works if the browser window keeps the focus while executing the test, i.e. the browser window is the active window or the test runs headless.]', async ({testingAppPO}) => {
     const pagePOs = await testingAppPO.navigateTo({
       outlet1: {
         outlet1a: Microfrontend1PagePO,
@@ -42,7 +40,7 @@ describe('Focus', () => {
     const microfrontend2b = pagePOs.get<Microfrontend1PagePO>('outlet2b');
 
     // Focus outlet 1 (contained in the root document)
-    await outlet1.clickUrl();
+    await outlet1.focusUrl();
     await expect(await testingAppPO.isFocusWithin()).toBe(true);
     await expect(await outlet1.isFocusWithinIframe()).toBe(false);
     await expect(await outlet2.isFocusWithinIframe()).toBe(false);
@@ -52,7 +50,7 @@ describe('Focus', () => {
     await expect(await microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus outlet 1a
-    await outlet1a.clickUrl();
+    await outlet1a.focusUrl();
     await expect(await testingAppPO.isFocusWithin()).toBe(true);
     await expect(await outlet1.isFocusWithinIframe()).toBe(true);
     await expect(await outlet2.isFocusWithinIframe()).toBe(false);
@@ -62,7 +60,7 @@ describe('Focus', () => {
     await expect(await microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus outlet 2a
-    await outlet2a.clickUrl();
+    await outlet2a.focusUrl();
     await expect(await testingAppPO.isFocusWithin()).toBe(true);
     await expect(await outlet1.isFocusWithinIframe()).toBe(false);
     await expect(await outlet2.isFocusWithinIframe()).toBe(true);
@@ -72,7 +70,7 @@ describe('Focus', () => {
     await expect(await microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus outlet 1b
-    await outlet1b.clickUrl();
+    await outlet1b.focusUrl();
     await expect(await testingAppPO.isFocusWithin()).toBe(true);
     await expect(await outlet1.isFocusWithinIframe()).toBe(true);
     await expect(await outlet2.isFocusWithinIframe()).toBe(false);
@@ -82,7 +80,7 @@ describe('Focus', () => {
     await expect(await microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus outlet 2b
-    await outlet2b.clickUrl();
+    await outlet2b.focusUrl();
     await expect(await testingAppPO.isFocusWithin()).toBe(true);
     await expect(await outlet1.isFocusWithinIframe()).toBe(false);
     await expect(await outlet2.isFocusWithinIframe()).toBe(true);
@@ -92,7 +90,7 @@ describe('Focus', () => {
     await expect(await microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus microfrontend 1a
-    await microfrontend1a.clickFragment();
+    await microfrontend1a.inputFieldPO.focus();
     await expect(await testingAppPO.isFocusWithin()).toBe(true);
     await expect(await outlet1.isFocusWithinIframe()).toBe(true);
     await expect(await outlet2.isFocusWithinIframe()).toBe(false);
@@ -102,7 +100,7 @@ describe('Focus', () => {
     await expect(await microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus microfrontend 2a
-    await microfrontend2a.clickFragment();
+    await microfrontend2a.inputFieldPO.focus();
     await expect(await testingAppPO.isFocusWithin()).toBe(true);
     await expect(await outlet1.isFocusWithinIframe()).toBe(false);
     await expect(await outlet2.isFocusWithinIframe()).toBe(true);
@@ -112,7 +110,7 @@ describe('Focus', () => {
     await expect(await microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus microfrontend 1b
-    await microfrontend1b.clickFragment();
+    await microfrontend1b.inputFieldPO.focus();
     await expect(await testingAppPO.isFocusWithin()).toBe(true);
     await expect(await outlet1.isFocusWithinIframe()).toBe(true);
     await expect(await outlet2.isFocusWithinIframe()).toBe(false);
@@ -122,7 +120,7 @@ describe('Focus', () => {
     await expect(await microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus microfrontend 2b
-    await microfrontend2b.clickFragment();
+    await microfrontend2b.inputFieldPO.focus();
     await expect(await testingAppPO.isFocusWithin()).toBe(true);
     await expect(await outlet1.isFocusWithinIframe()).toBe(false);
     await expect(await outlet2.isFocusWithinIframe()).toBe(true);

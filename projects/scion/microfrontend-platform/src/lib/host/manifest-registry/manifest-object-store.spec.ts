@@ -8,7 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {ManifestObject, ManifestObjectStore} from './manifest-object-store';
+import {ManifestObjectStore} from './manifest-object-store';
+import {ManifestObject} from './manifest-object.model';
 
 describe('ManifestObjectStore', () => {
   let store: ManifestObjectStore<ManifestObject>;

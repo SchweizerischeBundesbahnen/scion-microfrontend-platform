@@ -45,22 +45,22 @@ describe('Keystroke', () => {
 
     it('should ignore the order of the modifier keys', () => {
       expect(Keystroke.fromString('keydown.control.alt.shift.z')).toEqual(new Keystroke('keydown', 'z', {control: true, alt: true, shift: true}));
-      expect(Keystroke.fromString('keydown.control.alt.shift.z').parts).toEqual('keydown.control.shift.alt.z');
+      expect(Keystroke.fromString('keydown.control.alt.shift.z').parts).toEqual('keydown.control.alt.shift.z');
 
       expect(Keystroke.fromString('keydown.control.shift.alt.z')).toEqual(new Keystroke('keydown', 'z', {control: true, alt: true, shift: true}));
-      expect(Keystroke.fromString('keydown.control.shift.alt.z').parts).toEqual('keydown.control.shift.alt.z');
+      expect(Keystroke.fromString('keydown.control.shift.alt.z').parts).toEqual('keydown.control.alt.shift.z');
 
       expect(Keystroke.fromString('keydown.alt.shift.control.z')).toEqual(new Keystroke('keydown', 'z', {control: true, alt: true, shift: true}));
-      expect(Keystroke.fromString('keydown.alt.shift.control.z').parts).toEqual('keydown.control.shift.alt.z');
+      expect(Keystroke.fromString('keydown.alt.shift.control.z').parts).toEqual('keydown.control.alt.shift.z');
 
       expect(Keystroke.fromString('keydown.alt.control.shift.z')).toEqual(new Keystroke('keydown', 'z', {control: true, alt: true, shift: true}));
-      expect(Keystroke.fromString('keydown.alt.control.shift.z').parts).toEqual('keydown.control.shift.alt.z');
+      expect(Keystroke.fromString('keydown.alt.control.shift.z').parts).toEqual('keydown.control.alt.shift.z');
 
       expect(Keystroke.fromString('keydown.shift.control.alt.z')).toEqual(new Keystroke('keydown', 'z', {control: true, alt: true, shift: true}));
-      expect(Keystroke.fromString('keydown.shift.control.alt.z').parts).toEqual('keydown.control.shift.alt.z');
+      expect(Keystroke.fromString('keydown.shift.control.alt.z').parts).toEqual('keydown.control.alt.shift.z');
 
       expect(Keystroke.fromString('keydown.shift.alt.control.z')).toEqual(new Keystroke('keydown', 'z', {control: true, alt: true, shift: true}));
-      expect(Keystroke.fromString('keydown.shift.alt.control.z').parts).toEqual('keydown.control.shift.alt.z');
+      expect(Keystroke.fromString('keydown.shift.alt.control.z').parts).toEqual('keydown.control.alt.shift.z');
     });
 
     it('should parse the \'control\' modifier', () => {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,69 +7,68 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {$} from 'protractor';
-import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {getInputValue, waitUntilLocation} from '../spec.util';
-import {TestingAppPO} from '../testing-app.po';
-import {SciPropertyPO} from '../../deps/scion/components.internal/property.po';
 
-export abstract class MicrofrontendPagePO {
+import {isPresent, waitUntilStable} from '../testing.util';
+import {FrameLocator, Locator} from '@playwright/test';
+import {SciPropertyPO} from '../components.internal/property.po/property.po';
+import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
-  private _pageFinder = $('app-microfrontend');
+export abstract class MicrofrontendPagePO implements OutletPageObject {
 
-  constructor(private _switchToIframeFn: SwitchToIframeFn) {
-  }
+  public abstract readonly path: string;
 
-  /**
-   * Waits until the given page is showing in this PO's WebDriver execution context.
-   */
-  public async waitUntilLocation(url: string): Promise<void> {
-    await this._switchToIframeFn();
-    await waitUntilLocation(url);
+  private readonly _locator: Locator;
+  private readonly _focusWithinLocator: Locator;
+
+  protected constructor(frameLocator: FrameLocator) {
+    this._locator = frameLocator.locator('app-microfrontend');
+    this._focusWithinLocator = frameLocator.locator('app-root').locator('.e2e-focus-within');
   }
 
   public async getAppInstanceId(): Promise<string> {
-    await this._switchToIframeFn();
-    return getInputValue(this._pageFinder.$('input.e2e-app-instance-id'));
+    // When navigating to the microfrontend page of another app, the page takes some time to be loaded.
+    // Therefore, we wait for the app instance id to become stable before returning it.
+    return waitUntilStable(() => this._locator.locator('input.e2e-app-instance-id').inputValue());
   }
 
   public async getComponentInstanceId(): Promise<string> {
-    await this._switchToIframeFn();
-    return getInputValue(this._pageFinder.$('input.e2e-component-instance-id'));
+    return this._locator.locator('input.e2e-component-instance-id').inputValue();
   }
 
-  public async getMatrixParams(): Promise<Map<string, string>> {
-    await this._switchToIframeFn();
-    return new SciPropertyPO(this._pageFinder.$('sci-property.e2e-matrix-params')).readAsMap();
+  public async getMatrixParams(): Promise<Record<string, string>> {
+    return new SciPropertyPO(this._locator.locator('sci-property.e2e-matrix-params')).readProperties();
   }
 
-  public async getQueryParams(): Promise<Map<string, string>> {
-    await this._switchToIframeFn();
-    return new SciPropertyPO(this._pageFinder.$('sci-property.e2e-query-params')).readAsMap();
+  public async getQueryParams(): Promise<Record<string, string>> {
+    return new SciPropertyPO(this._locator.locator('sci-property.e2e-query-params')).readProperties();
   }
 
   public async getFragment(): Promise<string> {
-    await this._switchToIframeFn();
-    return getInputValue(this._pageFinder.$('input.e2e-fragment'));
+    return this._locator.locator('input.e2e-fragment').inputValue();
   }
 
-  public async clickInputField(): Promise<void> {
-    await this._switchToIframeFn();
-    await this._pageFinder.$('input.e2e-input').click();
-  }
-
-  /**
-   * Clicks the fragment field to gain focus.
-   */
-  public async clickFragment(): Promise<void> {
-    await this._switchToIframeFn();
-    return this._pageFinder.$('input.e2e-fragment').click();
+  public get inputFieldPO(): InputFieldPO {
+    return new InputFieldPO(this._locator.locator('input.e2e-input'));
   }
 
   /**
    * Returns `true` if this microfrontend has received focus, or `false` if not.
    */
   public async isFocusWithin(): Promise<boolean> {
-    return new TestingAppPO().isFocusWithin(() => this._switchToIframeFn());
+    return isPresent(this._focusWithinLocator);
+  }
+}
+
+export class InputFieldPO {
+
+  constructor(private _inputLocator: Locator) {
+  }
+
+  public async focus(): Promise<void> {
+    await this._inputLocator.focus();
+  }
+
+  public async press(key: string): Promise<void> {
+    await this._inputLocator.press(key);
   }
 }

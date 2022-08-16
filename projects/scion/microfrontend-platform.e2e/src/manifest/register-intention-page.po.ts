@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,24 +7,25 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {$, browser, protractor} from 'protractor';
-import {enterText} from '../spec.util';
-import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+
+import {FrameLocator, Locator} from '@playwright/test';
 import {ManifestObjectFilter, Qualifier} from '@scion/microfrontend-platform';
-import {SciParamsEnterPO} from '../../deps/scion/components.internal/params-enter.po';
-import {SciCheckboxPO} from '../../deps/scion/components.internal/checkbox.po';
+import {SciParamsEnterPO} from '../components.internal/params-enter.po/params-enter.po';
+import {SciCheckboxPO} from '../components.internal/checkbox.po/checkbox.po';
+import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
-const EC = protractor.ExpectedConditions;
+export class RegisterIntentionPagePO implements OutletPageObject {
 
-export class RegisterIntentionPagePO {
+  public readonly path = 'register-intention';
 
-  public static readonly pageUrl = 'register-intention'; // path to the page; required by {@link TestingAppPO}
+  private readonly _locator: Locator;
+  private readonly _registerSectionLocator: Locator;
+  private readonly _unregisterSectionLocator: Locator;
 
-  private _pageFinder = $('app-register-intention');
-  private _registerSectionFinder = this._pageFinder.$('section.e2e-register');
-  private _unregisterSectionFinder = this._pageFinder.$('section.e2e-unregister');
-
-  constructor(private _switchToIframeFn: SwitchToIframeFn) {
+  constructor(frameLocator: FrameLocator) {
+    this._locator = frameLocator.locator('app-register-intention');
+    this._registerSectionLocator = this._locator.locator('section.e2e-register');
+    this._unregisterSectionLocator = this._locator.locator('section.e2e-unregister');
   }
 
   /**
@@ -33,25 +34,20 @@ export class RegisterIntentionPagePO {
    * Returns a Promise that resolves to the intention ID upon successful registration, or that rejects on registration error.
    */
   public async registerIntention(intention: {type: string; qualifier?: Qualifier}): Promise<string> {
-    await this._switchToIframeFn();
-
-    await enterText(intention.type, this._registerSectionFinder.$('input.e2e-type'));
+    await this._registerSectionLocator.locator('input.e2e-type').fill(intention.type);
     if (intention.qualifier) {
-      await new SciParamsEnterPO(this._registerSectionFinder.$('sci-params-enter.e2e-qualifier')).enterParams(intention.qualifier);
+      await new SciParamsEnterPO(this._registerSectionLocator.locator('sci-params-enter.e2e-qualifier')).enterParams(intention.qualifier);
     }
 
-    await this._registerSectionFinder.$('button.e2e-register').click();
+    await this._registerSectionLocator.locator('button.e2e-register').click();
 
     // Evaluate the response: resolves the promise on success, or rejects it on error.
-    const responseFinder = this._registerSectionFinder.$('output.e2e-register-response');
-    const errorFinder = this._registerSectionFinder.$('output.e2e-register-error');
-    await browser.wait(EC.or(EC.presenceOf(responseFinder), EC.presenceOf(errorFinder)), 5000);
-    if (await responseFinder.isPresent()) {
-      return responseFinder.$('span.e2e-intention-id').getText();
-    }
-    else {
-      return Promise.reject(await errorFinder.getText());
-    }
+    const responseLocator = this._registerSectionLocator.locator('output.e2e-register-response');
+    const errorLocator = this._registerSectionLocator.locator('output.e2e-register-error');
+    return Promise.race([
+      responseLocator.waitFor({state: 'attached'}).then(() => responseLocator.locator('span.e2e-intention-id').innerText()),
+      errorLocator.waitFor({state: 'attached'}).then(() => errorLocator.innerText()).then(error => Promise.reject(Error(error))),
+    ]);
   }
 
   /**
@@ -60,35 +56,30 @@ export class RegisterIntentionPagePO {
    * Returns a Promise that resolves upon successful unregistration, or that rejects on unregistration error.
    */
   public async unregisterIntentions(filter: ManifestObjectFilter): Promise<void> {
-    await this._switchToIframeFn();
-
     if (filter.id) {
-      await enterText(filter.id, this._unregisterSectionFinder.$('input.e2e-id'));
+      await this._unregisterSectionLocator.locator('input.e2e-id').fill(filter.id);
     }
     if (filter.type) {
-      await enterText(filter.type, this._unregisterSectionFinder.$('input.e2e-type'));
+      await this._unregisterSectionLocator.locator('input.e2e-type').fill(filter.type);
     }
     if (filter.qualifier && Object.keys(filter.qualifier).length === 0) {
-      await new SciCheckboxPO(this._unregisterSectionFinder.$('sci-checkbox.e2e-nilqualifier-if-empty')).toggle(true);
+      await new SciCheckboxPO(this._unregisterSectionLocator.locator('sci-checkbox.e2e-nilqualifier-if-empty')).toggle(true);
     }
     else if (filter.qualifier) {
-      await new SciParamsEnterPO(this._unregisterSectionFinder.$('sci-params-enter.e2e-qualifier')).enterParams(filter.qualifier);
+      await new SciParamsEnterPO(this._unregisterSectionLocator.locator('sci-params-enter.e2e-qualifier')).enterParams(filter.qualifier);
     }
     if (filter.appSymbolicName) {
-      await enterText(filter.appSymbolicName, this._unregisterSectionFinder.$('input.e2e-app-symbolic-name'));
+      await this._unregisterSectionLocator.locator('input.e2e-app-symbolic-name').fill(filter.appSymbolicName);
     }
 
-    await this._unregisterSectionFinder.$('button.e2e-unregister').click();
+    await this._unregisterSectionLocator.locator('button.e2e-unregister').click();
 
     // Evaluate the response: resolves the promise on success, or rejects it on error.
-    const responseFinder = this._unregisterSectionFinder.$('output.e2e-unregister-response');
-    const errorFinder = this._unregisterSectionFinder.$('output.e2e-unregister-error');
-    await browser.wait(EC.or(EC.presenceOf(responseFinder), EC.presenceOf(errorFinder)), 5000);
-    if (await responseFinder.isPresent()) {
-      return Promise.resolve();
-    }
-    else {
-      return Promise.reject(await errorFinder.getText());
-    }
+    const responseLocator = this._unregisterSectionLocator.locator('output.e2e-unregister-response');
+    const errorLocator = this._unregisterSectionLocator.locator('output.e2e-unregister-error');
+    return Promise.race([
+      responseLocator.waitFor({state: 'attached'}),
+      errorLocator.waitFor({state: 'attached'}).then(() => errorLocator.innerText()).then(error => Promise.reject(Error(error))),
+    ]);
   }
 }

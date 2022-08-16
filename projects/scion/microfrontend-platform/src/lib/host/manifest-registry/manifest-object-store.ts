@@ -12,6 +12,7 @@ import {QualifierMatcher} from '../../qualifier-matcher';
 import {Observable, Subject} from 'rxjs';
 import {Arrays, Maps} from '@scion/toolkit/util';
 import {Qualifier} from '../../platform.model';
+import {ManifestObject, ManifestObjectFilter} from './manifest-object.model';
 
 /**
  * Provides an in-memory store for provided capabilities and registered intentions.
@@ -101,43 +102,3 @@ export class ManifestObjectStore<T extends ManifestObject> {
   }
 }
 
-/**
- * Represents an object in the manifest registry like a capability or an intention.
- *
- * @ignore
- */
-export interface ManifestObject {
-  type: string;
-  qualifier?: Qualifier;
-  metadata?: {
-    id: string;
-    appSymbolicName: string;
-  };
-}
-
-/**
- * Allows filtering manifest objects like capabilities or intentions.
- *
- * All specified filter criteria are "AND"ed together. Unspecified filter criteria are ignored.
- * If no filter criterion is specified, no filtering takes place, thus all available objects are returned.
- *
- * @category Manifest
- */
-export interface ManifestObjectFilter {
-  /**
-   * Manifest objects of the given identity.
-   */
-  id?: string;
-  /**
-   * Manifest objects of the given function type.
-   */
-  type?: string;
-  /**
-   * Manifest objects matching the given qualifier.
-   */
-  qualifier?: Qualifier;
-  /**
-   * Manifest objects provided by the given app.
-   */
-  appSymbolicName?: string;
-}

@@ -52,28 +52,29 @@ The following is a summary of commands useful for development of `scion-microfro
 
 - `npm run microfrontend-platform:test`\
   Runs unit tests of the microfrontend-platform library.
-  
-- `npm run microfrontend-platform:e2e:ngserve`\
-  Runs end-to-end tests of the microfrontend-platform library. Prior to test execution, the testing app is started using the Angular CLI.
-  
-- `npm run microfrontend-platform:e2e:ngserve -- --suite TEST-SUITE-NAME`\
-  Runs an end-to-end test suite of the microfrontend-platform library. Prior to test execution, the testing app is started using the Angular CLI. See `protractor.conf.js` for available test suites.
-  
-### Commands for working on the testing application
-  
-- `npm run microfrontend-platform-testing-app:ngserve`\
-  Serves the testing app on http://localhost:4201 using the Angular CLI.\
-  Uncomment the section `PATH-OVERRIDE-FOR-DEVELOPMENT` in `tsconfig.json` to have hot module reloading support. 
-  
-- `npm run microfrontend-platform-testing-app:serve`\
-  Serves the testing app from the `dist` folder on http://localhost:4201 using `http-server`. 
-  This command requires the platform and testing app to be built upfront. Use the following commands to build the platform and testing app: `npm run microfrontend-platform:build`, `npm run microfrontend-platform-testing-app-localhost:build`.
 
-- `npm run microfrontend-platform-testing-app-localhost:build`\
-  Builds the testing app into `dist` folder using the productive config but with `localhost` as the micro application domain.
+### Commands for running end-to-end tests
+
+- `npm run e2e:run`\
+  Runs end-to-end tests of the microfrontend platform. Prior to test execution, starts four instances of the `microfrontend-platform-testing-app`.
+
+- `npm run e2e:debug`\
+  Runs end-to-end tests of the microfrontend platform in debug mode. Prior to test execution, starts four instances of the `microfrontend-platform-testing-app`.
+
+- `npm run e2e:lint`\
+  Lints end-to-end tests.
+
+### Commands for working on the testing application and devtools
+
+- `npm run start`\
+  Serves four instances of the `microfrontend-platform-testing-app` and the `microfrontend-platform-devtools`. Open the page http://localhost:4201 to load the microfrontend platform testing app into your browser.\
+  Uncomment the section `PATH-OVERRIDE-FOR-DEVELOPMENT` in `tsconfig.json` to have hot module reloading support.
 
 - `npm run microfrontend-platform-testing-app:lint`\
-  Lints the testing app.
+  Lints the `microfrontend-platform-testing-app`.
+
+- `npm run microfrontend-platform-devtools:lint`\
+  Lints the `microfrontend-platform-devtools`.
 
 ### Commands for generating the project documentation
 

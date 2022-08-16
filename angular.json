@@ -48,20 +48,11 @@
       "projectType": "application",
       "root": "projects/scion/microfrontend-platform.e2e",
       "architect": {
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "projects/scion/microfrontend-platform.e2e/protractor.conf.js",
-            "webdriverUpdate": false
-          },
-          "configurations": {}
-        },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/scion/microfrontend-platform.e2e/**/*.ts",
-              "projects/scion/microfrontend-platform.e2e/**/*.html"
+              "projects/scion/microfrontend-platform.e2e/**/*.ts"
             ]
           }
         }

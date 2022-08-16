@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,21 +7,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {$} from 'protractor';
-import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
-import {SciPropertyPO} from '../../deps/scion/components.internal/property.po';
 
-export class PlatformPropertiesPagePO {
+import {FrameLocator, Locator} from '@playwright/test';
+import {SciPropertyPO} from '../components.internal/property.po/property.po';
+import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
-  public static readonly pageUrl = 'platform-properties'; // path to the page; required by {@link TestingAppPO}
+export class PlatformPropertiesPagePO implements OutletPageObject {
 
-  private _pageFinder = $('app-platform-properties');
+  public readonly path = 'platform-properties';
 
-  constructor(private _switchToIframeFn: SwitchToIframeFn) {
+  private readonly _locator: Locator;
+
+  constructor(frameLocator: FrameLocator) {
+    this._locator = frameLocator.locator('app-platform-properties');
   }
 
-  public async getPlatformProperties(): Promise<Map<string, any>> {
-    await this._switchToIframeFn();
-    return new SciPropertyPO(this._pageFinder.$('sci-property.e2e-properties')).readAsMap();
+  public async getPlatformProperties(): Promise<Record<string, any>> {
+    return new SciPropertyPO(this._locator.locator('sci-property.e2e-properties')).readProperties();
   }
 }

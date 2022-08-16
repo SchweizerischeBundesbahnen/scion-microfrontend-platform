@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,20 +7,24 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {$} from 'protractor';
-import {SwitchToIframeFn} from '../browser-outlet/browser-outlet.po';
+
 import {ContextListPO} from './context-list.po';
+import {FrameLocator, Locator} from '@playwright/test';
+import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
-export class ContextPagePO {
+export class ContextPagePO implements OutletPageObject {
 
-  public static readonly pageUrl = 'context'; // path to the page; required by {@link TestingAppPO}
-  private _pageFinder = $('app-context');
+  public static readonly PATH = 'context';
+  public readonly path = ContextPagePO.PATH;
 
-  constructor(private _switchToIframeFn: SwitchToIframeFn) {
+  private readonly _locator: Locator;
+
+  constructor(frameLocator: FrameLocator) {
+    this._locator = frameLocator.locator('app-context');
   }
 
-  public getContext(): Promise<Map<string, any>> {
-    const contextListPO = new ContextListPO(this._pageFinder.$('sci-list'), this._switchToIframeFn);
-    return contextListPO.getContextMap();
+  public getContext(): Promise<Record<string, string>> {
+    const contextListPO = new ContextListPO(this._locator.locator('sci-list'));
+    return contextListPO.getContext();
   }
 }
