@@ -97,6 +97,10 @@ test.describe('Messaging', () => {
         await TopicBasedMessagingSpecs.interceptMessageRejectSpec(testingAppPO);
       });
 
+      test('allows rejecting messages (async)', async ({testingAppPO}) => {
+        await TopicBasedMessagingSpecs.interceptMessageRejectAsyncSpec(testingAppPO);
+      });
+
       test('allows swallowing messages', async ({testingAppPO}) => {
         await TopicBasedMessagingSpecs.interceptMessageSwallowSpec(testingAppPO);
       });

@@ -10,12 +10,14 @@
 
 import {chainInterceptors, Handler, IntentInterceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
 import {IntentMessage, TopicMessage} from '../../messaging.model';
-import {noop} from 'rxjs';
 import any = jasmine.any;
 import createSpyObj = jasmine.createSpyObj;
 import createSpy = jasmine.createSpy;
 import SpyObj = jasmine.SpyObj;
 import Spy = jasmine.Spy;
+import {expectPromise} from '../../testing/spec.util.spec';
+
+const asyncNoop = async (): Promise<void> => Promise.resolve();
 
 describe('Message Interception', () => {
 
@@ -44,13 +46,13 @@ describe('Message Interception', () => {
     publishChain = chainInterceptors([], publisher);
     const message: TopicMessage = {headers: new Map(), topic: 'topic'};
 
-    publishChain.publish(message);
+    await publishChain.publish(message);
     expect(publisher).toHaveBeenCalledWith(message);
   });
 
   it('should pass a message through the interceptors in registration order', async () => {
     const message: TopicMessage = {headers: new Map(), topic: 'topic'};
-    publishChain.publish(message);
+    await publishChain.publish(message);
 
     // assert interceptor invocation arguments
     expect(interceptor1.intercept).toHaveBeenCalledWith(message, any(Handler));
@@ -84,12 +86,26 @@ describe('Message Interception', () => {
     expect(publisher).not.toHaveBeenCalled();
   });
 
-  it('should allow to swallow a message by not calling the next handler', async () => {
-    interceptor2.intercept.and.callFake(noop);
+  it('should allow to reject publishing by rejecting with an error', async () => {
+    interceptor2.intercept.and.rejectWith('MESSAGE REJECTED BY INTERCEPTOR 2');
 
     // Run the test
     const message: TopicMessage = {headers: new Map(), topic: 'topic'};
-    publishChain.publish(message);
+    await expectPromise(publishChain.publish(message)).toReject(/MESSAGE REJECTED BY INTERCEPTOR 2/);
+
+    // Verify
+    expect(interceptor1.intercept).toHaveBeenCalledWith(message, any(Handler));
+    expect(interceptor2.intercept).toHaveBeenCalledWith(message, any(Handler));
+    expect(interceptor3.intercept).not.toHaveBeenCalled();
+    expect(publisher).not.toHaveBeenCalled();
+  });
+
+  it('should allow to swallow a message by not calling the next handler', async () => {
+    interceptor2.intercept.and.callFake(asyncNoop);
+
+    // Run the test
+    const message: TopicMessage = {headers: new Map(), topic: 'topic'};
+    await publishChain.publish(message);
 
     // Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(message, any(Handler));
@@ -102,22 +118,22 @@ describe('Message Interception', () => {
     interceptor1.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => {
       message.headers.set('HEADER_INTERCEPTOR_1', true);
       message.body.push('INTERCEPTOR_1');
-      next.handle(message);
+      return next.handle(message);
     });
     interceptor2.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => {
       message.headers.set('HEADER_INTERCEPTOR_2', true);
       message.body.push('INTERCEPTOR_2');
-      next.handle(message);
+      return next.handle(message);
     });
     interceptor3.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => {
       message.headers.set('HEADER_INTERCEPTOR_3', true);
       message.body.push('INTERCEPTOR_3');
-      next.handle(message);
+      return next.handle(message);
     });
 
     // Run the test
     const message: TopicMessage = {headers: new Map(), topic: 'topic', body: []};
-    publishChain.publish(message);
+    await publishChain.publish(message);
 
     // Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(message, any(Handler));
@@ -158,13 +174,13 @@ describe('Intent Interception', () => {
     publishChain = chainInterceptors([], publisher);
     const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
 
-    publishChain.publish(intent);
+    await publishChain.publish(intent);
     expect(publisher).toHaveBeenCalledWith(intent);
   });
 
   it('should pass an intent through the interceptors in registration order', async () => {
     const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
-    publishChain.publish(intent);
+    await publishChain.publish(intent);
 
     // assert interceptor invocation arguments
     expect(interceptor1.intercept).toHaveBeenCalledWith(intent, any(Handler));
@@ -198,12 +214,26 @@ describe('Intent Interception', () => {
     expect(publisher).not.toHaveBeenCalled();
   });
 
-  it('should allow to swallow an intent by not calling the next handler', async () => {
-    interceptor2.intercept.and.callFake(noop);
+  it('should allow to reject publishing by rejecting with an error', async () => {
+    interceptor2.intercept.and.rejectWith('INTENT REJECTED BY INTERCEPTOR 2');
 
     // Run the test
     const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
-    publishChain.publish(intent);
+    await expectPromise(publishChain.publish(intent)).toReject(/INTENT REJECTED BY INTERCEPTOR 2/);
+
+    //  Verify
+    expect(interceptor1.intercept).toHaveBeenCalledWith(intent, any(Handler));
+    expect(interceptor2.intercept).toHaveBeenCalledWith(intent, any(Handler));
+    expect(interceptor3.intercept).not.toHaveBeenCalled();
+    expect(publisher).not.toHaveBeenCalled();
+  });
+
+  it('should allow to swallow an intent by not calling the next handler', async () => {
+    interceptor2.intercept.and.callFake(asyncNoop);
+
+    // Run the test
+    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
+    await publishChain.publish(intent);
 
     // Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(intent, any(Handler));
@@ -216,22 +246,22 @@ describe('Intent Interception', () => {
     interceptor1.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => {
       intent.headers.set('HEADER_INTERCEPTOR_1', true);
       intent.body.push('INTERCEPTOR_1');
-      next.handle(intent);
+      return next.handle(intent);
     });
     interceptor2.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => {
       intent.headers.set('HEADER_INTERCEPTOR_2', true);
       intent.body.push('INTERCEPTOR_2');
-      next.handle(intent);
+      return next.handle(intent);
     });
     interceptor3.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => {
       intent.headers.set('HEADER_INTERCEPTOR_3', true);
       intent.body.push('INTERCEPTOR_3');
-      next.handle(intent);
+      return next.handle(intent);
     });
 
     // Run the test
     const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, body: [], capability: undefined};
-    publishChain.publish(intent);
+    await publishChain.publish(intent);
 
     // Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(intent, any(Handler));

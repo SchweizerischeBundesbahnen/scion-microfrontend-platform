@@ -603,14 +603,14 @@ describe('Messaging', () => {
   it('should allow an interceptor to handle a \'request-response\' intent message if no replier is running', async () => {
     // create an interceptor which handles intents of a given type and then swallows the message
     const interceptor = new class implements IntentInterceptor {
-      public intercept(message: IntentMessage, next: Handler<IntentMessage>): void {
+      public intercept(message: IntentMessage, next: Handler<IntentMessage>): Promise<void> {
         if (message.intent.type === 'some-capability') {
           const replyTo = message.headers.get(MessageHeaders.ReplyTo);
           const body = message.body;
-          Beans.get(MessageClient).publish(replyTo, body.toUpperCase());
+          return Beans.get(MessageClient).publish(replyTo, body.toUpperCase());
         }
         else {
-          next.handle(message);
+          return next.handle(message);
         }
       }
     };
@@ -640,14 +640,14 @@ describe('Messaging', () => {
   it('should allow an interceptor to handle a \'request-response\' topic message if no replier is running', async () => {
     // create an interceptor which handles messages of a given topic and then swallows the message
     const interceptor = new class implements MessageInterceptor {
-      public intercept(message: TopicMessage, next: Handler<TopicMessage>): void {
+      public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
         if (message.topic === 'some-topic') {
           const replyTo = message.headers.get(MessageHeaders.ReplyTo);
           const body = message.body;
-          Beans.get(MessageClient).publish(replyTo, body.toUpperCase());
+          return Beans.get(MessageClient).publish(replyTo, body.toUpperCase());
         }
         else {
-          next.handle(message);
+          return next.handle(message);
         }
       }
     };

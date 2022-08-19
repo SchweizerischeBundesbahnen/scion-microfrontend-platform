@@ -317,13 +317,13 @@ export class MessageBroker implements Initializer, PreDestroy {
         filter(message => message.data.message.topic !== PlatformTopics.RequestSubscriberCount), // do not dispatch messages sent to the `RequestSubscriberCount` topic as handled separately
         takeUntil(this._destroy$),
       )
-      .subscribe((event: MessageEvent<MessageEnvelope<TopicMessage>>) => runSafe(() => {
+      .subscribe((event: MessageEvent<MessageEnvelope<TopicMessage>>) => runSafe(async () => {
         const client = getSendingClient(event);
         const topicMessage = event.data.message;
         const messageId = topicMessage.headers.get(MessageHeaders.MessageId);
 
         try {
-          this._messagePublisher.publish(topicMessage);
+          await this._messagePublisher.publish(topicMessage);
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
@@ -341,7 +341,7 @@ export class MessageBroker implements Initializer, PreDestroy {
         filterByChannel<IntentMessage>(MessagingChannel.Intent),
         takeUntil(this._destroy$),
       )
-      .subscribe((event: MessageEvent<MessageEnvelope<IntentMessage>>) => runSafe(() => {
+      .subscribe((event: MessageEvent<MessageEnvelope<IntentMessage>>) => runSafe(async () => {
         const client = getSendingClient(event);
         const intentMessage = event.data.message;
         const messageId = intentMessage.headers.get(MessageHeaders.MessageId);
@@ -402,7 +402,7 @@ export class MessageBroker implements Initializer, PreDestroy {
         }
 
         try {
-          capabilities.forEach(capability => this._intentPublisher.publish({...intentMessage, capability}));
+          await Promise.all(capabilities.map(capability => this._intentPublisher.publish({...intentMessage, capability})));
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
@@ -415,7 +415,7 @@ export class MessageBroker implements Initializer, PreDestroy {
    * Creates the interceptor chain to intercept message publishing. The publisher is added as terminal handler.
    */
   private createMessagePublisher(): PublishInterceptorChain<TopicMessage> {
-    return chainInterceptors(Beans.all(MessageInterceptor), (message: TopicMessage): void => {
+    return chainInterceptors(Beans.all(MessageInterceptor), async (message: TopicMessage): Promise<void> => {
       // If the message is marked as 'retained', store it, or if without a body, delete it.
       if (message.retain && this._retainedMessageRegistry.persistOrDelete(message) === 'deleted') {
         return; // Deletion events for retained messages are swallowed.
@@ -435,7 +435,7 @@ export class MessageBroker implements Initializer, PreDestroy {
    * Creates the interceptor chain to intercept intent publishing. The publisher is added as terminal handler.
    */
   private createIntentPublisher(): PublishInterceptorChain<IntentMessage> {
-    return chainInterceptors(Beans.all(IntentInterceptor), (message: IntentMessage): void => {
+    return chainInterceptors(Beans.all(IntentInterceptor), async (message: IntentMessage): Promise<void> => {
       const capability = Defined.orElseThrow(message.capability, () => Error(`[IllegalStateError] Missing target capability on intent message: ${JSON.stringify(message)}`));
       const clients = this._clientRegistry.getByApplication(capability.metadata!.appSymbolicName);
 

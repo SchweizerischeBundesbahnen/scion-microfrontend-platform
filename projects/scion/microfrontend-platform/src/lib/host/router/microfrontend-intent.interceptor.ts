@@ -14,7 +14,6 @@ import {Handler, IntentInterceptor} from '../message-broker/message-interception
 import {OutletRouter, ROUTING_CONTEXT_MESSAGE_HEADER, ROUTING_CONTEXT_OUTLET} from '../../client/router-outlet/outlet-router';
 import {NavigationOptions} from '../../client/router-outlet/metadata';
 import {MessageClient} from '../../client/messaging/message-client';
-import {stringifyError} from '../../error.util';
 import {Dictionaries} from '@scion/toolkit/util';
 import {ApplicationRegistry} from '../application-registry';
 import {PRIMARY_OUTLET} from '../../client/router-outlet/router-outlet.element';
@@ -30,24 +29,19 @@ export class MicrofrontendIntentInterceptor implements IntentInterceptor {
   /**
    * Microfrontend intents are handled in this interceptor and then swallowed.
    */
-  public intercept(intentMessage: IntentMessage, next: Handler<IntentMessage>): void {
+  public intercept(intentMessage: IntentMessage, next: Handler<IntentMessage>): Promise<void> {
     if (intentMessage.intent.type === PlatformCapabilityTypes.Microfrontend) {
-      this.consumeMicrofrontendIntent(intentMessage).then();
+      return this.consumeMicrofrontendIntent(intentMessage);
     }
     else {
-      next.handle(intentMessage);
+      return next.handle(intentMessage);
     }
   }
 
   private async consumeMicrofrontendIntent(message: IntentMessage<NavigationOptions>): Promise<void> {
     const replyTo = message.headers.get(MessageHeaders.ReplyTo);
-    try {
-      await this.navigate(message);
-      await Beans.get(MessageClient).publish(replyTo, null, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
-    }
-    catch (error) {
-      await Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
-    }
+    await this.navigate(message);
+    await Beans.get(MessageClient).publish(replyTo, null, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
   }
 
   private async navigate(message: IntentMessage<NavigationOptions>): Promise<void> {
