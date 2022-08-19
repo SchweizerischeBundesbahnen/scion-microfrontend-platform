@@ -1,8 +1,7 @@
 import {MessageClient, takeUntilUnsubscribe} from './message-client';
 import {Message, MessageHeaders, ResponseStatusCodes} from '../../messaging.model';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {Observable, Subscription, throwError} from 'rxjs';
-import {Observables} from '@scion/toolkit/util';
+import {EMPTY, from, Observable, of, Subscription, throwError} from 'rxjs';
 import {runSafe} from '../../safe-runner';
 import {stringifyError} from '../../error.util';
 import {filter, finalize, takeUntil} from 'rxjs/operators';
@@ -65,9 +64,8 @@ export class MessageHandler<MSG extends Message, REPLY> {
 
     // Send response(s) or a potential completion or error back to the requestor.
     let observableStatus: 'alive' | 'completed' | 'errored' = 'alive';
-    this.subscription.add(Observables.coerce(reply)
+    this.subscription.add(fromCallbackResult$(reply)
       .pipe(
-        filter(next => next !== undefined), // filter `undefined` responses, e.g., returned by void callbacks.
         takeUntilUnsubscribe(replyTo), // unsubscribe once the requestor terminates the communication
         takeUntil(platformStopping$), // terminate the communication when the platform is shutting down.
         finalize(() => {
@@ -102,4 +100,23 @@ export class MessageHandler<MSG extends Message, REPLY> {
         },
       }));
   }
+}
+
+/**
+ * Creates an Observable from the result of the callback.
+ *
+ * If the callback returns no value (`void`), returns `undefined`, or returns a Promise that resolves to `undefined`,
+ * the returned observable will complete immediately.
+ */
+function fromCallbackResult$<T>(value: T | Observable<T> | Promise<T>): Observable<T> {
+  if (value === undefined) {
+    return EMPTY;
+  }
+  if (value instanceof Observable) {
+    return value;
+  }
+  if (value instanceof Promise) {
+    return from(value).pipe(filter(resolved => resolved !== undefined));
+  }
+  return of(value);
 }
