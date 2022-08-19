@@ -268,7 +268,37 @@ describe('Message Handler', () => {
       await expect(captor.hasCompleted()).toBeTrue();
     });
 
-    it('should ignore `undefined` values, but not `null` values', async () => {
+    it('should immediately complete the requestor\'s Observable when returning a Promise that resolves without value', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      Beans.get(MessageClient).onMessage<string>('topic', () => {
+        return Promise.resolve();
+      });
+
+      const captor = new ObserveCaptor(bodyExtractFn);
+      Beans.get(MessageClient).request$('topic', 'a').subscribe(captor);
+
+      await captor.waitUntilCompletedOrErrored();
+      await expect(captor.getValues()).toEqual([]);
+      await expect(captor.hasCompleted()).toBeTrue();
+    });
+
+    it('should immediately complete the requestor\'s Observable when returning a Promise that resolves with `undefined`', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      Beans.get(MessageClient).onMessage<string>('topic', () => {
+        return Promise.resolve(undefined);
+      });
+
+      const captor = new ObserveCaptor(bodyExtractFn);
+      Beans.get(MessageClient).request$('topic', 'a').subscribe(captor);
+
+      await captor.waitUntilCompletedOrErrored();
+      await expect(captor.getValues()).toEqual([]);
+      await expect(captor.hasCompleted()).toBeTrue();
+    });
+
+    it('should transport `undefined` and `null` values emitted by an Observable', async () => {
       await MicrofrontendPlatform.startHost({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -280,7 +310,7 @@ describe('Message Handler', () => {
       Beans.get(MessageClient).request$('topic', 'a').subscribe(captor);
 
       await captor.waitUntilCompletedOrErrored();
-      await expect(captor.getValues()).toEqual(['A-1', 'A-2', null, 'A-3']);
+      await expect(captor.getValues()).toEqual(['A-1', undefined, 'A-2', null, 'A-3']);
       await expect(captor.hasCompleted()).toBeTrue();
     });
 
@@ -888,7 +918,53 @@ describe('Intent Handler', () => {
       await expect(captor.hasCompleted()).toBeTrue();
     });
 
-    it('should ignore `undefined` values, but not `null` values', async () => {
+    it('should immediately complete the requestor\'s Observable when returning a Promise that resolves without value', async () => {
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
+
+      Beans.get(IntentClient).onIntent<string>({type: 'capability'}, () => {
+        return Promise.resolve();
+      });
+
+      const captor = new ObserveCaptor(bodyExtractFn);
+      Beans.get(IntentClient).request$({type: 'capability'}, 'a').subscribe(captor);
+
+      await captor.waitUntilCompletedOrErrored();
+      await expect(captor.getValues()).toEqual([]);
+      await expect(captor.hasCompleted()).toBeTrue();
+    });
+
+    it('should immediately complete the requestor\'s Observable when returning a Promise that resolves with `undefined`', async () => {
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            capabilities: [{type: 'capability'}],
+          },
+        },
+        applications: [],
+      });
+
+      Beans.get(IntentClient).onIntent<string>({type: 'capability'}, () => {
+        return Promise.resolve(undefined);
+      });
+
+      const captor = new ObserveCaptor(bodyExtractFn);
+      Beans.get(IntentClient).request$({type: 'capability'}, 'a').subscribe(captor);
+
+      await captor.waitUntilCompletedOrErrored();
+      await expect(captor.getValues()).toEqual([]);
+      await expect(captor.hasCompleted()).toBeTrue();
+    });
+
+    it('should transport `undefined` and `null` values emitted by an Observable', async () => {
       await MicrofrontendPlatform.startHost({
         host: {
           manifest: {
@@ -908,7 +984,7 @@ describe('Intent Handler', () => {
       Beans.get(IntentClient).request$({type: 'capability'}, 'a').subscribe(captor);
 
       await captor.waitUntilCompletedOrErrored();
-      await expect(captor.getValues()).toEqual(['A-1', 'A-2', null, 'A-3']);
+      await expect(captor.getValues()).toEqual(['A-1', undefined, 'A-2', null, 'A-3']);
       await expect(captor.hasCompleted()).toBeTrue();
     });
 

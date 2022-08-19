@@ -139,8 +139,11 @@ export abstract class IntentClient {
    * For each intent received, the specified callback function is called. When used in request-response communication,
    * the callback function can return the response either directly or in the form of a Promise or Observable. Returning a Promise
    * allows the response to be computed asynchronously, and an Observable allows to return one or more responses, e.g., for
-   * streaming data. In either case, when the final response is produced, the handler terminates the communication, completing
-   * the requestor's Observable. If the callback throws an error, or the returned Promise or Observable errors, the error is
+   * streaming data.
+   * If the callback function returns no value (void), returns `undefined`, or returns a Promise that resolves to `undefined`, communication is terminated
+   * immediately without a response. If the callback returns an Observable, all its emissions are transported to the requestor and communication is not
+   * terminated until the Observable completes. Termination of communication always completes the requestor's Observable.
+   * If the callback throws an error, or the returned Promise or Observable errors, the error is
    * transported to the requestor, erroring the requestor's Observable.
    *
    * @param  selector - Allows filtering intents.
