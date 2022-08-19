@@ -122,23 +122,41 @@ export class PlatformInitializer implements OnDestroy {
 
     if (queryParams.has('intercept-message:reject')) {
       const interceptor = new class implements MessageInterceptor {
-        public intercept(message: TopicMessage, next: Handler<TopicMessage>): void {
+        public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
           if (message.topic === queryParams.get('intercept-message:reject')) {
             throw Error('Message rejected by interceptor');
           }
-          next.handle(message);
+          return next.handle(message);
         }
       };
       Beans.register(MessageInterceptor, {useValue: interceptor, multi: true});
     }
 
+    if (queryParams.has('intercept-message:reject-async')) {
+      const interceptor1 = new class implements MessageInterceptor {
+        public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
+          return next.handle(message);
+        }
+      };
+      const interceptor2 = new class implements MessageInterceptor {
+        public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
+          if (message.topic === queryParams.get('intercept-message:reject-async')) {
+            return Promise.reject('Message rejected (async) by interceptor');
+          }
+          return next.handle(message);
+        }
+      };
+      Beans.register(MessageInterceptor, {useValue: interceptor1, multi: true});
+      Beans.register(MessageInterceptor, {useValue: interceptor2, multi: true});
+    }
+
     if (queryParams.has('intercept-message:swallow')) {
       const interceptor = new class implements MessageInterceptor {
-        public intercept(message: TopicMessage, next: Handler<TopicMessage>): void {
+        public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
           if (message.topic === queryParams.get('intercept-message:swallow')) {
-            return;
+            return Promise.resolve();
           }
-          next.handle(message);
+          return next.handle(message);
         }
       };
       Beans.register(MessageInterceptor, {useValue: interceptor, multi: true});
@@ -146,12 +164,12 @@ export class PlatformInitializer implements OnDestroy {
 
     if (queryParams.has('intercept-message:uppercase')) {
       const interceptor = new class implements MessageInterceptor {
-        public intercept(message: TopicMessage<string>, next: Handler<TopicMessage<string>>): void {
+        public intercept(message: TopicMessage<string>, next: Handler<TopicMessage<string>>): Promise<void> {
           if (message.topic === queryParams.get('intercept-message:uppercase')) {
-            next.handle({...message, body: message.body.toUpperCase()});
+            return next.handle({...message, body: message.body.toUpperCase()});
           }
           else {
-            next.handle(message);
+            return next.handle(message);
           }
         }
       };
@@ -163,22 +181,22 @@ export class PlatformInitializer implements OnDestroy {
     const queryParams = this._queryParams;
     if (queryParams.has('intercept-intent:reject')) {
       const interceptor = new class implements IntentInterceptor {
-        public intercept(message: IntentMessage, next: Handler<IntentMessage>): void {
+        public intercept(message: IntentMessage, next: Handler<IntentMessage>): Promise<void> {
           if (message.intent.type === queryParams.get('intercept-intent:reject')) {
             throw Error('Intent rejected by interceptor');
           }
-          next.handle(message);
+          return next.handle(message);
         }
       };
       Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
     }
     if (queryParams.has('intercept-intent:swallow')) {
       const interceptor = new class implements IntentInterceptor {
-        public intercept(message: IntentMessage, next: Handler<IntentMessage>): void {
+        public intercept(message: IntentMessage, next: Handler<IntentMessage>): Promise<void> {
           if (message.intent.type === queryParams.get('intercept-intent:swallow')) {
-            return;
+            return Promise.resolve();
           }
-          next.handle(message);
+          return next.handle(message);
         }
       };
       Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
@@ -186,12 +204,12 @@ export class PlatformInitializer implements OnDestroy {
     // Continues the interceptor chain with the message body put into uppercase.
     if (queryParams.has('intercept-intent:uppercase')) {
       const interceptor = new class implements IntentInterceptor {
-        public intercept(message: IntentMessage<string>, next: Handler<IntentMessage<string>>): void {
+        public intercept(message: IntentMessage<string>, next: Handler<IntentMessage<string>>): Promise<void> {
           if (message.intent.type === queryParams.get('intercept-intent:uppercase')) {
-            next.handle({...message, body: message.body.toUpperCase()});
+            return next.handle({...message, body: message.body.toUpperCase()});
           }
           else {
-            next.handle(message);
+            return next.handle(message);
           }
         }
       };
@@ -200,12 +218,12 @@ export class PlatformInitializer implements OnDestroy {
     // Continues the interceptor chain with the message body replaced with the stringified capability.
     if (queryParams.has('intercept-intent:capability-present')) {
       const interceptor = new class implements IntentInterceptor {
-        public intercept(message: IntentMessage<string>, next: Handler<IntentMessage<string>>): void {
+        public intercept(message: IntentMessage<string>, next: Handler<IntentMessage<string>>): Promise<void> {
           if (message.intent.type === queryParams.get('intercept-intent:capability-present')) {
-            next.handle({...message, body: JSON.stringify(message.capability)});
+            return next.handle({...message, body: JSON.stringify(message.capability)});
           }
           else {
-            next.handle(message);
+            return next.handle(message);
           }
         }
       };

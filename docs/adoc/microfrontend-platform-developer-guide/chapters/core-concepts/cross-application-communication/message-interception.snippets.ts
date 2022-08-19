@@ -6,22 +6,22 @@ import {Beans} from '@scion/toolkit/bean-manager';
   /** Message Interceptor */
   class MessageLoggerInterceptor implements MessageInterceptor {
 
-    public intercept(message: TopicMessage, next: Handler<TopicMessage>): void {
+    public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
       console.log(message);
 
       // Passes the message along the interceptor chain.
-      next.handle(message);
+      return next.handle(message);
     }
   }
 
   /** Intent Interceptor */
   class IntentLoggerInterceptor implements IntentInterceptor {
 
-    public intercept(intent: IntentMessage<any>, next: Handler<IntentMessage>): void {
+    public intercept(intent: IntentMessage<any>, next: Handler<IntentMessage>): Promise<void> {
       console.log(intent);
 
       // Passes the intent along the interceptor chain.
-      next.handle(intent);
+      return next.handle(intent);
     }
   }
 
@@ -65,17 +65,15 @@ import {Beans} from '@scion/toolkit/bean-manager';
       this.schemaValidator = new JsonSchemaValidator(jsonSchema); // <2>
     }
 
-    public intercept(message: TopicMessage, next: Handler<TopicMessage>): void {
+    public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
       // Pass messages sent to other topics.
       if (!this.topicMatcher.match(message.topic).matches) {
-        next.handle(message); // <3>
-        return;
+        return next.handle(message); // <3>
       }
 
       // Validate the payload of the message.
       if (this.schemaValidator.isValid(message.body)) {
-        next.handle(message); // <4>
-        return;
+        return next.handle(message); // <4>
       }
 
       throw Error('Message failed schema validation'); // <5>

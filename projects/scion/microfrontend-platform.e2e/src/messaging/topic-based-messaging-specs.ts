@@ -683,6 +683,31 @@ export namespace TopicBasedMessagingSpecs {
   }
 
   /**
+   * Tests message rejection (async).
+   * The testing app is configured to reject messages sent to the topic 'reject-async'.
+   */
+  export async function interceptMessageRejectAsyncSpec(testingAppPO: TestingAppPO): Promise<void> {
+    const pagePOs = await testingAppPO.navigateTo({
+      publisher: PublishMessagePagePO,
+      receiver: ReceiveMessagePagePO,
+    }, {queryParams: new Map().set('intercept-message:reject-async', 'reject-async')});
+
+    const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
+    await receiverPO.selectFlavor(MessagingFlavor.Topic);
+    await receiverPO.enterTopic('reject-async');
+    await receiverPO.clickSubscribe();
+
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
+    await publisherPO.selectFlavor(MessagingFlavor.Topic);
+    await publisherPO.enterTopic('reject-async');
+    await publisherPO.enterMessage('payload');
+    await publisherPO.clickPublish();
+
+    await expect(await publisherPO.getPublishError()).toEqual('Message rejected (async) by interceptor');
+    await expect(await receiverPO.getMessages()).toEqual([]);
+  }
+
+  /**
    * Tests swallowing a message.
    * The testing app is configured to swallow messages sent to the topic 'swallow'.
    */

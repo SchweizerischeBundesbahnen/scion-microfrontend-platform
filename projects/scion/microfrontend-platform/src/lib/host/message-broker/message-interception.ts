@@ -39,17 +39,15 @@ import {IntentMessage, TopicMessage} from '../../messaging.model';
  *
  *   private topicMatcher = new TopicMatcher('product/:id');
  *
- *   public intercept(message: TopicMessage, next: Handler<TopicMessage>): void {
+ *   public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
  *     // Pass messages sent to other topics.
  *     if (!this.topicMatcher.match(message.topic).matches) {
- *       next.handle(message);
- *       return;
+ *       return next.handle(message);
  *     }
  *
  *     // Validate the payload of the message.
  *     if (isValid(message.body)) {
- *       next.handle(message);
- *       return;
+ *       return next.handle(message);
  *     }
  *
  *     throw Error('Message failed schema validation');
@@ -68,11 +66,14 @@ export abstract class MessageInterceptor implements Interceptor<TopicMessage, Ha
    * or to swallow the message by not calling the next handler at all. If rejecting publishing, the error is transported to the
    * message publisher.
    *
+   * Important: When passing the message to the next handler, either return its Promise or await it.
+   * Otherwise, errors of subsequent interceptors would not be reported to the sender.
+   *
    * @param  message - the message to be published to its topic
    * @param  next - the next handler in the chain; invoke its {@link Handler.handle} method to continue publishing.
    * @throws throw an error to reject publishing; the error is transported to the message publisher.
    */
-  public abstract intercept(message: TopicMessage, next: Handler<TopicMessage>): void;
+  public abstract intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void>;
 }
 
 /**
@@ -108,11 +109,14 @@ export abstract class IntentInterceptor implements Interceptor<IntentMessage, Ha
    * or to swallow the intent by not calling the next handler at all. If rejecting publishing, the error is transported to
    * the intent issuer.
    *
+   * Important: When passing the message to the next handler, either return its Promise or await it.
+   * Otherwise, errors of subsequent interceptors would not be reported to the sender.
+   *
    * @param  intent - the intent to be published
    * @param  next - the next handler in the chain; invoke its {@link Handler.handle} method to continue publishing.
    * @throws throw an error to reject publishing; the error is transported to the intent issuer.
    */
-  public abstract intercept(intent: IntentMessage, next: Handler<IntentMessage>): void;
+  public abstract intercept(intent: IntentMessage, next: Handler<IntentMessage>): Promise<void>;
 }
 
 /**
@@ -132,7 +136,7 @@ export interface PublishInterceptorChain<T> {
    *
    * @throws throws an error if an interceptor rejected publishing.
    */
-  publish(message: T): void;
+  publish(message: T): Promise<void>;
 }
 
 /**
@@ -142,22 +146,22 @@ export interface PublishInterceptorChain<T> {
  * @param publisher - terminal handler to publish messages
  * @internal
  */
-export function chainInterceptors<T>(interceptors: Interceptor<T, Handler<T>>[], publisher: (message: T) => void): PublishInterceptorChain<T> {
+export function chainInterceptors<T>(interceptors: Interceptor<T, Handler<T>>[], publisher: (message: T) => Promise<void>): PublishInterceptorChain<T> {
   const terminalHandler = new class extends Handler<T> {
-    public handle(message: T): void {
-      publisher(message);
+    public handle(message: T): Promise<void> {
+      return publisher(message);
     }
   };
 
   const handlerChain = interceptors.reduceRight((next, interceptor) => new class extends Handler<T> {
-    public handle(element: T): void {
-      interceptor.intercept(element, next);
+    public handle(element: T): Promise<void> {
+      return interceptor.intercept(element, next);
     }
   }, terminalHandler);
 
   return new class implements PublishInterceptorChain<T> {
-    public publish(element: T): void {
-      handlerChain.handle(element);
+    public publish(element: T): Promise<void> {
+      return handlerChain.handle(element);
     }
   };
 }
@@ -172,7 +176,7 @@ export function chainInterceptors<T>(interceptors: Interceptor<T, Handler<T>>[],
  */
 export interface Interceptor<T, H extends Handler<T>> {
 
-  intercept(message: T, next: H): void;
+  intercept(message: T, next: H): Promise<void>;
 }
 
 /**
@@ -184,6 +188,6 @@ export abstract class Handler<T> {
   /**
    * Invoke to continue the chain with the given message.
    */
-  public abstract handle(message: T): void;
+  public abstract handle(message: T): Promise<void>;
 }
 
