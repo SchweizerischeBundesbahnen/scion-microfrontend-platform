@@ -177,7 +177,7 @@ export class MicrofrontendPlatform {
         Beans.registerIfAbsent(MessageClient, provideMessageClient());
         Beans.registerIfAbsent(IntentClient, provideIntentClient());
         Beans.register(FocusMonitor);
-        Beans.register(PreferredSizeService);
+        Beans.register(PreferredSizeService, {eager: true});
         Beans.register(ManifestService);
         Beans.register(KeyboardEventDispatcher, {eager: true});
         Beans.register(IntentInterceptor, {useClass: MicrofrontendIntentInterceptor, multi: true});
@@ -290,7 +290,7 @@ export class MicrofrontendPlatform {
         Beans.register(FocusMonitor);
         Beans.register(MouseMoveEventDispatcher, {eager: true});
         Beans.register(MouseUpEventDispatcher, {eager: true});
-        Beans.register(PreferredSizeService);
+        Beans.register(PreferredSizeService, {eager: true});
         Beans.register(ContextService);
         Beans.register(ManifestService);
         Beans.register(KeyboardEventDispatcher, {eager: true});
