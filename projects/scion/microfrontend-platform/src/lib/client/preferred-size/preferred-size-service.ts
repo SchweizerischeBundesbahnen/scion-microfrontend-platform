@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {fromDimension$} from '@scion/toolkit/observable';
-import {takeUntil} from 'rxjs/operators';
-import {filter, merge, Subject, withLatestFrom} from 'rxjs';
+import {combineLatestWith, filter, takeUntil} from 'rxjs/operators';
+import {merge, Subject} from 'rxjs';
 import {ContextService} from '../context/context-service';
 import {OUTLET_CONTEXT, OutletContext, RouterOutlets} from '../router-outlet/router-outlet.element';
 import {MessageClient} from '../messaging/message-client';
@@ -31,18 +31,14 @@ export class PreferredSizeService implements PreDestroy {
 
   private _destroy$ = new Subject<void>();
   private _fromDimensionElementChange$ = new Subject<void>();
-  private _publishPreferredSize: PreferredSizePublisher;
-
-  constructor() {
-    this._publishPreferredSize = this.createPreferredSizePublisher();
-  }
+  private _preferredSizePublisher = new PreferredSizePublisher();
 
   /**
    * Sets the preferred size of this web content.
    * The size is reported to the router outlet embedding this web content and is used as the outlet's size.
    */
   public setPreferredSize(preferredSize: PreferredSize): void {
-    this._publishPreferredSize(preferredSize);
+    this._preferredSizePublisher.publish(preferredSize);
   }
 
   /**
@@ -97,33 +93,41 @@ export class PreferredSizeService implements PreDestroy {
    * Resets the preferred size. Has no effect if no preferred size is set.
    */
   public resetPreferredSize(): void {
-    this._publishPreferredSize(null);
+    this._preferredSizePublisher.publish(null);
   }
 
-  /**
-   * Constructs a function to publish the preferred size to the outlet.
-   */
-  private createPreferredSizePublisher(): PreferredSizePublisher {
-    const publish$ = new Subject<PreferredSize | null>();
-    publish$
+  /** @ignore */
+  public preDestroy(): void {
+    this._preferredSizePublisher.destroy();
+    this._destroy$.next();
+  }
+}
+
+/**
+ * Publishes the preferred size to the outlet embedding this page.
+ */
+class PreferredSizePublisher {
+
+  private _preferredSize$ = new Subject<PreferredSize | null>();
+  private _destroy$ = new Subject<void>();
+
+  constructor() {
+    this._preferredSize$
       .pipe(
-        withLatestFrom(Beans.get(ContextService).observe$<OutletContext>(OUTLET_CONTEXT).pipe(filter(Boolean))),
+        combineLatestWith(Beans.get(ContextService).observe$<OutletContext>(OUTLET_CONTEXT).pipe(filter(Boolean))),
         takeUntil(this._destroy$),
       )
       .subscribe(([preferredSize, outletContext]) => runSafe(() => {
         const topic = RouterOutlets.preferredSizeTopic(outletContext.uid);
         Beans.get(MessageClient).publish(topic, preferredSize);
       }));
-
-    return preferredSize => publish$.next(preferredSize);
   }
 
-  /** @ignore */
-  public preDestroy(): void {
+  public publish(preferredSize: PreferredSize | null): void {
+    this._preferredSize$.next(preferredSize);
+  }
+
+  public destroy(): void {
     this._destroy$.next();
   }
-}
-
-interface PreferredSizePublisher {
-  (preferredSize: PreferredSize | null): void;
 }

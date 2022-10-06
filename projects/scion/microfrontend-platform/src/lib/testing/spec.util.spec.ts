@@ -8,13 +8,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Arrays} from '@scion/toolkit/util';
+import {Arrays, Observables} from '@scion/toolkit/util';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {ConsoleLogger, Logger} from '../logger';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageClient} from '../client/messaging/message-client';
 import {first} from 'rxjs/operators';
 import {stringifyError} from '../error.util';
+import {filter, firstValueFrom, map, pairwise, switchMap, timer} from 'rxjs';
 import CallInfo = jasmine.CallInfo;
 
 /**
@@ -102,6 +103,21 @@ export function waitForCondition(condition: () => boolean | Promise<boolean>, ti
 }
 
 /**
+ * Waits for a value to become stable.
+ * This function returns the value if it hasn't changed during `probeInterval` (defaults to 500ms).
+ */
+export async function waitUntilStable<A>(value: () => Promise<A> | A, options?: {isStable?: (previous: A, current: A) => boolean; probeInterval?: number}): Promise<A> {
+  const value$ = timer(0, options?.probeInterval ?? 500)
+    .pipe(
+      switchMap(() => Observables.coerce(value())),
+      pairwise(),
+      filter(([previous, current]) => options?.isStable ? options.isStable(previous, current) : previous === current),
+      map(([previous]) => previous),
+    );
+  return firstValueFrom(value$);
+}
+
+/**
  * Expects the {@link ObserveCaptor} to capture given emissions. This expectation waits a maximum of 5 seconds until the expected element count
  * is captured.
  */
@@ -118,7 +134,7 @@ export function expectEmissions<T = any, R = T>(captor: ObserveCaptor<T, R>): To
         await captor.waitUntilEmitCount(expectedValues.length, 5000);
         return expect(captor.getValues()).not.toEqual(expectedValues);
       },
-    }
+    },
   };
 }
 
