@@ -251,18 +251,6 @@ export interface Intention {
 }
 
 /**
- * Symbol to determine if this app instance is running as the platform host.
- *
- * ```ts
- * const isPlatformHost: boolean = Beans.get(IS_PLATFORM_HOST);
- * ```
- *
- * @category Platform
- */
-export abstract class IS_PLATFORM_HOST {
-}
-
-/**
  * Built in capability types.
  *
  * @ignore
@@ -452,13 +440,38 @@ export interface ParamDefinition {
   [property: string]: any;
 }
 
-/** @internal */
+/**
+ * Symbol to determine if this app instance is running as the platform host.
+ *
+ * ```ts
+ * const isPlatformHost: boolean = Beans.get(IS_PLATFORM_HOST);
+ * ```
+ *
+ * @category Platform
+ */
+export const IS_PLATFORM_HOST = Symbol('IS_PLATFORM_HOST');
+
+/**
+ * Multi-Symbol to look up registered application configs from the bean manager.
+ *
+ * @internal
+ */
 export const ɵAPP_CONFIG = Symbol('ɵAPP_CONFIG');
 
 /**
  * Symbol to get the application's symbolic name from the bean manager.
  */
 export const APP_IDENTITY = Symbol('APP_IDENTITY');
+
+/**
+ * Symbol to get the topmost window in the window hierarchy from the bean manager.
+ *
+ * Alias for `window.top` that can be overridden in tests, e.g., to simulate
+ * the client to connect to a remote host.
+ *
+ * @internal
+ */
+export const ɵWINDOW_TOP = Symbol('ɵWINDOW_TOP');
 
 /**
  * Key for obtaining the current activation context using {@link ContextService}.

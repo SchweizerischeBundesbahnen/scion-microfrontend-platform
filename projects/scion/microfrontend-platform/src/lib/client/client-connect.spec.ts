@@ -34,13 +34,16 @@ describe('MicrofrontendPlatform', () => {
     await expectAsync(connectPromise).toBeRejectedWithError(/\[GatewayError] Message broker not discovered within 250ms/);
   });
 
-  it('should retry to connect to the host', async () => {
-    // Mount the client before starting the host, which means that the first connect request(s) are never answered.
-    const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    const connectPromise = microfrontendFixture.loadScript('./lib/client/client-connect.script.ts', 'connectToHost', {symbolicName: 'client', brokerDiscoverTimeout: 2000});
+  it('should repeatedly send a connect request when the client connects to a remote host', async () => {
+    // Load the client.
+    const clientFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
+    const connectPromise = clientFixture.loadScript('./lib/client/client-connect.script.ts', 'connectClientToRemoteHost', {symbolicName: 'client', brokerDiscoverTimeout: 2000});
+    document['X-CLIENT-WINDOW'] = clientFixture.iframe.contentWindow;
+
+    // Wait some time before installing the host and bridge so that the first connect request will get lost.
     await firstValueFrom(timer(1000));
 
-    // Start the host a little bit later.
+    // Start the  host.
     await MicrofrontendPlatform.startHost({
       applications: [
         {
@@ -50,9 +53,13 @@ describe('MicrofrontendPlatform', () => {
       ],
     });
 
-    // Expect client to be connected
+    // Install the message bridge.
+    const messageBridgeFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
+    await messageBridgeFixture.loadScript('./lib/client/client-connect.script.ts', 'bridgeMessages');
+
+    // Expect the client to be connected.
     await expectAsync(connectPromise).toBeResolved();
-    const clientId = await firstValueFrom(microfrontendFixture.message$);
+    const clientId = await firstValueFrom(clientFixture.message$);
     expect(Beans.get(ClientRegistry).getByClientId(clientId)).withContext('expected "client" to be CONNECTED').toBeDefined();
   });
 
@@ -85,7 +92,7 @@ describe('MicrofrontendPlatform', () => {
         {
           symbolicName: 'client',
           manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
-          messageOrigin: 'http://wrong-origin.dev'
+          messageOrigin: 'http://wrong-origin.dev',
         },
       ],
     });

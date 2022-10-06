@@ -10,6 +10,8 @@
 import {runSafe} from '../../safe-runner';
 import {Navigation} from './metadata';
 import {Urls} from '../../url.util';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {ɵWINDOW_TOP} from '../../platform.model';
 
 /**
  * Assigns a URL to the iframe of a {@link SciRouterOutletElement `<sci-router-outlet>`}.
@@ -78,7 +80,7 @@ export class RouterOutletUrlAssigner {
       }
 
       // Do not apply the fix for top-level iframes.
-      if (window === window.top) {
+      if (window === Beans.get(ɵWINDOW_TOP)) {
         return currUrl;
       }
 
