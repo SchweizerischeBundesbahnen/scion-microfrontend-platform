@@ -26,7 +26,7 @@ import {FocusInEventDispatcher} from './client/focus/focus-in-event-dispatcher';
 import {FocusMonitor} from './client/focus/focus-monitor';
 import {ContextService} from './client/context/context-service';
 import {RouterOutletUrlAssigner} from './client/router-outlet/router-outlet-url-assigner';
-import {APP_IDENTITY, IS_PLATFORM_HOST, ɵAPP_CONFIG} from './platform.model';
+import {APP_IDENTITY, IS_PLATFORM_HOST, ɵWINDOW_TOP, ɵAPP_CONFIG} from './platform.model';
 import {RelativePathResolver} from './client/router-outlet/relative-path-resolver';
 import {ClientRegistry} from './host/client-registry/client.registry';
 import {FocusTracker} from './host/focus/focus-tracker';
@@ -149,11 +149,12 @@ export class MicrofrontendPlatform {
         MicrofrontendPlatform.installHostStartupProgressMonitor();
 
         // Register platform beans.
+        Beans.register(IS_PLATFORM_HOST, {useValue: true});
+        Beans.registerIfAbsent(ɵWINDOW_TOP, {useValue: window.top});
         Beans.register(VERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
         Beans.register(APP_IDENTITY, {useValue: config.host?.symbolicName || 'host'});
         Beans.register(MicrofrontendPlatformConfig, {useValue: config});
         Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
-        Beans.register(IS_PLATFORM_HOST, {useValue: true});
         Beans.register(HostManifestInterceptor, {useClass: ɵHostManifestInterceptor, multi: true});
         Beans.register(ClientRegistry, {useClass: ɵClientRegistry, destroyOrder: BeanDestroyOrders.CORE});
         Beans.registerIfAbsent(CLIENT_HEARTBEAT_INTERVAL, {useValue: (config.heartbeatInterval ?? 60) * 10_000});
@@ -275,6 +276,7 @@ export class MicrofrontendPlatform {
 
         // Register platform beans.
         Beans.register(IS_PLATFORM_HOST, {useValue: false});
+        Beans.registerIfAbsent(ɵWINDOW_TOP, {useValue: window.top});
         Beans.register(APP_IDENTITY, {useValue: symbolicName});
         Beans.register(VERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
         Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});

@@ -16,7 +16,7 @@ import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messag
 import {Logger, NULL_LOGGER} from '../../logger';
 import {Dictionaries} from '@scion/toolkit/util';
 import {Beans, Initializer, PreDestroy} from '@scion/toolkit/bean-manager';
-import {APP_IDENTITY, IS_PLATFORM_HOST} from '../../platform.model';
+import {APP_IDENTITY, IS_PLATFORM_HOST, ɵWINDOW_TOP} from '../../platform.model';
 import {PlatformState} from '../../platform-state';
 import {ConnectOptions} from '../connect-options';
 import {MicrofrontendPlatformRef} from '../../microfrontend-platform-ref';
@@ -98,17 +98,6 @@ export class NullBrokerGateway implements BrokerGateway {
     return NEVER;
   }
 }
-
-/**
- * Specifies the interval for sending connect requests to parent windows. If not receiving acknowledgment within the
- * specified interval, the gateway will try to connect anew.
- *
- * A single connect request may not be sufficient if, for example, the microfrontends are to be integrated into a rich client.
- * For example, an integrator may want to bridge messages to a remote host. If the integrator cannot hook into the message bus
- * in time, the client's connect request may be lost. Therefore, the gateway initiates the connect request at regular
- * intervals until it receives an acknowledgement.
- */
-const CONNECT_INTERVAL = 25;
 
 /**
  * @ignore
@@ -366,12 +355,23 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       },
     };
 
-    const windowHierarchy = this.collectWindowHierarchy();
-    timer(0, CONNECT_INTERVAL)
-      .pipe(takeUntil(connectPromise.catch(() => null)))
-      .subscribe(() => {
-        windowHierarchy.forEach(window => window.postMessage(connectMessage, '*'));
-      });
+    if (Beans.get(IS_PLATFORM_HOST)) {
+      window.postMessage(connectMessage, window.origin);
+    }
+    else if (window === Beans.get(ɵWINDOW_TOP)) {
+      // If loading the client into the topmost window it may be integrated into a rich client, with the host running in a different browser window (remote host).
+      // The rich client then bridges messages between the windows of the client and the remote host. Since the rich client may not be able to bridge messages
+      // right away when the client loads, the client repeatedly sends a connect request until acknowledged by the remote host.
+      const windowHierarchy = this.collectWindowHierarchy();
+      timer(0, 25)
+        .pipe(takeUntil(connectPromise.catch(() => null)))
+        .subscribe(() => {
+          windowHierarchy.forEach(window => window.postMessage(connectMessage, '*'));
+        });
+    }
+    else {
+      this.collectWindowHierarchy().forEach(window => window.postMessage(connectMessage, '*'));
+    }
 
     return connectPromise;
   }
@@ -413,11 +413,11 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   private collectWindowHierarchy(): Window[] {
     const candidates: Window[] = [];
 
-    for (let candidate = window as Window; candidate !== window.top; candidate = candidate.parent) {
+    for (let candidate = window as Window; candidate !== Beans.get(ɵWINDOW_TOP); candidate = candidate.parent) {
       candidates.unshift(candidate);
     }
 
-    candidates.unshift(window.top);
+    candidates.unshift(Beans.get<Window>(ɵWINDOW_TOP));
     return candidates;
   }
 

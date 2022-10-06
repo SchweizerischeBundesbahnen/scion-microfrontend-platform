@@ -9,8 +9,18 @@
  */
 
 import {RouterOutletUrlAssigner} from './router-outlet-url-assigner';
+import {ɵWINDOW_TOP} from '../../platform.model';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 describe('RouterOutletUrlAssigner#patchUrl', () => {
+
+  beforeEach(() => {
+    Beans.register(ɵWINDOW_TOP, {useValue: window.top});
+  });
+
+  afterEach(() => {
+    Beans.destroy();
+  });
 
   it('should not patch URL if protocol is "about"', async () => {
     const testee = new RouterOutletUrlAssigner();
