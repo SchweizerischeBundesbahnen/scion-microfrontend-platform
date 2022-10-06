@@ -12,6 +12,9 @@ import {fromEvent, merge, NEVER, Observable, OperatorFunction, pipe, ReplaySubje
 import {filter, finalize, map, mergeMap, take, takeUntil} from 'rxjs/operators';
 import {UUID} from '@scion/toolkit/uuid';
 import {Dictionary} from '@scion/toolkit/util';
+import {SciRouterOutletElement} from '../../client/router-outlet/router-outlet.element';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {OutletRouter} from '../../client/router-outlet/outlet-router';
 
 /**
  * Fixture for creating an iframe and loading a script into the iframe.
@@ -54,11 +57,8 @@ export class MicrofrontendFixture {
 
   private _unmount$ = new Subject<void>();
   private _disposables = new Set<Disposable>();
-
-  /**
-   * Iframe created by this fixture.
-   */
-  public iframe: HTMLIFrameElement | null = null;
+  private _routerOutletName = UUID.randomUUID();
+  private _iframeOrRouterOutlet: HTMLIFrameElement | SciRouterOutletElement | null = null;
 
   /**
    * Messages sent by the script.
@@ -69,13 +69,50 @@ export class MicrofrontendFixture {
   public message$: Observable<any> = NEVER;
 
   /**
+   * Constructs an instance of {@link MicrofrontendFixture} to load a microfrontend into a test.
+   *
+   * @param _options - Controls how to construct the iframe.
+   *        <ul>
+   *          <li>**useSciRouterOutlet?**: Instructs this fixture to construct the iframe using the 'sci-router-outlet' custom element.</li>
+   *        </ul>
+   */
+  constructor(private _options?: {useSciRouterOutlet?: boolean}) {
+  }
+
+  /**
+   * Iframe created by this fixture.
+   */
+  public get iframe(): HTMLIFrameElement | null {
+    if (this._iframeOrRouterOutlet instanceof HTMLIFrameElement) {
+      return this._iframeOrRouterOutlet;
+    }
+    if (this._iframeOrRouterOutlet instanceof SciRouterOutletElement) {
+      return this._iframeOrRouterOutlet.iframe;
+    }
+    return null;
+  }
+
+  /**
+   * Router outlet created by this fixture; only set if instructed this fixture to use a router outlet.
+   */
+  public get routerOutlet(): SciRouterOutletElement | null {
+    return this._iframeOrRouterOutlet instanceof SciRouterOutletElement ? this._iframeOrRouterOutlet : null;
+  }
+
+  /**
    * Creates an iframe and adds it to the DOM. Throws an error if already mounted.
    */
   public insertIframe(): this {
-    if (this.iframe) {
-      throw Error('[MicrofrontendFixtureError] iframe already mounted.');
+    if (this._iframeOrRouterOutlet) {
+      throw Error('[MicrofrontendFixtureError] iframe or sci-router-outlet already mounted.');
     }
-    this.iframe = document.body.appendChild(document.createElement('iframe'));
+    if (this._options?.useSciRouterOutlet) {
+      this._iframeOrRouterOutlet = document.body.appendChild(document.createElement('sci-router-outlet') as SciRouterOutletElement);
+      this._iframeOrRouterOutlet.setAttribute('name', this._routerOutletName);
+    }
+    else {
+      this._iframeOrRouterOutlet = document.body.appendChild(document.createElement('iframe'));
+    }
     return this;
   }
 
@@ -166,10 +203,15 @@ export class MicrofrontendFixture {
    * Instructs the iframe to load content from given URL.
    */
   public setUrl(url: string): void {
-    if (!this.iframe) {
+    if (this._options?.useSciRouterOutlet) {
+      Beans.get(OutletRouter).navigate(url, {outlet: this._routerOutletName});
+    }
+    else if (this.iframe) {
+      this.iframe.setAttribute('src', url);
+    }
+    else {
       throw Error('[MicrofrontendFixtureError] Iframe not found.');
     }
-    this.iframe.setAttribute('src', url);
     this.message$ = NEVER;
   }
 
@@ -180,9 +222,9 @@ export class MicrofrontendFixture {
     this._disposables.forEach(disposable => disposable());
     this._disposables.clear();
 
-    if (this.iframe) {
-      this.iframe.remove();
-      this.iframe = null;
+    if (this._iframeOrRouterOutlet) {
+      this._iframeOrRouterOutlet.remove();
+      this._iframeOrRouterOutlet = null;
       this.message$ instanceof Subject && this.message$.complete();
       this.message$ = NEVER;
       this._unmount$.next();
