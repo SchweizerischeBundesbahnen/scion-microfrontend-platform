@@ -11,9 +11,6 @@ import {runSafe} from '../../safe-runner';
 import {Navigation} from './metadata';
 import {Urls} from '../../url.util';
 
-/** @ignore */
-const BLANK_URL = Urls.newUrl('about:blank');
-
 /**
  * Assigns a URL to the iframe of a {@link SciRouterOutletElement `<sci-router-outlet>`}.
  *
@@ -68,34 +65,39 @@ export class RouterOutletUrlAssigner {
    * @param prevUrl - Specifies the previous URL, if any.
    *
    * @see https://stackoverflow.com/q/36985731
+   * @internal
    */
-  protected patchUrl(currUrl: string, prevUrl?: string): string {
-    const prevURL = prevUrl && runSafe((): URL => Urls.newUrl(prevUrl)) || BLANK_URL;
-    const currURL = currUrl && runSafe((): URL => Urls.newUrl(currUrl)) || BLANK_URL;
+  public patchUrl(currUrl: string, prevUrl?: string): string {
+    const patchedUrl = runSafe(() => {
+      const prevURL = prevUrl ? Urls.newUrl(prevUrl) : undefined;
+      const currURL = Urls.newUrl(currUrl);
 
-    // Do not apply the fix for top-level iframes.
-    if (window === window.top) {
-      return currUrl;
-    }
+      // Do not apply the fix for the "about" and "blob" protocol.
+      if (currURL.protocol === 'about:' || currURL.protocol === 'blob:') {
+        return currUrl;
+      }
 
-    // Do not apply the fix if the URL already contains query params.
-    if (currURL.search) {
-      return currUrl;
-    }
+      // Do not apply the fix for top-level iframes.
+      if (window === window.top) {
+        return currUrl;
+      }
 
-    // Do not apply the fix when navigating within the same application using hash-based routing.
-    if (prevUrl && prevURL.origin === currURL.origin && prevURL.pathname === currURL.pathname) {
-      return currUrl;
-    }
+      // Do not apply the fix if the URL already contains query params.
+      if (currURL.search) {
+        return currUrl;
+      }
 
-    // Do not apply the fix when navigating to a blank page.
-    if (currURL.toString() === BLANK_URL.toString()) {
-      return currUrl;
-    }
+      // Do not apply the fix when navigating within the same application using hash-based routing.
+      if (prevURL?.origin === currURL.origin && prevURL?.pathname === currURL.pathname) {
+        return currUrl;
+      }
 
-    // Add an arbitrary but fixed query param to the URL.
-    const patchedURL = Urls.newUrl(currUrl);
-    patchedURL.searchParams.set('_', '');
-    return patchedURL.toString();
+      // Add an arbitrary but fixed query param to the URL.
+      const patchedURL = Urls.newUrl(currUrl);
+      patchedURL.searchParams.set('_', '');
+      return patchedURL.toString();
+    });
+
+    return patchedUrl ?? currUrl;
   }
 }
