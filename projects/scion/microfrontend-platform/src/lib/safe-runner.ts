@@ -23,13 +23,13 @@ export function runSafe<T = void>(runnable: () => T): T {
     result = runnable();
   }
   catch (error) {
-    Beans.get(Logger).error('[UnexpectedError] An unexpected error occurred.', error);
+    Beans.opt(Logger)?.error('[UnexpectedError] An unexpected error occurred.', error);
     return undefined!;
   }
 
   if (result instanceof Promise) {
     return result.catch(error => {
-      Beans.get(Logger).error('[UnexpectedError] An unexpected error occurred.', error);
+      Beans.opt(Logger)?.error('[UnexpectedError] An unexpected error occurred.', error);
       return undefined;
     }) as any;
   }
