@@ -5,6 +5,60 @@
 
 ## Changelog
 
+# [1.0.0-rc.7](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.6...1.0.0-rc.7) (2022-10-07)
+
+
+### Bug Fixes
+
+* **platform/router-outlet:** size outlet to the reported initial size of embedded content ([49f036d](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/49f036d30f992720a9d2beb5045492d33076bcb1))
+* **platform/router:** do not patch URL if protocol is "blob" ([064f1f3](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/064f1f35210058b113d911b5efb1ccbe8851d7ee))
+* **platform:** mirror Observable if replying with an Observable in message or intent callback ([d0b8e27](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/d0b8e277bd2592fa8bbd5033c080fa4abe897611)), closes [#164](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/164)
+* **platform:** report message rejection of asynchronous interceptors back to the sender ([1517366](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/1517366d254c858ccc4208046b6ed9082bebac09)), closes [#147](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/147)
+
+
+### Performance Improvements
+
+* **platform/client:** resend connect request only if loaded into the topmost window ([ba4e9a2](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/ba4e9a250c15f93e12e4752dc0af83ca62f6573a))
+
+
+### BREAKING CHANGES
+
+* **platform:** Fixing message rejection reporting of interceptors introduced a breaking change in the Interceptor API.
+  
+  This breaking change only refers to the host. The communication protocol between host and client HAS NOT CHANGED. Host and clients can be updated independently to the new version.
+  
+  In order to report asynchronous message rejection correctly, the Interceptor API has been changed from synchronous to asynchronous message interception. To migrate, change the return type of your interceptors from `void` to `Promise<void>` and change the implementation accordingly.
+  
+  #### The following snippets illustrate how a migration could look like:
+  
+  ##### Before migration
+  
+  ```typescript
+  class MessageLoggerInterceptor implements MessageInterceptor {
+    public intercept(message: TopicMessage, next: Handler<TopicMessage>): void {
+      console.log(message);
+  
+      // Passes the message along the interceptor chain.
+      next.handle(message);
+    }
+  }
+  ```
+  
+  ##### After migration
+  
+  ```typescript
+  class MessageLoggerInterceptor implements MessageInterceptor {
+    public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
+      console.log(message);
+  
+      // Passes the message along the interceptor chain.
+      return next.handle(message);
+    }
+  }
+  ```
+
+
+
 # [1.0.0-rc.6](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.5...1.0.0-rc.6) (2022-06-04)
 
 
