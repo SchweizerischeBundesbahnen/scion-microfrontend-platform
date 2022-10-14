@@ -9,7 +9,7 @@
  */
 import {Component, OnDestroy} from '@angular/core';
 import {IntentClient, MessageClient, Qualifier, TopicMessage} from '@scion/microfrontend-platform';
-import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {Subject, Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith, takeUntil} from 'rxjs/operators';
 import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
@@ -54,23 +54,23 @@ export class PublishMessageComponent implements OnDestroy {
   private _intentClient: IntentClient;
   private _requestResponseSubscription: Subscription;
 
-  public form: FormGroup;
+  public form: UntypedFormGroup;
   public replies: TopicMessage[] = [];
   public MessagingFlavor = MessagingFlavor;
   public publishError: string;
   public publishing: boolean;
 
-  constructor(private _formBuilder: FormBuilder) {
+  constructor(private _formBuilder: UntypedFormBuilder) {
     this._messageClient = Beans.get(MessageClient);
     this._intentClient = Beans.get(IntentClient);
 
     this.form = this._formBuilder.group({
-      [FLAVOR]: new FormControl(MessagingFlavor.Topic, Validators.required),
+      [FLAVOR]: new UntypedFormControl(MessagingFlavor.Topic, Validators.required),
       [DESTINATION]: this.createTopicDestinationFormGroup(),
-      [MESSAGE]: new FormControl(''),
+      [MESSAGE]: new UntypedFormControl(''),
       [HEADERS]: this._formBuilder.array([]),
-      [REQUEST_REPLY]: new FormControl(false),
-      [RETAIN]: new FormControl(false),
+      [REQUEST_REPLY]: new UntypedFormControl(false),
+      [RETAIN]: new UntypedFormControl(false),
     });
 
     this.form.get(FLAVOR).valueChanges
@@ -119,7 +119,7 @@ export class PublishMessageComponent implements OnDestroy {
     this.replies.length = 0;
   }
 
-  private createIntentDestinationFormGroup(): FormGroup {
+  private createIntentDestinationFormGroup(): UntypedFormGroup {
     return this._formBuilder.group({
       [TYPE]: this._formBuilder.control('', Validators.required),
       [QUALIFIER]: this._formBuilder.array([]),
@@ -127,9 +127,9 @@ export class PublishMessageComponent implements OnDestroy {
     });
   }
 
-  private createTopicDestinationFormGroup(): FormGroup {
+  private createTopicDestinationFormGroup(): UntypedFormGroup {
     return this._formBuilder.group({
-      [TOPIC]: new FormControl('', Validators.required),
+      [TOPIC]: new UntypedFormControl('', Validators.required),
     });
   }
 
@@ -137,7 +137,7 @@ export class PublishMessageComponent implements OnDestroy {
     const topic = this.form.get(DESTINATION).get(TOPIC).value;
     const message = this.form.get(MESSAGE).value === '' ? undefined : this.form.get(MESSAGE).value;
     const requestReply = this.form.get(REQUEST_REPLY).value;
-    const headers = SciParamsEnterComponent.toParamsMap(this.form.get(HEADERS) as FormArray);
+    const headers = SciParamsEnterComponent.toParamsMap(this.form.get(HEADERS) as UntypedFormArray);
 
     this.markPublishing(true);
     this.publishError = null;
@@ -168,15 +168,15 @@ export class PublishMessageComponent implements OnDestroy {
 
   private publishIntent(): void {
     const type: string = this.form.get(DESTINATION).get(TYPE).value;
-    const qualifier: Qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(DESTINATION).get(QUALIFIER) as FormArray);
-    const params: Map<string, any> = SciParamsEnterComponent.toParamsMap(this.form.get(DESTINATION).get(PARAMS) as FormArray);
+    const qualifier: Qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(DESTINATION).get(QUALIFIER) as UntypedFormArray);
+    const params: Map<string, any> = SciParamsEnterComponent.toParamsMap(this.form.get(DESTINATION).get(PARAMS) as UntypedFormArray);
 
     // Convert entered params to their actual values.
     params?.forEach((paramValue, paramName) => params.set(paramName, convertValueFromUI(paramValue)));
 
     const message = this.form.get(MESSAGE).value === '' ? undefined : this.form.get(MESSAGE).value;
     const requestReply = this.form.get(REQUEST_REPLY).value;
-    const headers = SciParamsEnterComponent.toParamsMap(this.form.get(HEADERS) as FormArray);
+    const headers = SciParamsEnterComponent.toParamsMap(this.form.get(HEADERS) as UntypedFormArray);
 
     this.markPublishing(true);
     this.publishError = null;

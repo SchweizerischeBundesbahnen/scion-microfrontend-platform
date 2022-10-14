@@ -111,9 +111,7 @@
         "consistent-return": "error",
         "eqeqeq": "error",
         "implicit-arrow-linebreak": "error",
-        "object-curly-spacing": [
-          "error"
-        ],
+        "object-curly-spacing": "error",
         "nonblock-statement-body-position": "error",
         "rxjs/no-implicit-any-catch": "off"
       }

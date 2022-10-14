@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {APP_IDENTITY, Capability, ManifestObjectFilter, ManifestService, ParamDefinition} from '@scion/microfrontend-platform';
 import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
 import {Observable} from 'rxjs';
@@ -40,8 +40,8 @@ export class RegisterCapabilityComponent {
   public readonly APP_SYMBOLIC_NAME = APP_SYMBOLIC_NAME;
 
   public paramsPlaceholder: ParamDefinition[] = [{name: 'param1', required: true}, {name: 'param2', required: true}];
-  public registerForm: FormGroup;
-  public unregisterForm: FormGroup;
+  public registerForm: UntypedFormGroup;
+  public unregisterForm: UntypedFormGroup;
 
   public capabilities$: Observable<Capability[]>;
 
@@ -50,21 +50,21 @@ export class RegisterCapabilityComponent {
   public unregisterResponse: 'OK' | undefined;
   public unregisterError: string;
 
-  constructor(fb: FormBuilder) {
+  constructor(fb: UntypedFormBuilder) {
     this.registerForm = fb.group({
-      [TYPE]: new FormControl('', Validators.required),
+      [TYPE]: new UntypedFormControl('', Validators.required),
       [QUALIFIER]: fb.array([]),
-      [PARAMS]: new FormControl(''),
-      [PRIVATE]: new FormControl(false),
+      [PARAMS]: new UntypedFormControl(''),
+      [PRIVATE]: new UntypedFormControl(false),
       [PROPERTIES]: fb.array([]),
     });
 
     this.unregisterForm = fb.group({
-      [ID]: new FormControl(''),
-      [TYPE]: new FormControl(''),
+      [ID]: new UntypedFormControl(''),
+      [TYPE]: new UntypedFormControl(''),
       [QUALIFIER]: fb.array([]),
-      [NILQUALIFIER_IF_EMPTY]: new FormControl(false),
-      [APP_SYMBOLIC_NAME]: new FormControl(''),
+      [NILQUALIFIER_IF_EMPTY]: new UntypedFormControl(false),
+      [APP_SYMBOLIC_NAME]: new UntypedFormControl(''),
     });
 
     this.capabilities$ = Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: Beans.get<string>(APP_IDENTITY)});
@@ -77,10 +77,10 @@ export class RegisterCapabilityComponent {
 
     const capability: Capability = {
       type: this.registerForm.get(TYPE).value,
-      qualifier: SciParamsEnterComponent.toParamsDictionary(this.registerForm.get(QUALIFIER) as FormArray),
+      qualifier: SciParamsEnterComponent.toParamsDictionary(this.registerForm.get(QUALIFIER) as UntypedFormArray),
       params: params ? JSON.parse(params) : undefined,
       private: this.registerForm.get(PRIVATE).value,
-      properties: SciParamsEnterComponent.toParamsDictionary(this.registerForm.get(PROPERTIES) as FormArray, false),
+      properties: SciParamsEnterComponent.toParamsDictionary(this.registerForm.get(PROPERTIES) as UntypedFormArray, false),
     };
 
     Beans.get(ManifestService).registerCapability(capability)
@@ -92,7 +92,7 @@ export class RegisterCapabilityComponent {
       })
       .finally(() => {
         this.registerForm.reset();
-        this.registerForm.setControl(QUALIFIER, new FormArray([]));
+        this.registerForm.setControl(QUALIFIER, new UntypedFormArray([]));
       });
   }
 
@@ -101,7 +101,7 @@ export class RegisterCapabilityComponent {
     this.unregisterError = undefined;
 
     const nilQualifierIfEmpty = this.unregisterForm.get(NILQUALIFIER_IF_EMPTY).value;
-    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.unregisterForm.get(QUALIFIER) as FormArray, false);
+    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.unregisterForm.get(QUALIFIER) as UntypedFormArray, false);
     const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
 
     const filter: ManifestObjectFilter = {
@@ -120,7 +120,7 @@ export class RegisterCapabilityComponent {
       })
       .finally(() => {
         this.unregisterForm.reset();
-        this.unregisterForm.setControl(QUALIFIER, new FormArray([]));
+        this.unregisterForm.setControl(QUALIFIER, new UntypedFormArray([]));
       });
   }
 }

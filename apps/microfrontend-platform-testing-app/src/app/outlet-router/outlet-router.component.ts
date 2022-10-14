@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {FormArray, FormBuilder, FormControl, FormGroup} from '@angular/forms';
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
 import {NavigationOptions, OutletRouter} from '@scion/microfrontend-platform';
 import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -34,25 +34,25 @@ export class OutletRouterComponent {
   public PARAMS = PARAMS;
   public PUSH_SESSION_HISTORY_STATE = PUSH_SESSION_HISTORY_STATE;
 
-  public form: FormGroup;
+  public form: UntypedFormGroup;
   public navigateError: string;
   public navigated = false;
 
-  constructor(formBuilder: FormBuilder) {
+  constructor(formBuilder: UntypedFormBuilder) {
     this.form = formBuilder.group({
-      [OUTLET]: new FormControl(''),
-      [USE_INTENT]: new FormControl(false),
-      [URL]: new FormControl(''),
+      [OUTLET]: new UntypedFormControl(''),
+      [USE_INTENT]: new UntypedFormControl(false),
+      [URL]: new UntypedFormControl(''),
       [QUALIFIER]: formBuilder.array([]),
       [PARAMS]: formBuilder.array([]),
-      [PUSH_SESSION_HISTORY_STATE]: new FormControl(false),
+      [PUSH_SESSION_HISTORY_STATE]: new UntypedFormControl(false),
     });
   }
 
   public async onNavigateClick(): Promise<void> {
     const options: NavigationOptions = {
       outlet: this.form.get(OUTLET).value || undefined,
-      params: SciParamsEnterComponent.toParamsMap(this.form.get(PARAMS) as FormArray),
+      params: SciParamsEnterComponent.toParamsMap(this.form.get(PARAMS) as UntypedFormArray),
     };
     if (this.form.get(PUSH_SESSION_HISTORY_STATE).value) {
       options.pushStateToSessionHistoryStack = true;
@@ -62,7 +62,7 @@ export class OutletRouterComponent {
     this.navigated = false;
     try {
       if (this.form.get(USE_INTENT).value) {
-        const qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(QUALIFIER) as FormArray);
+        const qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(QUALIFIER) as UntypedFormArray);
         await Beans.get(OutletRouter).navigate(qualifier, options);
       }
       else {
@@ -72,8 +72,8 @@ export class OutletRouterComponent {
 
       this.navigated = true;
       this.form.reset();
-      this.form.setControl(PARAMS, new FormArray([]));
-      this.form.setControl(QUALIFIER, new FormArray([]));
+      this.form.setControl(PARAMS, new UntypedFormArray([]));
+      this.form.setControl(QUALIFIER, new UntypedFormArray([]));
     }
     catch (error) {
       this.navigateError = error;

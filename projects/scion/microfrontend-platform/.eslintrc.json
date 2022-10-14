@@ -11,8 +11,6 @@
       "parserOptions": {
         "project": [
           "projects/scion/microfrontend-platform/tsconfig.lib.json",
-          "projects/scion/microfrontend-platform/tsconfig.lib.prod.json",
-          "projects/scion/microfrontend-platform/tsconfig.lib.prod.typedoc.json",
           "projects/scion/microfrontend-platform/tsconfig.spec.json"
         ]
       },

@@ -14,7 +14,7 @@ import {Observable, ReplaySubject} from 'rxjs';
 import {expand, map, switchMap, take} from 'rxjs/operators';
 import {filterManifestObjects} from '../manifest-object-filter.utils';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
-import {FormControl} from '@angular/forms';
+import {UntypedFormControl} from '@angular/forms';
 import {Maps} from '@scion/toolkit/util';
 import {KeyValue} from '@angular/common';
 
@@ -32,7 +32,7 @@ export class RequiredCapabilitiesComponent implements OnChanges {
   public appSymbolicName: string;
 
   public capabilitiesByApp$: Observable<Map<string, Capability[]>>;
-  public filterFormControl = new FormControl();
+  public filterFormControl = new UntypedFormControl();
   public selectedCapability: Capability;
 
   constructor(manifestService: DevToolsManifestService, private _router: Router) {

@@ -31,7 +31,7 @@ import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
  * | Key | Value type | Description |
  * |-----|------------|-------------|
  * | {@link OUTLET_CONTEXT ɵOUTLET} | {@link OutletContext} | Information about the outlet which embeds the microfrontend. |
- * | {@link ACTIVATION_CONTEXT ɵACTIVATION_CONTEXT} | {@link ActivationContext} | Information about the activation context if loaded by an activator. See {@link Activator} for more information about activators. |
+ * | {@link ACTIVATION_CONTEXT ɵACTIVATION_CONTEXT} | {@link ActivationContext} | Information about the activation context if loaded by an activator. See {@link ActivatorCapability} for more information about activators. |
  *
  *
  * @category Context

@@ -9,7 +9,7 @@
  */
 import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, Injector, Input, ViewChild} from '@angular/core';
 import {OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
-import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {Overlay} from '@angular/cdk/overlay';
 import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
 import {RouterOutletSettingsComponent} from '../router-outlet-settings/router-outlet-settings.component';
@@ -31,7 +31,7 @@ export const URL = 'url';
 export class BrowserOutletComponent {
 
   public URL = URL;
-  public form: FormGroup;
+  public form: UntypedFormGroup;
   public appEntryPoints: AppEndpoint[];
 
   @Input()
@@ -48,12 +48,12 @@ export class BrowserOutletComponent {
   public routerOutlet: ElementRef<SciRouterOutletElement>;
 
   constructor(host: ElementRef<HTMLElement>,
-              formBuilder: FormBuilder,
+              formBuilder: UntypedFormBuilder,
               private _activatedRoute: ActivatedRoute,
               private _overlay: Overlay,
               private _injector: Injector) {
     this.form = formBuilder.group({
-      [URL]: new FormControl('', Validators.required),
+      [URL]: new UntypedFormControl('', Validators.required),
     });
     this.appEntryPoints = this.readAppEntryPoints();
   }

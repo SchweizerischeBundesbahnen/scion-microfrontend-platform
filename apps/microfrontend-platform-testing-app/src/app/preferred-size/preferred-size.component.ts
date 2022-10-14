@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {PreferredSizeService} from '@scion/microfrontend-platform';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
@@ -34,22 +34,22 @@ export class PreferredSizeComponent implements OnDestroy {
   public HEIGHT = HEIGHT;
   public USE_ELEMENT_SIZE = USE_ELEMENT_SIZE;
 
-  public form: FormGroup;
+  public form: UntypedFormGroup;
   public elementDimensionObservableBound: boolean;
 
   private _destroy$ = new Subject<void>();
 
-  constructor(formBuilder: FormBuilder, private _host: ElementRef<HTMLElement>) {
+  constructor(formBuilder: UntypedFormBuilder, private _host: ElementRef<HTMLElement>) {
     this.form = formBuilder.group({
       [CSS_SIZE]: formBuilder.group({
-        [WIDTH]: new FormControl('', Validators.pattern(/^\d+px$/)),
-        [HEIGHT]: new FormControl('', Validators.pattern(/^\d+px$/)),
+        [WIDTH]: new UntypedFormControl('', Validators.pattern(/^\d+px$/)),
+        [HEIGHT]: new UntypedFormControl('', Validators.pattern(/^\d+px$/)),
       }),
       [PREFERRED_SIZE]: formBuilder.group({
-        [WIDTH]: new FormControl('', Validators.pattern(/^\d+px$/)),
-        [HEIGHT]: new FormControl('', Validators.pattern(/^\d+px$/)),
+        [WIDTH]: new UntypedFormControl('', Validators.pattern(/^\d+px$/)),
+        [HEIGHT]: new UntypedFormControl('', Validators.pattern(/^\d+px$/)),
       }),
-      [USE_ELEMENT_SIZE]: new FormControl(false),
+      [USE_ELEMENT_SIZE]: new UntypedFormControl(false),
     }, {updateOn: 'blur'});
 
     this.form.get(USE_ELEMENT_SIZE).valueChanges

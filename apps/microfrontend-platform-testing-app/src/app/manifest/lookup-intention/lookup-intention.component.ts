@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {FormArray, FormBuilder, FormControl, FormGroup} from '@angular/forms';
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
 import {Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
 import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
 import {Observable} from 'rxjs';
@@ -34,22 +34,22 @@ export class LookupIntentionComponent {
   public readonly NILQUALIFIER_IF_EMPTY = NILQUALIFIER_IF_EMPTY;
   public readonly APP_SYMBOLIC_NAME = APP_SYMBOLIC_NAME;
 
-  public form: FormGroup;
+  public form: UntypedFormGroup;
   public intentions$: Observable<Intention[]>;
 
-  constructor(fb: FormBuilder) {
+  constructor(fb: UntypedFormBuilder) {
     this.form = fb.group({
-      [ID]: new FormControl(''),
-      [TYPE]: new FormControl(''),
+      [ID]: new UntypedFormControl(''),
+      [TYPE]: new UntypedFormControl(''),
       [QUALIFIER]: fb.array([]),
-      [NILQUALIFIER_IF_EMPTY]: new FormControl(false),
-      [APP_SYMBOLIC_NAME]: new FormControl(''),
+      [NILQUALIFIER_IF_EMPTY]: new UntypedFormControl(false),
+      [APP_SYMBOLIC_NAME]: new UntypedFormControl(''),
     });
   }
 
   public onLookup(): void {
     const nilQualifierIfEmpty = this.form.get(NILQUALIFIER_IF_EMPTY).value;
-    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(QUALIFIER) as FormArray, false);
+    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(QUALIFIER) as UntypedFormArray, false);
     const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
 
     const filter: ManifestObjectFilter = {
@@ -68,6 +68,6 @@ export class LookupIntentionComponent {
 
   public onReset(): void {
     this.form.reset();
-    this.form.setControl(QUALIFIER, new FormArray([]));
+    this.form.setControl(QUALIFIER, new UntypedFormArray([]));
   }
 }

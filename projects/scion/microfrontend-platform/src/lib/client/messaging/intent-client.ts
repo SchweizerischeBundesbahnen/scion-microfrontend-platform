@@ -86,7 +86,7 @@ export abstract class IntentClient {
   /**
    * Receives an intent when some micro application wants to collaborate with this micro application.
    *
-   * Intents are typically handled in an activator. Refer to {@link Activator} for more information.
+   * Intents are typically handled in an activator. Refer to {@link ActivatorCapability} for more information.
    *
    * The micro application receives only intents for which it provides a fulfilling capability through its manifest.
    * You can filter received intents by passing a selector. The selector supports the use of wildcards.
@@ -151,7 +151,7 @@ export abstract class IntentClient {
    * @param  callback - Specifies the callback to be called for each intent. When used in request-response communication,
    *         the callback function can return the response either directly or in the form of a Promise or Observable. If returning
    *         a response in fire-and-forget communication, it is ignored. Throwing an error in the callback does not unregister the callback.
-   * @return Subscription to unregister the callback. Calling {@link Subscription.unsubscribe} will complete the Observable of all
+   * @return Subscription to unregister the callback. Calling {@link rxjs!Subscription.unsubscribe Subscription.unsubscribe} will complete the Observable of all
    *         requestors, if any.
    */
   public abstract onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription;
@@ -171,8 +171,6 @@ export interface IntentOptions {
 
 /**
  * Allows filtering intents.
- *
- * @ignore
  */
 export interface IntentSelector {
   /**

@@ -86,7 +86,7 @@ import {ACTIVATION_CONTEXT, PlatformCapabilityTypes, Qualifier} from '../../plat
  *   outlet: 'aside',
  *   params: {id: 123},
  * });
- * ````
+ * ```
  *
  * Applications can provide microfrontend capabilities through their manifest. A microfrontend can be either application private or exposed to
  * other micro applications. The platform requires all microfrontend capabilities to be of type `microfrontend`. A particular microfrontend can

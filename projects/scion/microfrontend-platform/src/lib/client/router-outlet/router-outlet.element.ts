@@ -170,12 +170,12 @@ const HTML_TEMPLATE = `
  *
  * ```html
  * <sci-router-outlet onfocuswithin="onFocusWithin()"></sci-router-outlet>
- * ````
+ * ```
  *
  * For an Angular application, it would look as follows:
  * ```html
  * <sci-router-outlet (focuswithin)="onFocusWithin($event)"></sci-router-outlet>
- * ````
+ * ```
  *
  * #### Web component
  * The outlet is registered as a custom element in the browser's custom element registry as defined by the Web Components standard.

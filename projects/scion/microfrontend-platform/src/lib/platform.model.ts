@@ -252,8 +252,6 @@ export interface Intention {
 
 /**
  * Built in capability types.
- *
- * @ignore
  */
 export enum PlatformCapabilityTypes {
   /**
@@ -428,8 +426,8 @@ export interface ParamDefinition {
    * Allows deprecating the parameter.
    *
    * It is good practice to explain the deprecation, provide the date of removal, and how to migrate.
-   * If renaming the parameter, you can set the {@link ParamDefinition.deprecated.useInstead useInstead} property to specify
-   * which parameter to use instead. At runtime, this will map the parameter to the specified replacement, allowing for
+   * If renaming the parameter, you can set the `useInstead` property to specify which parameter to use
+   * instead. At runtime, this will map the parameter to the specified replacement, allowing for
    * straightforward migration on the provider side.
    */
   deprecated?: true | {message?: string; useInstead?: string};

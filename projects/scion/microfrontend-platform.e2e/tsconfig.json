@@ -1,16 +1,19 @@
 {
-  "extends": "../../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../../out-tsc/microfrontend-platform.e2e",
+    "baseUrl": "../../../",
+    "outDir": "../../../out-tsc",
     "module": "commonjs",
-    "baseUrl": ".",
-    "paths": {
-      "@scion/microfrontend-platform": [
-        "microfrontend-platform.api"
-      ],
-    },
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "target": "es2020",
     "types": [
       "node"
-    ]
+    ],
+    "paths": {
+      "@scion/microfrontend-platform" : [
+        "projects/scion/microfrontend-platform.e2e/microfrontend-platform.api"
+      ]
+    }
   }
 }

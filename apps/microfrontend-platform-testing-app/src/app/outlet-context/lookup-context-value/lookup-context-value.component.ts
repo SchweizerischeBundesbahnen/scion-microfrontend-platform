@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ContextService} from '@scion/microfrontend-platform';
 import {Subject, Subscription} from 'rxjs';
@@ -28,7 +28,7 @@ export class LookupContextValueComponent implements OnDestroy {
   public KEY = KEY;
   public COLLECT = COLLECT;
 
-  public form: FormGroup;
+  public form: UntypedFormGroup;
   public observeValue: any;
   public lookupValue: any;
   public subscribeError: string;
@@ -37,11 +37,11 @@ export class LookupContextValueComponent implements OnDestroy {
   private _subscription: Subscription;
   private _destroy$ = new Subject<void>();
 
-  constructor(private _formBuilder: FormBuilder, private _cd: ChangeDetectorRef) {
+  constructor(private _formBuilder: UntypedFormBuilder, private _cd: ChangeDetectorRef) {
     this._contextService = Beans.get(ContextService);
     this.form = this._formBuilder.group({
-      [KEY]: new FormControl('', Validators.required),
-      [COLLECT]: new FormControl(false, Validators.required),
+      [KEY]: new UntypedFormControl('', Validators.required),
+      [COLLECT]: new UntypedFormControl(false, Validators.required),
     });
   }
 

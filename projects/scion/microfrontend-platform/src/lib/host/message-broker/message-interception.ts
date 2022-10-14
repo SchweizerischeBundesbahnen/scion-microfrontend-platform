@@ -171,8 +171,6 @@ export function chainInterceptors<T>(interceptors: Interceptor<T, Handler<T>>[],
  *
  * @see {@link MessageInterceptor}
  * @see {@link IntentInterceptor}
- *
- * @ignore
  */
 export interface Interceptor<T, H extends Handler<T>> {
 

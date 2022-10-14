@@ -313,8 +313,6 @@ export function mapToBody<T>(): OperatorFunction<TopicMessage<T> | IntentMessage
 
 /**
  * Indicates that the request handler responded with an error response.
- *
- * @ignore
  */
 export class RequestError extends Error {
 

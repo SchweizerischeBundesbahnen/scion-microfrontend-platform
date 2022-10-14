@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, Component, ElementRef, Injector, ViewChild} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
 import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
 import {Overlay} from '@angular/cdk/overlay';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
@@ -27,7 +27,7 @@ export class RouterOutletComponent {
 
   public OUTLET_NAME = OUTLET_NAME;
 
-  public form: FormGroup;
+  public form: UntypedFormGroup;
   public outletName: string;
 
   @ViewChild('settings_button', {static: true})
@@ -39,11 +39,11 @@ export class RouterOutletComponent {
   @ViewChild('router_outlet', {static: true})
   public _routerOutlet: ElementRef<SciRouterOutletElement>;
 
-  constructor(formBuilder: FormBuilder,
+  constructor(formBuilder: UntypedFormBuilder,
               private _overlay: Overlay,
               private _injector: Injector) {
     this.form = formBuilder.group({
-      [OUTLET_NAME]: new FormControl(''),
+      [OUTLET_NAME]: new UntypedFormControl(''),
     });
   }
 
