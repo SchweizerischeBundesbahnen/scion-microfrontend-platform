@@ -15,7 +15,7 @@ import {expand, map, switchMap, take} from 'rxjs/operators';
 import {filterManifestObjects} from '../manifest-object-filter.utils';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Maps} from '@scion/toolkit/util';
-import {FormControl} from '@angular/forms';
+import {UntypedFormControl} from '@angular/forms';
 import {KeyValue} from '@angular/common';
 
 @Component({
@@ -32,7 +32,7 @@ export class DependentIntentionsComponent implements OnChanges {
   public appSymbolicName: string;
 
   public intentionsByApp$: Observable<Map<string, Intention[]>>;
-  public filterFormControl = new FormControl();
+  public filterFormControl = new UntypedFormControl();
 
   constructor(manifestService: DevToolsManifestService, private _router: Router) {
     this.intentionsByApp$ = this._appChange$

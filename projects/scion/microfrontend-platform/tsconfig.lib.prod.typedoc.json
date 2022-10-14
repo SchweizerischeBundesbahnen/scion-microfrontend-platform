@@ -1,23 +1,37 @@
 {
   "extends": "./tsconfig.lib.prod.json",
   "typedocOptions": {
+    "name": "SCION Microfrontend Platform",
     "entryPoints": [
       "src/public-api.ts"
     ],
     "out": "../../../dist/microfrontend-platform-api",
     "includeVersion": true,
-    "listInvalidSymbolLinks": true,
     "excludeProtected": false,
     "excludePrivate": true,
     "excludeExternals": true,
     "exclude": "**/ɵ*.ts",
+    "categorizeByGroup": true,
     "categoryOrder": [
       "Platform",
       "Intention API",
       "Messaging",
       "Routing"
     ],
-    "categorizeByGroup": true,
-    "defaultCategory": "Platform"
+    "defaultCategory": "Platform",
+    "validation": {
+      "notExported": true,
+      "invalidLink": true,
+      "notDocumented": false
+    },
+    "externalSymbolLinkMappings": {
+      "@scion/toolkit": {
+        "Beans.registerInitializer": "https://github.com/SchweizerischeBundesbahnen/scion-toolkit/blob/master/docs/site/tools/bean-manager.md"
+      },
+      "rxjs": {
+        "takeUntil": "https://rxjs.dev/api/index/function/takeUntil",
+        "Subscription.unsubscribe": "https://rxjs.dev/api/index/class/Subscription#unsubscribe"
+      }
+    }
   }
 }

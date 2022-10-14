@@ -8,5 +8,5 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+export {ContextLookupOptions} from './context.model';
 export {ContextService} from './context-service';
-

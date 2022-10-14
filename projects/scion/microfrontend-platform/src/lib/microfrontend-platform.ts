@@ -106,7 +106,7 @@ const version = '1.0.0-rc.7';
  * @see {@link PreferredSizeService}
  * @see {@link ManifestService}
  * @see {@link FocusMonitor}
- * @see {@link Activator}
+ * @see {@link ActivatorCapability}
  *
  * @category Platform
  */
@@ -125,7 +125,7 @@ export class MicrofrontendPlatform {
    * The platform should be started during bootstrapping of the host application. In Angular, for example, the platform is typically started in an app initializer.
    *
    * In the host, the web applications are registered as micro applications. Registered micro applications can interact with the platform and other micro applications.
-   * As with micro applications, the host can provide a manifest to contribute behavior. For more information, see {@link MicrofrontendPlatformConfig.host.manifest}.
+   * As with micro applications, the host can provide a manifest to contribute behavior. For more information, see {@link HostConfig.manifest} in {@link MicrofrontendPlatformConfig.host}.
    * If you are integrating the platform in a library, you may want to add behavior to the host's manifest, which you can do with a {@link HostManifestInterceptor}.
    *
    * During platform startup, the platform loads the manifests of registered micro applications. Because starting the platform is an asynchronous operation, you should
@@ -133,7 +133,7 @@ export class MicrofrontendPlatform {
    * to the user about the progress of the platform startup. See {@link MicrofrontendPlatform.startupProgress$} for more information.
    *
    * In the lifecycle of the platform, it traverses different lifecycle states that you can hook into by registering a callback to {@link MicrofrontendPlatform.whenState}.
-   * To hook into the startup of the platform, you can register an initializer using {@link Beans.registerInitializer}, optionally passing a runlevel to control when the initializer
+   * To hook into the startup of the platform, you can register an initializer using {@link @scion/toolkit!Beans.registerInitializer Beans.registerInitializer}, optionally passing a runlevel to control when the initializer
    * will execute. The platform supports following runlevels:
    *
    * - In runlevel `0`, the platform fetches manifests of registered micro applications.

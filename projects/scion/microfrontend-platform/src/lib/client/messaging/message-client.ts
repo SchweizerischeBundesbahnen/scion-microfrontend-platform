@@ -140,7 +140,7 @@ export abstract class MessageClient {
    * @param  callback - Specifies the callback to be called for each message. When used in request-response communication,
    *         the callback function can return the response either directly or in the form of a Promise or Observable. If returning
    *         a response in fire-and-forget communication, it is ignored. Throwing an error in the callback does not unregister the callback.
-   * @return Subscription to unregister the callback. Calling {@link Subscription.unsubscribe} will complete the Observable of all
+   * @return Subscription to unregister the callback. Calling {@link rxjs!Subscription.unsubscribe Subscription.unsubscribe} will complete the Observable of all
    *         requestors, if any.
    */
   public abstract onMessage<IN = any, OUT = any>(topic: string, callback: (message: TopicMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription;
@@ -160,7 +160,7 @@ export abstract class MessageClient {
  * given topic. When the subscription count on the given topic drops to zero, the returned Observable completes. If there
  * is no topic subscription present at the time when subscribing to the Observable, then it completes immediately.
  *
- * This operator is similar to the RxJS {@link takeUntil} operator, but accepts a topic instead of a notifier Observable.
+ * This operator is similar to the RxJS {@link rxjs!takeUntil takeUntil} operator, but accepts a topic instead of a notifier Observable.
  *
  * @category Messaging
  */

@@ -9,7 +9,7 @@
  */
 import {Component, OnDestroy} from '@angular/core';
 import {IntentClient, IntentMessage, MessageClient, MessageHeaders, Qualifier, TopicMessage} from '@scion/microfrontend-platform';
-import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {Subject, Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith, takeUntil} from 'rxjs/operators';
 import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
@@ -43,18 +43,18 @@ export class ReceiveMessageComponent implements OnDestroy {
   private _intentClient: IntentClient;
   private _subscription: Subscription;
 
-  public form: FormGroup;
+  public form: UntypedFormGroup;
   public messages: (TopicMessage | IntentMessage)[] = [];
   public MessagingFlavor = MessagingFlavor;
   public MessageHeaders = MessageHeaders;
   public subscribeError: string;
 
-  constructor(private _formBuilder: FormBuilder) {
+  constructor(private _formBuilder: UntypedFormBuilder) {
     this._messageClient = Beans.get(MessageClient);
     this._intentClient = Beans.get(IntentClient);
 
     this.form = this._formBuilder.group({
-      [FLAVOR]: new FormControl(MessagingFlavor.Topic, Validators.required),
+      [FLAVOR]: new UntypedFormControl(MessagingFlavor.Topic, Validators.required),
       [DESTINATION]: this.createTopicDestinationFormGroup(),
     });
 
@@ -101,7 +101,7 @@ export class ReceiveMessageComponent implements OnDestroy {
 
   private subscribeIntent(): void {
     const type: string = this.form.get(DESTINATION).get(TYPE).value;
-    const qualifier: Qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(DESTINATION).get(QUALIFIER) as FormArray);
+    const qualifier: Qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(DESTINATION).get(QUALIFIER) as UntypedFormArray);
 
     this.form.disable();
     this.subscribeError = null;
@@ -139,16 +139,16 @@ export class ReceiveMessageComponent implements OnDestroy {
     return this.form.get(FLAVOR).value === MessagingFlavor.Topic;
   }
 
-  private createIntentDestinationFormGroup(): FormGroup {
+  private createIntentDestinationFormGroup(): UntypedFormGroup {
     return this._formBuilder.group({
       [TYPE]: this._formBuilder.control(''),
       [QUALIFIER]: this._formBuilder.array([]),
     });
   }
 
-  private createTopicDestinationFormGroup(): FormGroup {
+  private createTopicDestinationFormGroup(): UntypedFormGroup {
     return this._formBuilder.group({
-      [TOPIC]: new FormControl('', Validators.required),
+      [TOPIC]: new UntypedFormControl('', Validators.required),
     });
   }
 

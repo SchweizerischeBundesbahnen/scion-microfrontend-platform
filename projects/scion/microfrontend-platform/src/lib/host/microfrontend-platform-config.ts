@@ -36,7 +36,7 @@ export abstract class MicrofrontendPlatformConfig {
    *
    * By default, this API is enabled.
    *
-   * @see {@link Activator}
+   * @see {@link ActivatorCapability}
    */
   public abstract readonly activatorApiDisabled?: boolean;
   /**

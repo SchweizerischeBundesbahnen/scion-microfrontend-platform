@@ -51,7 +51,7 @@ declare const require: {
 // Then we find all the tests.
 const context = createWebpackContext();
 // And load the modules.
-context.keys().map(context);
+context.keys().forEach(context);
 
 /**
  * Creates the Webpack context as follows:

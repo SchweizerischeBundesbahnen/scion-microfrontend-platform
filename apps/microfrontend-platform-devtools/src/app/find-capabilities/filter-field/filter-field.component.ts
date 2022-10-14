@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, NgZone, OnInit, Output, ViewChild} from '@angular/core';
-import {FormControl} from '@angular/forms';
+import {UntypedFormControl} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
 import {KeyValuePair, LogicalOperator} from './filter-field';
 import {FocusOrigin} from '@angular/cdk/a11y';
@@ -64,12 +64,12 @@ export class FilterFieldComponent implements OnInit {
   @ViewChild('key', {read: ElementRef})
   private _keyElement: ElementRef<HTMLElement>;
 
-  public keyFC = new FormControl();
+  public keyFC = new UntypedFormControl();
 
   @ViewChild('value', {read: ElementRef})
   private _valueElement: ElementRef<HTMLElement>;
 
-  public valueFC = new FormControl();
+  public valueFC = new UntypedFormControl();
 
   public showFilter = false;
 

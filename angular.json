@@ -7,7 +7,7 @@
       "projectType": "library",
       "root": "projects/scion/microfrontend-platform",
       "sourceRoot": "projects/scion/microfrontend-platform/src",
-      "prefix": "lib",
+      "prefix": "sci",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
@@ -60,6 +60,11 @@
     },
     "microfrontend-platform-testing-app": {
       "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
       "root": "apps/microfrontend-platform-testing-app",
       "sourceRoot": "apps/microfrontend-platform-testing-app/src",
       "prefix": "app",
@@ -93,6 +98,18 @@
           },
           "configurations": {
             "production-vercel": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
               "fileReplacements": [
                 {
                   "replace": "apps/microfrontend-platform-testing-app/src/environments/environment.ts",
@@ -103,6 +120,18 @@
               "outputPath": "dist/microfrontend-platform-testing-app-vercel"
             },
             "production-ci": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
               "fileReplacements": [
                 {
                   "replace": "apps/microfrontend-platform-testing-app/src/environments/environment.ts",
@@ -144,18 +173,15 @@
             ]
           }
         }
-      },
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss"
-        },
-        "@schematics/angular:application": {
-          "strict": true
-        }
       }
     },
     "microfrontend-platform-devtools": {
       "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
       "root": "apps/microfrontend-platform-devtools",
       "sourceRoot": "apps/microfrontend-platform-devtools/src",
       "prefix": "devtools",
@@ -189,6 +215,18 @@
           },
           "configurations": {
             "production-vercel": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
               "fileReplacements": [
                 {
                   "replace": "apps/microfrontend-platform-devtools/src/environments/environment.ts",
@@ -230,19 +268,7 @@
             ]
           }
         }
-      },
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss"
-        },
-        "@schematics/angular:application": {
-          "strict": true
-        }
       }
     }
-  },
-  "defaultProject": "@scion/microfrontend-platform",
-  "cli": {
-    "defaultCollection": "@angular-eslint/schematics"
   }
 }

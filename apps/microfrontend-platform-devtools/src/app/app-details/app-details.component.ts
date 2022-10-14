@@ -15,7 +15,7 @@ import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {ActivatedRoute, NavigationEnd, Router, UrlSegmentGroup} from '@angular/router';
 import {filterManifestObjects} from '../manifest-object-filter.utils';
 import {ShellService} from '../shell.service';
-import {FormControl} from '@angular/forms';
+import {UntypedFormControl} from '@angular/forms';
 import {SciTabbarComponent} from '@scion/components.internal/tabbar';
 import {Arrays} from '@scion/toolkit/util';
 import {bufferUntil} from '@scion/toolkit/operators';
@@ -37,8 +37,8 @@ export class AppDetailsComponent implements OnDestroy {
   public capabilities$: Observable<Capability[]>;
   public intentions$: Observable<Intention[]>;
 
-  public capabilityFilterFormControl = new FormControl();
-  public intentionFilterFormControl = new FormControl();
+  public capabilityFilterFormControl = new UntypedFormControl();
+  public intentionFilterFormControl = new UntypedFormControl();
 
   private _tabbar$ = new BehaviorSubject<SciTabbarComponent>(null);
   private _destroy$ = new Subject<void>();

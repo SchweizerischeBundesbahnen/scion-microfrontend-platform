@@ -5,7 +5,6 @@
     "types": [
       "jasmine"
     ],
-    "target": "es5" // use ES5 in specs to test if 'broker-gateway-script.ts' is transpiled correctly to ES5
   },
   "files": [
     "src/test.ts"

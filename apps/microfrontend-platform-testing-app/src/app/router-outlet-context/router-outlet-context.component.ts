@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component, ElementRef, HostListener, Injector, OnDestroy} from '@angular/core';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
@@ -29,15 +29,15 @@ export class RouterOutletContextComponent implements OnDestroy {
   public readonly NAME = NAME;
   public readonly VALUE = VALUE;
 
-  public form: FormGroup;
+  public form: UntypedFormGroup;
 
   private _destroy$ = new Subject<void>();
 
   constructor(host: ElementRef<HTMLElement>,
-              formBuilder: FormBuilder,
+              formBuilder: UntypedFormBuilder,
               public routerOutlet: SciRouterOutletElement,
               private _overlay: OverlayRef) {
-    this.form = new FormGroup({
+    this.form = new UntypedFormGroup({
       [NAME]: formBuilder.control('', Validators.required),
       [VALUE]: formBuilder.control(''),
     }, {updateOn: 'change'});
