@@ -617,11 +617,12 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO_app1.clickPublish();
 
     // assert intent not to be dispatched
-    await expect(await publisherPO_app1.getPublishError()).toContain('[ParamMismatchError]');
+    await expect(await publisherPO_app1.getPublishError()).toMatch(/IntentParamValidationError/);
 
-    // assert intent not to be received
+    // assert intent not to be received by app 3
     await expect(await receiverPO_app3.getMessages()).toEqual([]);
-    await expect(await receiverPO_app4.getMessages()).toEqual([]);
+    // assert intent to be received by app 4 because parameter is marked as optional
+    await expect(await receiverPO_app4.getMessages()).toHaveLength(1);
   }
 
   /**
@@ -658,7 +659,7 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO_app3.clickPublish();
 
     // assert intent not to be dispatched
-    await expect(await publisherPO_app3.getPublishError()).toContain('[ParamMismatchError]');
+    await expect(await publisherPO_app3.getPublishError()).toMatch(/IntentParamValidationError/);
 
     // assert intent not to be received
     await expect(await receiverPO_app4.getMessages()).toEqual([]);
@@ -670,7 +671,7 @@ export namespace IntendBasedMessagingSpecs {
     await publisherPO_app3.clickPublish();
 
     // assert intent not to be dispatched
-    await expect(await publisherPO_app3.getPublishError()).toContain('[ParamMismatchError]');
+    await expect(await publisherPO_app3.getPublishError()).toMatch(/IntentParamValidationError/);
 
     // assert intent not to be received
     await expect(await receiverPO_app4.getMessages()).toEqual([]);

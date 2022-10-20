@@ -1607,8 +1607,8 @@ describe('Messaging', () => {
       });
 
       // publish
-      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')})).toReject(/\[ParamMismatchError].*missingParams=\[param2]/);
-      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param2', 'value2')})).toReject(/\[ParamMismatchError].*missingParams=\[param1]/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')})).toReject(/\[IntentParamValidationError].*missingParams=\[param2]/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param2', 'value2')})).toReject(/\[IntentParamValidationError].*missingParams=\[param1]/);
       await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1').set('param2', 'value2')})).toResolve();
     });
 
@@ -1629,7 +1629,7 @@ describe('Messaging', () => {
       });
 
       // publish
-      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1').set('param2', 'value2')})).toReject(/\[ParamMismatchError].*unexpectedParams=\[param2]/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1').set('param2', 'value2')})).toReject(/\[IntentParamValidationError].*unexpectedParams=\[param2]/);
     });
 
     it('should map deprecated params to their substitutes, if declared', async () => {
@@ -1687,10 +1687,10 @@ describe('Messaging', () => {
       Beans.get(IntentClient).observe$<string>({type: 'capability'}).subscribe(observeCaptor);
 
       // publish without params
-      await expectPromise(Beans.get(IntentClient).publish({type: 'capability'})).toReject(/\[ParamMismatchError].*missingParams=\[param3]/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability'})).toReject(/\[IntentParamValidationError].*missingParams=\[param3]/);
 
       // publish with param1
-      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')})).toReject(/\[ParamMismatchError].*missingParams=\[param3]/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')})).toReject(/\[IntentParamValidationError].*missingParams=\[param3]/);
 
       // publish with param2
       observeCaptor.reset();

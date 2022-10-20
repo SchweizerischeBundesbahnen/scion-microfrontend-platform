@@ -24,9 +24,8 @@ import {TopicMatcher} from '../../topic-matcher.util';
 import {chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
 import {Beans, Initializer, PreDestroy} from '@scion/toolkit/bean-manager';
 import {Runlevel} from '../../platform-state';
-import {APP_IDENTITY, Capability, ParamDefinition} from '../../platform.model';
+import {APP_IDENTITY, Capability} from '../../platform.model';
 import {bufferUntil} from '@scion/toolkit/operators';
-import {ParamMatcher} from './param-matcher';
 import {filterByChannel, filterByTopicChannel, filterByTransport} from '../../operators';
 import {Client} from '../client-registry/client';
 import {semver} from '../semver';
@@ -323,7 +322,7 @@ export class MessageBroker implements Initializer, PreDestroy {
         const messageId = topicMessage.headers.get(MessageHeaders.MessageId);
 
         try {
-          await this._messagePublisher.publish(topicMessage);
+          await this._messagePublisher.interceptAndPublish(topicMessage);
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
@@ -372,37 +371,8 @@ export class MessageBroker implements Initializer, PreDestroy {
           return;
         }
 
-        // If the params of the intent do not match the params of every fulfilling capability, send an error.
-        for (const capability of capabilities) {
-          // Remove params with `undefined` as value.
-          intentMessage.intent.params?.forEach((value, key) => {
-            if (value === undefined) {
-              intentMessage.intent.params!.delete(key);
-            }
-          });
-
-          // Test params passed with the intent to match expected params as declared by the capability.
-          const paramMatchResult = new ParamMatcher(capability.params!).match(intentMessage.intent.params);
-          if (!paramMatchResult.matches) {
-            const intentStringified = JSON.stringify(intentMessage.intent, (key, value) => (key === 'params') ? undefined : value);
-            const error = `[ParamMismatchError] Params of the intent do not match expected params of the resolved capability. Ensure to pass required params and not to include additional params. [intent=${intentStringified}, missingParams=[${paramMatchResult.missingParams.map(param => param.name)}], unexpectedParams=[${paramMatchResult.unexpectedParams}]].`;
-            sendDeliveryStatusError(client, messageId, error);
-            return;
-          }
-
-          // Warn about the usage of deprecated params.
-          if (paramMatchResult.deprecatedParams.length) {
-            paramMatchResult.deprecatedParams.forEach(deprecatedParam => {
-              const warning = constructDeprecatedParamWarning(deprecatedParam, {appSymbolicName: client.application.symbolicName});
-              Beans.get(Logger).warn(`[DEPRECATION] ${warning}`, new LoggingContext(client.application.symbolicName, client.version), intentMessage.intent);
-            });
-            // Use the matcher's parameters to have deprecated params mapped to their replacement.
-            intentMessage.intent.params = paramMatchResult.params!;
-          }
-        }
-
         try {
-          await Promise.all(capabilities.map(capability => this._intentPublisher.publish({...intentMessage, capability})));
+          await Promise.all(capabilities.map(capability => this._intentPublisher.interceptAndPublish({...intentMessage, capability})));
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
@@ -613,21 +583,6 @@ function catchErrorAndRetry<T>(): MonoTypeOperatorFunction<T> {
     Beans.get(Logger).error('[UnexpectedError] An unexpected error occurred.', error);
     return caught;
   });
-}
-
-/**
- * @ignore
- */
-function constructDeprecatedParamWarning(param: ParamDefinition, metadata: {appSymbolicName: string}): string {
-  const deprecation = param.deprecated!;
-  const useInstead = typeof deprecation === 'object' && deprecation.useInstead || undefined;
-  const message = typeof deprecation === 'object' && deprecation.message || undefined;
-
-  return new Array<string>()
-    .concat(`Application '${metadata.appSymbolicName}' passes a deprecated parameter in the intent: '${param.name}'.`)
-    .concat(useInstead ? `Pass parameter '${useInstead}' instead.` : [])
-    .concat(message || [])
-    .join(' ');
 }
 
 /**

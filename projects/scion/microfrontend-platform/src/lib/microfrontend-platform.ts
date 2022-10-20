@@ -26,7 +26,7 @@ import {FocusInEventDispatcher} from './client/focus/focus-in-event-dispatcher';
 import {FocusMonitor} from './client/focus/focus-monitor';
 import {ContextService} from './client/context/context-service';
 import {RouterOutletUrlAssigner} from './client/router-outlet/router-outlet-url-assigner';
-import {APP_IDENTITY, IS_PLATFORM_HOST, ɵWINDOW_TOP, ɵAPP_CONFIG} from './platform.model';
+import {APP_IDENTITY, IS_PLATFORM_HOST, ɵAPP_CONFIG, ɵWINDOW_TOP} from './platform.model';
 import {RelativePathResolver} from './client/router-outlet/relative-path-resolver';
 import {ClientRegistry} from './host/client-registry/client.registry';
 import {FocusTracker} from './host/focus/focus-tracker';
@@ -55,7 +55,8 @@ import {MicrofrontendPlatformStopper, ɵMicrofrontendPlatformStopper} from './mi
 import {VERSION} from './version';
 import {ɵClientRegistry} from './host/client-registry/ɵclient.registry';
 import {IntentInterceptor} from './host/message-broker/message-interception';
-import {MicrofrontendIntentInterceptor} from './host/router/microfrontend-intent.interceptor';
+import {MicrofrontendIntentNavigator} from './host/router/microfrontend-intent-navigator.interceptor';
+import {IntentParamValidator} from './host/message-broker/intent-param-validator.interceptor';
 
 /**
  * Current version of the SCION Microfrontend Platform.
@@ -181,7 +182,8 @@ export class MicrofrontendPlatform {
         Beans.register(PreferredSizeService, {eager: true});
         Beans.register(ManifestService);
         Beans.register(KeyboardEventDispatcher, {eager: true});
-        Beans.register(IntentInterceptor, {useClass: MicrofrontendIntentInterceptor, multi: true});
+        Beans.register(IntentInterceptor, {useClass: IntentParamValidator, multi: true});
+        Beans.register(IntentInterceptor, {useClass: MicrofrontendIntentNavigator, multi: true});
 
         // Register broker gateway.
         registerBrokerGateway({

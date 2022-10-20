@@ -136,7 +136,7 @@ export interface PublishInterceptorChain<T> {
    *
    * @throws throws an error if an interceptor rejected publishing.
    */
-  publish(message: T): Promise<void>;
+  interceptAndPublish(message: T): Promise<void>;
 }
 
 /**
@@ -160,7 +160,7 @@ export function chainInterceptors<T>(interceptors: Interceptor<T, Handler<T>>[],
   }, terminalHandler);
 
   return new class implements PublishInterceptorChain<T> {
-    public publish(element: T): Promise<void> {
+    public interceptAndPublish(element: T): Promise<void> {
       return handlerChain.handle(element);
     }
   };
@@ -188,4 +188,3 @@ export abstract class Handler<T> {
    */
   public abstract handle(message: T): Promise<void>;
 }
-
