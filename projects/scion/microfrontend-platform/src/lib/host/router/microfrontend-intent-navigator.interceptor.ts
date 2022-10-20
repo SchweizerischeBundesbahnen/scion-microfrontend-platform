@@ -24,7 +24,7 @@ import {PRIMARY_OUTLET} from '../../client/router-outlet/router-outlet.element';
  * Microfrontend intents are handled in this interceptor in order to support microfrontends not using the SCION Microfrontend Platform.
  * They are not transported to the providing application.
  */
-export class MicrofrontendIntentInterceptor implements IntentInterceptor {
+export class MicrofrontendIntentNavigator implements IntentInterceptor {
 
   /**
    * Microfrontend intents are handled in this interceptor and then swallowed.

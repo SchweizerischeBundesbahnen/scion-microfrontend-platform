@@ -46,13 +46,13 @@ describe('Message Interception', () => {
     publishChain = chainInterceptors([], publisher);
     const message: TopicMessage = {headers: new Map(), topic: 'topic'};
 
-    await publishChain.publish(message);
+    await publishChain.interceptAndPublish(message);
     expect(publisher).toHaveBeenCalledWith(message);
   });
 
   it('should pass a message through the interceptors in registration order', async () => {
     const message: TopicMessage = {headers: new Map(), topic: 'topic'};
-    await publishChain.publish(message);
+    await publishChain.interceptAndPublish(message);
 
     // assert interceptor invocation arguments
     expect(interceptor1.intercept).toHaveBeenCalledWith(message, any(Handler));
@@ -77,7 +77,7 @@ describe('Message Interception', () => {
 
     // Run the test
     const message: TopicMessage = {headers: new Map(), topic: 'topic'};
-    expect(() => publishChain.publish(message)).toThrowError(/MESSAGE REJECTED BY INTERCEPTOR 2/);
+    expect(() => publishChain.interceptAndPublish(message)).toThrowError(/MESSAGE REJECTED BY INTERCEPTOR 2/);
 
     // Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(message, any(Handler));
@@ -91,7 +91,7 @@ describe('Message Interception', () => {
 
     // Run the test
     const message: TopicMessage = {headers: new Map(), topic: 'topic'};
-    await expectPromise(publishChain.publish(message)).toReject(/MESSAGE REJECTED BY INTERCEPTOR 2/);
+    await expectPromise(publishChain.interceptAndPublish(message)).toReject(/MESSAGE REJECTED BY INTERCEPTOR 2/);
 
     // Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(message, any(Handler));
@@ -105,7 +105,7 @@ describe('Message Interception', () => {
 
     // Run the test
     const message: TopicMessage = {headers: new Map(), topic: 'topic'};
-    await publishChain.publish(message);
+    await publishChain.interceptAndPublish(message);
 
     // Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(message, any(Handler));
@@ -133,7 +133,7 @@ describe('Message Interception', () => {
 
     // Run the test
     const message: TopicMessage = {headers: new Map(), topic: 'topic', body: []};
-    await publishChain.publish(message);
+    await publishChain.interceptAndPublish(message);
 
     // Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(message, any(Handler));
@@ -174,13 +174,13 @@ describe('Intent Interception', () => {
     publishChain = chainInterceptors([], publisher);
     const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
 
-    await publishChain.publish(intent);
+    await publishChain.interceptAndPublish(intent);
     expect(publisher).toHaveBeenCalledWith(intent);
   });
 
   it('should pass an intent through the interceptors in registration order', async () => {
     const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
-    await publishChain.publish(intent);
+    await publishChain.interceptAndPublish(intent);
 
     // assert interceptor invocation arguments
     expect(interceptor1.intercept).toHaveBeenCalledWith(intent, any(Handler));
@@ -205,7 +205,7 @@ describe('Intent Interception', () => {
 
     // Run the test
     const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
-    expect(() => publishChain.publish(intent)).toThrowError(/INTENT REJECTED BY INTERCEPTOR 2/);
+    expect(() => publishChain.interceptAndPublish(intent)).toThrowError(/INTENT REJECTED BY INTERCEPTOR 2/);
 
     //  Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(intent, any(Handler));
@@ -219,7 +219,7 @@ describe('Intent Interception', () => {
 
     // Run the test
     const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
-    await expectPromise(publishChain.publish(intent)).toReject(/INTENT REJECTED BY INTERCEPTOR 2/);
+    await expectPromise(publishChain.interceptAndPublish(intent)).toReject(/INTENT REJECTED BY INTERCEPTOR 2/);
 
     //  Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(intent, any(Handler));
@@ -233,7 +233,7 @@ describe('Intent Interception', () => {
 
     // Run the test
     const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
-    await publishChain.publish(intent);
+    await publishChain.interceptAndPublish(intent);
 
     // Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(intent, any(Handler));
@@ -261,7 +261,7 @@ describe('Intent Interception', () => {
 
     // Run the test
     const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, body: [], capability: undefined};
-    await publishChain.publish(intent);
+    await publishChain.interceptAndPublish(intent);
 
     // Verify
     expect(interceptor1.intercept).toHaveBeenCalledWith(intent, any(Handler));

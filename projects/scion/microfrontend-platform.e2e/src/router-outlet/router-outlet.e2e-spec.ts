@@ -1512,7 +1512,7 @@ test.describe('RouterOutlet', () => {
       const navigate = routerPO.clickNavigate();
 
       // Verify that the navigation failed
-      await expect(navigate).rejects.toThrow(/\[ParamMismatchError]/);
+      await expect(navigate).rejects.toThrow(/IntentParamValidationError/);
       await expect(await routerOutletPO.isEmpty()).toBe(true);
       await expect(routerOutletPO).toHaveRouterOutletUrl('about:blank');
     });
@@ -1549,7 +1549,7 @@ test.describe('RouterOutlet', () => {
       const navigate = routerPO.clickNavigate();
 
       // Verify that the navigation failed
-      await expect(navigate).rejects.toThrow(/\[ParamMismatchError]/);
+      await expect(navigate).rejects.toThrow(/IntentParamValidationError/);
       await expect(await routerOutletPO.isEmpty()).toBe(true);
       await expect(routerOutletPO).toHaveRouterOutletUrl('about:blank');
     });
