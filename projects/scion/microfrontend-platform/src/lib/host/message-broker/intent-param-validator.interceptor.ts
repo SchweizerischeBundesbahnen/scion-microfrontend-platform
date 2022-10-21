@@ -43,7 +43,7 @@ export class IntentParamValidator implements IntentInterceptor {
     if (paramMatcherResult.deprecatedParams.length) {
       paramMatcherResult.deprecatedParams.forEach(deprecatedParam => {
         const warning = toDeprecatedParamWarning(deprecatedParam, {appSymbolicName: sender});
-        Beans.get(Logger).warn(`[DEPRECATION] ${warning}`, new LoggingContext(sender), intentMessage.intent);
+        Beans.get(Logger).warn(`[DEPRECATION][4EAC5956] ${warning}`, new LoggingContext(sender), intentMessage.intent);
       });
       // Use the matcher's parameters to have deprecated params mapped to their replacement.
       intentMessage.intent.params = paramMatcherResult.params!;

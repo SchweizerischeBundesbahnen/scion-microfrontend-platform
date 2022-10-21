@@ -83,7 +83,7 @@ export class ManifestService implements Initializer {
    *         to match any value, e.g., `{property: '*'}`, or partial matching to find capabilities with at least the specified qualifier
    *         properties. Partial matching is enabled by appending the _any-more_ entry to the qualifier, as following: `{'*': '*'}`.
    * @return An Observable that, when subscribed, emits the requested capabilities.
-   *         It never completes and emits continuously when satisfying capabilities are registered or unregistered.
+   *         It never completes and emits continuously when fulfilling capabilities are registered or unregistered.
    */
   public lookupCapabilities$<T extends Capability>(filter?: ManifestObjectFilter): Observable<T[]> {
     return Beans.get(MessageClient).request$<T[]>(ManifestRegistryTopics.LookupCapabilities, filter)
@@ -100,7 +100,7 @@ export class ManifestService implements Initializer {
    *         to match any value, e.g., `{property: '*'}`, or partial matching to find intentions with at least the specified qualifier
    *         properties. Partial matching is enabled by appending the _any-more_ entry to the qualifier, as following: `{'*': '*'}`.
    * @return An Observable that, when subscribed, emits the requested intentions.
-   *         It never completes and emits continuously when satisfying intentions are registered or unregistered.
+   *         It never completes and emits continuously when matching intentions are registered or unregistered.
    */
   public lookupIntentions$(filter?: ManifestObjectFilter): Observable<Intention[]> {
     return Beans.get(MessageClient).request$<Intention[]>(ManifestRegistryTopics.LookupIntentions, filter)

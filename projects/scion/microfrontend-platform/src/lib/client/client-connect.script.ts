@@ -18,7 +18,7 @@ import {filterByTransport} from '../operators';
 
 export async function connectToHost({symbolicName, brokerDiscoverTimeout, connectCount}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatform.connectToHost(symbolicName, {brokerDiscoverTimeout});
-  observer.next(Beans.get(ɵBrokerGateway).brokerInfo.clientId);
+  observer.next(Beans.get(ɵBrokerGateway).session.clientId);
 
   for (let i = 1; i < connectCount; i++) {
     const {clientId} = await Beans.get(ɵBrokerGateway).connectToBroker();
@@ -29,7 +29,7 @@ export async function connectToHost({symbolicName, brokerDiscoverTimeout, connec
 export async function connectClientToRemoteHost({symbolicName, brokerDiscoverTimeout}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   Beans.register(ɵWINDOW_TOP, {useValue: window}); // simulate to be loaded into the top-level window
   await MicrofrontendPlatform.connectToHost(symbolicName, {brokerDiscoverTimeout});
-  observer.next(Beans.get(ɵBrokerGateway).brokerInfo.clientId);
+  observer.next(Beans.get(ɵBrokerGateway).session.clientId);
 }
 
 /**

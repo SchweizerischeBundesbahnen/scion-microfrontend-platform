@@ -58,7 +58,7 @@ To learn more about an intention, see chapter <<chapter:intention-api:intention>
 [[chapter:intent-based-messaging:issuing-an-intent]]
 [discrete]
 === Issuing an Intent
-A micro application can issue intents for intentions declared in its manifest. The platform transports the intent to micro applications that provide a fulfilling capability. Along with the intent, you can pass transfer data, either as payload, message headers or parameters. Passed data must be serializable with the _Structured Clone Algorithm_.
+A micro application can issue intents for intentions declared in its manifest. The platform transports the intent to micro applications that provide a fulfilling capability. Along with the intent, the application can pass transfer data, either as payload, message headers or parameters. Passed data must be serializable with the _Structured Clone Algorithm_.
 
 The following code snippet illustrates starting the checkout wizard via intent.
 
@@ -98,7 +98,7 @@ To learn more about a capability, see chapter <<chapter:intention-api:capability
 [[chapter:intent-based-messaging:handling-intents]]
 [discrete]
 === Handling Intents
-Intents are transported to all micro application instances that provide a fulfilling capability. Intents are typically handled in an activator. An activator is a special microfrontend that a micro application can provide to interact with the platform. Activators are loaded when starting the host application and run for the entire application lifecycle. An activator microfrontend is special in that it is never displayed to the user. Learn more about activator in the chapter <<chapter:activator>>.
+Intents are transported to applications that provide a fulfilling capability and are typically subscribed to in an activator. An activator is a special microfrontend that a micro application can provide to interact with the platform. Activators are loaded when starting the host application and run for the entire application lifecycle. An activator microfrontend is special in that it is never displayed to the user. Learn more about activator in the chapter <<chapter:activator>>.
 
 The following code snippet illustrates how to listen to intents.
 
@@ -109,7 +109,7 @@ include::intent-based-messaging.snippets.ts[tags=handle-intent]
 <1> Defines the selector to filter intents. Without a selector, you would receive all intents you have defined a capability for. The selector supports the use of wildcards in the qualifier.
 <2> Subscribes to intents that match the selector.
 
-IMPORTANT: A micro application only receives intents for which it provides a respective capability. The selector is used as a filter only.
+IMPORTANT: A micro application only receives intents for which it provides a fulfilling capability. The selector is used as a filter only.
 
 [[chapter:intent-based-messaging:request-response-message-exchange-pattern]]
 [discrete]

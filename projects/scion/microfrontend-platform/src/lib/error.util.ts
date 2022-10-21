@@ -11,9 +11,9 @@
 /**
  * Returns the error message if given an error object, or the `toString` representation otherwise.
  */
-export function stringifyError(error: any): string {
+export function stringifyError(error: string | Error | unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
-  return error?.toString();
+  return `${error}`;
 }
