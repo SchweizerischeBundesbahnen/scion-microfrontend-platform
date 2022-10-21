@@ -49,10 +49,17 @@ export function filterByOrigin(origin: string): MonoTypeOperatorFunction<Message
 }
 
 /** @ignore */
-export function filterByMessageHeader<T extends Message>(header: {key: string; value: any}): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
+export function filterByWindow(window: Window): MonoTypeOperatorFunction<MessageEvent> {
+  return filter((event: MessageEvent): boolean => {
+    return event.source === window;
+  });
+}
+
+/** @ignore */
+export function filterByMessageHeader<T extends Message>(header: {name: string; value: any}): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
   return filter((event: MessageEvent<MessageEnvelope<T>>): boolean => {
     const messageHeaders = event.data.message.headers;
-    return messageHeaders.has(header.key) && messageHeaders.get(header.key) === header.value;
+    return messageHeaders.has(header.name) && messageHeaders.get(header.name) === header.value;
   });
 }
 

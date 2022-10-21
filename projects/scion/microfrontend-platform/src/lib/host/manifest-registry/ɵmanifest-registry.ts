@@ -86,7 +86,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   /**
-   * Tests whether the given app has declared a satisfying intention for the given capability.
+   * Tests whether the given app has declared a matching intention for the given capability.
    */
   private hasIntentionForCapability(appSymbolicName: string, capability: Capability): boolean {
     const filter: ManifestObjectFilter = {appSymbolicName, type: capability.type, qualifier: capability.qualifier};
@@ -300,12 +300,12 @@ function coerceCapabilityParamDefinitions(capability: Capability, appSymbolicNam
   capability.requiredParams?.forEach(name => { // eslint-disable-line deprecation/deprecation
     params.push({name, required: true});
     const migration = `{ params: [{name: '${name}', required: true}] }`;
-    Beans.get(Logger).warn(`[DEPRECATION] The '${appSymbolicName}' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, new LoggingContext(appSymbolicName), capability);
+    Beans.get(Logger).warn(`[DEPRECATION][AC3A912] The '${appSymbolicName}' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, new LoggingContext(appSymbolicName), capability);
   });
   capability.optionalParams?.forEach(name => { // eslint-disable-line deprecation/deprecation
     params.push({name, required: false});
     const migration = `{ params: [{name: '${name}', required: false}] }`;
-    Beans.get(Logger).warn(`[DEPRECATION] The '${appSymbolicName}' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, new LoggingContext(appSymbolicName), capability);
+    Beans.get(Logger).warn(`[DEPRECATION][97C70E9] The '${appSymbolicName}' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, new LoggingContext(appSymbolicName), capability);
   });
   capability.params?.forEach(param => {
     params.push(param);

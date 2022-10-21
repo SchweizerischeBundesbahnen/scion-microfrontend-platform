@@ -7,24 +7,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {EMPTY, fromEvent, MonoTypeOperatorFunction, Observable, of, Subject} from 'rxjs';
+import {EMPTY, fromEvent, MonoTypeOperatorFunction, Observable, of, pipe, Subject, tap} from 'rxjs';
 import {catchError, filter, mergeMap, share, takeUntil} from 'rxjs/operators';
 import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
-import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
+import {ConnackMessage, IntentSubscribeCommand, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, UnsubscribeCommand} from '../../ɵmessaging.model';
 import {ApplicationRegistry} from '../application-registry';
 import {ManifestRegistry} from '../manifest-registry/manifest-registry';
-import {Defined} from '@scion/toolkit/util';
 import {UUID} from '@scion/toolkit/uuid';
 import {Logger, LoggingContext} from '../../logger';
 import {runSafe} from '../../safe-runner';
-import {TopicSubscriptionRegistry} from './topic-subscription.registry';
+import {TopicSubscription, TopicSubscriptionRegistry} from './topic-subscription.registry';
 import {ClientRegistry} from '../client-registry/client.registry';
-import {RetainedMessageStore} from './retained-message-store';
-import {TopicMatcher} from '../../topic-matcher.util';
 import {chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
 import {Beans, Initializer, PreDestroy} from '@scion/toolkit/bean-manager';
 import {Runlevel} from '../../platform-state';
-import {APP_IDENTITY, Capability} from '../../platform.model';
+import {APP_IDENTITY} from '../../platform.model';
 import {bufferUntil} from '@scion/toolkit/operators';
 import {filterByChannel, filterByTopicChannel, filterByTransport} from '../../operators';
 import {Client} from '../client-registry/client';
@@ -33,6 +30,11 @@ import {VERSION} from '../../version';
 import {CLIENT_HEARTBEAT_INTERVAL} from '../client-registry/client.constants';
 import {ɵClient} from '../client-registry/ɵclient';
 import {stringifyError} from '../../error.util';
+import {IntentSubscription, IntentSubscriptionRegistry} from './intent-subscription.registry';
+import {RetainedMessageStore} from './retained-message-store';
+import {TopicMatcher} from '../../topic-matcher.util';
+import {SubscriptionLegacySupport} from '../../subscription-legacy-support';
+import {Defined} from '@scion/toolkit/util';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -58,6 +60,7 @@ export class MessageBroker implements Initializer, PreDestroy {
 
   private readonly _clientRegistry = Beans.get(ClientRegistry);
   private readonly _topicSubscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
+  private readonly _intentSubscriptionRegistry = Beans.get(IntentSubscriptionRegistry);
   private readonly _retainedMessageRegistry = new RetainedMessageStore();
 
   private readonly _applicationRegistry: ApplicationRegistry;
@@ -76,9 +79,10 @@ export class MessageBroker implements Initializer, PreDestroy {
     this._clientMessage$ = fromEvent<MessageEvent>(window, 'message')
       .pipe(
         filterByTransport(MessagingTransport.ClientToBroker),
-        filterByChannel(MessagingChannel.Intent, MessagingChannel.Topic, MessagingChannel.TopicSubscribe, MessagingChannel.TopicUnsubscribe),
+        filterByChannel(MessagingChannel.Intent, MessagingChannel.Topic, MessagingChannel.TopicSubscribe, MessagingChannel.TopicUnsubscribe, MessagingChannel.IntentSubscribe, MessagingChannel.IntentUnsubscribe),
         bufferUntil(Beans.whenRunlevel(Runlevel.Two)),
         checkOriginTrusted(),
+        sanitizeMessageHeaders(),
         catchErrorAndRetry(),
         share(),
       );
@@ -89,12 +93,15 @@ export class MessageBroker implements Initializer, PreDestroy {
 
     // Install message dispatchers.
     this.installTopicMessageDispatcher();
-    this.installIntentMessageDispatcher();
-
-    // Install topic subscriptions listeners.
     this.installTopicSubscribeListener();
     this.installTopicUnsubscribeListener();
     this.installTopicSubscriberCountObserver();
+    this.sendRetainedTopicMessageOnSubscribe();
+
+    // Install intent dispatchers.
+    this.installIntentMessageDispatcher();
+    this.installIntentSubscribeListener();
+    this.installIntentUnsubscribeListener();
 
     // Assemble message interceptors to a chain of handlers which are called one after another. The publisher is added as terminal handler.
     this._messagePublisher = this.createMessagePublisher();
@@ -210,72 +217,6 @@ export class MessageBroker implements Initializer, PreDestroy {
   }
 
   /**
-   * Listens for topic subscribe commands.
-   */
-  private installTopicSubscribeListener(): void {
-    this._clientMessage$
-      .pipe(
-        filterByChannel<TopicSubscribeCommand>(MessagingChannel.TopicSubscribe),
-        takeUntil(this._destroy$),
-      )
-      .subscribe((event: MessageEvent<MessageEnvelope<TopicSubscribeCommand>>) => runSafe(() => {
-        const client = getSendingClient(event);
-        const envelope = event.data;
-        const topic = envelope.message.topic;
-        const subscriberId = envelope.message.subscriberId;
-        const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
-
-        if (!topic) {
-          sendDeliveryStatusError(client, messageId, '[TopicSubscribeError] Missing required property on message: topic');
-          return;
-        }
-        if (!subscriberId) {
-          sendDeliveryStatusError(client, messageId, '[TopicSubscribeError] Missing required property on message: subscriberId');
-          return;
-        }
-
-        this._topicSubscriptionRegistry.subscribe(topic, client, subscriberId);
-        sendDeliveryStatusSuccess(client, messageId);
-
-        // Dispatch a retained message, if any.
-        const retainedMessage = this._retainedMessageRegistry.findMostRecentRetainedMessage(topic);
-        if (retainedMessage) {
-          const retainedMessageWorkingCopy = {
-            ...retainedMessage,
-            headers: new Map(retainedMessage.headers).set(MessageHeaders.ɵTopicSubscriberId, subscriberId),
-            params: new TopicMatcher(topic).match(retainedMessage.topic).params,
-          };
-          sendTopicMessage(client, retainedMessageWorkingCopy);
-        }
-      }));
-  }
-
-  /**
-   * Listens for topic unsubscribe commands.
-   */
-  private installTopicUnsubscribeListener(): void {
-    this._clientMessage$
-      .pipe(
-        filterByChannel<TopicUnsubscribeCommand>(MessagingChannel.TopicUnsubscribe),
-        takeUntil(this._destroy$),
-      )
-      .subscribe((event: MessageEvent<MessageEnvelope<TopicUnsubscribeCommand>>) => runSafe(() => {
-        const client = getSendingClient(event);
-        const envelope = event.data;
-        const subscriberId = envelope.message.subscriberId;
-        const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
-
-        if (!subscriberId) {
-          sendDeliveryStatusError(client, messageId, '[TopicUnsubscribeError] Missing required property on message: subscriberId');
-          return;
-        }
-
-        this._topicSubscriptionRegistry.unsubscribe(subscriberId);
-        sendDeliveryStatusSuccess(client, messageId);
-      }));
-  }
-
-  /**
    * Replies to requests to observe the number of subscribers on a topic.
    */
   private installTopicSubscriberCountObserver(): void {
@@ -295,12 +236,10 @@ export class MessageBroker implements Initializer, PreDestroy {
         this._topicSubscriptionRegistry.subscriptionCount$(topic)
           .pipe(takeUntil(this._topicSubscriptionRegistry.subscriptionCount$(replyTo).pipe(filter(count => count === 0))))
           .subscribe((count: number) => runSafe(() => { // eslint-disable-line rxjs/no-nested-subscribe
-            this.dispatchTopicMessage({
+            this._messagePublisher.interceptAndPublish({
               topic: replyTo,
               body: count,
-              headers: new Map()
-                .set(MessageHeaders.MessageId, UUID.randomUUID())
-                .set(MessageHeaders.AppSymbolicName, Beans.get<string>(APP_IDENTITY)),
+              headers: new Map(),
             });
           }));
       }));
@@ -321,12 +260,18 @@ export class MessageBroker implements Initializer, PreDestroy {
         const topicMessage = event.data.message;
         const messageId = topicMessage.headers.get(MessageHeaders.MessageId);
 
+        if (!topicMessage.topic) {
+          const error = '[TopicDispatchError] Missing property: topic';
+          sendDeliveryStatusError(client, messageId, error);
+          return;
+        }
+
         try {
           await this._messagePublisher.interceptAndPublish(topicMessage);
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
-          sendDeliveryStatusError(client, messageId, stringifyError(error));
+          sendDeliveryStatusError(client, messageId, error);
         }
       }));
   }
@@ -376,7 +321,120 @@ export class MessageBroker implements Initializer, PreDestroy {
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
-          sendDeliveryStatusError(client, messageId, stringifyError(error));
+          sendDeliveryStatusError(client, messageId, error);
+        }
+      }));
+  }
+
+  private sendRetainedTopicMessageOnSubscribe(): void {
+    this._topicSubscriptionRegistry.register$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(subscription => {
+        const retainedMessage = this._retainedMessageRegistry.findMostRecentRetainedMessage(subscription.topic);
+        if (retainedMessage) {
+          const headers = new Map(retainedMessage.headers).set(MessageHeaders.ɵSubscriberId, subscription.subscriberId);
+          this._messagePublisher.interceptAndPublish({...retainedMessage, headers});
+        }
+      });
+  }
+
+  /**
+   * Listens for topic subscription requests.
+   */
+  private installTopicSubscribeListener(): void {
+    this._clientMessage$
+      .pipe(
+        filterByChannel<TopicSubscribeCommand>(MessagingChannel.TopicSubscribe),
+        takeUntil(this._destroy$),
+      )
+      .subscribe((event: MessageEvent<MessageEnvelope<TopicSubscribeCommand>>) => runSafe(() => {
+        const client = getSendingClient(event);
+        const envelope = event.data;
+        const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
+
+        try {
+          const subscriberId = Defined.orElseThrow(envelope.message.subscriberId, () => Error('[TopicSubscribeError] Missing property: subscriberId'));
+          const topic = Defined.orElseThrow(envelope.message.topic, () => Error('[TopicSubscribeError] Missing property: topic'));
+          this._topicSubscriptionRegistry.register(new TopicSubscription(topic, subscriberId, client));
+          sendDeliveryStatusSuccess(client, messageId);
+        }
+        catch (error) {
+          sendDeliveryStatusError(client, messageId, error);
+        }
+      }));
+  }
+
+  /**
+   * Listens for topic unsubscription requests.
+   */
+  private installTopicUnsubscribeListener(): void {
+    this._clientMessage$
+      .pipe(
+        filterByChannel<UnsubscribeCommand>(MessagingChannel.TopicUnsubscribe),
+        takeUntil(this._destroy$),
+      )
+      .subscribe((event: MessageEvent<MessageEnvelope<UnsubscribeCommand>>) => runSafe(() => {
+        const client = getSendingClient(event);
+        const envelope = event.data;
+        const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
+
+        try {
+          const subscriberId = Defined.orElseThrow(envelope.message.subscriberId, () => Error('[TopicUnsubscribeError] Missing property: subscriberId'));
+          this._topicSubscriptionRegistry.unregister({subscriberId});
+          sendDeliveryStatusSuccess(client, messageId);
+        }
+        catch (error) {
+          sendDeliveryStatusError(client, messageId, error);
+        }
+      }));
+  }
+
+  /**
+   * Listens for intent subscription requests.
+   */
+  private installIntentSubscribeListener(): void {
+    this._clientMessage$
+      .pipe(
+        filterByChannel<IntentSubscribeCommand>(MessagingChannel.IntentSubscribe),
+        takeUntil(this._destroy$),
+      )
+      .subscribe((event: MessageEvent<MessageEnvelope<IntentSubscribeCommand>>) => runSafe(() => {
+        const client = getSendingClient(event);
+        const envelope = event.data;
+        const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
+
+        try {
+          const subscriberId = Defined.orElseThrow(envelope.message.subscriberId, () => Error('[IntentSubscribeError] Missing property: subscriberId'));
+          this._intentSubscriptionRegistry.register(new IntentSubscription(envelope.message.selector || {}, subscriberId, client));
+          sendDeliveryStatusSuccess(client, messageId);
+        }
+        catch (error) {
+          sendDeliveryStatusError(client, messageId, error);
+        }
+      }));
+  }
+
+  /**
+   * Listens for intent unsubscription requests.
+   */
+  private installIntentUnsubscribeListener(): void {
+    this._clientMessage$
+      .pipe(
+        filterByChannel<UnsubscribeCommand>(MessagingChannel.IntentUnsubscribe),
+        takeUntil(this._destroy$),
+      )
+      .subscribe((event: MessageEvent<MessageEnvelope<UnsubscribeCommand>>) => runSafe(() => {
+        const client = getSendingClient(event);
+        const envelope = event.data;
+        const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
+
+        try {
+          const subscriberId = Defined.orElseThrow(envelope.message.subscriberId, () => Error('[IntentUnsubscribeError] Missing property: subscriberId'));
+          this._intentSubscriptionRegistry.unregister({subscriberId});
+          sendDeliveryStatusSuccess(client, messageId);
+        }
+        catch (error) {
+          sendDeliveryStatusError(client, messageId, error);
         }
       }));
   }
@@ -391,13 +449,17 @@ export class MessageBroker implements Initializer, PreDestroy {
         return; // Deletion events for retained messages are swallowed.
       }
 
-      // Dispatch the message.
-      const dispatched = this.dispatchTopicMessage(message);
+      const subscribers = this._topicSubscriptionRegistry.subscriptions({
+        subscriberId: message.headers.get(MessageHeaders.ɵSubscriberId),
+        topic: message.topic,
+      });
 
-      // If request-reply communication, throw an error if no replier is found to reply to the topic.
-      if (!dispatched && message.headers.has(MessageHeaders.ReplyTo)) {
-        throw Error(`[RequestReplyError] No client is currently running which could answer the request sent to the topic '${message.topic}'.`);
+      // If request-reply communication, reply with an error if no subscriber is registered to answer the request.
+      if (message.headers.has(MessageHeaders.ReplyTo) && !subscribers.length) {
+        throw Error(`[RequestReplyError] No subscriber registered to answer the request [topic=${message.topic}]`);
       }
+
+      subscribers.forEach(subscriber => runSafe(() => sendTopicMessage(subscriber, message)));
     });
   }
 
@@ -406,56 +468,19 @@ export class MessageBroker implements Initializer, PreDestroy {
    */
   private createIntentPublisher(): PublishInterceptorChain<IntentMessage> {
     return chainInterceptors(Beans.all(IntentInterceptor), async (message: IntentMessage): Promise<void> => {
-      const capability = Defined.orElseThrow(message.capability, () => Error(`[IllegalStateError] Missing target capability on intent message: ${JSON.stringify(message)}`));
-      const clients = this._clientRegistry.getByApplication(capability.metadata!.appSymbolicName);
+      const subscribers = this._intentSubscriptionRegistry.subscriptions({
+        subscriberId: message.headers.get(MessageHeaders.ɵSubscriberId),
+        appSymbolicName: message.capability.metadata!.appSymbolicName,
+        intent: message.intent,
+      });
 
-      // If request-reply communication, send an error if no replier is running to reply to the intent.
-      if (message.headers.has(MessageHeaders.ReplyTo) && !this.existsClient(capability)) {
-        throw Error(`[RequestReplyError] No client is currently running which could answer the intent '{type=${message.intent.type}, qualifier=${JSON.stringify(message.intent.qualifier)}}'.`);
+      // If request-reply communication, reply with an error if no subscriber is registered to answer the intent.
+      if (message.headers.has(MessageHeaders.ReplyTo) && !subscribers.length) {
+        throw Error(`[RequestReplyError] No subscriber registered to answer the intent [intent=${JSON.stringify(message.intent)}]`);
       }
 
-      clients
-        .filter(client => !client.stale)
-        .forEach(client => runSafe(() => {
-          const envelope: MessageEnvelope<IntentMessage> = {
-            transport: MessagingTransport.BrokerToClient,
-            channel: MessagingChannel.Intent,
-            message: message,
-          };
-          client.window.postMessage(envelope, client.application.messageOrigin);
-        }));
+      subscribers.forEach(subscriber => runSafe(() => sendIntentMessage(subscriber, message)));
     });
-  }
-
-  /**
-   * Dispatches the given topic message to subscribed clients on the transport {@link MessagingTransport.BrokerToClient}.
-   *
-   * @return `true` if dispatched the message to at minimum one subscriber, or `false` if no subscriber is subscribed to the given message topic.
-   */
-  private dispatchTopicMessage<BODY>(topicMessage: TopicMessage<BODY>): boolean {
-    const destinations = this._topicSubscriptionRegistry.resolveTopicDestinations(topicMessage.topic);
-    if (!destinations.length) {
-      return false;
-    }
-
-    destinations.forEach(resolvedTopicDestination => runSafe(() => {
-      const client: Client = resolvedTopicDestination.subscription.client;
-      sendTopicMessage(client, {
-        ...topicMessage,
-        topic: resolvedTopicDestination.topic,
-        params: resolvedTopicDestination.params,
-        headers: new Map(topicMessage.headers).set(MessageHeaders.ɵTopicSubscriberId, resolvedTopicDestination.subscription.subscriberId),
-      });
-    }));
-
-    return true;
-  }
-
-  /**
-   * Tests if at least one client is running that can handle the specified capability.
-   */
-  private existsClient(capability: Capability): boolean {
-    return this._clientRegistry.getByApplication(capability.metadata!.appSymbolicName).length > 0;
   }
 
   public preDestroy(): void {
@@ -538,39 +563,58 @@ function sendDeliveryStatusSuccess(target: MessageTarget | Client, topic: string
 }
 
 /** @ignore */
-function sendDeliveryStatusError(target: MessageTarget | Client, topic: string, error: string): void {
+function sendDeliveryStatusError(target: MessageTarget | Client, topic: string, error: string | Error | unknown): void {
   sendTopicMessage<MessageDeliveryStatus>(target, {
     topic: topic,
-    body: {ok: false, details: error},
+    body: {ok: false, details: stringifyError(error)},
     headers: new Map(),
   });
 }
 
 /** @ignore */
-function sendTopicMessage<T>(target: MessageTarget | Client, message: TopicMessage<T>): void {
+function sendTopicMessage<T>(target: MessageTarget | Client | TopicSubscription, message: TopicMessage<T>): void {
   const envelope: MessageEnvelope<TopicMessage<T>> = {
     transport: MessagingTransport.BrokerToClient,
     channel: MessagingChannel.Topic,
-    message: {...message},
+    message: {
+      ...message,
+      params: new Map(message.params || new Map()),
+      headers: new Map(message.headers || new Map())
+        .set(MessageHeaders.MessageId, message.headers.get(MessageHeaders.MessageId) ?? UUID.randomUUID())
+        .set(MessageHeaders.AppSymbolicName, message.headers.get(MessageHeaders.AppSymbolicName) ?? Beans.get<string>(APP_IDENTITY)),
+    },
   };
-
-  envelope.message.params = new Map(envelope.message.params || new Map());
-  envelope.message.headers = new Map(envelope.message.headers || new Map());
-
-  const headers = envelope.message.headers;
-  if (!headers.has(MessageHeaders.MessageId)) {
-    headers.set(MessageHeaders.MessageId, UUID.randomUUID());
-  }
-  if (!headers.has(MessageHeaders.AppSymbolicName)) {
-    headers.set(MessageHeaders.AppSymbolicName, Beans.get<string>(APP_IDENTITY));
-  }
 
   if (target instanceof MessageTarget) {
     !target.window.closed && target.window.postMessage(envelope, target.origin);
   }
+  else if (target instanceof TopicSubscription) {
+    const subscription = target;
+    const client = subscription.client;
+    Beans.get(SubscriptionLegacySupport).setSubscriberMessageHeader(envelope, target.subscriberId, client.version);
+    envelope.message.params = new TopicMatcher(subscription.topic).match(message.topic).params;
+    !client.stale && client.window.postMessage(envelope, client.application.messageOrigin);
+  }
   else {
     !target.stale && target.window.postMessage(envelope, target.application.messageOrigin);
   }
+}
+
+/** @ignore */
+function sendIntentMessage(subscription: IntentSubscription, message: IntentMessage): void {
+  const envelope: MessageEnvelope<IntentMessage> = {
+    transport: MessagingTransport.BrokerToClient,
+    channel: MessagingChannel.Intent,
+    message: {
+      ...message,
+      headers: new Map(message.headers || new Map())
+        .set(MessageHeaders.ɵSubscriberId, subscription.subscriberId)
+        .set(MessageHeaders.MessageId, message.headers.get(MessageHeaders.MessageId) ?? UUID.randomUUID())
+        .set(MessageHeaders.AppSymbolicName, message.headers.get(MessageHeaders.AppSymbolicName) ?? Beans.get<string>(APP_IDENTITY)),
+    },
+  };
+  const client = subscription.client;
+  !client.stale && client.window.postMessage(envelope, client.application.messageOrigin);
 }
 
 /**
@@ -583,6 +627,18 @@ function catchErrorAndRetry<T>(): MonoTypeOperatorFunction<T> {
     Beans.get(Logger).error('[UnexpectedError] An unexpected error occurred.', error);
     return caught;
   });
+}
+
+/**
+ * Sanitizes message headers that should not be set by clients.
+ */
+function sanitizeMessageHeaders<T extends Message>(): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
+  return pipe(
+    /**
+     * The subscriber identifier is set exclusively by the host when it dispatches a message to a subscribed client.
+     */
+    tap(event => event.data.message.headers.delete(MessageHeaders.ɵSubscriberId)),
+  );
 }
 
 /**

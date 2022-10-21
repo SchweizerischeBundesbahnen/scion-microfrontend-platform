@@ -18,7 +18,12 @@ import {Client} from './client';
 export abstract class ClientRegistry {
 
   /**
-   * Emits when unregistering a client.
+   * Emits when registered a client.
+   */
+  public abstract readonly register$: Observable<Client>;
+
+  /**
+   * Emits when unregistered a client.
    */
   public abstract readonly unregister$: Observable<Client>;
 

@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Message} from './messaging.model';
+import {IntentSelector} from './client/messaging/intent-client';
 
 /**
  * Declares the message transports.
@@ -40,11 +41,19 @@ export enum MessagingChannel {
    */
   TopicUnsubscribe = 'topic-unsubscribe',
   /**
-   * Channel to publish and dispatch topic-related messages.
+   * Channel for clients to subscribe to intents.
+   */
+  IntentSubscribe = 'intent-subscribe',
+  /**
+   * Channel for clients to unsubscribe from intents.
+   */
+  IntentUnsubscribe = 'intent-unsubscribe',
+  /**
+   * Channel for the host to transport topic message to subscribed clients.
    */
   Topic = 'topic',
   /**
-   * Channel to publish and dispatch intents.
+   * Channel for the host to transport intent messages to subscribed clients.
    */
   Intent = 'intent',
   /**
@@ -114,18 +123,28 @@ export interface ConnackMessage {
   heartbeatInterval?: number;
 }
 
-export interface TopicSubscribeCommand extends Message {
+export interface SubscribeCommand extends Message {
   /**
    * Unique identify of the subscriber.
    */
   subscriberId: string;
+}
+
+export interface TopicSubscribeCommand extends SubscribeCommand {
   /**
-   * Topic to which to subscribe.
+   * Topic to subscribe.
    */
   topic: string;
 }
 
-export interface TopicUnsubscribeCommand extends Message {
+export interface IntentSubscribeCommand extends SubscribeCommand {
+  /**
+   * Selects intents that match the specified selector and for which the application provides a fulfilling capability.
+   */
+  selector?: IntentSelector;
+}
+
+export interface UnsubscribeCommand extends Message {
   /**
    * Unique identify of the subscriber.
    */

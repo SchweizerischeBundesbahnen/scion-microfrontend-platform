@@ -158,7 +158,7 @@ The following code snippet shows an example of how an application can subscribe 
 include::intention-api.snippets.ts[tags=intent-handling]
 ----
 
-IMPORTANT: A micro application only receives intents for which it provides a respective capability. The selector is used as a filter only.
+IMPORTANT: A micro application only receives intents for which it provides a fulfilling capability. The selector is used as a filter only.
 
 For more information about handling an intent, see the chapter <<chapter:intent-based-messaging:handling-intents>> in <<chapter:intent-based-messaging>>.
 
@@ -252,7 +252,7 @@ include::intention-api.snippets.ts[tags=capability-lookup-toolbar-items]
 
 NOTE: To see how to handle intents in the capability providing micro application, see the chapter <<chapter:intent-based-messaging:handling-intents>> in <<chapter:intent-based-messaging>>.
 
-By passing a `ManifestObjectFilter` to the `lookupCapabilities$` method, you can control which capabilities to observe. Specified filter criteria are "AND"ed together. If not passing a filter, all capabilities visible to the requesting micro application are observed. When subscribing to the Observable, it emits the requested capabilities. The Observable never completes and emits continuously when satisfying capabilities are registered or unregistered.
+By passing a `ManifestObjectFilter` to the `lookupCapabilities$` method, you can control which capabilities to observe. Specified filter criteria are "AND"ed together. If not passing a filter, all capabilities visible to the requesting micro application are observed. When subscribing to the Observable, it emits the requested capabilities. The Observable never completes and emits continuously when fulfilling capabilities are registered or unregistered.
 
 IMPORTANT: A micro application can only look up its own capabilities and public capabilities for which it has declared an intention.
 
@@ -290,7 +290,7 @@ a| `string`
 === Browsing Intentions
 The platform allows you to browse and observe intentions. Unlike <<chapter:intention-api:capability-lookup,browsing capabilities>>, an application can browse the intentions of all micro applications. The use case for browsing intentions is somewhat technical, e.g., used by the _DevTools_ to list intentions declared by micro applications.
 
-You can browse intentions using the `ManifestService.lookupIntentions$` method. By passing a `ManifestObjectFilter` to the `lookupIntentions$` method, you can control which intentions to observe. Specified filter criteria are "AND"ed together. If not passing a filter, all intentions are observed. When subscribing to the Observable, it emits the requested intentions. The Observable never completes and emits continuously when satisfying intentions are registered or unregistered.
+You can browse intentions using the `ManifestService.lookupIntentions$` method. By passing a `ManifestObjectFilter` to the `lookupIntentions$` method, you can control which intentions to observe. Specified filter criteria are "AND"ed together. If not passing a filter, all intentions are observed. When subscribing to the Observable, it emits the requested intentions. The Observable never completes and emits continuously when matching intentions are registered or unregistered.
 
 .Properties of `ManifestObjectFilter` to filter intentions
 [cols="1,2,1,8"]

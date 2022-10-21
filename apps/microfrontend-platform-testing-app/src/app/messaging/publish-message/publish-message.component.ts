@@ -183,7 +183,7 @@ export class PublishMessageComponent implements OnDestroy {
     try {
       if (requestReply) {
         this._requestResponseSubscription = this._intentClient.request$({type, qualifier}, message, {headers: headers})
-          .pipe(finalize(() => this.markPublishing(true)))
+          .pipe(finalize(() => this.markPublishing(false)))
           .subscribe({
             next: reply => this.replies.push(reply),
             error: error => this.publishError = error,

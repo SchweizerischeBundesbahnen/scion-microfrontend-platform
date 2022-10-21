@@ -17,6 +17,7 @@ export class ɵClientRegistry implements ClientRegistry, PreDestroy {
 
   private readonly _clientsById = new Map<string, Client>();
   private readonly _clientsByWindow = new Map<Window, Client>();
+  public readonly register$ = new Subject<Client>();
   public readonly unregister$ = new Subject<Client>();
 
   public registerClient(client: Client): void {
@@ -33,6 +34,7 @@ export class ɵClientRegistry implements ClientRegistry, PreDestroy {
     }
     this._clientsById.set(client.id, client);
     this._clientsByWindow.set(client.window, client);
+    this.register$.next(client);
   }
 
   public unregisterClient(client: Client): void {

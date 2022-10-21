@@ -11,7 +11,7 @@ import {Subject} from 'rxjs';
 import {IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from './message-client';
 import {IntentClient} from './intent-client';
-import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, waitForCondition, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
+import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, waitForCondition, waitUntilStable, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {ClientRegistry} from '../../host/client-registry/client.registry';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -585,7 +585,7 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor();
     Beans.get(IntentClient).request$({type: 'some-type'}, 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
-    expect(replyCaptor.getError()).toEqual('[RequestReplyError] No client is currently running which could answer the intent \'{type=some-type, qualifier=undefined}\'.');
+    expect(replyCaptor.getError()).toEqual('[RequestReplyError] No subscriber registered to answer the intent [intent={"type":"some-type"}]');
   });
 
   it('should reject a \'request-response\' topic message if no replier is found', async () => {
@@ -597,7 +597,7 @@ describe('Messaging', () => {
     expect(replyCaptor.getValues()).withContext('emissions').toEqual([]);
     expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
     expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeTrue();
-    expect(replyCaptor.getError()).toEqual('[RequestReplyError] No client is currently running which could answer the request sent to the topic \'some-topic\'.');
+    expect(replyCaptor.getError()).toEqual('[RequestReplyError] No subscriber registered to answer the request [topic=some-topic]');
   });
 
   it('should allow an interceptor to handle a \'request-response\' intent message if no replier is running', async () => {
@@ -661,7 +661,7 @@ describe('Messaging', () => {
     expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
-  it('should reject an intent if no application provides a satisfying capability', async () => {
+  it('should reject an intent if no application provides a fulfilling capability', async () => {
     await MicrofrontendPlatform.startHost({
       host: {
         manifest: {
@@ -1137,6 +1137,103 @@ describe('Messaging', () => {
     await expectEmissions(intentCaptor2).toEqual([capabilityId]);
   });
 
+  it('should transport topic message to subscribed client(s) only', async () => {
+    await MicrofrontendPlatform.startHost({
+      applications: [
+        {
+          symbolicName: 'client',
+          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
+        },
+      ],
+    });
+
+    // Mount client that monitors the topic message channel and subscribes to the test topic.
+    const microfrontend1 = registerFixture(new MicrofrontendFixture());
+    await microfrontend1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'client', topic: 'test/topic'});
+    const microfrontend1TopicMessageChannel = new ObserveCaptor();
+
+    // Mount client that monitors the topic message channel but DOES NOT subscribe to the test topic.
+    const microfrontend2 = registerFixture(new MicrofrontendFixture());
+    await microfrontend2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'monitorTopicMessageChannel', {symbolicName: 'client'});
+    const microfrontend2TopicMessageChannel = new ObserveCaptor();
+
+    // Publish message to the test topic.
+    await Beans.get(MessageClient).publish('test/topic', 'Topic message');
+
+    // Capture messages transported to the clients on the topic message channel.
+    microfrontend1.message$.subscribe(microfrontend1TopicMessageChannel);
+    await waitUntilStable(() => microfrontend1TopicMessageChannel.getValues());
+    microfrontend2.message$.subscribe(microfrontend2TopicMessageChannel);
+    await waitUntilStable(() => microfrontend2TopicMessageChannel.getValues());
+
+    // Expect message to be transported to client 1 because subscribed to the topic.
+    expect(microfrontend1TopicMessageChannel.getValues()).toContain(jasmine.objectContaining({
+      topic: 'test/topic',
+      body: 'Topic message',
+    }));
+
+    // Expect message NOT to be transported to client 2 because not subscribed to the topic.
+    expect(microfrontend2TopicMessageChannel.getValues()).not.toContain(jasmine.objectContaining({
+      topic: 'test/topic',
+      body: 'Topic message',
+    }));
+  });
+
+  it('should transport intent message to subscribed client(s) only', async () => {
+    await MicrofrontendPlatform.startHost({
+      host: {
+        manifest: {
+          name: 'Host Application',
+          intentions: [
+            {type: 'testee'},
+          ],
+        },
+      },
+      applications: [
+        {
+          symbolicName: 'client',
+          manifestUrl: new ManifestFixture({
+            name: 'Client',
+            capabilities: [
+              {type: 'testee', private: false},
+            ],
+          }).serve(),
+        },
+      ],
+    });
+
+    // Mount client that monitors the intent message channel and subscribes to the test intent.
+    const microfrontend1 = registerFixture(new MicrofrontendFixture());
+    await microfrontend1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'client', intent: {type: 'testee'}});
+    const microfrontend1IntentMessageChannel = new ObserveCaptor();
+
+    // Mount client that monitors the intent message channel but DOES NOT subscribe to the test intent.
+    const microfrontend2 = registerFixture(new MicrofrontendFixture());
+    await microfrontend2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'monitorIntentMessageChannel', {symbolicName: 'client'});
+    const microfrontend2IntentMessageChannel = new ObserveCaptor();
+
+    // Publish test intent.
+    await Beans.get(IntentClient).publish({type: 'testee'}, 'Intent message');
+
+    // Capture messages transported to the clients on the intent message channel.
+    microfrontend1.message$.subscribe(microfrontend1IntentMessageChannel);
+    await waitUntilStable(() => microfrontend1IntentMessageChannel.getValues());
+    microfrontend2.message$.subscribe(microfrontend2IntentMessageChannel);
+    await waitUntilStable(() => microfrontend2IntentMessageChannel.getValues());
+
+    // Expect message to be transported to client 1 because subscribed to the intent.
+    expect(microfrontend1IntentMessageChannel.getValues()).toContain(jasmine.objectContaining({
+      intent: jasmine.objectContaining({type: 'testee'}),
+      body: 'Intent message',
+    }));
+
+    // Expect message NOT to be transported to client 2 because not subscribed to the intent.
+    expect(microfrontend2IntentMessageChannel.getValues()).not.toContain(jasmine.objectContaining({
+      intent: jasmine.objectContaining({type: 'testee'}),
+      body: 'Intent message',
+    }));
+  });
+
   it('should allow tracking the subscriptions on a topic', async () => {
     await MicrofrontendPlatform.startHost({applications: []});
 
@@ -1281,7 +1378,7 @@ describe('Messaging', () => {
           .set(MessageHeaders.Timestamp, 'should-not-be-set')
           .set(MessageHeaders.ClientId, 'should-not-be-set')
           .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
-          .set(MessageHeaders.ɵTopicSubscriberId, 'should-not-be-set'),
+          .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
       },
     );
 
@@ -1289,7 +1386,7 @@ describe('Messaging', () => {
     expect(headersCaptor.getLastValue().get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
     expect(headersCaptor.getLastValue().get(MessageHeaders.ClientId)).not.toEqual('should-not-be-set');
     expect(headersCaptor.getLastValue().get(MessageHeaders.AppSymbolicName)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.ɵTopicSubscriberId)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue().get(MessageHeaders.ɵSubscriberId)).not.toEqual('should-not-be-set');
   });
 
   it('should prevent overriding platform specific message headers [request/reply]', async () => {
@@ -1303,7 +1400,7 @@ describe('Messaging', () => {
           .set(MessageHeaders.Timestamp, 'should-not-be-set')
           .set(MessageHeaders.ClientId, 'should-not-be-set')
           .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
-          .set(MessageHeaders.ɵTopicSubscriberId, 'should-not-be-set'),
+          .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
       },
     ).subscribe();
 
@@ -1311,7 +1408,7 @@ describe('Messaging', () => {
     expect(headersCaptor.getLastValue().get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
     expect(headersCaptor.getLastValue().get(MessageHeaders.ClientId)).not.toEqual('should-not-be-set');
     expect(headersCaptor.getLastValue().get(MessageHeaders.AppSymbolicName)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.ɵTopicSubscriberId)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue().get(MessageHeaders.ɵSubscriberId)).not.toEqual('should-not-be-set');
   });
 
   it('should prevent overriding platform specific intent message headers [pub/sub]', async () => {
@@ -1332,7 +1429,8 @@ describe('Messaging', () => {
         headers: new Map()
           .set(MessageHeaders.Timestamp, 'should-not-be-set')
           .set(MessageHeaders.ClientId, 'should-not-be-set')
-          .set(MessageHeaders.AppSymbolicName, 'should-not-be-set'),
+          .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
+          .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
       },
     );
 
@@ -1360,7 +1458,8 @@ describe('Messaging', () => {
         headers: new Map()
           .set(MessageHeaders.Timestamp, 'should-not-be-set')
           .set(MessageHeaders.ClientId, 'should-not-be-set')
-          .set(MessageHeaders.AppSymbolicName, 'should-not-be-set'),
+          .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
+          .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
       },
     ).subscribe();
 
@@ -1659,8 +1758,8 @@ describe('Messaging', () => {
       await expectEmissions(observeCaptor).toEqual(new Map().set('param2', 'value1'));
 
       // assert the deprecation warning
-      const expectedLogMessage = `[DEPRECATION] Application 'host-app' passes a deprecated parameter in the intent: 'param1'. Pass parameter 'param2' instead.`;
-      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual(jasmine.arrayContaining([expectedLogMessage]));
+      const expectedLogMessage = `[DEPRECATION][4EAC5956] Application 'host-app' passes a deprecated parameter in the intent: 'param1'. Pass parameter 'param2' instead.`;
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]\[4EAC5956]/})).toEqual(jasmine.arrayContaining([expectedLogMessage]));
     });
 
     it('should make deprecated params optional', async () => {
@@ -1732,14 +1831,14 @@ describe('Messaging', () => {
       // publish without params
       await Beans.get(IntentClient).publish({type: 'capability'});
       await expectEmissions(observeCaptor).toEqual(new Map());
-      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual([]);
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]\[4EAC5956]/})).toEqual([]);
 
       // publish with deprecated param 'param1'
       observeCaptor.reset();
       await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')});
       await expectEmissions(observeCaptor).toEqual(new Map().set('param1', 'value1'));
-      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual([
-        `[DEPRECATION] Application 'host-app' passes a deprecated parameter in the intent: 'param1'. DEPRECATION NOTICE`,
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]\[4EAC5956]/})).toEqual([
+        `[DEPRECATION][4EAC5956] Application 'host-app' passes a deprecated parameter in the intent: 'param1'. DEPRECATION NOTICE`,
       ]);
 
       // publish with deprecated param 'param2'
@@ -1747,8 +1846,8 @@ describe('Messaging', () => {
       resetLoggerSpy('warn');
       await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param2', 'value2')});
       await expectEmissions(observeCaptor).toEqual(new Map().set('param5', 'value2'));
-      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual([
-        `[DEPRECATION] Application 'host-app' passes a deprecated parameter in the intent: 'param2'. Pass parameter 'param5' instead. DEPRECATION NOTICE`,
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]\[4EAC5956]/})).toEqual([
+        `[DEPRECATION][4EAC5956] Application 'host-app' passes a deprecated parameter in the intent: 'param2'. Pass parameter 'param5' instead. DEPRECATION NOTICE`,
       ]);
 
       // publish with deprecated param 'param3'
@@ -1756,8 +1855,8 @@ describe('Messaging', () => {
       resetLoggerSpy('warn');
       await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param3', 'value3')});
       await expectEmissions(observeCaptor).toEqual(new Map().set('param5', 'value3'));
-      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual([
-        `[DEPRECATION] Application 'host-app' passes a deprecated parameter in the intent: 'param3'. Pass parameter 'param5' instead.`,
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]\[4EAC5956]/})).toEqual([
+        `[DEPRECATION][4EAC5956] Application 'host-app' passes a deprecated parameter in the intent: 'param3'. Pass parameter 'param5' instead.`,
       ]);
 
       // publish with deprecated param 'param4'
@@ -1765,8 +1864,8 @@ describe('Messaging', () => {
       resetLoggerSpy('warn');
       await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param4', 'value4')});
       await expectEmissions(observeCaptor).toEqual(new Map().set('param4', 'value4'));
-      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual([
-        `[DEPRECATION] Application 'host-app' passes a deprecated parameter in the intent: 'param4'.`,
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]\[4EAC5956]/})).toEqual([
+        `[DEPRECATION][4EAC5956] Application 'host-app' passes a deprecated parameter in the intent: 'param4'.`,
       ]);
     });
   });

@@ -12,9 +12,7 @@ import {defer, Observable, Subscription} from 'rxjs';
 import {Intent, IntentMessage, throwOnErrorStatus, TopicMessage} from '../../messaging.model';
 import {BrokerGateway} from './broker-gateway';
 import {MessagingChannel} from '../../ɵmessaging.model';
-import {filterByChannel, pluckMessage} from '../../operators';
-import {filter} from 'rxjs/operators';
-import {assertExactQualifier, QualifierMatcher} from '../../qualifier-matcher';
+import {assertExactQualifier} from '../../qualifier-matcher';
 import {IntentClient, IntentOptions, IntentSelector} from './intent-client';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageHandler} from './message-handler';
@@ -53,13 +51,7 @@ export class ɵIntentClient implements IntentClient {
   }
 
   public observe$<T>(selector?: IntentSelector): Observable<IntentMessage<T>> {
-    return this._brokerGateway.message$
-      .pipe(
-        filterByChannel<IntentMessage<T>>(MessagingChannel.Intent),
-        pluckMessage(),
-        filter(message => !selector || !selector.type || selector.type === message.intent.type),
-        filter(message => !selector || !selector.qualifier || new QualifierMatcher(selector.qualifier, {evalAsterisk: true, evalOptional: true}).matches(message.intent.qualifier)),
-      );
+    return this._brokerGateway.subscribeToIntent$<T>(selector);
   }
 
   public onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {

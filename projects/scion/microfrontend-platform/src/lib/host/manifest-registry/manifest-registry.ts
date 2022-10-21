@@ -19,13 +19,13 @@ import {Intent} from '../../messaging.model';
 export abstract class ManifestRegistry {
 
   /**
-   * Returns capabilities which are visible to the given application and which satisfy the given intent.
+   * Returns capabilities which are visible to the given application and match the given intent.
    * The intent is not allowed to contain wildcards in its qualifier.
    */
   public abstract resolveCapabilitiesByIntent(intent: Intent, appSymbolicName: string): Capability[];
 
   /**
-   * Tests whether the given app has declared an intention for the given intent, or is providing a capability fulfilling the given intent.
+   * Tests whether the given app has declared an intention for the given intent, or is providing a capability matching the given intent.
    */
   public abstract hasIntention(intent: Intent, appSymbolicName: string): boolean;
 

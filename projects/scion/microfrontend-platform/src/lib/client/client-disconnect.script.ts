@@ -23,18 +23,18 @@ export async function connectToHost({symbolicName, disconnectOnUnloadDisabled = 
     Beans.register(VERSION, {useValue: version});
   }
   await MicrofrontendPlatform.connectToHost(symbolicName);
-  observer.next(Beans.get(ɵBrokerGateway).brokerInfo.clientId);
+  observer.next(Beans.get(ɵBrokerGateway).session.clientId);
 }
 
 export async function connectToHostThenStopPlatform({symbolicName}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatform.connectToHost(symbolicName);
-  observer.next(Beans.get(ɵBrokerGateway).brokerInfo.clientId);
+  observer.next(Beans.get(ɵBrokerGateway).session.clientId);
   await MicrofrontendPlatform.destroy();
 }
 
 export async function connectToHostThenLocationHref({symbolicName, locationHref}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatform.connectToHost(symbolicName);
-  observer.next(Beans.get(ɵBrokerGateway).brokerInfo.clientId);
+  observer.next(Beans.get(ɵBrokerGateway).session.clientId);
   window.location.href = locationHref;
 }
 

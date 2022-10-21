@@ -7,138 +7,129 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {TopicSubscriptionRegistry} from './topic-subscription.registry';
+import {TopicSubscription, TopicSubscriptionRegistry} from './topic-subscription.registry';
 import {ClientRegistry} from '../client-registry/client.registry';
 import {expectEmissions} from '../../testing/spec.util.spec';
 import {ObserveCaptor} from '@scion/toolkit/testing';
-import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Application} from '../../platform.model';
 import {Client} from '../client-registry/client';
-import {ɵClient} from '../client-registry/ɵclient';
-import {VERSION} from '../../version';
-import {firstValueFrom} from 'rxjs';
+import {firstValueFrom, noop} from 'rxjs';
+import {ɵClientRegistry} from '../client-registry/ɵclient.registry';
+import {UUID} from '@scion/toolkit/uuid';
+import {Logger, NULL_LOGGER} from '../../logger';
 
 describe('TopicSubscriptionRegistry', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  beforeEach(async () => {
+    Beans.destroy();
+    Beans.register(TopicSubscriptionRegistry);
+    Beans.register(ClientRegistry, {useClass: ɵClientRegistry});
+    Beans.register(Logger, {useValue: NULL_LOGGER});
+    await Beans.start();
+  });
 
-  it('should allow multiple subscriptions on the same topic from different clients', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+  afterEach(() => Beans.destroy());
 
-    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
-    const client1 = newClient('client#1');
-    const client2 = newClient('client#2');
-    const client3 = newClient('client#3');
+  it('should allow multiple subscriptions on the same topic of different clients', async () => {
+    const testee = Beans.get(TopicSubscriptionRegistry);
+    const client1 = newClient({id: 'client#1'});
+    const client2 = newClient({id: 'client#2'});
+    const client3 = newClient({id: 'client#3'});
     const subscriptionCountCaptor = new ObserveCaptor();
-    subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature').subscribe(subscriptionCountCaptor);
+    testee.subscriptionCount$('myhome/livingroom/temperature').subscribe(subscriptionCountCaptor);
 
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client1, 'subscriber#1');
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#1', client1));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(1);
 
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client2, 'subscriber#2');
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#2', client2));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
 
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client3, 'subscriber#3');
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#3', client3));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(3);
 
-    subscriptionRegistry.unsubscribe('subscriber#1');
+    testee.unregister({subscriberId: 'subscriber#1'});
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
 
-    subscriptionRegistry.unsubscribe('subscriber#2');
+    testee.unregister({subscriberId: 'subscriber#2'});
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(1);
 
-    subscriptionRegistry.unsubscribe('subscriber#3');
+    testee.unregister({subscriberId: 'subscriber#3'});
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
     await expectEmissions(subscriptionCountCaptor).toEqual([0, 1, 2, 3, 2, 1, 0]);
   });
 
-  it('should allow multiple subscriptions on the same topic from the same client', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
-    const client = newClient('client');
+  it('should allow multiple subscriptions on the same topic of the same client', async () => {
+    const testee = Beans.get(TopicSubscriptionRegistry);
+    const client = newClient({id: 'client'});
     const subscriptionCountCaptor = new ObserveCaptor();
-    subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature').subscribe(subscriptionCountCaptor);
+    testee.subscriptionCount$('myhome/livingroom/temperature').subscribe(subscriptionCountCaptor);
 
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client, 'subscriber#1');
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#1', client));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(1);
 
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client, 'subscriber#2');
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#2', client));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
 
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client, 'subscriber#3');
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#3', client));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(3);
 
-    subscriptionRegistry.unsubscribe('subscriber#1');
+    testee.unregister({subscriberId: 'subscriber#1'});
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
 
-    subscriptionRegistry.unsubscribe('subscriber#2');
+    testee.unregister({subscriberId: 'subscriber#2'});
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(1);
 
-    subscriptionRegistry.unsubscribe('subscriber#3');
+    testee.unregister({subscriberId: 'subscriber#3'});
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
     await expectEmissions(subscriptionCountCaptor).toEqual([0, 1, 2, 3, 2, 1, 0]);
-  });
-
-  it('should ignore an unsubscribe attempt if there is no subscription for it', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
-    subscriptionRegistry.unsubscribe('does-not-exist');
-    await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
   });
 
   it('should throw if trying to observe a non-exact topic', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
-    await expect(() => subscriptionRegistry.subscriptionCount$('myhome/livingroom/:measurement')).toThrowError(/TopicObserveError/);
+    const testee = Beans.get(TopicSubscriptionRegistry);
+    await expect(() => testee.subscriptionCount$('myhome/livingroom/:measurement')).toThrowError(/TopicObserveError/);
   });
 
-  it('should allow multiple subscriptions on different topics from the same client', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
-    const client = newClient('client');
+  it('should allow multiple subscriptions on different topics of the same client', async () => {
+    const testee = Beans.get(TopicSubscriptionRegistry);
+    const client = newClient({id: 'client'});
 
     const temperatureSubscriptionCountCaptor = new ObserveCaptor();
-    subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature').subscribe(temperatureSubscriptionCountCaptor);
+    testee.subscriptionCount$('myhome/livingroom/temperature').subscribe(temperatureSubscriptionCountCaptor);
 
     const humiditySubscriptionCountCaptor = new ObserveCaptor();
-    subscriptionRegistry.subscriptionCount$('myhome/livingroom/humidity').subscribe(humiditySubscriptionCountCaptor);
+    testee.subscriptionCount$('myhome/livingroom/humidity').subscribe(humiditySubscriptionCountCaptor);
 
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(0);
 
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client, 'subscriber#1');
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#1', client));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(1);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(0);
 
-    subscriptionRegistry.subscribe('myhome/livingroom/:measurement', client, 'subscriber#2');
+    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'subscriber#2', client));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(1);
 
-    subscriptionRegistry.subscribe('myhome/livingroom/humidity', client, 'subscriber#3');
+    testee.register(new TopicSubscription('myhome/livingroom/humidity', 'subscriber#3', client));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(2);
 
-    subscriptionRegistry.unsubscribe('subscriber#2');
+    testee.unregister({subscriberId: 'subscriber#2'});
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(1);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(1);
 
-    subscriptionRegistry.unsubscribe('subscriber#1');
+    testee.unregister({subscriberId: 'subscriber#1'});
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(1);
 
-    subscriptionRegistry.unsubscribe('subscriber#3');
+    testee.unregister({subscriberId: 'subscriber#3'});
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(0);
 
@@ -147,13 +138,11 @@ describe('TopicSubscriptionRegistry', () => {
   });
 
   it('should count wildcard subscriptions when observing the subscriber count on a topic', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    const testee = Beans.get(TopicSubscriptionRegistry);
+    const client1 = newClient({id: 'client#1'});
+    const client2 = newClient({id: 'client#2'});
 
-    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
-    const client1 = newClient('client#1');
-    const client2 = newClient('client#2');
-
-    subscriptionRegistry.subscribe('myhome/:room/temperature', client1, 'subscriber#1');
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#1', client1));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(1);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -161,7 +150,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(1);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    subscriptionRegistry.subscribe('myhome/:room/temperature', client1, 'subscriber#2');
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#2', client1));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -169,7 +158,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(2);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    subscriptionRegistry.subscribe('myhome/:room/temperature', client2, 'subscriber#3');
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#3', client2));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(3);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -177,7 +166,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(3);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    subscriptionRegistry.subscribe('myhome/:room/temperature', client2, 'subscriber#4');
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#4', client2));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(4);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -185,7 +174,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(4);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    subscriptionRegistry.subscribe('myhome/:room/:measurement', client1, 'subscriber#5');
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'subscriber#5', client1));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(5);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -193,7 +182,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(5);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    subscriptionRegistry.subscribe('myhome/:room/:measurement', client2, 'subscriber#6');
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'subscriber#6', client2));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(6);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -201,7 +190,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(6);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    subscriptionRegistry.subscribe('myhome/:room/:measurement/:unit', client1, 'subscriber#7');
+    testee.register(new TopicSubscription('myhome/:room/:measurement/:unit', 'subscriber#7', client1));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(6);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(1);
@@ -209,7 +198,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(6);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(1);
 
-    subscriptionRegistry.subscribe('myhome/:room/:measurement/:unit', client2, 'subscriber#8');
+    testee.register(new TopicSubscription('myhome/:room/:measurement/:unit', 'subscriber#8', client2));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(6);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(2);
@@ -218,66 +207,28 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(2);
   });
 
-  it('should remove all subscriptions of a client', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+  it('should find subscribers which observe the topic \'myhome/livingroom/temperature\'', async () => {
+    const testee = Beans.get(TopicSubscriptionRegistry);
+    const client1 = newClient({id: 'client#1'});
+    const client2 = newClient({id: 'client#2'});
 
-    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#1;sub#1', client1));
+    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#1;sub#2', client1));
+    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#1;sub#3', client1));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#1;sub#4', client1));
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#1;sub#5', client1));
+    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#1;sub#6', client1));
 
-    const clientRegistry = Beans.get(ClientRegistry);
-    const client1 = newClient('client#1');
-    const client2 = newClient('client#2');
-    clientRegistry.registerClient(client1);
-    clientRegistry.registerClient(client2);
-
-    const subscriptionCountCaptor = new ObserveCaptor();
-    subscriptionRegistry.subscriptionCount$('myhome/livingroom/temperature').subscribe(subscriptionCountCaptor);
-
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client1, 'subscriber#1');
-    subscriptionRegistry.subscribe('myhome/livingroom/:measurement', client1, 'subscriber#2');
-    subscriptionRegistry.subscribe('myhome/:livingroom/:measurement', client1, 'subscriber#3');
-    subscriptionRegistry.subscribe(':building/:livingroom/:measurement', client1, 'subscriber#4');
-
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client2, 'subscriber#5');
-    subscriptionRegistry.subscribe('myhome/livingroom/:measurement', client2, 'subscriber#6');
-    subscriptionRegistry.subscribe('myhome/:livingroom/:measurement', client2, 'subscriber#7');
-    subscriptionRegistry.subscribe(':building/:livingroom/:measurement', client2, 'subscriber#8');
-
-    await expectSubscriptionCount('myhome/livingroom/temperature').toBe(8);
-
-    clientRegistry.unregisterClient(client1);
-    await expectSubscriptionCount('myhome/livingroom/temperature').toBe(4);
-
-    clientRegistry.unregisterClient(client2);
-    await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
-
-    await expectEmissions(subscriptionCountCaptor).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 4, 0]);
-  });
-
-  it('should resolve subscribers which observe the topic \'myhome/livingroom/temperature\'', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
-    const client1 = newClient('client#1');
-    const client2 = newClient('client#2');
-
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client1, 'client#1;sub#1');
-    subscriptionRegistry.subscribe('myhome/livingroom/:measurement', client1, 'client#1;sub#2');
-    subscriptionRegistry.subscribe('myhome/kitchen/:measurement', client1, 'client#1;sub#3');
-    subscriptionRegistry.subscribe('myhome/:room/temperature', client1, 'client#1;sub#4');
-    subscriptionRegistry.subscribe('myhome/:room/:measurement', client1, 'client#1;sub#5');
-    subscriptionRegistry.subscribe(':building/kitchen/:measurement', client1, 'client#1;sub#6');
-
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client2, 'client#2;sub#1');
-    subscriptionRegistry.subscribe('myhome/livingroom/:measurement', client2, 'client#2;sub#2');
-    subscriptionRegistry.subscribe('myhome/kitchen/:measurement', client2, 'client#2;sub#3');
-    subscriptionRegistry.subscribe('myhome/:room/temperature', client2, 'client#2;sub#4');
-    subscriptionRegistry.subscribe('myhome/:room/:measurement', client2, 'client#2;sub#5');
-    subscriptionRegistry.subscribe(':building/kitchen/:measurement', client2, 'client#2;sub#6');
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#2;sub#1', client2));
+    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#2;sub#2', client2));
+    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#2;sub#3', client2));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#2;sub#4', client2));
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#2;sub#5', client2));
+    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#2;sub#6', client2));
 
     // Resolve the subscribers which observe the topic 'myhome/livingroom/temperature'.
-    const destinations = subscriptionRegistry.resolveTopicDestinations('myhome/livingroom/temperature');
-
-    expect(destinations.map(destination => destination.subscription.subscriberId)).toEqual([
+    const subscribers = testee.subscriptions({topic: 'myhome/livingroom/temperature'});
+    expect(subscribers.map(subscription => subscription.subscriberId)).toEqual([
       'client#1;sub#1',
       'client#1;sub#2',
       'client#1;sub#4',
@@ -288,107 +239,72 @@ describe('TopicSubscriptionRegistry', () => {
       'client#2;sub#5',
     ]);
 
-    expect(destinations[0]).withContext('(a)').toEqual({
+    expect(subscribers[0]).withContext('(a)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#1;sub#1',
       topic: 'myhome/livingroom/temperature',
-      params: new Map(),
-      subscription: {
-        subscriberId: 'client#1;sub#1',
-        topic: 'myhome/livingroom/temperature',
-        client: client1,
-      },
-    });
-    expect(destinations[1]).withContext('(b)').toEqual({
+      client: client1,
+    }));
+    expect(subscribers[1]).withContext('(b)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#1;sub#2',
+      topic: 'myhome/livingroom/:measurement',
+      client: client1,
+    }));
+    expect(subscribers[2]).withContext('(c)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#1;sub#4',
+      topic: 'myhome/:room/temperature',
+      client: client1,
+    }));
+    expect(subscribers[3]).withContext('(d)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#1;sub#5',
+      topic: 'myhome/:room/:measurement',
+      client: client1,
+    }));
+    expect(subscribers[4]).withContext('(e)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#2;sub#1',
       topic: 'myhome/livingroom/temperature',
-      params: new Map().set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#1;sub#2',
-        topic: 'myhome/livingroom/:measurement',
-        client: client1,
-      },
-    });
-    expect(destinations[2]).withContext('(c)').toEqual({
-      topic: 'myhome/livingroom/temperature',
-      params: new Map().set('room', 'livingroom'),
-      subscription: {
-        subscriberId: 'client#1;sub#4',
-        topic: 'myhome/:room/temperature',
-        client: client1,
-      },
-    });
-    expect(destinations[3]).withContext('(d)').toEqual({
-      topic: 'myhome/livingroom/temperature',
-      params: new Map().set('room', 'livingroom').set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#1;sub#5',
-        topic: 'myhome/:room/:measurement',
-        client: client1,
-      },
-    });
-    expect(destinations[4]).withContext('(e)').toEqual({
-      topic: 'myhome/livingroom/temperature',
-      params: new Map(),
-      subscription: {
-        subscriberId: 'client#2;sub#1',
-        topic: 'myhome/livingroom/temperature',
-        client: client2,
-      },
-    });
-    expect(destinations[5]).withContext('(f)').toEqual({
-      topic: 'myhome/livingroom/temperature',
-      params: new Map().set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#2;sub#2',
-        topic: 'myhome/livingroom/:measurement',
-        client: client2,
-      },
-    });
-    expect(destinations[6]).withContext('(g)').toEqual({
-      topic: 'myhome/livingroom/temperature',
-      params: new Map().set('room', 'livingroom'),
-      subscription: {
-        subscriberId: 'client#2;sub#4',
-        topic: 'myhome/:room/temperature',
-        client: client2,
-      },
-    });
-    expect(destinations[7]).withContext('(h)').toEqual({
-      topic: 'myhome/livingroom/temperature',
-      params: new Map().set('room', 'livingroom').set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#2;sub#5',
-        topic: 'myhome/:room/:measurement',
-        client: client2,
-      },
-    });
+      client: client2,
+    }));
+    expect(subscribers[5]).withContext('(f)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#2;sub#2',
+      topic: 'myhome/livingroom/:measurement',
+      client: client2,
+    }));
+    expect(subscribers[6]).withContext('(g)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#2;sub#4',
+      topic: 'myhome/:room/temperature',
+      client: client2,
+    }));
+    expect(subscribers[7]).withContext('(h)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#2;sub#5',
+      topic: 'myhome/:room/:measurement',
+      client: client2,
+    }));
   });
 
-  it('should resolve subscribers which observe the topic \'myhome/kitchen/temperature\'', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+  it('should find subscribers which observe the topic \'myhome/kitchen/temperature\'', async () => {
+    const testee = Beans.get(TopicSubscriptionRegistry);
+    const client1 = newClient({id: 'client#1'});
+    const client2 = newClient({id: 'client#2'});
 
-    const subscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
-    const client1 = newClient('client#1');
-    const client2 = newClient('client#2');
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#1;sub#1', client1));
+    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#1;sub#2', client1));
+    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#1;sub#3', client1));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#1;sub#4', client1));
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#1;sub#5', client1));
+    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#1;sub#6', client1));
+    testee.register(new TopicSubscription(':building/:room/:measurement', 'client#1;sub#7', client1));
 
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client1, 'client#1;sub#1');
-    subscriptionRegistry.subscribe('myhome/livingroom/:measurement', client1, 'client#1;sub#2');
-    subscriptionRegistry.subscribe('myhome/kitchen/:measurement', client1, 'client#1;sub#3');
-    subscriptionRegistry.subscribe('myhome/:room/temperature', client1, 'client#1;sub#4');
-    subscriptionRegistry.subscribe('myhome/:room/:measurement', client1, 'client#1;sub#5');
-    subscriptionRegistry.subscribe(':building/kitchen/:measurement', client1, 'client#1;sub#6');
-    subscriptionRegistry.subscribe(':building/:room/:measurement', client1, 'client#1;sub#7');
-
-    subscriptionRegistry.subscribe('myhome/livingroom/temperature', client2, 'client#2;sub#1');
-    subscriptionRegistry.subscribe('myhome/livingroom/:measurement', client2, 'client#2;sub#2');
-    subscriptionRegistry.subscribe('myhome/kitchen/:measurement', client2, 'client#2;sub#3');
-    subscriptionRegistry.subscribe('myhome/:room/temperature', client2, 'client#2;sub#4');
-    subscriptionRegistry.subscribe('myhome/:room/:measurement', client2, 'client#2;sub#5');
-    subscriptionRegistry.subscribe(':building/kitchen/:measurement', client2, 'client#2;sub#6');
-    subscriptionRegistry.subscribe(':building/:room/:measurement', client2, 'client#2;sub#7');
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#2;sub#1', client2));
+    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#2;sub#2', client2));
+    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#2;sub#3', client2));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#2;sub#4', client2));
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#2;sub#5', client2));
+    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#2;sub#6', client2));
+    testee.register(new TopicSubscription(':building/:room/:measurement', 'client#2;sub#7', client2));
 
     // Resolve the subscribers which observe the topic 'myhome/kitchen/temperature'.
-    const destinations = subscriptionRegistry.resolveTopicDestinations('myhome/kitchen/temperature');
-
-    expect(destinations.map(destination => destination.subscription.subscriberId)).toEqual([
+    const subscribers = testee.subscriptions({topic: 'myhome/kitchen/temperature'});
+    expect(subscribers.map(subscription => subscription.subscriberId)).toEqual([
       'client#1;sub#3',
       'client#1;sub#4',
       'client#1;sub#5',
@@ -401,96 +317,56 @@ describe('TopicSubscriptionRegistry', () => {
       'client#2;sub#7',
     ]);
 
-    expect(destinations[0]).withContext('(client 1)(a)').toEqual({
-      topic: 'myhome/kitchen/temperature',
-      params: new Map().set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#1;sub#3',
-        topic: 'myhome/kitchen/:measurement',
-        client: client1,
-      },
-    });
-    expect(destinations[1]).withContext('(client 1)(b)').toEqual({
-      topic: 'myhome/kitchen/temperature',
-      params: new Map().set('room', 'kitchen'),
-      subscription: {
-        subscriberId: 'client#1;sub#4',
-        topic: 'myhome/:room/temperature',
-        client: client1,
-      },
-    });
-    expect(destinations[2]).withContext('(client 1)(c)').toEqual({
-      topic: 'myhome/kitchen/temperature',
-      params: new Map().set('room', 'kitchen').set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#1;sub#5',
-        topic: 'myhome/:room/:measurement',
-        client: client1,
-      },
-    });
-    expect(destinations[3]).withContext('(client 1)(d)').toEqual({
-      topic: 'myhome/kitchen/temperature',
-      params: new Map().set('building', 'myhome').set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#1;sub#6',
-        topic: ':building/kitchen/:measurement',
-        client: client1,
-      },
-    });
-    expect(destinations[4]).withContext('(client 1)(e)').toEqual({
-      topic: 'myhome/kitchen/temperature',
-      params: new Map().set('building', 'myhome').set('room', 'kitchen').set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#1;sub#7',
-        topic: ':building/:room/:measurement',
-        client: client1,
-      },
-    });
-    expect(destinations[5]).withContext('(client 2)(a)').toEqual({
-      topic: 'myhome/kitchen/temperature',
-      params: new Map().set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#2;sub#3',
-        topic: 'myhome/kitchen/:measurement',
-        client: client2,
-      },
-    });
-    expect(destinations[6]).withContext('(client 2)(b)').toEqual({
-      topic: 'myhome/kitchen/temperature',
-      params: new Map().set('room', 'kitchen'),
-      subscription: {
-        subscriberId: 'client#2;sub#4',
-        topic: 'myhome/:room/temperature',
-        client: client2,
-      },
-    });
-    expect(destinations[7]).withContext('(client 2)(c)').toEqual({
-      topic: 'myhome/kitchen/temperature',
-      params: new Map().set('room', 'kitchen').set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#2;sub#5',
-        topic: 'myhome/:room/:measurement',
-        client: client2,
-      },
-    });
-    expect(destinations[8]).withContext('(client 2)(d)').toEqual({
-      topic: 'myhome/kitchen/temperature',
-      params: new Map().set('building', 'myhome').set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#2;sub#6',
-        topic: ':building/kitchen/:measurement',
-        client: client2,
-      },
-    });
-    expect(destinations[9]).withContext('(client 2)(e)').toEqual({
-      topic: 'myhome/kitchen/temperature',
-      params: new Map().set('building', 'myhome').set('room', 'kitchen').set('measurement', 'temperature'),
-      subscription: {
-        subscriberId: 'client#2;sub#7',
-        topic: ':building/:room/:measurement',
-        client: client2,
-      },
-    });
+    expect(subscribers[0]).withContext('(client 1)(a)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#1;sub#3',
+      topic: 'myhome/kitchen/:measurement',
+      client: client1,
+    }));
+    expect(subscribers[1]).withContext('(client 1)(b)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#1;sub#4',
+      topic: 'myhome/:room/temperature',
+      client: client1,
+    }));
+    expect(subscribers[2]).withContext('(client 1)(c)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#1;sub#5',
+      topic: 'myhome/:room/:measurement',
+      client: client1,
+    }));
+    expect(subscribers[3]).withContext('(client 1)(d)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#1;sub#6',
+      topic: ':building/kitchen/:measurement',
+      client: client1,
+    }));
+    expect(subscribers[4]).withContext('(client 1)(e)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#1;sub#7',
+      topic: ':building/:room/:measurement',
+      client: client1,
+    }));
+    expect(subscribers[5]).withContext('(client 2)(a)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#2;sub#3',
+      topic: 'myhome/kitchen/:measurement',
+      client: client2,
+    }));
+    expect(subscribers[6]).withContext('(client 2)(b)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#2;sub#4',
+      topic: 'myhome/:room/temperature',
+      client: client2,
+    }));
+    expect(subscribers[7]).withContext('(client 2)(c)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#2;sub#5',
+      topic: 'myhome/:room/:measurement',
+      client: client2,
+    }));
+    expect(subscribers[8]).withContext('(client 2)(d)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#2;sub#6',
+      topic: ':building/kitchen/:measurement',
+      client: client2,
+    }));
+    expect(subscribers[9]).withContext('(client 2)(e)').toEqual(jasmine.objectContaining({
+      subscriberId: 'client#2;sub#7',
+      topic: ':building/:room/:measurement',
+      client: client2,
+    }));
   });
 
   function expectSubscriptionCount(topic: string): {toBe: (expected: number) => Promise<void>} {
@@ -500,10 +376,12 @@ describe('TopicSubscriptionRegistry', () => {
       },
     };
   }
-
-  function newClient(id: string): Client {
-    return new ɵClient(id, {} as Window, {symbolicName: 'app'} as Application, Beans.get(VERSION));
-  }
 });
 
-
+function newClient(descriptor: {id: string; appSymbolicName?: string}): Client {
+  return new class implements Partial<Client> {
+    public readonly application = {symbolicName: descriptor.appSymbolicName} as Application;
+    public readonly id = descriptor.id ?? UUID.randomUUID();
+    public readonly dispose = noop;
+  } as Client;
+}

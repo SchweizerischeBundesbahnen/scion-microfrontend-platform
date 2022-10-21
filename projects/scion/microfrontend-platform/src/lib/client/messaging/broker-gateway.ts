@@ -8,9 +8,9 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {AsyncSubject, EMPTY, firstValueFrom, fromEvent, interval, lastValueFrom, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout, timer} from 'rxjs';
-import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, TopicUnsubscribeCommand} from '../../ɵmessaging.model';
+import {ConnackMessage, IntentSubscribeCommand, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, SubscribeCommand, TopicSubscribeCommand, UnsubscribeCommand} from '../../ɵmessaging.model';
 import {finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
-import {filterByChannel, filterByMessageHeader, filterByOrigin, filterByTopicChannel, filterByTransport, pluckMessage} from '../../operators';
+import {filterByChannel, filterByMessageHeader, filterByOrigin, filterByTopicChannel, filterByTransport, filterByWindow, pluckMessage} from '../../operators';
 import {UUID} from '@scion/toolkit/uuid';
 import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
 import {Logger, NULL_LOGGER} from '../../logger';
@@ -24,6 +24,7 @@ import {MessageClient} from '../../client/messaging/message-client';
 import {runSafe} from '../../safe-runner';
 import {VERSION} from '../../version';
 import {stringifyError} from '../../error.util';
+import {IntentSelector} from './intent-client';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.
@@ -58,6 +59,12 @@ export abstract class BrokerGateway {
    * Subscribes to messages published to the given topic. The Observable never completes.
    */
   public abstract subscribeToTopic$<T>(topic: string): Observable<TopicMessage<T>>;
+
+  /**
+   * Subscribes to intents that match the specified selector and for which the application provides a fulfilling capability.
+   * The Observable never completes.
+   */
+  public abstract subscribeToIntent$<T>(selector?: IntentSelector): Observable<IntentMessage<T>>;
 
   /**
    * An Observable that emits when a message from the message broker is received.
@@ -97,6 +104,10 @@ export class NullBrokerGateway implements BrokerGateway {
   public subscribeToTopic$<T>(topic: string): Observable<TopicMessage<T>> {
     return NEVER;
   }
+
+  public subscribeToIntent$<T>(selector: IntentSelector): Observable<IntentMessage<T>> {
+    return NEVER;
+  }
 }
 
 /**
@@ -113,8 +124,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   private _appSymbolicName: string;
   private _brokerDiscoverTimeout: number;
   private _messageDeliveryTimeout: number;
-  private _brokerInfo: BrokerInfo | null = null;
-  private _brokerInfo$ = new AsyncSubject<BrokerInfo>();
+  private _session: Session | null = null;
+  private _session$ = new AsyncSubject<Session>();
 
   public readonly message$ = new Subject<MessageEvent<MessageEnvelope>>();
 
@@ -126,25 +137,25 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
 
   public async init(): Promise<void> {
     try {
-      const brokerInfo = await this.connectToBroker();
-      this.installBrokerMessageListener(brokerInfo);
-      this.installHeartbeatPublisher(brokerInfo);
-      this._brokerInfo = brokerInfo;
-      this._brokerInfo$.next(brokerInfo);
-      this._brokerInfo$.complete();
+      const session = await this.connectToBroker();
+      this.installBrokerMessageListener(session);
+      this.installHeartbeatPublisher(session);
+      this._session = session;
+      this._session$.next(session);
+      this._session$.complete();
     }
     catch (error) {
-      this._brokerInfo$.error(error);
+      this._session$.error(error);
       throw error;
     }
   }
 
   public isConnected(): Promise<boolean> {
-    return lastValueFrom(this._brokerInfo$).then(() => true).catch(() => false);
+    return lastValueFrom(this._session$).then(() => true).catch(() => false);
   }
 
-  public get brokerInfo(): BrokerInfo | null {
-    return this._brokerInfo;
+  public get session(): Session | null {
+    return this._session;
   }
 
   public async postMessage(channel: MessagingChannel, message: Message): Promise<void> {
@@ -154,7 +165,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
 
     // If not connected to the broker, wait until connected. If connected, continue execution immediately
     // without spawning a microtask. Otherwise, messages cannot be published during platform shutdown.
-    const brokerInfo = this._brokerInfo || await lastValueFrom(this._brokerInfo$);
+    const session = this._session || await lastValueFrom(this._session$);
 
     const messageId = UUID.randomUUID();
     const envelope: MessageEnvelope = {
@@ -166,7 +177,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       .set(MessageHeaders.MessageId, messageId)
       .set(MessageHeaders.Timestamp, Date.now())
       .set(MessageHeaders.AppSymbolicName, this._appSymbolicName)
-      .set(MessageHeaders.ClientId, brokerInfo.clientId);
+      .set(MessageHeaders.ClientId, session.clientId);
 
     // Install Promise that resolves once the broker has acknowledged the message, or that rejects otherwise.
     const postError$ = new Subject<never>();
@@ -187,7 +198,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     });
 
     try {
-      brokerInfo.window.postMessage(envelope, brokerInfo.origin);
+      session.broker.window.postMessage(envelope, session.broker.origin);
     }
     catch (error) {
       postError$.error(error);
@@ -228,7 +239,28 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   }
 
   public subscribeToTopic$<T>(topic: string): Observable<TopicMessage<T>> {
-    return new Observable((observer: Observer<TopicMessage>): TeardownLogic => {
+    return this.subscribe$((subscriberId: string): TopicSubscribeCommand => ({topic, subscriberId, headers: new Map()}), {
+      messageChannel: MessagingChannel.Topic,
+      subscribeChannel: MessagingChannel.TopicSubscribe,
+      unsubscribeChannel: MessagingChannel.TopicUnsubscribe,
+    });
+  }
+
+  public subscribeToIntent$<T>(selector?: IntentSelector): Observable<IntentMessage<T>> {
+    return this.subscribe$((subscriberId: string): IntentSubscribeCommand => ({selector, subscriberId, headers: new Map()}), {
+      messageChannel: MessagingChannel.Intent,
+      subscribeChannel: MessagingChannel.IntentSubscribe,
+      unsubscribeChannel: MessagingChannel.IntentUnsubscribe,
+    });
+  }
+
+  /**
+   * Subscribes to described destination, unless the platform has been stopped at the time of subscription.
+   */
+  private subscribe$<T extends Message>(produceSubscribeCommand: (subscriberId: string) => SubscribeCommand, descriptor: {messageChannel: MessagingChannel; subscribeChannel: MessagingChannel; unsubscribeChannel: MessagingChannel}): Observable<T> {
+    const {messageChannel, subscribeChannel, unsubscribeChannel} = descriptor;
+
+    return new Observable((observer: Observer<T>): TeardownLogic => {
       if (isPlatformStopped()) {
         observer.error(GatewayErrors.PLATFORM_STOPPED_ERROR);
         return noop;
@@ -237,25 +269,25 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       const subscriberId = UUID.randomUUID();
       const unsubscribe$ = new Subject<void>();
       const subscribeError$ = new Subject<never>();
+      const subscribeCommand: SubscribeCommand = produceSubscribeCommand(subscriberId);
 
-      // Receive messages sent to the given topic.
+      // Receive messages of given subscription.
       merge(this.message$, subscribeError$)
         .pipe(
-          filterByChannel<TopicMessage>(MessagingChannel.Topic),
-          filterByMessageHeader({key: MessageHeaders.ɵTopicSubscriberId, value: subscriberId}),
+          filterByChannel<T>(messageChannel),
+          filterByMessageHeader({name: MessageHeaders.ɵSubscriberId, value: subscriberId}),
           pluckMessage(),
           takeUntil(merge(this._platformStopping$, unsubscribe$)),
-          finalize(() => this.unsubscribeFromTopic(topic, subscriberId)),
+          finalize(() => this.unsubscribe({unsubscribeChannel, subscriberId, logContext: JSON.stringify(subscribeCommand)})),
         )
         .subscribe({
-          next: reply => observer.next(reply),
+          next: message => observer.next(message),
           error: error => observer.error(error),
           complete: noop, // As per the API, the Observable never completes.
         });
 
-      // Post the topic subscription to the broker.
-      const topicSubscribeMessage: TopicSubscribeCommand = {subscriberId, topic, headers: new Map()};
-      this.postMessage(MessagingChannel.TopicSubscribe, topicSubscribeMessage)
+      // Post the subscription to the broker.
+      this.postMessage(subscribeChannel, subscribeCommand)
         .catch(error => subscribeError$.error(error));
 
       return (): void => unsubscribe$.next();
@@ -263,19 +295,20 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   }
 
   /**
-   * Unsubscribes given topic subscription. Does nothing if the platform is stopped.
+   * Unsubscribes from described destination. Does nothing if the platform is stopped.
    */
-  private async unsubscribeFromTopic(topic: string, subscriberId: string): Promise<void> {
+  private async unsubscribe(descriptor: {unsubscribeChannel: MessagingChannel; subscriberId: string; logContext: string}): Promise<void> {
     if (isPlatformStopped()) {
       return;
     }
 
-    const topicUnsubscribeCommand: TopicUnsubscribeCommand = {subscriberId, headers: new Map()};
+    const {unsubscribeChannel, subscriberId, logContext} = descriptor;
+    const unsubscribeCommand: UnsubscribeCommand = {subscriberId, headers: new Map()};
     try {
-      await this.postMessage(MessagingChannel.TopicUnsubscribe, topicUnsubscribeCommand);
+      await this.postMessage(unsubscribeChannel, unsubscribeCommand);
     }
     catch (error) {
-      Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(`[TopicUnsubscribeError] Failed to unsubscribe from topic '${topic}'. Caused by: ${error}`);  // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
+      Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(`[UnsubscribeError] Failed to unsubscribe from destination: '${logContext}'. Caused by: ${error}`);  // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
     }
   }
 
@@ -283,10 +316,11 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
    * Subscribes to messages sent to this client.
    * Messages are dispatched to {@link message$}.
    */
-  private installBrokerMessageListener(brokerInfo: BrokerInfo): void {
+  private installBrokerMessageListener(session: Session): void {
     fromEvent<MessageEvent>(window, 'message')
       .pipe(
-        filterByOrigin(brokerInfo.origin),
+        filterByWindow(session.broker.window),
+        filterByOrigin(session.broker.origin),
         filterByTransport(MessagingTransport.BrokerToClient),
         fixMapObjects(),
         takeUntil(this._platformStopping$),
@@ -299,14 +333,14 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
    *
    * Note that no heartbeat scheduler is installed if running in the context of the host application.
    */
-  private installHeartbeatPublisher(brokerInfo: BrokerInfo): void {
+  private installHeartbeatPublisher(session: Session): void {
     if (Beans.get(IS_PLATFORM_HOST)) {
       return; // The host app client does not send a heartbeat.
     }
-    interval(brokerInfo.heartbeatInterval)
+    interval(session.heartbeatInterval)
       .pipe(takeUntil(this._platformStopping$))
       .subscribe(() => runSafe(() => {
-        Beans.get(MessageClient).publish(PlatformTopics.heartbeat(brokerInfo.clientId)).then();
+        Beans.get(MessageClient).publish(PlatformTopics.heartbeat(session.clientId)).then();
       }));
   }
 
@@ -316,10 +350,10 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
    * When the broker receives the CONNECT message and trusts this client, the broker responds with a CONNACK message,
    * or rejects the connect attempt otherwise.
    *
-   * @return A Promise that, when connected, resolves to information about the broker, or that rejects if the connect attempt
+   * @return A Promise that, when connected, resolves to information about the connected client and broker, or that rejects if the connect attempt
    * failed, either because the broker could not be found or because the application is not allowed to connect.
    */
-  public connectToBroker(): Promise<BrokerInfo> {
+  public connectToBroker(): Promise<Session> {
     const replyTo = UUID.randomUUID();
     const connectPromise = firstValueFrom(fromEvent<MessageEvent>(window, 'message')
       .pipe(
@@ -330,11 +364,13 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
           if (response?.returnCode !== 'accepted') {
             return throwError(() => `${response?.returnMessage ?? 'UNEXPECTED: Empty broker discovery response'} [code: '${response?.returnCode ?? 'n/a'}']`);
           }
-          return of<BrokerInfo>({
+          return of<Session>({
             clientId: response.clientId!,
             heartbeatInterval: response.heartbeatInterval!,
-            window: messageEvent.source as Window,
-            origin: messageEvent.origin,
+            broker: {
+              window: messageEvent.source as Window,
+              origin: messageEvent.origin,
+            },
           });
         }),
         timeout({first: this._brokerDiscoverTimeout, with: () => throwError(() => GatewayErrors.BROKER_DISCOVER_ERROR(this._brokerDiscoverTimeout))}),
@@ -382,7 +418,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
    * a warning, but not thrown.
    */
   private disconnectFromBroker(): void {
-    if (!this._brokerInfo) {
+    if (!this._session) {
       return;
     }
 
@@ -394,12 +430,12 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
           .set(MessageHeaders.MessageId, UUID.randomUUID())
           .set(MessageHeaders.Timestamp, Date.now())
           .set(MessageHeaders.AppSymbolicName, this._appSymbolicName)
-          .set(MessageHeaders.ClientId, this._brokerInfo.clientId),
+          .set(MessageHeaders.ClientId, this._session.clientId),
       },
     };
 
     try {
-      this._brokerInfo.window.postMessage(disconnectMessage, this._brokerInfo.origin);
+      this._session.broker.window.postMessage(disconnectMessage, this._session.broker.origin);
     }
     catch (error) {
       Beans.get(Logger, {orElseGet: NULL_LOGGER}).warn(`[ClientDisconnectError] Failed to disconnect from the broker. Caused by: ${error}`);
@@ -478,15 +514,17 @@ function isPlatformStopped(): boolean {
 }
 
 /**
- * Information about the broker.
+ * Session created after successful connection with the broker.
  *
  * @ignore
  */
-interface BrokerInfo {
+interface Session {
   clientId: string;
   heartbeatInterval: number;
-  origin: string;
-  window: Window;
+  broker: {
+    origin: string;
+    window: Window;
+  };
 }
 
 /** @ignore*/

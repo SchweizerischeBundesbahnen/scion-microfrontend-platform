@@ -26,9 +26,9 @@ export interface Message {
 }
 
 /**
- * Represents an intent issued by an application.
+ * Represents an intent sent by an application.
  *
- * The intent is transported to all clients that provide a satisfying capability visible to the issuing application.
+ * The intent is transported to applications that provide a fulfilling capability visible to the sending application.
  *
  * @category Messaging
  */
@@ -174,11 +174,11 @@ export enum MessageHeaders {
    */
   Status = 'ɵSTATUS',
   /**
-   * Unique identity of a topic subscriber.
+   * Unique identity of a message or intent subscriber.
    *
    * @internal
    */
-  ɵTopicSubscriberId = 'ɵTOPIC_SUBSCRIBER_ID',
+  ɵSubscriberId = 'ɵSUBSCRIBER_ID',
 }
 
 /**

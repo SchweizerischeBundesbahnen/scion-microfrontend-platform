@@ -40,7 +40,7 @@ export namespace IntendBasedMessagingSpecs {
   }
 
   /**
-   * Tests that an intent can only be issued if there is one application at minimum providing a respective capability.
+   * Tests that an intent can only be issued if there is one application at minimum providing a fulfilling capability.
    */
   export async function intentNotFulfilledSpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
@@ -935,7 +935,7 @@ export namespace IntendBasedMessagingSpecs {
   }
 
   /**
-   * Tests that the platform resolves to the satisfying capability.
+   * Tests that the platform resolves to the fulfilling capability.
    */
   export async function resolveCapabilitySpec(testingAppPO: TestingAppPO): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo({
