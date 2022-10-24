@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, Injector, Input, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, Injector, Input, ViewChild} from '@angular/core';
 import {OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {Overlay} from '@angular/cdk/overlay';
@@ -35,7 +35,6 @@ export class BrowserOutletComponent {
   public appEntryPoints: AppEndpoint[];
 
   @Input()
-  @HostBinding('attr.id')
   public outletName: string;
 
   @ViewChild('settings_button', {static: true})
