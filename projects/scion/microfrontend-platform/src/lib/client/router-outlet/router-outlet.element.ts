@@ -362,6 +362,7 @@ export class SciRouterOutletElement extends HTMLElement {
       .pipe(takeUntil(this._disconnect$))
       .subscribe((name: string) => {
         const outletContext: OutletContext = {name: name, uid: this._uid};
+        this.iframe.name = name;
         this.setContextValue(OUTLET_CONTEXT, outletContext);
       });
   }
