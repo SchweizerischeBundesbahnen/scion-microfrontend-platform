@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {getLocationHref, isCssClassPresent, isPresent, setLocationHref} from '../testing.util';
+import {getLocationHref, isCssClassPresent, isPresent, setLocationHref, waitUntilNavigationStable} from '../testing.util';
 import {RouterOutletSettingsPO} from '../settings/router-outlet-settings.po';
 import {FrameLocator, Locator} from '@playwright/test';
 import {ElementSelectors} from '../element-selectors';
@@ -34,6 +34,7 @@ export class RouterOutletPagePO implements OutletPageObject {
 
   public async clickApply(): Promise<void> {
     await this._locator.locator('button.e2e-apply').click();
+    await waitUntilNavigationStable(this._locator.page());
   }
 
   /**

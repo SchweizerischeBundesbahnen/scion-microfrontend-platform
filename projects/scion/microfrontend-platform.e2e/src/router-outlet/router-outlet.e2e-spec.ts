@@ -69,7 +69,7 @@ test.describe('RouterOutlet', () => {
     // Navigate to another site (microfrontend-1) inside the outlet under test
     const testeePO = new OutletRouterPagePO(routerOutletPO.routerOutletFrameLocator);
     await testeePO.enterUrl(`../${Microfrontend1PagePO.PATH}`); // do not specify a target outlet
-    await testeePO.clickNavigate({evalNavigateResponse: false});
+    await testeePO.clickNavigate();
 
     await expect(routerOutletPO).toHaveRouterOutletUrl(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend1PagePO.PATH}));
   });
@@ -1733,7 +1733,7 @@ test.describe('RouterOutlet', () => {
       // Navigate to the microfrontend via intent-based routing
       const routerPO = pagePOs.get<OutletRouterPagePO>('router');
       await routerPO.enterIntentQualifier({entity: 'person'});
-      await routerPO.clickNavigate({evalNavigateResponse: false});
+      await routerPO.clickNavigate();
 
       // Verify that the navigation replaced the current outlet
       await expect(pagePOs.get<BrowserOutletPO>('router:outlet').getEmbeddedContentUrl()).resolves.toEqual(getPageUrl({path: Microfrontend1PagePO.PATH, origin: TestingAppOrigins.APP_1}));

@@ -24,7 +24,8 @@ export class SciListPO {
 
   public async getListItems(): Promise<SciListItemPO[]> {
     const listItemPOs = [];
-    for (let i = 0; i < await this._listItemLocator.count(); i++) {
+    const count = await this._listItemLocator.count();
+    for (let i = 0; i < count; i++) {
       listItemPOs.push(new SciListItemPO(this._listItemLocator.nth(i)));
     }
     return listItemPOs;
