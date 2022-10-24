@@ -62,6 +62,20 @@ export class RouterOutletPagePO implements OutletPageObject {
   }
 
   /**
+   * Returns the name of the router outlet.
+   */
+  public getRouterOutletName(): Promise<string> {
+    return this._locator.locator(ElementSelectors.routerOutlet()).getAttribute('name');
+  }
+
+  /**
+   * Returns the name of the iframe of the router outlet.
+   */
+  public getRouterOutletFrameName(): Promise<string> {
+    return this._locator.locator(ElementSelectors.routerOutletFrame()).getAttribute('name');
+  }
+
+  /**
    * Returns `true` if the outlet is showing no content, or `false` otherwise.
    */
   public async isEmpty(): Promise<boolean> {

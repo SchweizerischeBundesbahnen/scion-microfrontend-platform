@@ -24,6 +24,30 @@ import {expect} from '@playwright/test';
 
 test.describe('RouterOutlet', () => {
 
+  test('should set the name of the router outlet element', async ({testingAppPO}) => {
+    const pagePOs = await testingAppPO.navigateTo({
+      routerOutlet: RouterOutletPagePO,
+    });
+
+    const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+    await routerOutletPO.enterOutletName('microfrontend-outlet');
+    await routerOutletPO.clickApply();
+
+    expect(await routerOutletPO.getRouterOutletName()).toEqual('microfrontend-outlet');
+  });
+
+  test('should set the iframe name to the outlet name', async ({testingAppPO}) => {
+    const pagePOs = await testingAppPO.navigateTo({
+      routerOutlet: RouterOutletPagePO,
+    });
+
+    const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+    await routerOutletPO.enterOutletName('microfrontend-outlet');
+    await routerOutletPO.clickApply();
+
+    expect(await routerOutletPO.getRouterOutletFrameName()).toEqual('microfrontend-outlet');
+  });
+
   test('should allow navigating within the outlet (self navigation)', async ({testingAppPO}) => {
     const pagePOs = await testingAppPO.navigateTo({
       router: OutletRouterPagePO,
