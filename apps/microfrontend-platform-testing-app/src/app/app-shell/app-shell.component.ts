@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component, HostBinding, OnDestroy} from '@angular/core';
-import {asapScheduler, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
+import {asapScheduler, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {takeUntil} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
@@ -61,6 +61,7 @@ export class AppShellComponent implements OnDestroy {
     Beans.get(ContextService).names$()
       .pipe(
         mergeMap(contextKeys => from(Array.from(contextKeys).filter(key => key.startsWith('keystroke:')))),
+        delay(250), // Wait some time for the keystroke to be installed
         withLatestFrom(outletName$),
         takeUntil(this._destroy$),
       )
