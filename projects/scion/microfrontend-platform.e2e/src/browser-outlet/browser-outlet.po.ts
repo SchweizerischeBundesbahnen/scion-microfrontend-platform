@@ -27,7 +27,8 @@ export class BrowserOutletPO implements OutletPageObject {
   private readonly _outletFrame: Promise<Frame>;
 
   constructor(private readonly _pageOrFrameLocator: Page | FrameLocator, private outletName: string) {
-    this._locator = this._pageOrFrameLocator.locator(`app-browser-outlet#${outletName}`);
+    const page = this._pageOrFrameLocator.locator('html').page();
+    this._locator = this._pageOrFrameLocator.locator(`app-browser-outlet`, {has: page.locator(ElementSelectors.routerOutlet(outletName))});
     this._outletFrame = this.resolveOutletFrame(outletName, {timeout: 5000});
   }
 
