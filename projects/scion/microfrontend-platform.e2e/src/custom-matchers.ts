@@ -13,6 +13,7 @@ import {IntentMessage, TopicMessage} from '@scion/microfrontend-platform';
 import {MessageListItemPO} from './messaging/message-list-item.po';
 import {RouterOutletPagePO} from './router-outlet/router-outlet-page.po';
 import {waitUntilStable} from './testing.util';
+import {noop} from 'rxjs';
 
 declare global {
   namespace PlaywrightTest {
@@ -102,7 +103,7 @@ export namespace CustomMatchers {
 
       async toHaveRouterOutletUrl(routerOutletPO: RouterOutletPagePO, expected: string): Promise<ExpectationResult> {
         // It can take some time for the page to be loaded, therefore we have to wait for the URL to become stable.
-        const url = await waitUntilStable(() => routerOutletPO.getEmbeddedContentUrl());
+        const url = await waitUntilStable(() => routerOutletPO.getEmbeddedContentUrl().catch(noop), {probeInterval: 250});
         if (url !== expected) {
           return {
             pass: false,

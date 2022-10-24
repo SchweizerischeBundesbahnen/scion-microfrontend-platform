@@ -36,7 +36,6 @@ export class OutletRouterComponent {
 
   public form: UntypedFormGroup;
   public navigateError: string;
-  public navigated = false;
 
   constructor(formBuilder: UntypedFormBuilder) {
     this.form = formBuilder.group({
@@ -59,7 +58,6 @@ export class OutletRouterComponent {
     }
 
     this.navigateError = undefined;
-    this.navigated = false;
     try {
       if (this.form.get(USE_INTENT).value) {
         const qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(QUALIFIER) as UntypedFormArray);
@@ -70,7 +68,6 @@ export class OutletRouterComponent {
         await Beans.get(OutletRouter).navigate(url, options);
       }
 
-      this.navigated = true;
       this.form.reset();
       this.form.setControl(PARAMS, new UntypedFormArray([]));
       this.form.setControl(QUALIFIER, new UntypedFormArray([]));

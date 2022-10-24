@@ -10,7 +10,7 @@
 
 import {Outlets, TestingAppOrigins} from '../testing-app.po';
 import {RouterOutletContextPO} from '../context/router-outlet-context.po';
-import {FrameLocator, Locator, Page} from '@playwright/test';
+import {Frame, FrameLocator, Locator, Page} from '@playwright/test';
 import {getLocationHref, isPresent, parseKeystroke} from '../testing.util';
 import {ElementSelectors} from '../element-selectors';
 import {RouterOutletSettingsPO} from '../settings/router-outlet-settings.po';
@@ -24,9 +24,11 @@ export class BrowserOutletPO implements OutletPageObject {
   public readonly path = 'browser-outlets';
 
   private readonly _locator: Locator;
+  private readonly _outletFrame: Promise<Frame>;
 
   constructor(private readonly _pageOrFrameLocator: Page | FrameLocator, private outletName: string) {
     this._locator = this._pageOrFrameLocator.locator(`app-browser-outlet#${outletName}`);
+    this._outletFrame = this.resolveOutletFrame(outletName, {timeout: 5000});
   }
 
   /**
@@ -153,8 +155,41 @@ export class BrowserOutletPO implements OutletPageObject {
   }
 
   private async enterUrlAndNavigate(url: string): Promise<void> {
+    const outletFrame = await this._outletFrame;
+
     await this._locator.locator('input.e2e-url').fill(url);
-    await this._locator.locator('button.e2e-go').click();
+    await Promise.all([
+      this._locator.locator('button.e2e-go').click(),
+      outletFrame.waitForNavigation({url}),
+    ]);
+  }
+
+  /**
+   * Resolves to the frame contained in the <sci-router-outlet> element.
+   */
+  private async resolveOutletFrame(outletName: string, options: {timeout: number}): Promise<Frame> {
+    // - Playwright does not provide API to find an iframe by name if its name is set after it is created.
+    //   For this reason we need to iterate all iframes to find it.
+    // - The invocation of the `Page.frames` method does not interact with the browser to get iframes. Therefore,
+    //   the iframes returned may differ from the actual iframes because Playwright synchronizes them asynchronously.
+    //   For this reason, we repeat finding the iframe repeatedly until it is either found or the specified timeout
+    //   elapses.
+    const expiration = Date.now() + options.timeout;
+    const page = this._locator.page();
+    do {
+      for (const frame of page.frames()) {
+        if (frame === page.mainFrame()) {
+          continue; // skip the main browser frame
+        }
+
+        if (outletName === await (await frame.frameElement()).getAttribute('name')) {
+          return frame;
+        }
+      }
+      await page.waitForTimeout(10);
+    } while (Date.now() < expiration);
+
+    throw Error(`[NullFrameError] Frame with name '${outletName}' not found.`);
   }
 }
 

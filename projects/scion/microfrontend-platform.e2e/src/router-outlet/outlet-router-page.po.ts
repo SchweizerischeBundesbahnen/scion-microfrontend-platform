@@ -13,6 +13,7 @@ import {FrameLocator, Locator} from '@playwright/test';
 import {SciCheckboxPO} from '../components.internal/checkbox.po/checkbox.po';
 import {SciParamsEnterPO} from '../components.internal/params-enter.po/params-enter.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
+import {waitUntilNavigationStable} from '../testing.util';
 
 export class OutletRouterPagePO implements OutletPageObject {
 
@@ -51,24 +52,13 @@ export class OutletRouterPagePO implements OutletPageObject {
     await new SciCheckboxPO(this._locator.locator('sci-checkbox.e2e-push-state')).toggle(check);
   }
 
-  /**
-   * Clicks navigate.
-   *
-   * Set `evalNavigateResponse` to `false` when replacing the current microfrontend,
-   * as this unloads the current router page.
-   */
-  public async clickNavigate(options?: {evalNavigateResponse?: boolean}): Promise<void> {
+  public async clickNavigate(): Promise<void> {
     await this._locator.locator('button.e2e-navigate').click();
 
-    if (!(options?.evalNavigateResponse ?? true)) {
-      return;
-    }
-
     // Wait until navigated. If the navigation failed, throw an error.
-    const navigatedLocator = this._locator.locator('output.e2e-navigated');
     const errorLocator = this._locator.locator('output.e2e-navigate-error');
     await Promise.race([
-      navigatedLocator.waitFor({state: 'attached'}),
+      waitUntilNavigationStable(this._locator.page()),
       errorLocator.waitFor({state: 'attached'}).then(() => errorLocator.innerText()).then(error => Promise.reject(Error(error))),
     ]);
   }

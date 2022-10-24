@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {FrameLocator, Locator} from '@playwright/test';
-import {filter, firstValueFrom, map, pairwise, switchMap, timer} from 'rxjs';
+import {FrameLocator, Locator, Page} from '@playwright/test';
+import {exhaustMap, filter, firstValueFrom, map, pairwise, timer} from 'rxjs';
 
 /**
  * Returns if given CSS class is present on given element.
@@ -65,17 +65,26 @@ export async function setLocationHref(locator: FrameLocator, url: string): Promi
 
 /**
  * Waits for a value to become stable.
- * This function returns the value if it hasn't changed during `probeInterval` (defaults to 500ms).
+ * This function returns the value if it hasn't changed during `probeInterval` (defaults to 100ms).
  */
-export async function waitUntilStable<A>(value: () => Promise<A>, options?: {isStable?: (previous: A, current: A) => boolean; probeInterval?: number}): Promise<A> {
-  const value$ = timer(0, options?.probeInterval ?? 500)
+export async function waitUntilStable<A>(value: () => Promise<A> | A, options?: {isStable?: (previous: A, current: A) => boolean; probeInterval?: number}): Promise<A> {
+  const value$ = timer(0, options?.probeInterval ?? 100)
     .pipe(
-      switchMap(() => value()),
+      exhaustMap(async () => await value()),
       pairwise(),
       filter(([previous, current]) => options?.isStable ? options.isStable(previous, current) : previous === current),
       map(([previous]) => previous),
     );
   return firstValueFrom(value$);
+}
+
+/**
+ * Waits until the frame URLs are stable, i.e., navigation has completed.
+ *
+ * Consider calling this method after a navigation before continuing browser interaction.
+ */
+export async function waitUntilNavigationStable(page: Page): Promise<void> {
+  await Promise.all(page.frames().map(frame => waitUntilStable(() => frame.url(), {probeInterval: 500})));
 }
 
 /**
@@ -90,4 +99,3 @@ export function parseKeystroke(keystroke: string): {parts: string; flags: string
   const groups = keystroke.match(/(?<parts>[^{]*)({(?<flags>.*)})?/).groups;
   return {parts: groups['parts'], flags: groups['flags']};
 }
-

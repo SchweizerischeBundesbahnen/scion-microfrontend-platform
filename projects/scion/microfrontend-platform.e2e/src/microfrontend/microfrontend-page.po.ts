@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {isPresent, waitUntilStable} from '../testing.util';
+import {isPresent} from '../testing.util';
 import {FrameLocator, Locator} from '@playwright/test';
 import {SciPropertyPO} from '../components.internal/property.po/property.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
@@ -26,9 +26,7 @@ export abstract class MicrofrontendPagePO implements OutletPageObject {
   }
 
   public async getAppInstanceId(): Promise<string> {
-    // When navigating to the microfrontend page of another app, the page takes some time to be loaded.
-    // Therefore, we wait for the app instance id to become stable before returning it.
-    return waitUntilStable(() => this._locator.locator('input.e2e-app-instance-id').inputValue());
+    return this._locator.locator('input.e2e-app-instance-id').inputValue();
   }
 
   public async getComponentInstanceId(): Promise<string> {
