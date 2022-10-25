@@ -9,7 +9,7 @@
  */
 
 import {Locator} from '@playwright/test';
-import {SciListItemPO} from '../components.internal/list.po/list-item.po';
+import {SciListItemPO} from '../@scion/components.internal/list.po/list-item.po';
 
 export class ContextEntryListItemPO {
 

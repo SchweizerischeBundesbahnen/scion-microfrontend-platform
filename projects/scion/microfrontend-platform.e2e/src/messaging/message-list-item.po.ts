@@ -11,8 +11,8 @@
 import {Capability, Qualifier} from '@scion/microfrontend-platform';
 import {Locator} from '@playwright/test';
 import {isPresent} from '../testing.util';
-import {SciListItemPO} from '../components.internal/list.po/list-item.po';
-import {SciPropertyPO} from '../components.internal/property.po/property.po';
+import {SciListItemPO} from '../@scion/components.internal/list.po/list-item.po';
+import {SciPropertyPO} from '../@scion/components.internal/property.po/property.po';
 
 export class MessageListItemPO {
 
