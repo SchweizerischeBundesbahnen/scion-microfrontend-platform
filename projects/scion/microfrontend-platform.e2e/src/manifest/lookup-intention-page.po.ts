@@ -11,9 +11,9 @@
 import {FrameLocator, Locator} from '@playwright/test';
 import {ManifestObjectFilter} from '@scion/microfrontend-platform';
 import {isPresent} from '../testing.util';
-import {SciParamsEnterPO} from '../components.internal/params-enter.po/params-enter.po';
-import {SciListPO} from '../components.internal/list.po/list.po';
-import {SciCheckboxPO} from '../components.internal/checkbox.po/checkbox.po';
+import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po/params-enter.po';
+import {SciListPO} from '../@scion/components.internal/list.po/list.po';
+import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po/checkbox.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
 export class LookupIntentionPagePO implements OutletPageObject {

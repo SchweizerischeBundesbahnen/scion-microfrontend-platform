@@ -9,7 +9,7 @@
  */
 
 import {FrameLocator, Locator, Page} from '@playwright/test';
-import {SciCheckboxPO} from '../components.internal/checkbox.po/checkbox.po';
+import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po/checkbox.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 import {waitUntilStable} from '../testing.util';
 import {Objects} from '../@scion/toolkit/util/objects.util';
