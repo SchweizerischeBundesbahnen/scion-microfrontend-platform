@@ -8,12 +8,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {getLocationHref, isCssClassPresent, isPresent, setLocationHref, waitUntilNavigationStable} from '../testing.util';
+import {getLocationHref, isCssClassPresent, isPresent, setLocationHref, waitUntilNavigationStable, waitUntilStable} from '../testing.util';
 import {RouterOutletSettingsPO} from '../settings/router-outlet-settings.po';
 import {FrameLocator, Locator} from '@playwright/test';
 import {ElementSelectors} from '../element-selectors';
 import {RouterOutletContextPO} from '../context/router-outlet-context.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
+import {Objects} from '../@scion/toolkit/util/objects.util';
 
 export class RouterOutletPagePO implements OutletPageObject {
 
@@ -55,7 +56,7 @@ export class RouterOutletPagePO implements OutletPageObject {
    * Returns the size of the router outlet.
    */
   public async getRouterOutletSize(): Promise<Size> {
-    const boundingBox = await this._locator.locator('sci-router-outlet').boundingBox();
+    const boundingBox = await waitUntilStable(() => this._locator.locator('sci-router-outlet').boundingBox(), {isStable: Objects.isEqual});
     return {
       width: boundingBox?.width ?? 0,
       height: boundingBox?.height ?? 0,

@@ -11,6 +11,8 @@
 import {FrameLocator, Locator, Page} from '@playwright/test';
 import {SciCheckboxPO} from '../components.internal/checkbox.po/checkbox.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
+import {waitUntilStable} from '../testing.util';
+import {Objects} from '../@scion/toolkit/util/objects.util';
 
 export class PreferredSizePagePO implements OutletPageObject {
 
@@ -67,7 +69,7 @@ export class PreferredSizePagePO implements OutletPageObject {
    * Returns the size of this component.
    */
   public async getSize(): Promise<Size> {
-    const boundingBox = await this._locator.boundingBox();
+    const boundingBox = await waitUntilStable(() => this._locator.boundingBox(), {isStable: Objects.isEqual});
     return {
       width: boundingBox?.width ?? 0,
       height: boundingBox?.height ?? 0,
