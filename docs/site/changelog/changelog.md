@@ -5,6 +5,20 @@
 
 ## Changelog
 
+# [1.0.0-rc.8](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.7...1.0.0-rc.8) (2022-10-27)
+
+
+### Features
+
+* **platform/router-outlet:** set name of the iframe to the name of the outlet ([1aa566d](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/1aa566d65f81c2358f235c9b1766f6738f198ba5))
+
+
+### Performance Improvements
+
+* **platform/messaging:** transport intents to subscribed clients only ([4247e9d](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/4247e9dd0a31d68a1bdb72b982710ee2d2bd9505)), closes [#124](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/124)
+
+
+
 # [1.0.0-rc.7](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.6...1.0.0-rc.7) (2022-10-07)
 
 
