@@ -11,10 +11,11 @@
 import {TopicMatcher} from '../../topic-matcher.util';
 import {Client} from '../client-registry/client';
 import {MessageSubscription, MessageSubscriptionRegistry} from './message-subscription.registry';
-import {concatWith, defer, filter, merge, mergeMap, Observable, of} from 'rxjs';
-import {distinctUntilChanged, map} from 'rxjs/operators';
+import {filter, Observable, Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 import {Arrays, Maps} from '@scion/toolkit/util';
 import {Topics} from '../../topics.util';
+import {filterArray} from '@scion/toolkit/operators';
 
 const ASTERISK = ':ɵANY';
 
@@ -75,15 +76,38 @@ export class TopicSubscriptionRegistry extends MessageSubscriptionRegistry<Topic
       throw Error(`[TopicObserveError] Observing the number of subscribers is only allowed on exact topics. Exact topics must not contain wildcard segments. [topic='${topic}']`);
     }
 
-    const subscriptions$ = defer(() => of(this.subscriptions({topic})));
-    const subscriptionsChange$ = merge(this.register$, this.unregister$);
+    return new Observable(observer => {
+      const unsubscribe$ = new Subject<void>();
 
-    return subscriptions$
-      .pipe(
-        concatWith(subscriptionsChange$.pipe(mergeMap(() => subscriptions$))),
-        map(subscriptions => subscriptions.length),
-        distinctUntilChanged(),
-      );
+      // Emit current subscription count.
+      let count = this.subscriptions({topic}).length;
+      observer.next(count);
+
+      // Increment count when matching subscriptions are added.
+      this.register$
+        .pipe(
+          filter(subscription => subscription.matches(topic)),
+          takeUntil(unsubscribe$),
+        )
+        .subscribe(() => {
+          count++;
+          observer.next(count);
+        });
+
+      // Decrement count when matching subscriptions are removed.
+      this.unregister$
+        .pipe(
+          filterArray(subscription => subscription.matches(topic)),
+          filter(subscriptions => subscriptions.length > 0),
+          takeUntil(unsubscribe$),
+        )
+        .subscribe(subscriptions => {
+          count -= subscriptions.length;
+          observer.next(count);
+        });
+
+      return (): void => unsubscribe$.next();
+    });
   }
 }
 
