@@ -11,7 +11,7 @@ import {defer, noop, Observable, Subject, Subscription} from 'rxjs';
 import {IntentMessage, mapToBody, throwOnErrorStatus, TopicMessage} from '../../messaging.model';
 import {BrokerGateway} from './broker-gateway';
 import {MessagingChannel, PlatformTopics} from '../../ɵmessaging.model';
-import {TopicMatcher} from '../../topic-matcher.util';
+import {Topics} from '../../topics.util';
 import {MessageClient, PublishOptions, RequestOptions} from './message-client';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageHandler} from './message-handler';
@@ -79,7 +79,7 @@ function assertTopic(topic: string, options: {allowWildcardSegments: boolean}): 
     throw Error('[IllegalTopicError] Topic must not be `null`, `undefined` or empty');
   }
 
-  if (!options.allowWildcardSegments && TopicMatcher.containsWildcardSegments(topic)) {
+  if (!options.allowWildcardSegments && Topics.containsWildcardSegments(topic)) {
     throw Error(`[IllegalTopicError] Topic not allowed to contain wildcard segments. [topic='${topic}']`);
   }
 }

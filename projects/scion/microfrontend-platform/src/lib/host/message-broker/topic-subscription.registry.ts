@@ -11,8 +11,12 @@
 import {TopicMatcher} from '../../topic-matcher.util';
 import {Client} from '../client-registry/client';
 import {MessageSubscription, MessageSubscriptionRegistry} from './message-subscription.registry';
-import {concatWith, defer, merge, mergeMap, Observable, of} from 'rxjs';
+import {concatWith, defer, filter, merge, mergeMap, Observable, of} from 'rxjs';
 import {distinctUntilChanged, map} from 'rxjs/operators';
+import {Arrays, Maps} from '@scion/toolkit/util';
+import {Topics} from '../../topics.util';
+
+const ASTERISK = ':ɵANY';
 
 /**
  * Central point for managing topic subscriptions.
@@ -21,11 +25,42 @@ import {distinctUntilChanged, map} from 'rxjs/operators';
  */
 export class TopicSubscriptionRegistry extends MessageSubscriptionRegistry<TopicSubscription> {
 
-  /**
-   * @inheritDoc
-   */
+  private readonly _subscriptionsByTopic = new Map<string, Set<TopicSubscription>>();
+
+  protected override onRegister(subscription: TopicSubscription): void {
+    const topic = Topics.replaceWildcardSegments(subscription.topic, ASTERISK);
+    Maps.addSetValue(this._subscriptionsByTopic, topic, subscription);
+  }
+
+  protected override onUnregister(subscription: TopicSubscription): void {
+    const topic = Topics.replaceWildcardSegments(subscription.topic, ASTERISK);
+    Maps.removeSetValue(this._subscriptionsByTopic, topic, subscription);
+  }
+
   public override subscriptions(filter?: {subscriberId?: string; clientId?: string; appSymbolicName?: string; topic?: string}): TopicSubscription[] {
-    return super.subscriptions(filter).filter(subscription => filter?.topic ? subscription.matches(filter.topic) : true);
+    // Note that we need to identify matching subscriptions very quickly, otherwise the broker's throughput would decrease massively.
+    // Therefore, we must never iterate over all subscriptions, but resolve subscriptions by index.
+    const filterByTopic = filter?.topic;
+    const filterById = filter?.subscriberId;
+    const filterByClient = filter?.clientId;
+    const filterByApp = filter?.appSymbolicName;
+
+    return Arrays.intersect(
+      filterByTopic ? this.subscriptionsByTopic(filterByTopic) : undefined,
+      (filterById || filterByApp || filterByClient) ? super.subscriptions(filter) : undefined,
+      (filterById || filterByApp || filterByClient || filterByTopic) ? undefined : super.subscriptions(),
+    );
+  }
+
+  /**
+   * Returns the subscription of given topic.
+   */
+  private subscriptionsByTopic(topic: string): TopicSubscription[] {
+    const subscriptions = new Array<TopicSubscription>();
+    Topics.computeWildcardSegmentPermutations(topic, ASTERISK).forEach(permutation => {
+      subscriptions.push(...this._subscriptionsByTopic.get(permutation) || []);
+    });
+    return subscriptions;
   }
 
   /**
@@ -36,7 +71,7 @@ export class TopicSubscriptionRegistry extends MessageSubscriptionRegistry<Topic
    *         emits continuously when the number of subscribers changes.
    */
   public subscriptionCount$(topic: string): Observable<number> {
-    if (TopicMatcher.containsWildcardSegments(topic)) {
+    if (Topics.containsWildcardSegments(topic)) {
       throw Error(`[TopicObserveError] Observing the number of subscribers is only allowed on exact topics. Exact topics must not contain wildcard segments. [topic='${topic}']`);
     }
 
@@ -68,6 +103,6 @@ export class TopicSubscription implements MessageSubscription {
    * Tests whether the given topic matches this subscription.
    */
   public matches(topic: string): boolean {
-    return new TopicMatcher(this.topic).match(topic).matches;
+    return topic === this.topic || new TopicMatcher(this.topic).match(topic).matches;
   }
 }

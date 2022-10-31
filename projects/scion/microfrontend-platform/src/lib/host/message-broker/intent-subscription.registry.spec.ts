@@ -15,6 +15,8 @@ import {ɵClientRegistry} from '../client-registry/ɵclient.registry';
 import {UUID} from '@scion/toolkit/uuid';
 import {IntentSubscription, IntentSubscriptionRegistry} from './intent-subscription.registry';
 import {ɵApplication} from '../application-registry';
+import {ObserveCaptor} from '@scion/toolkit/testing';
+import {map} from 'rxjs/operators';
 
 describe('IntentSubscriptionRegistry', () => {
 
@@ -145,6 +147,36 @@ describe('IntentSubscriptionRegistry', () => {
     expect(testee.subscriptions({intent: {type: 'menu-item', qualifier: {}}}).length).toBe(0);
     expect(testee.subscriptions({intent: {type: 'menu-item', qualifier: {entity: 'product'}}}).length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'menu-item', qualifier: {entity: 'customer'}}}).length).toBe(1);
+  });
+
+  it('should have subscription added to index when MessageSubscriptionRegistry#register$ emits', () => {
+    const testee = Beans.get(IntentSubscriptionRegistry);
+
+    const existsCaptor = new ObserveCaptor();
+    testee.register$
+      .pipe(map(() => testee.subscriptions({intent: {type: 'microfrontend'}}).length > 0))
+      .subscribe(existsCaptor);
+
+    // WHEN registering a subscription
+    testee.register(new IntentSubscription({type: 'microfrontend'}, 'subscriber', newClient()));
+    // THEN expect subscription to be added when MessageSubscriptionRegistry#register$ emits
+    expect(existsCaptor.getValues()).toEqual([true]);
+  });
+
+  it('should have subscription removed from index when MessageSubscriptionRegistry#unregister$ emits', () => {
+    const testee = Beans.get(IntentSubscriptionRegistry);
+
+    const existsCaptor = new ObserveCaptor();
+    testee.unregister$
+      .pipe(map(() => testee.subscriptions({intent: {type: 'microfrontend'}}).length > 0))
+      .subscribe(existsCaptor);
+
+    // GIVEN
+    testee.register(new IntentSubscription({type: 'microfrontend'}, 'subscriber', newClient()));
+    // WHEN unregistering the subscription
+    testee.unregister({subscriberId: 'subscriber'});
+    // THEN expect subscription to be removed when MessageSubscriptionRegistry#unregister$ emits
+    expect(existsCaptor.getValues()).toEqual([false]);
   });
 });
 

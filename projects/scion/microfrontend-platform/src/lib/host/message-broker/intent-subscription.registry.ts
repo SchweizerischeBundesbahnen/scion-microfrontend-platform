@@ -21,9 +21,6 @@ import {QualifierMatcher} from '../../qualifier-matcher';
  */
 export class IntentSubscriptionRegistry extends MessageSubscriptionRegistry<IntentSubscription> {
 
-  /**
-   * @inheritDoc
-   */
   public override subscriptions(filter?: {subscriberId?: string; clientId?: string; appSymbolicName?: string; intent?: Intent}): IntentSubscription[] {
     return super.subscriptions(filter).filter(subscription => filter?.intent ? subscription.matches(filter.intent) : true);
   }

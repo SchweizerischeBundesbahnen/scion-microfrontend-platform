@@ -11,6 +11,7 @@
 import {MessageHeaders, TopicMessage} from '../../messaging.model';
 import {TopicMatcher} from '../../topic-matcher.util';
 import {Defined} from '@scion/toolkit/util';
+import {Topics} from '../../topics.util';
 
 /**
  * Central point for persisting and looking up retained messages sent to a topic.
@@ -41,7 +42,7 @@ export class RetainedMessageStore {
    * If no message is retained on that topic, this method returns `null`.
    */
   public findMostRecentRetainedMessage(subscriptionTopic: string): TopicMessage | null {
-    if (!TopicMatcher.containsWildcardSegments(subscriptionTopic)) {
+    if (!Topics.containsWildcardSegments(subscriptionTopic)) {
       return this._retainedMessagesByTopic.get(subscriptionTopic) || null;
     }
 

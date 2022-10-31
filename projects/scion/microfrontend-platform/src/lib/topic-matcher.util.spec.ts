@@ -11,16 +11,6 @@ import {TopicMatcher} from './topic-matcher.util';
 
 describe('TopicMatcher', () => {
 
-  it('should detect wildcard segments in the topic', () => {
-    expect(TopicMatcher.containsWildcardSegments('myhome/livingroom/temperature')).toBeFalse();
-    expect(TopicMatcher.containsWildcardSegments('myhome/livingroom/:measurement')).toBeTrue();
-    expect(TopicMatcher.containsWildcardSegments('myhome/kitchen/:measurement')).toBeTrue();
-    expect(TopicMatcher.containsWildcardSegments('myhome/:room/temperature')).toBeTrue();
-    expect(TopicMatcher.containsWildcardSegments('myhome/:room/:measurement')).toBeTrue();
-    expect(TopicMatcher.containsWildcardSegments(':building/kitchen/:measurement')).toBeTrue();
-    expect(TopicMatcher.containsWildcardSegments('myhome/:/temperature')).toBeFalse();
-  });
-
   it('should throw if the subscription topic is `null`, `undefined` or empty', () => {
     expect(() => new TopicMatcher('')).toThrowError(/TopicMatcherError/);
     expect(() => new TopicMatcher(null)).toThrowError(/TopicMatcherError/);
