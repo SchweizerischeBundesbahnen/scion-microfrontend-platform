@@ -10,6 +10,14 @@
       <label>Manifest:</label>
       <a [href]="application.manifestUrl" target="_blank">{{application.manifestUrl}}</a>
     </ng-container>
+
+    <ng-container *ngIf="application.platformVersion | async as version">
+      <label>Version:</label>
+      <a [href]="'https://www.npmjs.com/package/@scion/microfrontend-platform/v/' + version" target="_blank">
+        @scion/microfrontend-platform@{{version}}
+      </a>
+    </ng-container>
+
   </section>
   <sci-tabbar>
     <ng-template sciTab label="Capabilities" name="capabilities">

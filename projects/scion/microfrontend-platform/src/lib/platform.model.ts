@@ -103,6 +103,10 @@ export interface Application {
    * Indicates whether or not 'Intention Registration API' is disabled for this application.
    */
   intentionRegisterApiDisabled: boolean;
+  /**
+   * Version of the SCION Microfrontend Platform used by this application.
+   */
+  platformVersion: Promise<string>;
 }
 
 /**
@@ -460,6 +464,13 @@ export const ɵAPP_CONFIG = Symbol('ɵAPP_CONFIG');
  * Symbol to get the application's symbolic name from the bean manager.
  */
 export const APP_IDENTITY = Symbol('APP_IDENTITY');
+
+/**
+ * Symbol to get the version of the SCION Microfrontend Platform.
+ *
+ * @internal
+ */
+export const ɵVERSION = Symbol('ɵVERSION');
 
 /**
  * Symbol to get the topmost window in the window hierarchy from the bean manager.

@@ -10,21 +10,11 @@
 
 import {MicrofrontendPlatform} from './microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {VERSION} from './version';
+import {ɵVERSION} from './platform.model';
 
 export async function connectToHost({symbolicName, version = undefined}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   if (version !== undefined) {
-    setMicrofrontendPlatformVersion(version);
+    Beans.register(ɵVERSION, {useValue: version});
   }
   await MicrofrontendPlatform.connectToHost(symbolicName);
-}
-
-/**
- * Instructs platform to operate on given version.
- */
-function setMicrofrontendPlatformVersion(version: string): void {
-  Beans.registerInitializer({
-    useFunction: async () => void (Beans.register(VERSION, {useValue: version})),
-    runlevel: 0,
-  });
 }

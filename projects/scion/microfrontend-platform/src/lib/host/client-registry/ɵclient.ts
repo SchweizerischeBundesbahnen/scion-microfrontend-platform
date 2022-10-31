@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Subscription, timer} from 'rxjs';
-import {APP_IDENTITY, Application} from '../../platform.model';
+import {APP_IDENTITY, ɵVERSION} from '../../platform.model';
 import {semver} from '../semver';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageClient} from '../../client/messaging/message-client';
@@ -18,8 +18,8 @@ import {MessageHeaders} from '../../messaging.model';
 import {Logger, LoggingContext} from '../../logger';
 import {ClientRegistry} from './client.registry';
 import {CLIENT_HEARTBEAT_INTERVAL, STALE_CLIENT_UNREGISTER_DELAY} from './client.constants';
-import {VERSION} from '../../version';
 import {Client} from './client';
+import {ɵApplication} from '../application-registry';
 
 export class ɵClient implements Client {
 
@@ -31,7 +31,7 @@ export class ɵClient implements Client {
 
   constructor(public readonly id: string,
               public readonly window: Window,
-              public readonly application: Application,
+              public readonly application: ɵApplication,
               version: string) {
     this.version = version ?? '0.0.0';
     this._heartbeatInterval = Beans.get(CLIENT_HEARTBEAT_INTERVAL);
@@ -57,7 +57,7 @@ export class ɵClient implements Client {
 
     // Only clients of version 1.0.0-rc.1 or greater send a heartbeat.
     if (semver.lt(this.version, '1.0.0-rc.1')) {
-      Beans.get(Logger).warn(`[VersionMismatch] Since '@scion/microfrontend-platform@1.0.0-rc.1', connected clients must send a heartbeat to indicate liveness. Please upgrade @scion/microfrontend-platform of application '${this.application.symbolicName}' from version '${this.version}' to version '${Beans.get(VERSION)}'.`, new LoggingContext(this.application.symbolicName, this.version));
+      Beans.get(Logger).warn(`[VersionMismatch] Since '@scion/microfrontend-platform@1.0.0-rc.1', connected clients must send a heartbeat to indicate liveness. Please upgrade @scion/microfrontend-platform of application '${this.application.symbolicName}' from version '${this.version}' to version '${Beans.get(ɵVERSION)}'.`, new LoggingContext(this.application.symbolicName, this.version));
       return;
     }
 

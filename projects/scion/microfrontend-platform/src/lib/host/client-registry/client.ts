@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Application} from '../../platform.model';
+import {ɵApplication} from '../application-registry';
 
 /**
  * Represents a client which is connected to the message broker.
@@ -29,7 +29,7 @@ export interface Client {
   /**
    * The application this client belongs to.
    */
-  readonly application: Application;
+  readonly application: ɵApplication;
 
   /**
    * The version of the @scion/microfrontend-platform installed on the client.

@@ -26,7 +26,7 @@ export class ApplicationRegistry {
 
   private static readonly SYMBOLIC_NAME_REGEXP = /^[a-z0-9-]+$/;
 
-  private readonly _applications = new Map<string, Application>();
+  private readonly _applications = new Map<string, ɵApplication>();
 
   /**
    * Registers the given application.
@@ -78,11 +78,11 @@ export class ApplicationRegistry {
     });
   }
 
-  public getApplication(symbolicName: string): Application | undefined {
+  public getApplication(symbolicName: string): ɵApplication | undefined {
     return this._applications.get(symbolicName);
   }
 
-  public getApplications(): Application[] {
+  public getApplications(): ɵApplication[] {
     return Array.from(this._applications.values());
   }
 
@@ -130,3 +130,10 @@ export class ApplicationRegistry {
   }
 }
 
+/**
+ * Represents an application registered in the platform.
+ *
+ * The version is omitted because not known at the time of registration, but only when first connecting to the host, e.g., in an activator.
+ */
+export interface ɵApplication extends Omit<Application, 'platformVersion'> { // eslint-disable-line @typescript-eslint/no-empty-interface
+}

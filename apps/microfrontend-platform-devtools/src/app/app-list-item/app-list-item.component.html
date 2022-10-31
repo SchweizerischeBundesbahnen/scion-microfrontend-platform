@@ -2,7 +2,25 @@
 <span class="app-symbolic-name" title="symbolic name">{{application.symbolicName}}</span>
 <a [href]="application.baseUrl" target="_blank">{{application.baseUrl}}</a>
 
-<div class="chips">
-  <span class="chip" *ngIf="capabilityCount$ | async as capabilityCount">{{capabilityCount}} {{capabilityCount === 1 ? 'capability' : 'capabilities'}}</span>
-  <span class="chip" *ngIf="intentionCount$ | async as intentionCount">{{intentionCount}} {{intentionCount === 1 ? 'intention' : 'intentions'}}</span>
-</div>
+<section class="chips">
+  <!-- Capabilities -->
+  <a class="chip" *ngIf="capabilityCount$ | async as capabilityCount"
+     (click)="onCapabilitiesClick()">
+    {{capabilityCount}} {{capabilityCount === 1 ? 'capability' : 'capabilities'}}
+  </a>
+
+  <!-- Intentions -->
+  <a class="chip" *ngIf="intentionCount$ | async as intentionCount"
+     (click)="onIntentionsClick()">
+    {{intentionCount}} {{intentionCount === 1 ? 'intention' : 'intentions'}}
+  </a>
+
+  <!-- Platform Version -->
+  <a *ngIf="application.platformVersion | async as version"
+     class="chip version"
+     [href]="'https://www.npmjs.com/package/@scion/microfrontend-platform/v/' + version"
+     [title]="'@scion/microfrontend-platform@' + version"
+     target="_blank">
+    v{{version}}
+  </a>
+</section>

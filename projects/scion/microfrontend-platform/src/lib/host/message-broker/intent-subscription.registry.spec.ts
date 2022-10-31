@@ -14,7 +14,7 @@ import {noop} from 'rxjs';
 import {ɵClientRegistry} from '../client-registry/ɵclient.registry';
 import {UUID} from '@scion/toolkit/uuid';
 import {IntentSubscription, IntentSubscriptionRegistry} from './intent-subscription.registry';
-import {Application} from '../../platform.model';
+import {ɵApplication} from '../application-registry';
 
 describe('IntentSubscriptionRegistry', () => {
 
@@ -151,7 +151,7 @@ describe('IntentSubscriptionRegistry', () => {
 function newClient(): Client {
   return new class implements Partial<Client> {
     public readonly id = UUID.randomUUID();
-    public readonly application = {symbolicName: 'app'} as Application;
+    public readonly application = {symbolicName: 'app'} as ɵApplication;
     public readonly dispose = noop;
   } as Client;
 }

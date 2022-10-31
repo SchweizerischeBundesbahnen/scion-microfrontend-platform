@@ -11,7 +11,6 @@
 import {filter, takeUntil} from 'rxjs/operators';
 import {Client} from './host/client-registry/client';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
-import {VERSION} from './version';
 import {UUID} from '@scion/toolkit/uuid';
 import {ClientRegistry} from './host/client-registry/client.registry';
 import {IntentSubscription, IntentSubscriptionRegistry} from './host/message-broker/intent-subscription.registry';
@@ -20,6 +19,7 @@ import {Logger, LoggingContext} from './logger';
 import {semver} from './host/semver';
 import {Subject} from 'rxjs';
 import {MessageEnvelope} from './ɵmessaging.model';
+import {ɵVERSION} from './platform.model';
 
 const INTENT_SUBSCRIPTION_API_VERSION = '1.0.0-rc.8';
 
@@ -54,7 +54,7 @@ export class SubscriptionLegacySupport implements PreDestroy {
       .subscribe((legacyClient: Client) => {
         const legacyClientSubscription = new IntentSubscription({}, UUID.randomUUID(), legacyClient);
         Beans.get(IntentSubscriptionRegistry).register(legacyClientSubscription);
-        Beans.get(Logger).warn(`[DEPRECATION][FE93C94] Application "${legacyClient.application.symbolicName}" is using a legacy protocol for subscribing to intents. Please update @scion/microfrontend-platform to version '${Beans.get(VERSION)}'.`, new LoggingContext(legacyClient.application.symbolicName, legacyClient.version));
+        Beans.get(Logger).warn(`[DEPRECATION][FE93C94] Application "${legacyClient.application.symbolicName}" is using a legacy protocol for subscribing to intents. Please update @scion/microfrontend-platform to version '${Beans.get(ɵVERSION)}'.`, new LoggingContext(legacyClient.application.symbolicName, legacyClient.version));
       });
   }
 

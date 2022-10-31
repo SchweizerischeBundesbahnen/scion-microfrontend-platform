@@ -12,6 +12,7 @@ import {Application} from '@scion/microfrontend-platform';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'devtools-app-list-item',
@@ -26,7 +27,7 @@ export class AppListItemComponent implements OnInit {
   public capabilityCount$: Observable<number>;
   public intentionCount$: Observable<number>;
 
-  constructor(private _manifestService: DevToolsManifestService) {
+  constructor(private _manifestService: DevToolsManifestService, private _router: Router) {
   }
 
   public ngOnInit(): void {
@@ -34,5 +35,15 @@ export class AppListItemComponent implements OnInit {
       .pipe(map(capabilities => capabilities.length));
     this.intentionCount$ = this._manifestService.intentions$({appSymbolicName: this.application.symbolicName})
       .pipe(map(intentions => intentions.length));
+  }
+
+  public onIntentionsClick(): boolean {
+    this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'intentions'}]}}]).then();
+    return true;
+  }
+
+  public onCapabilitiesClick(): boolean {
+    this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'capabilities'}]}}]).then();
+    return true;
   }
 }

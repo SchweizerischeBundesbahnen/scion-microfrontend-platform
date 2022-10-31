@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {firstValueFrom, lastValueFrom, Observable} from 'rxjs';
+import {firstValueFrom, lastValueFrom, Observable, OperatorFunction} from 'rxjs';
 import {MessageClient} from '../messaging/message-client';
 import {Application, Capability, Intention} from '../../platform.model';
 import {take} from 'rxjs/operators';
@@ -18,6 +18,8 @@ import {mapToBody} from '../../messaging.model';
 import {Beans, Initializer} from '@scion/toolkit/bean-manager';
 import {BrokerGateway, NullBrokerGateway} from '../messaging/broker-gateway';
 import {ManifestObjectFilter} from '../../host/manifest-registry/manifest-object.model';
+import {mapArray} from '@scion/toolkit/operators';
+import {ɵApplication} from '../../host/application-registry';
 
 /**
  * Allows browsing the catalog of capabilities and managing the capabilities of the application.
@@ -43,8 +45,8 @@ export class ManifestService implements Initializer {
     }
 
     // Wait until obtained registered applications so that they can be accessed synchronously by the application via `ManifestService#applications`.
-    const applications$ = Beans.get(MessageClient).observe$<Application[]>(PlatformTopics.Applications);
-    this._applications = await firstValueFrom(applications$.pipe(mapToBody()));
+    const applications$ = Beans.get(MessageClient).observe$<ɵApplication[]>(PlatformTopics.Applications);
+    this._applications = await firstValueFrom(applications$.pipe(mapToBody(), mapToApplication()));
   }
 
   /**
@@ -61,10 +63,11 @@ export class ManifestService implements Initializer {
    * @deprecated since version 1.0.0-beta.8. Use {@link applications} instead.
    */
   public lookupApplications$(): Observable<Application[]> {
-    return Beans.get(MessageClient).observe$<Application[]>(PlatformTopics.Applications)
+    return Beans.get(MessageClient).observe$<ɵApplication[]>(PlatformTopics.Applications)
       .pipe(
         take(1),
         mapToBody(),
+        mapToApplication(),
       );
   }
 
@@ -181,4 +184,13 @@ export class ManifestService implements Initializer {
       });
     });
   }
+}
+
+function mapToApplication(): OperatorFunction<ɵApplication[], Application[]> {
+  return mapArray(application => {
+    return {
+      ...application,
+      platformVersion: firstValueFrom(Beans.get(MessageClient).request$<string>(ManifestRegistryTopics.platformVersion(application.symbolicName)).pipe(mapToBody())),
+    };
+  });
 }

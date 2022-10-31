@@ -26,7 +26,7 @@ import {FocusInEventDispatcher} from './client/focus/focus-in-event-dispatcher';
 import {FocusMonitor} from './client/focus/focus-monitor';
 import {ContextService} from './client/context/context-service';
 import {RouterOutletUrlAssigner} from './client/router-outlet/router-outlet-url-assigner';
-import {APP_IDENTITY, IS_PLATFORM_HOST, ɵAPP_CONFIG, ɵWINDOW_TOP} from './platform.model';
+import {APP_IDENTITY, IS_PLATFORM_HOST, ɵAPP_CONFIG, ɵVERSION, ɵWINDOW_TOP} from './platform.model';
 import {RelativePathResolver} from './client/router-outlet/relative-path-resolver';
 import {ClientRegistry} from './host/client-registry/client.registry';
 import {FocusTracker} from './host/focus/focus-tracker';
@@ -52,7 +52,6 @@ import {ApplicationConfig} from './host/application-config';
 import {TopicSubscriptionRegistry} from './host/message-broker/topic-subscription.registry';
 import {CLIENT_HEARTBEAT_INTERVAL, STALE_CLIENT_UNREGISTER_DELAY} from './host/client-registry/client.constants';
 import {MicrofrontendPlatformStopper, ɵMicrofrontendPlatformStopper} from './microfrontend-platform-stopper';
-import {VERSION} from './version';
 import {ɵClientRegistry} from './host/client-registry/ɵclient.registry';
 import {IntentInterceptor} from './host/message-broker/message-interception';
 import {MicrofrontendIntentNavigator} from './host/router/microfrontend-intent-navigator.interceptor';
@@ -154,7 +153,7 @@ export class MicrofrontendPlatform {
         // Register platform beans.
         Beans.register(IS_PLATFORM_HOST, {useValue: true});
         Beans.registerIfAbsent(ɵWINDOW_TOP, {useValue: window.top});
-        Beans.register(VERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
+        Beans.registerIfAbsent(ɵVERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
         Beans.register(APP_IDENTITY, {useValue: config.host?.symbolicName || 'host'});
         Beans.register(MicrofrontendPlatformConfig, {useValue: config});
         Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
@@ -284,7 +283,7 @@ export class MicrofrontendPlatform {
         Beans.register(IS_PLATFORM_HOST, {useValue: false});
         Beans.registerIfAbsent(ɵWINDOW_TOP, {useValue: window.top});
         Beans.register(APP_IDENTITY, {useValue: symbolicName});
-        Beans.register(VERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
+        Beans.registerIfAbsent(ɵVERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
         Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
         Beans.register(PlatformPropertyService);
         Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: BeanDestroyOrders.CORE});

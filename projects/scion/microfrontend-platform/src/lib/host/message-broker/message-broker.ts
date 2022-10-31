@@ -21,12 +21,11 @@ import {ClientRegistry} from '../client-registry/client.registry';
 import {chainInterceptors, IntentInterceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
 import {Beans, Initializer, PreDestroy} from '@scion/toolkit/bean-manager';
 import {Runlevel} from '../../platform-state';
-import {APP_IDENTITY} from '../../platform.model';
+import {APP_IDENTITY, ɵVERSION} from '../../platform.model';
 import {bufferUntil} from '@scion/toolkit/operators';
 import {filterByChannel, filterByTopicChannel, filterByTransport} from '../../operators';
 import {Client} from '../client-registry/client';
 import {semver} from '../semver';
-import {VERSION} from '../../version';
 import {CLIENT_HEARTBEAT_INTERVAL} from '../client-registry/client.constants';
 import {ɵClient} from '../client-registry/ɵclient';
 import {stringifyError} from '../../error.util';
@@ -185,8 +184,8 @@ export class MessageBroker implements Initializer, PreDestroy {
         this._clientRegistry.registerClient(client);
 
         // Check if the client is compatible with the platform version of the host.
-        if (semver.major(client.version) !== semver.major(Beans.get<string>(VERSION))) {
-          Beans.get(Logger).warn(`[VersionMismatch] Application '${application.symbolicName}' uses a different major version of the @scion/microfrontend-platform than the host application, which may not be compatible. Please upgrade @scion/microfrontend-platform of application '${application.symbolicName}' from version '${(client.version)}' to version '${(Beans.get<string>(VERSION))}'.`, new LoggingContext(application.symbolicName, client.version));
+        if (semver.major(client.version) !== semver.major(Beans.get<string>(ɵVERSION))) {
+          Beans.get(Logger).warn(`[VersionMismatch] Application '${application.symbolicName}' uses a different major version of the @scion/microfrontend-platform than the host application, which may not be compatible. Please upgrade @scion/microfrontend-platform of application '${application.symbolicName}' from version '${(client.version)}' to version '${(Beans.get<string>(ɵVERSION))}'.`, new LoggingContext(application.symbolicName, client.version));
         }
 
         sendTopicMessage<ConnackMessage>(client, {

@@ -12,7 +12,8 @@ import {MicrofrontendFixture} from './testing/microfrontend-fixture/microfronten
 import {ManifestFixture} from './testing/manifest-fixture/manifest-fixture';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {installLoggerSpies, readConsoleLog} from './testing/spec.util.spec';
-import {VERSION} from './version';
+import {ɵVERSION} from './platform.model';
+import {ManifestService} from './client/manifest-registry/manifest-service';
 
 describe('MicrofrontendPlatform', () => {
 
@@ -29,7 +30,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should warn about client/host major version mismatch', async () => {
-    setHostAppMicrofrontendPlatformVersion('2.0.0');
+    Beans.register(ɵVERSION, {useValue: '2.0.0'});
 
     await MicrofrontendPlatform.startHost({
       applications: [
@@ -50,7 +51,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should warn if clients connect without passing a version', async () => {
-    setHostAppMicrofrontendPlatformVersion('1.0.0');
+    Beans.register(ɵVERSION, {useValue: '1.0.0'});
 
     await MicrofrontendPlatform.startHost({
       applications: [
@@ -71,7 +72,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should warn if client does not support heartbeat introduced in version "1.0.0-rc.1"', async () => {
-    setHostAppMicrofrontendPlatformVersion('1.0.0');
+    Beans.register(ɵVERSION, {useValue: '1.0.0'});
 
     await MicrofrontendPlatform.startHost({
       applications: [
@@ -91,22 +92,29 @@ describe('MicrofrontendPlatform', () => {
     ]));
   });
 
+  it('should resolve the version of the SCION Microfronted Platform used by applications', async () => {
+    await MicrofrontendPlatform.startHost({
+      applications: [
+        {
+          symbolicName: 'client',
+          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
+        },
+      ],
+    });
+
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
+    await microfrontendFixture.loadScript('./lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: '3.0.0'});
+
+    const application = Beans.get(ManifestService).applications.find(application => application.symbolicName === 'client');
+    await expect(await application.platformVersion).toEqual('3.0.0');
+  });
+
   /**
    * Registers the fixture for destruction after test execution.
    */
   function registerFixture(fixture: MicrofrontendFixture): MicrofrontendFixture {
     disposables.add(() => fixture.removeIframe());
     return fixture;
-  }
-
-  /**
-   * Instructs the host platform to operate on given version.
-   */
-  function setHostAppMicrofrontendPlatformVersion(version: string): void {
-    Beans.registerInitializer({
-      useFunction: async () => void (Beans.register(VERSION, {useValue: version})),
-      runlevel: 0,
-    });
   }
 });
 

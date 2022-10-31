@@ -11,7 +11,6 @@ import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Application, Capability} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
-import {ACTIVE_TAB_ROUTER_STATE} from '../app-details/app-details.component';
 import {Router} from '@angular/router';
 
 @Component({
@@ -35,7 +34,7 @@ export class CapabilityAccordionPanelComponent implements OnInit {
   }
 
   public onConsumerClick(application: Application): boolean {
-    this._router.navigate(['apps', {outlets: {details: [application.symbolicName]}}], {state: {[ACTIVE_TAB_ROUTER_STATE]: 'intentions'}}).then();
+    this._router.navigate(['apps', {outlets: {details: [application.symbolicName, {activeTab: 'intentions'}]}}]).then();
     return false;
   }
 }

@@ -11,7 +11,7 @@
 import {Capability, Intention, ParamDefinition} from '../../platform.model';
 import {sha256} from 'js-sha256';
 import {ManifestObjectStore} from './manifest-object-store';
-import {defer, merge, of, Subject} from 'rxjs';
+import {concatWith, defer, EMPTY, filter, merge, of, Subject} from 'rxjs';
 import {distinctUntilChanged, expand, mergeMap, take, takeUntil} from 'rxjs/operators';
 import {Intent, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from '../../client/messaging/message-client';
@@ -22,8 +22,9 @@ import {ManifestRegistry} from './manifest-registry';
 import {assertExactQualifier, QualifierMatcher} from '../../qualifier-matcher';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {stringifyError} from '../../error.util';
-import {LoggingContext, Logger} from '../../logger';
+import {Logger, LoggingContext} from '../../logger';
 import {ManifestObjectFilter} from './manifest-object.model';
+import {ClientRegistry} from '../client-registry/client.registry';
 
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
@@ -43,6 +44,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
     this.installCapabilitiesLookupRequestHandler();
     this.installIntentionsLookupRequestHandler();
+    this.installVersionLookupHandler();
   }
 
   /**
@@ -268,6 +270,22 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
       }));
   }
 
+  private installVersionLookupHandler(): void {
+    Beans.get(MessageClient).onMessage<void, string>(ManifestRegistryTopics.platformVersion(':appSymbolicName'), message => {
+      const appSymbolicName = message.params!.get('appSymbolicName')!;
+      const clientRegister$ = Beans.get(ClientRegistry).register$.pipe(filter(client => client.application.symbolicName === appSymbolicName));
+      const platformVersion$ = defer(() => {
+        const clients = Beans.get(ClientRegistry).getByApplication(appSymbolicName);
+        return clients.length ? of(clients[0].version) : EMPTY;
+      });
+      return platformVersion$
+        .pipe(
+          concatWith(clientRegister$.pipe(mergeMap(() => platformVersion$))),
+          take(1),
+        );
+    });
+  }
+
   public preDestroy(): void {
     this._destroy$.next();
   }
@@ -276,13 +294,18 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 /**
  * Defines the topics to interact with the manifest registry from {@link ManifestService}.
  */
-export enum ManifestRegistryTopics {
-  LookupCapabilities = 'ɵLOOKUP_CAPABILITIES',
-  LookupIntentions = 'ɵLOOKUP_INTENTIONS',
-  RegisterCapability = 'ɵREGISTER_CAPABILITY',
-  UnregisterCapabilities = 'ɵUNREGISTER_CAPABILITIES',
-  RegisterIntention = 'ɵREGISTER_INTENTION',
-  UnregisterIntentions = 'ɵUNREGISTER_INTENTIONS',
+export namespace ManifestRegistryTopics {
+  export const LookupCapabilities = 'ɵLOOKUP_CAPABILITIES';
+  export const LookupIntentions = 'ɵLOOKUP_INTENTIONS';
+  export const RegisterCapability = 'ɵREGISTER_CAPABILITY';
+  export const UnregisterCapabilities = 'ɵUNREGISTER_CAPABILITIES';
+  export const RegisterIntention = 'ɵREGISTER_INTENTION';
+  export const UnregisterIntentions = 'ɵUNREGISTER_INTENTIONS';
+  export const LookupPlatformVersion = 'ɵLOOKUP_PLATFORM_VERSION';
+
+  export function platformVersion(appSymbolicName: string): string {
+    return `ɵapplication/${appSymbolicName}/platform/version`;
+  }
 }
 
 /**
