@@ -8,12 +8,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ClientRegistry} from './client.registry';
-import {Application} from '../../platform.model';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ɵClient} from './ɵclient';
 import {Client} from './client';
-import {VERSION} from '../../version';
+import {ɵApplication} from '../application-registry';
+import {ɵVERSION} from '../../platform.model';
 
 describe('ClientRegistry', () => {
 
@@ -79,7 +79,7 @@ describe('ClientRegistry', () => {
   });
 
   function newClient(clientId: string, appSymbolicName: string): Client {
-    const application: Partial<Application> = {symbolicName: appSymbolicName};
-    return new ɵClient(clientId, {} as Window, application as Application, Beans.get(VERSION));
+    const application: Partial<ɵApplication> = {symbolicName: appSymbolicName};
+    return new ɵClient(clientId, {} as Window, application as ɵApplication, Beans.get(ɵVERSION));
   }
 });

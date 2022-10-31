@@ -12,12 +12,12 @@ import {ClientRegistry} from '../client-registry/client.registry';
 import {expectEmissions} from '../../testing/spec.util.spec';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {Application} from '../../platform.model';
 import {Client} from '../client-registry/client';
 import {firstValueFrom, noop} from 'rxjs';
 import {ɵClientRegistry} from '../client-registry/ɵclient.registry';
 import {UUID} from '@scion/toolkit/uuid';
 import {Logger, NULL_LOGGER} from '../../logger';
+import {ɵApplication} from '../application-registry';
 
 describe('TopicSubscriptionRegistry', () => {
 
@@ -380,7 +380,7 @@ describe('TopicSubscriptionRegistry', () => {
 
 function newClient(descriptor: {id: string; appSymbolicName?: string}): Client {
   return new class implements Partial<Client> {
-    public readonly application = {symbolicName: descriptor.appSymbolicName} as Application;
+    public readonly application = {symbolicName: descriptor.appSymbolicName} as ɵApplication;
     public readonly id = descriptor.id ?? UUID.randomUUID();
     public readonly dispose = noop;
   } as Client;

@@ -9,8 +9,7 @@
  */
 
 import {Beans} from '@scion/toolkit/bean-manager';
-import {APP_IDENTITY} from './platform.model';
-import {VERSION} from './version';
+import {APP_IDENTITY, ɵVERSION} from './platform.model';
 
 /**
  * Logger used by the platform to log to the console.
@@ -68,7 +67,7 @@ export class ConsoleLogger implements Logger {
   }
 
   private log(severity: 'debug' | 'info' | 'warn' | 'error', message: any, args: any[]): void {
-    const loggingContext: LoggingContext = args[0] instanceof LoggingContext ? args.shift() : {appSymbolicName: Beans.get(APP_IDENTITY), version: Beans.get(VERSION)};
+    const loggingContext: LoggingContext = args[0] instanceof LoggingContext ? args.shift() : {appSymbolicName: Beans.get(APP_IDENTITY), version: Beans.get(ɵVERSION)};
     const prefix = new Array<string>()
       .concat(loggingContext.version ? `[@scion/microfrontend-platform@${loggingContext.version}]` : '[@scion/microfrontend-platform]')
       .concat(`[${loggingContext.appSymbolicName}]`)

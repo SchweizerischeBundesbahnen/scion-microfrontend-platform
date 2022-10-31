@@ -12,15 +12,15 @@ import {MicrofrontendPlatform} from '../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Observer} from 'rxjs';
 import {MicrofrontendPlatformStopper} from '../microfrontend-platform-stopper';
-import {VERSION} from '../version';
 import {ɵBrokerGateway} from './messaging/broker-gateway';
+import {ɵVERSION} from '../platform.model';
 
 export async function connectToHost({symbolicName, disconnectOnUnloadDisabled = false, version = undefined}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   if (disconnectOnUnloadDisabled) {
     Beans.register(MicrofrontendPlatformStopper, {useClass: NullMicrofrontendPlatformStopper});
   }
   if (version) {
-    Beans.register(VERSION, {useValue: version});
+    Beans.register(ɵVERSION, {useValue: version});
   }
   await MicrofrontendPlatform.connectToHost(symbolicName);
   observer.next(Beans.get(ɵBrokerGateway).session.clientId);

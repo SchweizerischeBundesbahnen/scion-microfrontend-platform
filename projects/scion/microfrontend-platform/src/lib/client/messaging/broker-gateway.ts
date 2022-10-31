@@ -16,13 +16,12 @@ import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messag
 import {Logger, NULL_LOGGER} from '../../logger';
 import {Dictionaries} from '@scion/toolkit/util';
 import {Beans, Initializer, PreDestroy} from '@scion/toolkit/bean-manager';
-import {APP_IDENTITY, IS_PLATFORM_HOST, ɵWINDOW_TOP} from '../../platform.model';
+import {APP_IDENTITY, IS_PLATFORM_HOST, ɵVERSION, ɵWINDOW_TOP} from '../../platform.model';
 import {PlatformState} from '../../platform-state';
 import {ConnectOptions} from '../connect-options';
 import {MicrofrontendPlatformRef} from '../../microfrontend-platform-ref';
 import {MessageClient} from '../../client/messaging/message-client';
 import {runSafe} from '../../safe-runner';
-import {VERSION} from '../../version';
 import {stringifyError} from '../../error.util';
 import {IntentSelector} from './intent-client';
 
@@ -387,7 +386,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
           .set(MessageHeaders.Timestamp, Date.now())
           .set(MessageHeaders.AppSymbolicName, this._appSymbolicName)
           .set(MessageHeaders.ReplyTo, replyTo)
-          .set(MessageHeaders.Version, Beans.get(VERSION)),
+          .set(MessageHeaders.Version, Beans.get(ɵVERSION)),
       },
     };
 

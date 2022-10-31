@@ -9,13 +9,13 @@
  */
 import {ClientRegistry} from '../client-registry/client.registry';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {Application} from '../../platform.model';
 import {Client} from '../client-registry/client';
 import {noop} from 'rxjs';
 import {UUID} from '@scion/toolkit/uuid';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {ɵClientRegistry} from '../client-registry/ɵclient.registry';
 import {MessageSubscription, MessageSubscriptionRegistry} from './message-subscription.registry';
+import {ɵApplication} from '../application-registry';
 
 describe('MessageSubscriptionRegistry', () => {
 
@@ -270,7 +270,7 @@ describe('MessageSubscriptionRegistry', () => {
 function newClient(descriptor: {id: string; appSymbolicName?: string}): Client {
   return new class implements Partial<Client> {
     public readonly id = descriptor.id ?? UUID.randomUUID();
-    public readonly application = {symbolicName: descriptor.appSymbolicName} as Application;
+    public readonly application = {symbolicName: descriptor.appSymbolicName} as ɵApplication;
     public readonly dispose = noop;
   } as Client;
 }

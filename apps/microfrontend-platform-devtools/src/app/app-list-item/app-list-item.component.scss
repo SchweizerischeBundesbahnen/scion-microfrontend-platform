@@ -30,15 +30,19 @@
     font-size: smaller;
   }
 
-  > div.chips {
+  > section.chips {
     grid-column: 2/3;
     grid-row: 1/3;
     display: flex;
     flex-flow: row wrap;
     justify-content: flex-end;
 
-    > span.chip {
+    > a.chip {
       @include sci-ɵcomponents.theme-chip(var(--sci-color-P200), transparent, var(--sci-color-P700));
+
+      &.version {
+        font-family: monospace;
+      }
     }
   }
 }
