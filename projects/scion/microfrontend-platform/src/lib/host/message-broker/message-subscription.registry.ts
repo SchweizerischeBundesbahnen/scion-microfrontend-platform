@@ -25,11 +25,11 @@ export class MessageSubscriptionRegistry<T extends MessageSubscription = Message
 
   private readonly _destroy$ = new Subject<void>();
   private readonly _subscriptions = new Map<string, T>();
-  private readonly _subscriptionsByApp = new Map<string, T[]>();
-  private readonly _subscriptionsByClient = new Map<string, T[]>();
+  private readonly _subscriptionsByApp = new Map<string, Set<T>>();
+  private readonly _subscriptionsByClient = new Map<string, Set<T>>();
 
   private readonly _register$ = new Subject<T>();
-  private readonly _unregister$ = new Subject<void>();
+  private readonly _unregister$ = new Subject<T[]>();
 
   constructor() {
     Beans.get(ClientRegistry).unregister$
@@ -44,8 +44,9 @@ export class MessageSubscriptionRegistry<T extends MessageSubscription = Message
    */
   public register(subscription: T): void {
     this._subscriptions.set(subscription.subscriberId, subscription);
-    Maps.addListValue(this._subscriptionsByApp, subscription.client.application.symbolicName, subscription);
-    Maps.addListValue(this._subscriptionsByClient, subscription.client.id, subscription);
+    Maps.addSetValue(this._subscriptionsByApp, subscription.client.application.symbolicName, subscription);
+    Maps.addSetValue(this._subscriptionsByClient, subscription.client.id, subscription);
+    this.onRegister?.(subscription);
     this._register$.next(subscription);
   }
 
@@ -55,12 +56,14 @@ export class MessageSubscriptionRegistry<T extends MessageSubscription = Message
    * @param filter - Control which subscriptions to remove by specifying filter criteria which are "AND"ed together.
    */
   public unregister(filter: {subscriberId?: string; clientId?: string}): void {
-    this.subscriptions(filter).forEach(subscription => {
+    const subscriptions = this.subscriptions(filter);
+    subscriptions.forEach(subscription => {
       this._subscriptions.delete(subscription.subscriberId);
-      Maps.removeListValue(this._subscriptionsByApp, subscription.client.application.symbolicName, subscription);
-      Maps.removeListValue(this._subscriptionsByClient, subscription.client.id, subscription);
+      Maps.removeSetValue(this._subscriptionsByApp, subscription.client.application.symbolicName, subscription);
+      Maps.removeSetValue(this._subscriptionsByClient, subscription.client.id, subscription);
+      this.onUnregister?.(subscription);
     });
-    this._unregister$.next();
+    this._unregister$.next(subscriptions);
   }
 
   /**
@@ -75,11 +78,35 @@ export class MessageSubscriptionRegistry<T extends MessageSubscription = Message
     const filterByApp = filter?.appSymbolicName;
 
     return Arrays.intersect(
-      filterById ? Arrays.coerce(this._subscriptions.get(filterById)) : undefined,
-      filterByClient ? Arrays.coerce(this._subscriptionsByClient.get(filterByClient)) : undefined,
-      filterByApp ? Arrays.coerce(this._subscriptionsByApp.get(filterByApp)) : undefined,
+      filterById ? this.subscriptionById(filterById) : undefined,
+      filterByClient ? this.subscriptionsByClient(filterByClient) : undefined,
+      filterByApp ? this.subscriptionsByApp(filterByApp) : undefined,
       (filterById || filterByApp || filterByClient) ? undefined : Array.from(this._subscriptions.values()),
     );
+  }
+
+  /**
+   * Returns the subscription of given subscriber.
+   */
+  private subscriptionById(subscriberId: string): [T] | [] {
+    const subscription = this._subscriptions.get(subscriberId);
+    return subscription ? [subscription] : [];
+  }
+
+  /**
+   * Returns the subscriptions of given client.
+   */
+  private subscriptionsByClient(clientId: string): T[] {
+    const subscriptions = this._subscriptionsByClient.get(clientId);
+    return subscriptions ? Array.from(subscriptions) : [];
+  }
+
+  /**
+   * Returns the subscriptions of given application.
+   */
+  private subscriptionsByApp(appSymbolicName: string): T[] {
+    const subscriptions = this._subscriptionsByApp.get(appSymbolicName);
+    return subscriptions ? Array.from(subscriptions) : [];
   }
 
   /**
@@ -92,9 +119,19 @@ export class MessageSubscriptionRegistry<T extends MessageSubscription = Message
   /**
    * Emits when unregistered a subscription via {@link MessageSubscriptionRegistry#unregister}.
    */
-  public get unregister$(): Observable<void> {
+  public get unregister$(): Observable<T[]> {
     return this._unregister$;
   }
+
+  /**
+   * Method invoked when registered a subscription, but before the change was emitted.
+   */
+  protected onRegister?(subscription: T): void;
+
+  /**
+   * Method invoked when unregistered a subscription, but before the change was emitted.
+   */
+  protected onUnregister?(subscription: T): void;
 
   public preDestroy(): void {
     this._destroy$.next();

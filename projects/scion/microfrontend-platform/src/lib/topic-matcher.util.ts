@@ -9,6 +9,7 @@
  */
 
 import {Arrays} from '@scion/toolkit/util';
+import {Topics} from './topics.util';
 
 /**
  * Allows testing whether an exact topic matches a pattern topic. The pattern topic may contain wildcard segments.
@@ -27,7 +28,7 @@ export class TopicMatcher {
    *                  act as a placeholder for any segment value.
    */
   constructor(pattern: string) {
-    this._patternSegments = toPathSegments(pattern || '');
+    this._patternSegments = Topics.split(pattern);
     if (!this._patternSegments.length) {
       throw Error('[TopicMatcherError] Invalid pattern syntax. The pattern must consist of one or more topic segments, each separated by a forward slash.');
     }
@@ -43,13 +44,13 @@ export class TopicMatcher {
    * @return The result of the topic matcher test.
    */
   public match(topic: string): MatcherResult {
-    const inputTopicSegments = toPathSegments(topic || '');
+    const inputTopicSegments = Topics.split(topic);
     const patternSegments = this._patternSegments;
 
     if (!inputTopicSegments.length) {
       throw Error('[TopicMatcherError] Invalid topic. The topic must consist of one or more segments, each separated by a forward slash.');
     }
-    if (inputTopicSegments.some(isWildcardSegment)) {
+    if (inputTopicSegments.some(Topics.isWildcardSegment)) {
       throw Error('[TopicMatcherError] Invalid topic. Wildcard segments not allowed in an exact topic.');
     }
     if (patternSegments.length !== inputTopicSegments.length) {
@@ -58,43 +59,23 @@ export class TopicMatcher {
     if (Arrays.isEqual(inputTopicSegments, patternSegments, {exactOrder: true})) {
       return {matches: true, params: new Map()};
     }
-    if (!patternSegments.some(isWildcardSegment)) {
+    if (!patternSegments.some(Topics.isWildcardSegment)) {
       return {matches: false};
     }
-    if (!patternSegments.every((patternSegment, i) => patternSegment === inputTopicSegments[i] || isWildcardSegment(patternSegment))) {
+    if (!patternSegments.every((patternSegment, i) => patternSegment === inputTopicSegments[i] || Topics.isWildcardSegment(patternSegment))) {
       return {matches: false};
     }
 
     return {
       matches: true,
       params: patternSegments.reduce((params, segment, i) => {
-        if (isWildcardSegment(segment)) {
+        if (Topics.isWildcardSegment(segment)) {
           return params.set(segment.substring(1), inputTopicSegments[i]);
         }
         return params;
       }, new Map()),
     };
   }
-
-  /**
-   * Checks if the given topic contains wildcard segments (colon syntax) to match any string value.
-   */
-  public static containsWildcardSegments(topic: string): boolean {
-    // As of ng-packagr 8.x, the prod build fails if directly invoking a non-exported function from inside a static function.
-    // To workaround this build issue, we first assign the function to a local variable.
-    const toPathSegmentsFn = toPathSegments;
-    return toPathSegmentsFn(topic).some(isWildcardSegment);
-  }
-}
-
-/** @ignore */
-function isWildcardSegment(segment: string): boolean {
-  return segment.startsWith(':') && segment.length > 1;
-}
-
-/** @ignore */
-function toPathSegments(topic: string): string[] {
-  return topic.split('/').filter(Boolean);
 }
 
 /**
