@@ -30,7 +30,6 @@ import {CLIENT_HEARTBEAT_INTERVAL} from '../client-registry/client.constants';
 import {ɵClient} from '../client-registry/ɵclient';
 import {stringifyError} from '../../error.util';
 import {IntentSubscription, IntentSubscriptionRegistry} from './intent-subscription.registry';
-import {RetainedMessageStore} from './retained-message-store';
 import {TopicMatcher} from '../../topic-matcher.util';
 import {Defined} from '@scion/toolkit/util';
 import {MessageClient} from '../../client/messaging/message-client';
@@ -60,7 +59,7 @@ export class MessageBroker implements Initializer, PreDestroy {
   private readonly _clientRegistry = Beans.get(ClientRegistry);
   private readonly _topicSubscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
   private readonly _intentSubscriptionRegistry = Beans.get(IntentSubscriptionRegistry);
-  private readonly _retainedMessageRegistry = new RetainedMessageStore();
+  private readonly _retainedMessageStore = new Map<string, TopicMessage>();
 
   private readonly _applicationRegistry: ApplicationRegistry;
   private readonly _manifestRegistry: ManifestRegistry;
@@ -251,6 +250,13 @@ export class MessageBroker implements Initializer, PreDestroy {
           return;
         }
 
+        // If retained message without payload, delete it.
+        if (message.retain && message.body === undefined) {
+          this._retainedMessageStore.delete(message.topic);
+          sendDeliveryStatusSuccess(client, messageId);
+          return;
+        }
+
         try {
           // If request-response communication, register subscription to receive replies.
           this.subscribeForRepliesIfRequest(message, client);
@@ -261,6 +267,8 @@ export class MessageBroker implements Initializer, PreDestroy {
           // Dispatch the message.
           await this._messagePublisher.interceptAndPublish(message);
 
+          // Store retained message, if any.
+          message.retain && this._retainedMessageStore.set(message.topic, message);
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
@@ -330,13 +338,12 @@ export class MessageBroker implements Initializer, PreDestroy {
   private sendRetainedTopicMessageOnSubscribe(): void {
     this._topicSubscriptionRegistry.register$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(subscription => {
-        const retainedMessage = this._retainedMessageRegistry.findMostRecentRetainedMessage(subscription.topic);
-        if (retainedMessage) {
-          const headers = new Map(retainedMessage.headers).set(MessageHeaders.ɵSubscriberId, subscription.subscriberId);
-          this._messagePublisher.interceptAndPublish({...retainedMessage, headers});
-        }
-      });
+      .subscribe(subscription => runSafe(() => {
+        this._retainedMessageStore.forEach(retainedMessage => this._messagePublisher.interceptAndPublish({
+          ...retainedMessage,
+          headers: new Map(retainedMessage.headers).set(MessageHeaders.ɵSubscriberId, subscription.subscriberId),
+        }));
+      }));
   }
 
   /**
@@ -445,11 +452,6 @@ export class MessageBroker implements Initializer, PreDestroy {
    */
   private createMessagePublisher(): PublishInterceptorChain<TopicMessage> {
     return chainInterceptors(Beans.all(MessageInterceptor), async (message: TopicMessage): Promise<void> => {
-      // If the message is marked as 'retained', store it, or if without a body, delete it.
-      if (message.retain && this._retainedMessageRegistry.persistOrDelete(message) === 'deleted') {
-        return; // Deletion events for retained messages are swallowed.
-      }
-
       const subscribers = this._topicSubscriptionRegistry.subscriptions({
         subscriberId: message.headers.get(MessageHeaders.ɵSubscriberId),
         topic: message.topic,
