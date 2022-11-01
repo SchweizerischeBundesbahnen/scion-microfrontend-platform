@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {EMPTY, fromEvent, MonoTypeOperatorFunction, Observable, of, pipe, Subject, tap} from 'rxjs';
+import {EMPTY, fromEvent, merge, MonoTypeOperatorFunction, Observable, of, pipe, Subject, tap} from 'rxjs';
 import {catchError, filter, mergeMap, share, takeUntil} from 'rxjs/operators';
 import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
 import {ConnackMessage, IntentSubscribeCommand, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, UnsubscribeCommand} from '../../ɵmessaging.model';
@@ -23,7 +23,7 @@ import {Beans, Initializer, PreDestroy} from '@scion/toolkit/bean-manager';
 import {Runlevel} from '../../platform-state';
 import {APP_IDENTITY, ɵVERSION} from '../../platform.model';
 import {bufferUntil} from '@scion/toolkit/operators';
-import {filterByChannel, filterByTopicChannel, filterByTransport} from '../../operators';
+import {filterByChannel, filterByTransport} from '../../operators';
 import {Client} from '../client-registry/client';
 import {semver} from '../semver';
 import {CLIENT_HEARTBEAT_INTERVAL} from '../client-registry/client.constants';
@@ -34,6 +34,7 @@ import {RetainedMessageStore} from './retained-message-store';
 import {TopicMatcher} from '../../topic-matcher.util';
 import {SubscriptionLegacySupport} from '../../subscription-legacy-support';
 import {Defined} from '@scion/toolkit/util';
+import {MessageClient} from '../../client/messaging/message-client';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -219,29 +220,17 @@ export class MessageBroker implements Initializer, PreDestroy {
    * Replies to requests to observe the number of subscribers on a topic.
    */
   private installTopicSubscriberCountObserver(): void {
-    this._clientMessage$
-      .pipe(
-        filterByTopicChannel<string>(PlatformTopics.RequestSubscriberCount),
-        takeUntil(this._destroy$),
-      )
-      .subscribe((event: MessageEvent<MessageEnvelope<TopicMessage<string>>>) => runSafe(() => {
-        const client = getSendingClient(event);
-        const request = event.data.message;
+    Beans.get(MessageClient).observe$<string>(PlatformTopics.RequestSubscriberCount)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(request => {
         const topic = request.body!;
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
-        const messageId = request.headers.get(MessageHeaders.MessageId);
-        sendDeliveryStatusSuccess(client, messageId);
+        const unsubscribe$ = this._topicSubscriptionRegistry.subscriptionCount$(replyTo).pipe(filter(count => count === 0));
 
         this._topicSubscriptionRegistry.subscriptionCount$(topic)
-          .pipe(takeUntil(this._topicSubscriptionRegistry.subscriptionCount$(replyTo).pipe(filter(count => count === 0))))
-          .subscribe((count: number) => runSafe(() => { // eslint-disable-line rxjs/no-nested-subscribe
-            this._messagePublisher.interceptAndPublish({
-              topic: replyTo,
-              body: count,
-              headers: new Map(),
-            });
-          }));
-      }));
+          .pipe(takeUntil(merge(this._destroy$, unsubscribe$)))
+          .subscribe(count => Beans.get(MessageClient).publish(replyTo, count)); // eslint-disable-line rxjs/no-nested-subscribe
+      });
   }
 
   /**
@@ -251,7 +240,6 @@ export class MessageBroker implements Initializer, PreDestroy {
     this._clientMessage$
       .pipe(
         filterByChannel<TopicMessage>(MessagingChannel.Topic),
-        filter(message => message.data.message.topic !== PlatformTopics.RequestSubscriberCount), // do not dispatch messages sent to the `RequestSubscriberCount` topic as handled separately
         takeUntil(this._destroy$),
       )
       .subscribe((event: MessageEvent<MessageEnvelope<TopicMessage>>) => runSafe(async () => {
