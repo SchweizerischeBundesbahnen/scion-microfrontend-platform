@@ -57,12 +57,11 @@ import {IntentInterceptor} from './host/message-broker/message-interception';
 import {MicrofrontendIntentNavigator} from './host/router/microfrontend-intent-navigator.interceptor';
 import {IntentParamValidator} from './host/message-broker/intent-param-validator.interceptor';
 import {IntentSubscriptionRegistry} from './host/message-broker/intent-subscription.registry';
-import {SubscriptionLegacySupport} from './subscription-legacy-support';
 
 /**
  * Current version of the SCION Microfrontend Platform.
  */
-const version = '1.0.0-rc.8';
+const version = '1.0.0-rc.9';
 
 /**
  * **SCION Microfrontend Platform is a TypeScript-based open-source library that helps to implement a microfrontend architecture.**
@@ -186,7 +185,6 @@ export class MicrofrontendPlatform {
         Beans.register(KeyboardEventDispatcher, {eager: true});
         Beans.register(IntentInterceptor, {useClass: IntentParamValidator, multi: true});
         Beans.register(IntentInterceptor, {useClass: MicrofrontendIntentNavigator, multi: true});
-        Beans.register(SubscriptionLegacySupport, {eager: true});
 
         // Register broker gateway.
         registerBrokerGateway({

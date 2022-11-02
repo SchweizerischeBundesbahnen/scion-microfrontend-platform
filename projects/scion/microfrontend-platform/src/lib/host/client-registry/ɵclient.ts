@@ -20,10 +20,13 @@ import {ClientRegistry} from './client.registry';
 import {CLIENT_HEARTBEAT_INTERVAL, STALE_CLIENT_UNREGISTER_DELAY} from './client.constants';
 import {Client} from './client';
 import {ɵApplication} from '../application-registry';
+import {IntentSubscription, IntentSubscriptionRegistry} from '../message-broker/intent-subscription.registry';
+import {UUID} from '@scion/toolkit/uuid';
 
 export class ɵClient implements Client {
 
   public readonly version: string;
+  public readonly deprecations: {legacyIntentSubscriptionApi: boolean; legacyRequestResponseSubscriptionApi: boolean};
   private _heartbeat: Subscription | undefined;
   private _heartbeatInterval: number;
   private _staleClientUnregisterTimer: Subscription | undefined;
@@ -37,6 +40,17 @@ export class ɵClient implements Client {
     this._heartbeatInterval = Beans.get(CLIENT_HEARTBEAT_INTERVAL);
     this._staleClientUnregisterDelay = Beans.get(STALE_CLIENT_UNREGISTER_DELAY);
     this.installHeartbeatMonitor();
+    this.deprecations = {
+      legacyIntentSubscriptionApi: semver.lt(this.version, '1.0.0-rc.8'),
+      legacyRequestResponseSubscriptionApi: semver.lt(this.version, '1.0.0-rc.9'),
+    };
+    if (this.deprecations.legacyIntentSubscriptionApi) {
+      this.installLegacyClientIntentSubscription();
+      Beans.get(Logger).warn(`[DEPRECATION][FE93C94] Application "${application.symbolicName}" is using a legacy protocol for subscribing to intents. Please update @scion/microfrontend-platform to version '${Beans.get(ɵVERSION)}'.`, new LoggingContext(application.symbolicName, this.version));
+    }
+    if (this.deprecations.legacyRequestResponseSubscriptionApi) {
+      Beans.get(Logger).warn(`[DEPRECATION][F6DC38E] Application "${application.symbolicName}" is using a legacy request-response communication protocol. Please update @scion/microfrontend-platform to version '${Beans.get(ɵVERSION)}'.`, new LoggingContext(application.symbolicName, this.version));
+    }
   }
 
   /**
@@ -103,5 +117,13 @@ export class ɵClient implements Client {
        window, both indicating a high load on the client during unloading.`.replace(/\s+/g, ' '),
       new LoggingContext(this.application.symbolicName, this.version),
     );
+  }
+
+  /**
+   * Installs legacy intent subscription support for clients older than version 1.0.0-rc.8.
+   */
+  private installLegacyClientIntentSubscription(): void {
+    const legacyClientSubscription = new IntentSubscription({}, UUID.randomUUID(), this);
+    Beans.get(IntentSubscriptionRegistry).register(legacyClientSubscription);
   }
 }

@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {EMPTY, fromEvent, merge, MonoTypeOperatorFunction, Observable, of, pipe, Subject, tap} from 'rxjs';
+import {EMPTY, fromEvent, merge, MonoTypeOperatorFunction, Observable, of, Subject} from 'rxjs';
 import {catchError, filter, mergeMap, share, takeUntil} from 'rxjs/operators';
 import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
 import {ConnackMessage, IntentSubscribeCommand, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, UnsubscribeCommand} from '../../ɵmessaging.model';
@@ -32,7 +32,6 @@ import {stringifyError} from '../../error.util';
 import {IntentSubscription, IntentSubscriptionRegistry} from './intent-subscription.registry';
 import {RetainedMessageStore} from './retained-message-store';
 import {TopicMatcher} from '../../topic-matcher.util';
-import {SubscriptionLegacySupport} from '../../subscription-legacy-support';
 import {Defined} from '@scion/toolkit/util';
 import {MessageClient} from '../../client/messaging/message-client';
 
@@ -82,7 +81,6 @@ export class MessageBroker implements Initializer, PreDestroy {
         filterByChannel(MessagingChannel.Intent, MessagingChannel.Topic, MessagingChannel.TopicSubscribe, MessagingChannel.TopicUnsubscribe, MessagingChannel.IntentSubscribe, MessagingChannel.IntentUnsubscribe),
         bufferUntil(Beans.whenRunlevel(Runlevel.Two)),
         checkOriginTrusted(),
-        sanitizeMessageHeaders(),
         catchErrorAndRetry(),
         share(),
       );
@@ -244,17 +242,25 @@ export class MessageBroker implements Initializer, PreDestroy {
       )
       .subscribe((event: MessageEvent<MessageEnvelope<TopicMessage>>) => runSafe(async () => {
         const client = getSendingClient(event);
-        const topicMessage = event.data.message;
-        const messageId = topicMessage.headers.get(MessageHeaders.MessageId);
+        const message = event.data.message;
+        const messageId = message.headers.get(MessageHeaders.MessageId);
 
-        if (!topicMessage.topic) {
+        if (!message.topic) {
           const error = '[TopicDispatchError] Missing property: topic';
           sendDeliveryStatusError(client, messageId, error);
           return;
         }
 
         try {
-          await this._messagePublisher.interceptAndPublish(topicMessage);
+          // If request-response communication, register subscription to receive replies.
+          this.subscribeForRepliesIfRequest(message, client);
+
+          // Ensure the message header 'ɵSUBSCRIBER_ID' to be removed; is set in request-response communication by the gateway.
+          message.headers.delete(MessageHeaders.ɵSubscriberId);
+
+          // Dispatch the message.
+          await this._messagePublisher.interceptAndPublish(message);
+
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
@@ -274,37 +280,45 @@ export class MessageBroker implements Initializer, PreDestroy {
       )
       .subscribe((event: MessageEvent<MessageEnvelope<IntentMessage>>) => runSafe(async () => {
         const client = getSendingClient(event);
-        const intentMessage = event.data.message;
-        const messageId = intentMessage.headers.get(MessageHeaders.MessageId);
+        const message = event.data.message;
+        const messageId = message.headers.get(MessageHeaders.MessageId);
 
-        if (!intentMessage.intent) {
+        if (!message.intent) {
           const error = '[IntentDispatchError] Missing required property on message: intent';
           sendDeliveryStatusError(client, messageId, error);
           return;
         }
 
-        if (!intentMessage.intent.type) {
+        if (!message.intent.type) {
           const error = '[IntentDispatchError] Missing required property on intent: type';
           sendDeliveryStatusError(client, messageId, error);
           return;
         }
 
-        if (!this._manifestRegistry.hasIntention(intentMessage.intent, client.application.symbolicName)) {
-          const error = `[NotQualifiedError] Application '${client.application.symbolicName}' is not qualified to publish intents of the type '${intentMessage.intent.type}' and qualifier '${JSON.stringify(intentMessage.intent.qualifier || {})}'. Ensure to have listed the intention in the application manifest.`;
+        if (!this._manifestRegistry.hasIntention(message.intent, client.application.symbolicName)) {
+          const error = `[NotQualifiedError] Application '${client.application.symbolicName}' is not qualified to publish intents of the type '${message.intent.type}' and qualifier '${JSON.stringify(message.intent.qualifier || {})}'. Ensure to have listed the intention in the application manifest.`;
           sendDeliveryStatusError(client, messageId, error);
           return;
         }
 
         // Find capabilities fulfilling the intent, or send an error otherwise.
-        const capabilities = this._manifestRegistry.resolveCapabilitiesByIntent(intentMessage.intent, client.application.symbolicName);
+        const capabilities = this._manifestRegistry.resolveCapabilitiesByIntent(message.intent, client.application.symbolicName);
         if (capabilities.length === 0) {
-          const error = `[NullProviderError] No application found to provide a capability of the type '${intentMessage.intent.type}' and qualifiers '${JSON.stringify(intentMessage.intent.qualifier || {})}'. Maybe, the capability is not public API or the providing application not available.`;
+          const error = `[NullProviderError] No application found to provide a capability of the type '${message.intent.type}' and qualifiers '${JSON.stringify(message.intent.qualifier || {})}'. Maybe, the capability is not public API or the providing application not available.`;
           sendDeliveryStatusError(client, messageId, error);
           return;
         }
 
         try {
-          await Promise.all(capabilities.map(capability => this._intentPublisher.interceptAndPublish({...intentMessage, capability})));
+          // If request-response communication, register subscription to receive replies.
+          this.subscribeForRepliesIfRequest(message, client);
+
+          // Ensure the message header 'ɵSUBSCRIBER_ID' to be removed; is set in request-response communication by the gateway.
+          message.headers.delete(MessageHeaders.ɵSubscriberId);
+
+          // Dispatch the message.
+          await Promise.all(capabilities.map(capability => this._intentPublisher.interceptAndPublish({...message, capability})));
+
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
@@ -470,6 +484,21 @@ export class MessageBroker implements Initializer, PreDestroy {
     });
   }
 
+  /**
+   * If request-response communication, register subscription to receive replies.
+   */
+  private subscribeForRepliesIfRequest(message: Message, requestor: Client): void {
+    const replyTo = message.headers.get(MessageHeaders.ReplyTo);
+    if (!replyTo) {
+      return;
+    }
+    if (requestor.deprecations.legacyRequestResponseSubscriptionApi) {
+      return;
+    }
+    const subscriberId = Defined.orElseThrow(message.headers.get(MessageHeaders.ɵSubscriberId), () => Error('[ResponseResponseSubscribeError] Missing header: subscriberId'));
+    this._topicSubscriptionRegistry.register(new TopicSubscription(replyTo, subscriberId, requestor));
+  }
+
   public preDestroy(): void {
     this._destroy$.next();
   }
@@ -565,8 +594,8 @@ function sendTopicMessage<T>(target: MessageTarget | Client | TopicSubscription,
     channel: MessagingChannel.Topic,
     message: {
       ...message,
-      params: new Map(message.params || new Map()),
-      headers: new Map(message.headers || new Map())
+      params: new Map(message.params),
+      headers: new Map(message.headers)
         .set(MessageHeaders.MessageId, message.headers.get(MessageHeaders.MessageId) ?? UUID.randomUUID())
         .set(MessageHeaders.AppSymbolicName, message.headers.get(MessageHeaders.AppSymbolicName) ?? Beans.get<string>(APP_IDENTITY)),
     },
@@ -578,7 +607,7 @@ function sendTopicMessage<T>(target: MessageTarget | Client | TopicSubscription,
   else if (target instanceof TopicSubscription) {
     const subscription = target;
     const client = subscription.client;
-    Beans.get(SubscriptionLegacySupport).setSubscriberMessageHeader(envelope, target.subscriberId, client.version);
+    envelope.message.headers.set(client.deprecations.legacyIntentSubscriptionApi ? 'ɵTOPIC_SUBSCRIBER_ID' : MessageHeaders.ɵSubscriberId, target.subscriberId);
     envelope.message.params = new TopicMatcher(subscription.topic).match(message.topic).params;
     !client.stale && client.window.postMessage(envelope, client.application.messageOrigin);
   }
@@ -594,7 +623,7 @@ function sendIntentMessage(subscription: IntentSubscription, message: IntentMess
     channel: MessagingChannel.Intent,
     message: {
       ...message,
-      headers: new Map(message.headers || new Map())
+      headers: new Map(message.headers)
         .set(MessageHeaders.ɵSubscriberId, subscription.subscriberId)
         .set(MessageHeaders.MessageId, message.headers.get(MessageHeaders.MessageId) ?? UUID.randomUUID())
         .set(MessageHeaders.AppSymbolicName, message.headers.get(MessageHeaders.AppSymbolicName) ?? Beans.get<string>(APP_IDENTITY)),
@@ -614,18 +643,6 @@ function catchErrorAndRetry<T>(): MonoTypeOperatorFunction<T> {
     Beans.get(Logger).error('[UnexpectedError] An unexpected error occurred.', error);
     return caught;
   });
-}
-
-/**
- * Sanitizes message headers that should not be set by clients.
- */
-function sanitizeMessageHeaders<T extends Message>(): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
-  return pipe(
-    /**
-     * The subscriber identifier is set exclusively by the host when it dispatches a message to a subscribed client.
-     */
-    tap(event => event.data.message.headers.delete(MessageHeaders.ɵSubscriberId)),
-  );
 }
 
 /**

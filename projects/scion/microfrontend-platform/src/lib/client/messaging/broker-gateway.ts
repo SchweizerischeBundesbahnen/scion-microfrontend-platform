@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {AsyncSubject, EMPTY, firstValueFrom, fromEvent, interval, lastValueFrom, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout, timer} from 'rxjs';
-import {ConnackMessage, IntentSubscribeCommand, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, SubscribeCommand, TopicSubscribeCommand, UnsubscribeCommand} from '../../ɵmessaging.model';
+import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, SubscribeCommand, UnsubscribeCommand} from '../../ɵmessaging.model';
 import {finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {filterByChannel, filterByMessageHeader, filterByOrigin, filterByTopicChannel, filterByTransport, filterByWindow, pluckMessage} from '../../operators';
 import {UUID} from '@scion/toolkit/uuid';
@@ -23,7 +23,6 @@ import {MicrofrontendPlatformRef} from '../../microfrontend-platform-ref';
 import {MessageClient} from '../../client/messaging/message-client';
 import {runSafe} from '../../safe-runner';
 import {stringifyError} from '../../error.util';
-import {IntentSelector} from './intent-client';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.
@@ -55,15 +54,9 @@ export abstract class BrokerGateway {
   public abstract requestReply$<T = any>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>>;
 
   /**
-   * Subscribes to messages published to the given topic. The Observable never completes.
+   * Subscribes to described destination, unless the platform has been stopped at the time of subscription.
    */
-  public abstract subscribeToTopic$<T>(topic: string): Observable<TopicMessage<T>>;
-
-  /**
-   * Subscribes to intents that match the specified selector and for which the application provides a fulfilling capability.
-   * The Observable never completes.
-   */
-  public abstract subscribeToIntent$<T>(selector?: IntentSelector): Observable<IntentMessage<T>>;
+  public abstract subscribe$<T extends Message>(subscriptionDescriptor: SubscriptionDescriptor): Observable<T>;
 
   /**
    * An Observable that emits when a message from the message broker is received.
@@ -100,11 +93,7 @@ export class NullBrokerGateway implements BrokerGateway {
     return NEVER;
   }
 
-  public subscribeToTopic$<T>(topic: string): Observable<TopicMessage<T>> {
-    return NEVER;
-  }
-
-  public subscribeToIntent$<T>(selector: IntentSelector): Observable<IntentMessage<T>> {
+  public subscribe$<T extends Message>(subscriptionDescriptor: SubscriptionDescriptor): Observable<T> {
     return NEVER;
   }
 }
@@ -206,7 +195,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     await whenPosted;
   }
 
-  public requestReply$<T = any>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
+  public requestReply$<T = any>(channel: MessagingChannel, request: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
     return new Observable((observer: Observer<TopicMessage>): TeardownLogic => {
       if (isPlatformStopped()) {
         observer.error(GatewayErrors.PLATFORM_STOPPED_ERROR);
@@ -214,15 +203,23 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       }
 
       const replyTo = UUID.randomUUID();
+      const subscriberId = UUID.randomUUID();
       const unsubscribe$ = new Subject<void>();
       const requestError$ = new Subject<never>();
 
-      // Add 'ReplyTo' topic to the message headers where to receive the response(s).
-      message.headers.set(MessageHeaders.ReplyTo, replyTo);
+      request.headers
+        .set(MessageHeaders.ReplyTo, replyTo) // message header for the replier where to send replies to
+        .set(MessageHeaders.ɵSubscriberId, subscriberId); // message header to subscribe for replies
 
       // Receive replies sent to the reply topic.
-      merge(this.subscribeToTopic$<T>(replyTo), requestError$)
-        .pipe(takeUntil(merge(this._platformStopping$, unsubscribe$)))
+      merge(this.message$, requestError$)
+        .pipe(
+          filterByChannel<TopicMessage<T>>(MessagingChannel.Topic),
+          filterByMessageHeader({name: MessageHeaders.ɵSubscriberId, value: subscriberId}),
+          pluckMessage(),
+          takeUntil(merge(this._platformStopping$, unsubscribe$)),
+          finalize(() => this.unsubscribe({unsubscribeChannel: MessagingChannel.TopicUnsubscribe, subscriberId, logContext: `[subscriberId=${subscriberId}, topic=${replyTo}]`})),
+        )
         .subscribe({
           next: reply => observer.next(reply),
           error: error => observer.error(error),
@@ -230,34 +227,15 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
         });
 
       // Post the request to the broker.
-      this.postMessage(channel, message)
+      this.postMessage(channel, request)
         .catch(error => requestError$.error(error));
 
       return (): void => unsubscribe$.next();
     });
   }
 
-  public subscribeToTopic$<T>(topic: string): Observable<TopicMessage<T>> {
-    return this.subscribe$((subscriberId: string): TopicSubscribeCommand => ({topic, subscriberId, headers: new Map()}), {
-      messageChannel: MessagingChannel.Topic,
-      subscribeChannel: MessagingChannel.TopicSubscribe,
-      unsubscribeChannel: MessagingChannel.TopicUnsubscribe,
-    });
-  }
-
-  public subscribeToIntent$<T>(selector?: IntentSelector): Observable<IntentMessage<T>> {
-    return this.subscribe$((subscriberId: string): IntentSubscribeCommand => ({selector, subscriberId, headers: new Map()}), {
-      messageChannel: MessagingChannel.Intent,
-      subscribeChannel: MessagingChannel.IntentSubscribe,
-      unsubscribeChannel: MessagingChannel.IntentUnsubscribe,
-    });
-  }
-
-  /**
-   * Subscribes to described destination, unless the platform has been stopped at the time of subscription.
-   */
-  private subscribe$<T extends Message>(produceSubscribeCommand: (subscriberId: string) => SubscribeCommand, descriptor: {messageChannel: MessagingChannel; subscribeChannel: MessagingChannel; unsubscribeChannel: MessagingChannel}): Observable<T> {
-    const {messageChannel, subscribeChannel, unsubscribeChannel} = descriptor;
+  public subscribe$<T extends Message>(subscriptionDescriptor: SubscriptionDescriptor): Observable<T> {
+    const {messageChannel, subscribeChannel, unsubscribeChannel, newSubscribeCommand} = subscriptionDescriptor;
 
     return new Observable((observer: Observer<T>): TeardownLogic => {
       if (isPlatformStopped()) {
@@ -268,7 +246,6 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       const subscriberId = UUID.randomUUID();
       const unsubscribe$ = new Subject<void>();
       const subscribeError$ = new Subject<never>();
-      const subscribeCommand: SubscribeCommand = produceSubscribeCommand(subscriberId);
 
       // Receive messages of given subscription.
       merge(this.message$, subscribeError$)
@@ -277,7 +254,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
           filterByMessageHeader({name: MessageHeaders.ɵSubscriberId, value: subscriberId}),
           pluckMessage(),
           takeUntil(merge(this._platformStopping$, unsubscribe$)),
-          finalize(() => this.unsubscribe({unsubscribeChannel, subscriberId, logContext: JSON.stringify(subscribeCommand)})),
+          finalize(() => this.unsubscribe({unsubscribeChannel, subscriberId, logContext: JSON.stringify(newSubscribeCommand(subscriberId))})),
         )
         .subscribe({
           next: message => observer.next(message),
@@ -286,7 +263,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
         });
 
       // Post the subscription to the broker.
-      this.postMessage(subscribeChannel, subscribeCommand)
+      this.postMessage(subscribeChannel, newSubscribeCommand(subscriberId))
         .catch(error => subscribeError$.error(error));
 
       return (): void => unsubscribe$.next();
@@ -538,4 +515,28 @@ namespace GatewayErrors {
   export function BROKER_DISCOVER_ERROR(timeout: number): Error {
     return Error(`[GatewayError] Message broker not discovered within ${timeout}ms. Messages cannot be published or received.`);
   }
+}
+
+/**
+ * Describes how to subscribe for messages.
+ *
+ * @ignore
+ */
+export interface SubscriptionDescriptor {
+  /**
+   * Channel for receiving subscribed messages.
+   */
+  messageChannel: MessagingChannel;
+  /**
+   * Channel to send the subscribe request.
+   */
+  subscribeChannel: MessagingChannel;
+  /**
+   * Channel to send the unsubscribe request.
+   */
+  unsubscribeChannel: MessagingChannel;
+  /**
+   * Callback that is invoked to create the subscription command that will be sent over the subscription channel.
+   */
+  newSubscribeCommand: (subscriberId: string) => SubscribeCommand;
 }

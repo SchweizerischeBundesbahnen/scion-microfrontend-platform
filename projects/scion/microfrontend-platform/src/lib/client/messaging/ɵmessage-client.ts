@@ -10,7 +10,7 @@
 import {defer, noop, Observable, Subject, Subscription} from 'rxjs';
 import {IntentMessage, mapToBody, throwOnErrorStatus, TopicMessage} from '../../messaging.model';
 import {BrokerGateway} from './broker-gateway';
-import {MessagingChannel, PlatformTopics} from '../../ɵmessaging.model';
+import {MessagingChannel, PlatformTopics, TopicSubscribeCommand} from '../../ɵmessaging.model';
 import {Topics} from '../../topics.util';
 import {MessageClient, PublishOptions, RequestOptions} from './message-client';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -48,7 +48,12 @@ export class ɵMessageClient implements MessageClient {
 
   public observe$<T>(topic: string): Observable<TopicMessage<T>> {
     assertTopic(topic, {allowWildcardSegments: true});
-    return this._brokerGateway.subscribeToTopic$<T>(topic);
+    return this._brokerGateway.subscribe$({
+      messageChannel: MessagingChannel.Topic,
+      subscribeChannel: MessagingChannel.TopicSubscribe,
+      unsubscribeChannel: MessagingChannel.TopicUnsubscribe,
+      newSubscribeCommand: (subscriberId: string): TopicSubscribeCommand => ({topic, subscriberId, headers: new Map()}),
+    });
   }
 
   public onMessage<IN = any, OUT = any>(topic: string, callback: (message: TopicMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {

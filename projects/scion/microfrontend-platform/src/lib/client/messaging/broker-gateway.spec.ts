@@ -11,8 +11,8 @@ import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {TopicMessage} from '../../messaging.model';
 import {ObserveCaptor} from '@scion/toolkit/testing';
-import {BrokerGateway} from './broker-gateway';
-import {MessagingChannel} from '../../ɵmessaging.model';
+import {BrokerGateway, SubscriptionDescriptor} from './broker-gateway';
+import {IntentSubscribeCommand, MessagingChannel, TopicSubscribeCommand} from '../../ɵmessaging.model';
 
 describe('BrokerGateway', () => {
 
@@ -39,7 +39,33 @@ describe('BrokerGateway', () => {
 
     // GIVEN
     const captor = new ObserveCaptor();
-    Beans.get(BrokerGateway).subscribeToTopic$('topic').subscribe(captor);
+    const descriptor: SubscriptionDescriptor = {
+      messageChannel: MessagingChannel.Topic,
+      subscribeChannel: MessagingChannel.TopicSubscribe,
+      unsubscribeChannel: MessagingChannel.TopicUnsubscribe,
+      newSubscribeCommand: (subscriberId: string): TopicSubscribeCommand => ({topic: 'topic', subscriberId, headers: new Map()}),
+    };
+    Beans.get(BrokerGateway).subscribe$(descriptor).subscribe(captor);
+    // WHEN
+    await MicrofrontendPlatform.destroy();
+    // THEN
+    expect(captor.hasCompleted()).toBeFalse();
+    expect(captor.hasErrored()).toBeFalse();
+    expect(captor.getValues()).toEqual([]);
+  });
+
+  it('should not complete `subscribeToIntent$` Observable upon platform shutdown (as per API)', async () => {
+    await MicrofrontendPlatform.startHost({applications: []});
+
+    // GIVEN
+    const captor = new ObserveCaptor();
+    const descriptor: SubscriptionDescriptor = {
+      messageChannel: MessagingChannel.Intent,
+      subscribeChannel: MessagingChannel.IntentSubscribe,
+      unsubscribeChannel: MessagingChannel.IntentUnsubscribe,
+      newSubscribeCommand: (subscriberId: string): IntentSubscribeCommand => ({subscriberId, headers: new Map()}),
+    };
+    Beans.get(BrokerGateway).subscribe$(descriptor).subscribe(captor);
     // WHEN
     await MicrofrontendPlatform.destroy();
     // THEN

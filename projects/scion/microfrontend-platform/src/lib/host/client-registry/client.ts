@@ -47,6 +47,20 @@ export interface Client {
   markStaleAndQueueForRemoval(): void;
 
   /**
+   * Deprecated APIs used by the client.
+   */
+  readonly deprecations: {
+    /**
+     * @deprecated since version 1.0.0-rc.8; Legacy support will be removed in version 1.0.0.
+     */
+    legacyIntentSubscriptionApi: boolean;
+    /**
+     * @deprecated since version 1.0.0-rc.9; Legacy support will be removed in version 1.0.0.
+     */
+    legacyRequestResponseSubscriptionApi: boolean;
+  };
+
+  /**
    * Releases resources allocated by this client.
    */
   dispose(): void;
