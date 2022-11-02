@@ -72,7 +72,7 @@ export class ManifestCollector implements Initializer {
         Beans.all(HostManifestInterceptor).forEach(interceptor => interceptor.intercept(manifest));
       }
 
-      Beans.get(ApplicationRegistry).registerApplication(appConfig, manifest);
+      await Beans.get(ApplicationRegistry).registerApplication(appConfig, manifest);
       Beans.get(Logger).info(`Registered application '${appConfig.symbolicName}' in the SCION Microfrontend Platform.`);
     }
     catch (error) {

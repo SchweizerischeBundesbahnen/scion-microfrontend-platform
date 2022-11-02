@@ -33,7 +33,7 @@ export class ApplicationRegistry {
    *
    * Throws an error if the application's symbolic name is not unique or contains illegal characters.
    */
-  public registerApplication(applicationConfig: ApplicationConfig, manifest: Manifest): void {
+  public async registerApplication(applicationConfig: ApplicationConfig, manifest: Manifest): Promise<void> {
     Defined.orElseThrow(applicationConfig.symbolicName, () => Error(`[ApplicationRegistrationError] Invalid application config. Missing required property \'symbolicName\'. [appConfig="${JSON.stringify(applicationConfig)}", manifest="${JSON.stringify(manifest)}"]`));
     Defined.orElseThrow(applicationConfig.manifestUrl, () => Error(`[ApplicationRegistrationError] Invalid application config. Missing required property \'manifestUrl\'. [appConfig="${JSON.stringify(applicationConfig)}", manifest="${JSON.stringify(manifest)}"]`));
 
@@ -59,14 +59,14 @@ export class ApplicationRegistry {
       intentionRegisterApiDisabled: Defined.orElse(applicationConfig.intentionRegisterApiDisabled, true),
     });
 
-    manifest.capabilities?.forEach(capability => {
+    for (const capability of manifest.capabilities ?? []) {
       try {
-        Beans.get(ManifestRegistry).registerCapability(capability, applicationConfig.symbolicName);
+        await Beans.get(ManifestRegistry).registerCapability(capability, applicationConfig.symbolicName);
       }
       catch (error) {
         Beans.get(Logger).error(`[CapabilityRegisterError] Failed to register capability for application '${applicationConfig.symbolicName}'.`, error);
       }
-    });
+    }
 
     manifest.intentions?.forEach(intention => {
       try {

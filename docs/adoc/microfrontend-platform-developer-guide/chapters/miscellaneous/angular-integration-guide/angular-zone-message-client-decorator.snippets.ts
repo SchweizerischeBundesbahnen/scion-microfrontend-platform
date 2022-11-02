@@ -97,10 +97,8 @@ export class PlatformInitializer {
 
   public init(): Promise<void> {
     // Decorate the message client for use with Angular.
-    MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
-      Beans.registerDecorator(MessageClient, {useValue: this._messageClientDecorator}); // <1>
-      Beans.registerDecorator(IntentClient, {useValue: this._intentClientDecorator}); // <2>
-    });
+    Beans.registerDecorator(MessageClient, {useValue: this._messageClientDecorator}); // <1>
+    Beans.registerDecorator(IntentClient, {useValue: this._intentClientDecorator}); // <2>
 
     // Start the platform.
     return this._zone.runOutsideAngular(() => MicrofrontendPlatform.startHost(...));

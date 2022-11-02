@@ -28,10 +28,8 @@ import {Beans} from '@scion/toolkit/bean-manager';
   // end::message-logger-interceptor[]
 
   // tag::message-logger-interceptor-registration[]
-  MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
-    Beans.register(MessageInterceptor, {useClass: MessageLoggerInterceptor, multi: true}); // <1>
-    Beans.register(IntentInterceptor, {useClass: IntentLoggerInterceptor, multi: true}); // <2>
-  });
+  Beans.register(MessageInterceptor, {useClass: MessageLoggerInterceptor, multi: true}); // <1>
+  Beans.register(IntentInterceptor, {useClass: IntentLoggerInterceptor, multi: true}); // <2>
 
   // Start the platform.
   MicrofrontendPlatform.startHost(...); // <3>

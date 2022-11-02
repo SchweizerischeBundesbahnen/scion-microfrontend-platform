@@ -29,19 +29,19 @@ describe('ManifestService', () => {
       await MicrofrontendPlatform.startHost({host: {symbolicName: 'host-app'}, applications: []});
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
-      const qualifier2Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
-      const qualifier3Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
-      const qualifier4Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
-      const qualifier5Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
-      const qualifier6Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
-      const qualifier7Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
-      const qualifier8Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
-      const qualifier9Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
+      const qualifier2Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
+      const qualifier3Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
+      const qualifier4Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
+      const qualifier5Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
+      const qualifier6Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
+      const qualifier7Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
+      const qualifier8Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
+      const qualifier9Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -108,19 +108,19 @@ describe('ManifestService', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {'entity': 'person', '*': '*'}}, 'host-app');
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}, private: false}, 'app-1');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}, private: false}, 'app-1');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}, private: false}, 'app-1');
-      const qualifier2Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}, private: false}, 'app-1');
-      const qualifier3Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}, private: false}, 'app-1');
-      const qualifier4Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}, private: false}, 'app-1');
-      const qualifier5Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', private: false}, 'app-1');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}, private: false}, 'app-1');
+      const qualifier2Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}, private: false}, 'app-1');
+      const qualifier3Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}, private: false}, 'app-1');
+      const qualifier4Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}, private: false}, 'app-1');
+      const qualifier5Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', private: false}, 'app-1');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -187,19 +187,19 @@ describe('ManifestService', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {'*': '*'}}, 'host-app');
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}, private: false}, 'app-1');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}, private: false}, 'app-1');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}, private: false}, 'app-1');
-      const qualifier2Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}, private: false}, 'app-1');
-      const qualifier3Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}, private: false}, 'app-1');
-      const qualifier4Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}, private: false}, 'app-1');
-      const qualifier5Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}, private: false}, 'app-1');
-      const qualifier6Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}, private: false}, 'app-1');
-      const qualifier7Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null, private: false}, 'app-1');
-      const qualifier8Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined, private: false}, 'app-1');
-      const qualifier9Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', private: false}, 'app-1');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}, private: false}, 'app-1');
+      const qualifier2Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}, private: false}, 'app-1');
+      const qualifier3Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}, private: false}, 'app-1');
+      const qualifier4Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}, private: false}, 'app-1');
+      const qualifier5Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}, private: false}, 'app-1');
+      const qualifier6Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}, private: false}, 'app-1');
+      const qualifier7Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null, private: false}, 'app-1');
+      const qualifier8Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined, private: false}, 'app-1');
+      const qualifier9Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', private: false}, 'app-1');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -266,19 +266,19 @@ describe('ManifestService', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}, private: false}, 'app-1');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}, private: false}, 'app-1');
 
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', private: false}, 'app-1');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -345,19 +345,19 @@ describe('ManifestService', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
 
       // Register capabilities
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}, private: false}, 'app-1');
 
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', private: false}, 'app-1');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -424,19 +424,19 @@ describe('ManifestService', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}, private: false}, 'app-1');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}, private: false}, 'app-1');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined, private: false}, 'app-1');
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', private: false}, 'app-1');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined, private: false}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', private: false}, 'app-1');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -503,7 +503,7 @@ describe('ManifestService', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {'*': '*'}}, 'host-app');
 
       // Register capability
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -522,7 +522,7 @@ describe('ManifestService', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {'*': '*'}}, 'host-app');
 
       // Register capability
-      const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
+      const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -538,7 +538,7 @@ describe('ManifestService', () => {
       });
 
       // Register capability
-      Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -554,7 +554,7 @@ describe('ManifestService', () => {
       });
 
       // Register capability
-      const capabilityId = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
+      const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -695,19 +695,19 @@ describe('ManifestService', () => {
       });
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
-      const qualifier2Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
-      const qualifier3Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
-      const qualifier4Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
-      const qualifier5Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
-      const qualifier6Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
-      const qualifier7Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
-      const qualifier8Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
-      const qualifier9Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
+      const qualifier2Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
+      const qualifier3Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
+      const qualifier4Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
+      const qualifier5Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
+      const qualifier6Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
+      const qualifier7Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
+      const qualifier8Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
+      const qualifier9Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -734,19 +734,19 @@ describe('ManifestService', () => {
       });
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
-      const qualifier2Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
-      const qualifier3Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
-      const qualifier4Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
-      const qualifier5Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
-      const qualifier6Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
-      const qualifier7Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
-      const qualifier8Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
-      const qualifier9Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
+      const qualifier2Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
+      const qualifier3Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
+      const qualifier4Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
+      const qualifier5Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
+      const qualifier6Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
+      const qualifier7Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
+      const qualifier8Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
+      const qualifier9Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -773,19 +773,19 @@ describe('ManifestService', () => {
       });
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
-      const qualifier2Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
-      const qualifier3Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
-      const qualifier4Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
-      const qualifier5Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
-      const qualifier6Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
-      const qualifier7Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
-      const qualifier8Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
-      const qualifier9Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
+      const qualifier2Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
+      const qualifier3Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
+      const qualifier4Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
+      const qualifier5Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
+      const qualifier6Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
+      const qualifier7Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
+      const qualifier8Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
+      const qualifier9Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -812,19 +812,19 @@ describe('ManifestService', () => {
       });
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
-      const qualifier2Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
-      const qualifier3Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
-      const qualifier4Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
-      const qualifier5Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
-      const qualifier6Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
-      const qualifier7Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
-      const qualifier8Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
-      const qualifier9Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
+      const qualifier2Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
+      const qualifier3Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
+      const qualifier4Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
+      const qualifier5Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
+      const qualifier6Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
+      const qualifier7Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
+      const qualifier8Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
+      const qualifier9Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -851,19 +851,19 @@ describe('ManifestService', () => {
       });
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
-      const qualifier2Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
-      const qualifier3Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
-      const qualifier4Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
-      const qualifier5Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
-      const qualifier6Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
-      const qualifier7Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
-      const qualifier8Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
-      const qualifier9Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
+      const qualifier2Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
+      const qualifier3Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
+      const qualifier4Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
+      const qualifier5Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
+      const qualifier6Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
+      const qualifier7Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
+      const qualifier8Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
+      const qualifier9Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -890,19 +890,19 @@ describe('ManifestService', () => {
       });
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
-      const qualifier2Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
-      const qualifier3Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
-      const qualifier4Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
-      const qualifier5Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
-      const qualifier6Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
-      const qualifier7Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
-      const qualifier8Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
-      const qualifier9Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
+      const qualifier2Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
+      const qualifier3Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
+      const qualifier4Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
+      const qualifier5Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
+      const qualifier6Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
+      const qualifier7Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
+      const qualifier8Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
+      const qualifier9Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -929,19 +929,19 @@ describe('ManifestService', () => {
       });
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
-      const qualifier2Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
-      const qualifier3Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
-      const qualifier4Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
-      const qualifier5Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
-      const qualifier6Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
-      const qualifier7Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
-      const qualifier8Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
-      const qualifier9Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
+      const qualifier2Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
+      const qualifier3Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
+      const qualifier4Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
+      const qualifier5Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
+      const qualifier6Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
+      const qualifier7Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
+      const qualifier8Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
+      const qualifier9Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -964,19 +964,19 @@ describe('ManifestService', () => {
       });
 
       // Register capabilities
-      const asteriskQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
-      const optionalQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
-      const exactQualifierCapability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
+      const asteriskQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app');
+      const optionalQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'host-app');
+      const exactQualifierCapability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact'}}, 'host-app');
 
-      const qualifier1Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
-      const qualifier2Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
-      const qualifier3Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
-      const qualifier4Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
-      const qualifier5Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
-      const qualifier6Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
-      const qualifier7Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
-      const qualifier8Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
-      const qualifier9Capability = Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
+      const qualifier1Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person'}}, 'host-app');
+      const qualifier2Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*', other: 'property'}}, 'host-app');
+      const qualifier3Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?', other: 'property'}}, 'host-app');
+      const qualifier4Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'exact', other: 'property'}}, 'host-app');
+      const qualifier5Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'host-app');
+      const qualifier6Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {}}, 'host-app');
+      const qualifier7Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: null}, 'host-app');
+      const qualifier8Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: undefined}, 'host-app');
+      const qualifier9Capability = await Beans.get(ManifestRegistry).registerCapability({type: 'view'}, 'host-app');
 
       const captor = new ObserveCaptor(manifestObjectIdsExtractFn);
 
@@ -998,8 +998,8 @@ describe('ManifestService', () => {
         applications: [{symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()}],
       });
 
-      const capabilityIdHostApp = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'host-app');
-      const capabilityIdApp1 = Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
+      const capabilityIdHostApp = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'host-app');
+      const capabilityIdApp1 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
 
       // Unregister all capabilities of the host app.
       await Beans.get(ManifestService).unregisterCapabilities();

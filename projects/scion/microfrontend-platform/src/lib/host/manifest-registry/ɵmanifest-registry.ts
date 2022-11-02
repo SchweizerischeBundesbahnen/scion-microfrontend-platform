@@ -25,6 +25,7 @@ import {stringifyError} from '../../error.util';
 import {Logger, LoggingContext} from '../../logger';
 import {ManifestObjectFilter} from './manifest-object.model';
 import {ClientRegistry} from '../client-registry/client.registry';
+import {CapabilityInterceptor} from './capability-interceptors';
 
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
@@ -95,7 +96,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     return this._intentionStore.find(filter, intentionQualifier => new QualifierMatcher(intentionQualifier, {evalAsterisk: true, evalOptional: true}).matches(capability.qualifier)).length > 0;
   }
 
-  public registerCapability(capability: Capability, appSymbolicName: string): string {
+  public async registerCapability(capability: Capability, appSymbolicName: string): Promise<string> {
     if (!capability) {
       throw Error('[CapabilityRegisterError] Missing required capability.');
     }
@@ -103,9 +104,8 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
       throw Error('[CapabilityRegisterError] Asterisk wildcard (\'*\') not allowed in the qualifier key.');
     }
 
-    // use the first 7 digits of the capability hash as capability id
-    const capabilityId = sha256(JSON.stringify({application: appSymbolicName, type: capability.type, ...capability.qualifier})).substring(0, 7);
-    const capabilityToRegister: Capability = {
+    // Let the host app intercept the capability to register.
+    const capabilityToRegister = await interceptCapability({
       ...capability,
       qualifier: capability.qualifier ?? {},
       params: coerceCapabilityParamDefinitions(capability, appSymbolicName),
@@ -113,14 +113,15 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
       optionalParams: undefined,
       private: capability.private ?? true,
       metadata: {
-        id: capabilityId,
+        // use the first 7 digits of the capability hash as capability id
+        id: sha256(JSON.stringify({application: appSymbolicName, type: capability.type, ...capability.qualifier})).substring(0, 7),
         appSymbolicName: appSymbolicName,
       },
-    };
+    });
 
     // Register the capability.
     this._capabilityStore.add(capabilityToRegister);
-    return capabilityId;
+    return capabilityToRegister.metadata!.id;
   }
 
   private unregisterCapabilities(appSymbolicName: string, filter: ManifestObjectFilter): void {
@@ -154,13 +155,13 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   private installCapabilityRegisterRequestHandler(): void {
     Beans.get(MessageClient).observe$<Capability>(ManifestRegistryTopics.RegisterCapability)
       .pipe(takeUntil(this._destroy$))
-      .subscribe((request: TopicMessage<Capability>) => runSafe(() => {
+      .subscribe((request: TopicMessage<Capability>) => runSafe(async () => {
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
         const capability = request.body!;
         const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
 
         try {
-          const capabilityId = this.registerCapability(capability, appSymbolicName);
+          const capabilityId = await this.registerCapability(capability, appSymbolicName);
           Beans.get(MessageClient).publish(replyTo, capabilityId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
         }
         catch (error) {
@@ -362,4 +363,15 @@ function assertCapabilityParamDefinitions(params: ParamDefinition[]): void {
     }
     return param;
   });
+}
+
+/**
+ * Intercepts capability before its registration.
+ */
+async function interceptCapability(capability: Capability): Promise<Capability> {
+  const interceptors = Beans.all(CapabilityInterceptor);
+  for (const interceptor of interceptors) {
+    capability = await interceptor.intercept(capability);
+  }
+  return capability;
 }
