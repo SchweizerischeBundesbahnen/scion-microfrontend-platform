@@ -148,8 +148,8 @@ describe('ApplicationRegistry', () => {
       expect(registry.getApplication('app-7').manifestUrl).toEqual(window.origin + '/assets/manifest.json');
     });
 
-    function registerApp(app: {symbolicName: string; manifestUrl: string; baseUrl?: string}): void {
-      registry.registerApplication({symbolicName: app.symbolicName, manifestUrl: app.manifestUrl}, {
+    function registerApp(app: {symbolicName: string; manifestUrl: string; baseUrl?: string}): Promise<void> {
+      return registry.registerApplication({symbolicName: app.symbolicName, manifestUrl: app.manifestUrl}, {
         name: app.symbolicName,
         capabilities: [],
         intentions: [],
@@ -160,27 +160,27 @@ describe('ApplicationRegistry', () => {
 
   describe('symbolic app name', () => {
 
-    it('should be unique', () => {
-      registerApp({symbolicName: 'app-1'});
-      expect(() => registerApp({symbolicName: 'app-1'})).toThrowError(/ApplicationRegistrationError/);
+    it('should be unique', async () => {
+      await registerApp({symbolicName: 'app-1'});
+      await expectAsync(registerApp({symbolicName: 'app-1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
     });
 
-    it('should be lowercase and contain alphanumeric and/or dash characters', () => {
-      registerApp({symbolicName: 'app-1'});
-      expect(() => registerApp({symbolicName: 'APP-1'})).toThrowError(/ApplicationRegistrationError/);
-      expect(() => registerApp({symbolicName: 'app.1'})).toThrowError(/ApplicationRegistrationError/);
-      expect(() => registerApp({symbolicName: 'app#1'})).toThrowError(/ApplicationRegistrationError/);
-      expect(() => registerApp({symbolicName: 'app/1'})).toThrowError(/ApplicationRegistrationError/);
-      expect(() => registerApp({symbolicName: 'app\\1'})).toThrowError(/ApplicationRegistrationError/);
-      expect(() => registerApp({symbolicName: 'app&1'})).toThrowError(/ApplicationRegistrationError/);
-      expect(() => registerApp({symbolicName: 'app?1'})).toThrowError(/ApplicationRegistrationError/);
-      expect(() => registerApp({symbolicName: ' app-1'})).toThrowError(/ApplicationRegistrationError/);
-      expect(() => registerApp({symbolicName: 'app-1 '})).toThrowError(/ApplicationRegistrationError/);
-      expect(() => registerApp({symbolicName: 'app 1'})).toThrowError(/ApplicationRegistrationError/);
+    it('should be lowercase and contain alphanumeric and/or dash characters', async () => {
+      await registerApp({symbolicName: 'app-1'});
+      await expectAsync(registerApp({symbolicName: 'APP-1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
+      await expectAsync(registerApp({symbolicName: 'app.1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
+      await expectAsync(registerApp({symbolicName: 'app#1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
+      await expectAsync(registerApp({symbolicName: 'app/1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
+      await expectAsync(registerApp({symbolicName: 'app\\1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
+      await expectAsync(registerApp({symbolicName: 'app&1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
+      await expectAsync(registerApp({symbolicName: 'app?1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
+      await expectAsync(registerApp({symbolicName: ' app-1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
+      await expectAsync(registerApp({symbolicName: 'app-1 '})).toBeRejectedWithError(/ApplicationRegistrationError/);
+      await expectAsync(registerApp({symbolicName: 'app 1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
     });
 
-    function registerApp(app: {symbolicName: string}): void {
-      registry.registerApplication({symbolicName: app.symbolicName, manifestUrl: 'http://www.some-origin.com'}, {
+    function registerApp(app: {symbolicName: string}): Promise<void> {
+      return registry.registerApplication({symbolicName: app.symbolicName, manifestUrl: 'http://www.some-origin.com'}, {
         name: app.symbolicName,
         capabilities: [],
         intentions: [],
@@ -188,8 +188,8 @@ describe('ApplicationRegistry', () => {
     }
   });
 
-  it('should use the application\'s symbolic name as application name if not configured in the manifest', () => {
-    registry.registerApplication({symbolicName: 'app', manifestUrl: 'http://app.com/manifest'}, {name: undefined!});
+  it('should use the application\'s symbolic name as application name if not configured in the manifest', async () => {
+    await registry.registerApplication({symbolicName: 'app', manifestUrl: 'http://app.com/manifest'}, {name: undefined!});
     expect(registry.getApplication('app').name).toEqual('app');
     expect(registry.getApplication('app').symbolicName).toEqual('app');
   });

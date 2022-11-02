@@ -1,4 +1,4 @@
-import {IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatform} from '@scion/microfrontend-platform';
+import {Capability, CapabilityInterceptor, IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatform} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 `
@@ -191,4 +191,32 @@ import {Beans} from '@scion/toolkit/bean-manager';
     ],
   });
   // end::enable-intention-register-api[]
+}
+
+function hash(capability: Capability): string {
+  return null;
+}
+
+{
+  // tag::intercept-capability[]
+  class MicrofrontendCapabilityInterceptor implements CapabilityInterceptor {
+
+    public async intercept(capability: Capability): Promise<Capability> {
+      if (capability.type === 'microfrontend') {
+        return {
+          ...capability,
+          metadata: {...capability.metadata, id: hash(capability)},
+        };
+      }
+      return capability;
+    }
+  }
+  // end::intercept-capability[]
+
+  // tag::register-capability-interceptor[]
+  Beans.register(CapabilityInterceptor, {useClass: MicrofrontendCapabilityInterceptor}); // <1>
+
+  // Start the platform.
+  MicrofrontendPlatform.startHost(...); // <2>
+  // end::register-capability-interceptor[]
 }

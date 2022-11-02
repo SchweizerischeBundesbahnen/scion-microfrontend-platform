@@ -19,6 +19,7 @@ In this Chapter
 - <<chapter:intention-api:intention-lookup>>
 - <<chapter:intention-api:capability-registration>>
 - <<chapter:intention-api:intention-registration>>
+- <<chapter:intention-api:capability-interception>>
 
 ****
 '''
@@ -371,3 +372,22 @@ include::intention-api.snippets.ts[tags=enable-intention-register-api]
 
 Similar to <<chapter:intention-api:capability-registration,registering a capability>>, you can register an intention using the `ManifestService` and its `registerIntention` method. For an overview of the supported intention properties, see chapter <<objects::intention>>.
 
+[[chapter:intention-api:capability-interception]]
+=== Intercepting Capabilities
+The platform allows intercepting capabilities before they are registered, for example, to perform validation checks, add metadata, or change properties.
+
+An interceptor must implement the `intercept` method of the `CapabilityInterceptor` interface. Interceptors are registered in the bean manager of the host application under the symbol `CapabilityInterceptor` as `multi` bean. Multiple interceptors can be registered, forming a chain in which each interceptor is called one by one in registration order.
+
+[source,typescript]
+----
+include::intention-api.snippets.ts[tags=register-capability-interceptor]
+----
+<1> Registers an interceptor to intercept capabilities before they are registered in the platform.
+<2> Starts the platform.
+
+The following interceptor assigns a stable identifier to each microfrontend capability.
+
+[source,typescript]
+----
+include::intention-api.snippets.ts[tags=intercept-capability]
+----

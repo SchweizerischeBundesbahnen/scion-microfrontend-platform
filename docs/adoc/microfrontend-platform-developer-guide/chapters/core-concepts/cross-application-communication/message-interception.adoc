@@ -17,7 +17,7 @@ In this Chapter
 
 [[chapter:message-interception:how-to-intercept-messages]]
 [discrete]
-=== How Intercepting Messages?
+=== How to Intercept Messages
 An interceptor can reject or modify messages, allowing you to audit messages, or to perform schema validation to reject messages with an invalid payload. Multiple interceptors can be registered, forming a chain in which each interceptor is called one by one in registration order.
 
 [.text-center]
@@ -33,7 +33,7 @@ include::message-interception.snippets.ts[tags=message-logger-interceptor]
 [[chapter:message-interception:registering-interceptors]]
 [discrete]
 === Registering Interceptors
-You register interceptors with the bean manager when starting the host application. Interceptors can be registered only in the host application. They are invoked in registration order.
+You register interceptors with the bean manager before starting the platform. Interceptors can be registered only in the host application. They are invoked in registration order.
 
 [source,typescript]
 ----
