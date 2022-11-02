@@ -5,6 +5,23 @@
 
 ## Changelog
 
+# [1.0.0-rc.9](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.8...1.0.0-rc.9) (2022-11-02)
+
+
+### Features
+
+* **platform/devtools:** display platform version per application in DevTools ([1c8d69c](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/1c8d69c0b3c2e84a61554ffdefa661496e7fef86))
+* **platform:** allow intercepting capabilities before their registration ([ba423af](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/ba423afd604b2f6039280889f9942f191b7142c2))
+
+
+### Performance Improvements
+
+* **platform/messaging:** index topic subscriptions for faster resolution ([e8c2178](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/e8c2178698058a7d1d10ddef43167f0faa3a1c54))
+* **platform/messaging:** subscribe for replies when posting the request in request-response communication ([cb23da3](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/cb23da36e35e14fd7e46d19a1dace0b926c3e5a1))
+* **platform/messaging:** track the number of subscriptions based on subscription change events ([8b3c877](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/8b3c8771bfa33528fd5b29b38eaa3f6c9c796a9c))
+
+
+
 # [1.0.0-rc.8](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.7...1.0.0-rc.8) (2022-10-27)
 
 
