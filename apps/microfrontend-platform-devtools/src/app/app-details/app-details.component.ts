@@ -8,11 +8,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild} from '@angular/core';
-import {BehaviorSubject, combineLatestWith, Observable, Subject} from 'rxjs';
+import {combineLatestWith, Observable, Subject} from 'rxjs';
 import {Application, Capability, Intention} from '@scion/microfrontend-platform';
-import {distinctUntilChanged, expand, filter, map, switchMap, take, takeUntil} from 'rxjs/operators';
+import {distinctUntilChanged, expand, map, switchMap, take, takeUntil} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {filterManifestObjects} from '../manifest-object-filter.utils';
 import {ShellService} from '../shell.service';
 import {UntypedFormControl} from '@angular/forms';
@@ -33,11 +33,12 @@ export class AppDetailsComponent implements OnDestroy {
   public capabilityFilterFormControl = new UntypedFormControl();
   public intentionFilterFormControl = new UntypedFormControl();
 
-  private _tabbar$ = new BehaviorSubject<SciTabbarComponent>(null);
+  private _tabbar$ = new Subject<SciTabbarComponent>();
   private _destroy$ = new Subject<void>();
 
   constructor(private _shellService: ShellService,
               private _route: ActivatedRoute,
+              private _router: Router,
               private _manifestService: DevToolsManifestService,
               private _cd: ChangeDetectorRef) {
     this.application$ = this.observeApplication$();
@@ -87,20 +88,25 @@ export class AppDetailsComponent implements OnDestroy {
   private installTabActivator(): void {
     this._route.paramMap
       .pipe(
-        map(params => params.get('activeTab')),
-        filter(Boolean),
-        combineLatestWith(this._tabbar$.pipe(filter(Boolean))),
+        map(params => params.get('activeTab')), // read 'activeTab' matrix param from URL
+        combineLatestWith(this._tabbar$), // wait for tabbar
         takeUntil(this._destroy$),
       )
-      .subscribe(([tab]) => {
-        this._tabbar$.value.activateTab(tab);
-        this._cd.markForCheck();
+      .subscribe(([tabToActivate, tabbar]) => {
+        if (tabToActivate) {
+          this._router.navigate([], {replaceUrl: true, relativeTo: this._route}).then(); // remove 'activeTab' matrix param from URL
+          tabbar.activateTab(tabToActivate);
+          this._cd.markForCheck();
+        }
       });
   }
 
   @ViewChild(SciTabbarComponent)
   public set injectTabbar(tabbar: SciTabbarComponent) {
-    this._tabbar$.next(tabbar);
+    if (tabbar) {
+      this._tabbar$.next(tabbar);
+      this._tabbar$.complete();
+    }
   }
 
   public ngOnDestroy(): void {
