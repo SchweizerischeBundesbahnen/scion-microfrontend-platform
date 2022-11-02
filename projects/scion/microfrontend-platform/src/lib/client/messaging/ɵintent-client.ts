@@ -11,7 +11,7 @@
 import {defer, Observable, Subscription} from 'rxjs';
 import {Intent, IntentMessage, throwOnErrorStatus, TopicMessage} from '../../messaging.model';
 import {BrokerGateway} from './broker-gateway';
-import {MessagingChannel} from '../../ɵmessaging.model';
+import {IntentSubscribeCommand, MessagingChannel} from '../../ɵmessaging.model';
 import {assertExactQualifier} from '../../qualifier-matcher';
 import {IntentClient, IntentOptions, IntentSelector} from './intent-client';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -51,7 +51,12 @@ export class ɵIntentClient implements IntentClient {
   }
 
   public observe$<T>(selector?: IntentSelector): Observable<IntentMessage<T>> {
-    return this._brokerGateway.subscribeToIntent$<T>(selector);
+    return this._brokerGateway.subscribe$({
+      messageChannel: MessagingChannel.Intent,
+      subscribeChannel: MessagingChannel.IntentSubscribe,
+      unsubscribeChannel: MessagingChannel.IntentUnsubscribe,
+      newSubscribeCommand: (subscriberId: string): IntentSubscribeCommand => ({selector, subscriberId, headers: new Map()}),
+    });
   }
 
   public onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {

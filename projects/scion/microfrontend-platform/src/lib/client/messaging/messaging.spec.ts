@@ -1239,15 +1239,29 @@ describe('Messaging', () => {
 
     // Subscribe and wait until the initial subscription count, which is 0, is reported.
     const subscriberCountCaptor = new ObserveCaptor();
+
     Beans.get(MessageClient).subscriberCount$('some-topic').subscribe(subscriberCountCaptor);
+    await subscriberCountCaptor.waitUntilEmitCount(1);
 
-    Beans.get(MessageClient).observe$<string>('some-topic').subscribe().unsubscribe();
+    const subscription1 = Beans.get(MessageClient).observe$<string>('some-topic').subscribe();
+    await subscriberCountCaptor.waitUntilEmitCount(2);
+
+    subscription1.unsubscribe();
+    await subscriberCountCaptor.waitUntilEmitCount(3);
+
     const subscription2 = Beans.get(MessageClient).observe$<string>('some-topic').subscribe();
-    const subscription3 = Beans.get(MessageClient).observe$<string>('some-topic').subscribe();
-    subscription2.unsubscribe();
-    subscription3.unsubscribe();
+    await subscriberCountCaptor.waitUntilEmitCount(4);
 
-    await expectEmissions(subscriberCountCaptor).toEqual([0, 1, 0, 1, 2, 1, 0]);
+    const subscription3 = Beans.get(MessageClient).observe$<string>('some-topic').subscribe();
+    await subscriberCountCaptor.waitUntilEmitCount(5);
+
+    subscription2.unsubscribe();
+    await subscriberCountCaptor.waitUntilEmitCount(6);
+
+    subscription3.unsubscribe();
+    await subscriberCountCaptor.waitUntilEmitCount(7);
+
+    expect(subscriberCountCaptor.getValues()).toEqual([0, 1, 0, 1, 2, 1, 0]);
     expect(subscriberCountCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
   });
 
