@@ -20,18 +20,30 @@ import {Arrays} from '@scion/toolkit/util';
 })
 export class CapabilityFilterSession {
   private readonly defaultLogicalOperator: LogicalOperator = 'or';
+  private _idFilters = new Set<string>();
   private _typeFilters = new Set<string>();
   private _qualifierFilters = new Array<KeyValuePair>();
   private _appFilters = new Set<string>();
+  private _idLogicalOperator: LogicalOperator;
   private _typeLogicalOperator: LogicalOperator;
   private _qualifierLogicalOperator: LogicalOperator;
   private _appLogicalOperator: LogicalOperator;
   private _filterChange$ = new Subject<void>();
 
   constructor(private _manifestService: DevToolsManifestService) {
+    this.idLogicalOperator= this.defaultLogicalOperator;
     this.typeLogicalOperator = this.defaultLogicalOperator;
     this.qualifierLogicalOperator = this.defaultLogicalOperator;
     this.appLogicalOperator = this.defaultLogicalOperator;
+  }
+
+  public set idLogicalOperator(value: LogicalOperator) {
+    this._idLogicalOperator = value;
+    this._filterChange$.next();
+  }
+
+  public get idLogicalOperator(): LogicalOperator {
+    return this._idLogicalOperator;
   }
 
   public set typeLogicalOperator(value: LogicalOperator) {
@@ -71,10 +83,21 @@ export class CapabilityFilterSession {
 
   private filter(capabilities: Capability[]): Capability[] {
     return capabilities
+      .filter(capability => this._idFilters.size === 0 || this.filterById(capability))
       .filter(capability => this._typeFilters.size === 0 || this.filterByType(capability))
       .filter(capability => this._qualifierFilters.length === 0 || this.filterByQualifier(capability.qualifier))
       .filter(capability => this._appFilters.size === 0 || this.filterAppByName(capability))
       .sort(capabilityComparator);
+  }
+
+  private filterById(capability: Capability): boolean {
+    if (this._idLogicalOperator === 'or') {
+      return this._idFilters.has(capability.metadata.id);
+    }
+    else if (this._idLogicalOperator === 'and') {
+      return Array.from(this._idFilters).every(id => id === capability.metadata.id);
+    }
+    return false;
   }
 
   private filterByType(capability: Capability): boolean {
@@ -126,6 +149,22 @@ export class CapabilityFilterSession {
       return appFilters.every(app => app === symbolicName);
     }
     return false;
+  }
+
+  public addIdFilter(id: string): void {
+    if (this._idFilters.has(id)) {
+      return;
+    }
+    this._idFilters.add(id);
+    this._filterChange$.next();
+  }
+
+  public removeIdFilter(id: string): void {
+    this._idFilters.delete(id) && this._filterChange$.next();
+  }
+
+  public get idFilters(): string[] {
+    return Array.from(this._idFilters);
   }
 
   public addTypeFilter(type: string): void {
