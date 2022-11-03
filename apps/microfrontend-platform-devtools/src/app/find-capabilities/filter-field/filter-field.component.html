@@ -1,7 +1,9 @@
 <header>
-  <header>{{title}}</header>
-  <button [class.active]="logicalOperator === OR" (click)="onLogicalOperatorClick(OR)" type="button">OR</button>
-  <button [class.active]="logicalOperator === AND" (click)="onLogicalOperatorClick(AND)" type="button">AND</button>
+  <span class="title">{{title}}</span>
+  <span class="toggle-button">
+    <button [class.active]="logicalOperator === OR" (click)="onLogicalOperatorClick(OR)" type="button">OR</button>
+    <button [class.active]="logicalOperator === AND" (click)="onLogicalOperatorClick(AND)" type="button">AND</button>
+  </span>
 </header>
 <div class="filter" [class]="type" *ngIf="showFilter; else showFilterButton" cdkMonitorSubtreeFocus (cdkFocusChange)="onFocusChange($event)">
   <input type="text" [formControl]="keyFC" (keydown.enter)="onAddFilterClick()" *ngIf="isTypeKeyValue()" placeholder="Key" [attr.list]="autocompleteKeysDatalistId" #key>
