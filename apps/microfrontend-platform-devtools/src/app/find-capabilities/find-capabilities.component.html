@@ -12,5 +12,10 @@
                            [logicalOperator]="capabilityFilterSession.appLogicalOperator" (changeLogicalOperator)="onAppLogicalOperatorChange($event)"
                            [initialFilters]="appFilters" (addValueFilter)="onAppFilterAdd($event)" (removeValueFilter)="onAppFilterRemove($event)">
     </devtools-filter-field>
+    <devtools-filter-field [title]="'Filter by ID'" type="value" placeholder="ID" [autocompleteValues]="capabilityIds$ | async"
+                           [logicalOperator]="capabilityFilterSession.idLogicalOperator" (changeLogicalOperator)="onIdLogicalOperatorChange($event)"
+                           (addValueFilter)="onIdFilterAdd($event)" (removeValueFilter)="onIdFilterRemove($event)"
+                           [initialFilters]="idFilters">
+    </devtools-filter-field>
   </section>
 </sci-viewport>

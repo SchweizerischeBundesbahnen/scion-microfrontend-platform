@@ -14,7 +14,7 @@ import {Observable} from 'rxjs';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {ShellService} from '../shell.service';
 import {map} from 'rxjs/operators';
-import {distinctArray, sortArray} from '@scion/toolkit/operators';
+import {distinctArray, mapArray, sortArray} from '@scion/toolkit/operators';
 
 @Component({
   selector: 'devtools-find-capabilities',
@@ -24,6 +24,7 @@ import {distinctArray, sortArray} from '@scion/toolkit/operators';
 })
 export class FindCapabilitiesComponent {
 
+  public capabilityIds$: Observable<string[]>;
   public capabilityTypes$: Observable<string[]>;
   public appSymbolicNames: string[];
   public qualifierKeys$: Observable<string[]>;
@@ -31,6 +32,7 @@ export class FindCapabilitiesComponent {
 
   constructor(shellService: ShellService, public capabilityFilterSession: CapabilityFilterSession, manifestService: DevToolsManifestService) {
     shellService.primaryTitle = 'Capability Browser';
+    this.capabilityIds$ = manifestService.capabilities$().pipe(mapArray(capability => capability.metadata.id));
     this.capabilityTypes$ = manifestService.capabilityTypes$();
     this.appSymbolicNames = manifestService.applications.map(app => app.symbolicName).sort();
     this.qualifierKeys$ = manifestService.capabilities$()
@@ -45,6 +47,18 @@ export class FindCapabilitiesComponent {
         distinctArray(),
         sortArray((a, b) => a.localeCompare(b)),
       );
+  }
+
+  public onIdFilterAdd(id: string): void {
+    this.capabilityFilterSession.addIdFilter(id);
+  }
+
+  public onIdFilterRemove(type: string): void {
+    this.capabilityFilterSession.removeIdFilter(type);
+  }
+
+  public get idFilters(): string[] {
+    return this.capabilityFilterSession.idFilters;
   }
 
   public onTypeFilterAdd(type: string): void {
@@ -81,6 +95,10 @@ export class FindCapabilitiesComponent {
 
   public get appFilters(): string[] {
     return this.capabilityFilterSession.appFilters;
+  }
+
+  public onIdLogicalOperatorChange(logicalOperator: LogicalOperator): void {
+    this.capabilityFilterSession.idLogicalOperator = logicalOperator;
   }
 
   public onTypeLogicalOperatorChange(logicalOperator: LogicalOperator): void {
