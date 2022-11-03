@@ -3,6 +3,7 @@
 :host {
   > header {
     display: flex;
+    justify-content: space-between;
     border: 1px solid var(--sci-color-A600);
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
@@ -10,31 +11,34 @@
     background-color: var(--sci-color-accent);
     color: var(--sci-color-P50);
 
-    > header {
-      flex: auto;
+    > span.title {
       margin-top: 0;
       user-select: none;
       font-weight: bold;
     }
 
-    > button {
-      font-style: italic;
-      font-size: smaller;
-      padding: 3px 5px;
-      height: 2em;
-      color: white;
-      border: 1px solid var(--sci-color-accent);
-      background-color: var(--sci-color-accent);
-      user-select: none;
+    > span.toggle-button {
+      display: flex;
+      gap: 1px;
+      border: 1px solid var(--sci-color-background);
+      border-radius: .25em;
+      background-color: var(--sci-color-background);
+      overflow: hidden;
 
-      &.active {
-        color: rgba(51, 51, 51, .8);
-        border: 1px solid var(--sci-color-A500);
-        background-color: var(--sci-color-background);
-      }
+      > button {
+        font-size: smaller;
+        padding: 3px 5px;
+        border: none;
+        border-radius: 0;
+        color: var(--sci-color-background);
+        background-color: var(--sci-color-accent);
+        user-select: none;
 
-      &:last-child {
-        margin-left: 3px;
+        &.active {
+          color: var(--sci-color-accent);
+          background-color: var(--sci-color-background);
+          box-shadow: none;
+        }
       }
     }
   }

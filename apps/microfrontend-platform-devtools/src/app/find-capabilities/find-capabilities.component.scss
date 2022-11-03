@@ -5,14 +5,11 @@
   > sci-viewport {
     flex: auto;
 
-    section {
+    &::part(content) {
       display: flex;
       flex-direction: column;
+      gap: 1em;
       padding: 1em;
-
-      > devtools-filter-field:not(:first-child) {
-        margin-top: 1em;
-      }
     }
   }
 }
