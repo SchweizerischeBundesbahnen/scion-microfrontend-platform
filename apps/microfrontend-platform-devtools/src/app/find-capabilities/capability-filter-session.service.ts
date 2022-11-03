@@ -19,40 +19,16 @@ import {Arrays} from '@scion/toolkit/util';
   providedIn: 'root',
 })
 export class CapabilityFilterSession {
-  private readonly defaultLogicalOperator: LogicalOperator = 'or';
+
   private _idFilters = new Set<string>();
   private _typeFilters = new Set<string>();
   private _qualifierFilters = new Array<KeyValuePair>();
   private _appFilters = new Set<string>();
-  private _idLogicalOperator: LogicalOperator;
-  private _typeLogicalOperator: LogicalOperator;
   private _qualifierLogicalOperator: LogicalOperator;
-  private _appLogicalOperator: LogicalOperator;
   private _filterChange$ = new Subject<void>();
 
   constructor(private _manifestService: DevToolsManifestService) {
-    this.idLogicalOperator= this.defaultLogicalOperator;
-    this.typeLogicalOperator = this.defaultLogicalOperator;
-    this.qualifierLogicalOperator = this.defaultLogicalOperator;
-    this.appLogicalOperator = this.defaultLogicalOperator;
-  }
-
-  public set idLogicalOperator(value: LogicalOperator) {
-    this._idLogicalOperator = value;
-    this._filterChange$.next();
-  }
-
-  public get idLogicalOperator(): LogicalOperator {
-    return this._idLogicalOperator;
-  }
-
-  public set typeLogicalOperator(value: LogicalOperator) {
-    this._typeLogicalOperator = value;
-    this._filterChange$.next();
-  }
-
-  public get typeLogicalOperator(): LogicalOperator {
-    return this._typeLogicalOperator;
+    this.qualifierLogicalOperator = 'or';
   }
 
   public set qualifierLogicalOperator(value: LogicalOperator) {
@@ -62,15 +38,6 @@ export class CapabilityFilterSession {
 
   public get qualifierLogicalOperator(): LogicalOperator {
     return this._qualifierLogicalOperator;
-  }
-
-  public set appLogicalOperator(value: LogicalOperator) {
-    this._appLogicalOperator = value;
-    this._filterChange$.next();
-  }
-
-  public get appLogicalOperator(): LogicalOperator {
-    return this._appLogicalOperator;
   }
 
   public capabilities$(): Observable<Capability[]> {
@@ -91,35 +58,21 @@ export class CapabilityFilterSession {
   }
 
   private filterById(capability: Capability): boolean {
-    if (this._idLogicalOperator === 'or') {
-      return this._idFilters.has(capability.metadata.id);
-    }
-    else if (this._idLogicalOperator === 'and') {
-      return Array.from(this._idFilters).every(id => id === capability.metadata.id);
-    }
-    return false;
+    return this._idFilters.has(capability.metadata.id);
   }
 
   private filterByType(capability: Capability): boolean {
     const capabilityType = capability.type.toLowerCase();
-    const typeFilters = Array.from(this._typeFilters).map(typeFilter => typeFilter.toLowerCase());
-    if (this._typeLogicalOperator === 'or') {
-      return typeFilters.includes(capabilityType);
-    }
-    else if (this._typeLogicalOperator === 'and') {
-      return typeFilters.every(type => type === capabilityType);
-    }
-    return false;
+    return Array.from(this._typeFilters).some(typeFilter => typeFilter.toLowerCase() === capabilityType);
   }
 
   private filterByQualifier(qualifier: Qualifier): boolean {
-    if (this._qualifierLogicalOperator === 'or') {
-      return this._qualifierFilters.some(it => this.matchesQualifier(it, qualifier));
-    }
-    else if (this._qualifierLogicalOperator === 'and') {
+    if (this._qualifierLogicalOperator === 'and') {
       return this._qualifierFilters.every(it => this.matchesQualifier(it, qualifier));
     }
-    return false;
+    else {
+      return this._qualifierFilters.some(it => this.matchesQualifier(it, qualifier));
+    }
   }
 
   private matchesQualifier(filterQualifier: KeyValuePair, qualifier: Qualifier): boolean {
@@ -141,14 +94,7 @@ export class CapabilityFilterSession {
 
   private filterAppByName(capability: Capability): boolean {
     const symbolicName = capability.metadata.appSymbolicName.toLowerCase();
-    const appFilters = Array.from(this._appFilters).map(appFilter => appFilter.toLowerCase());
-    if (this._appLogicalOperator === 'or') {
-      return appFilters.includes(symbolicName);
-    }
-    else if (this._appLogicalOperator === 'and') {
-      return appFilters.every(app => app === symbolicName);
-    }
-    return false;
+    return Array.from(this._appFilters).some(appFilter => appFilter.toLowerCase() === symbolicName);
   }
 
   public addIdFilter(id: string): void {

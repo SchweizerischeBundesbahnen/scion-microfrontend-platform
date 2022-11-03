@@ -1,6 +1,5 @@
 <sci-viewport>
   <devtools-filter-field [title]="'Filter by Type'" type="value" placeholder="Type" [autocompleteValues]="capabilityTypes$ | async"
-                         [logicalOperator]="capabilityFilterSession.typeLogicalOperator" (changeLogicalOperator)="onTypeLogicalOperatorChange($event)"
                          [initialFilters]="typeFilters" (addValueFilter)="onTypeFilterAdd($event)" (removeValueFilter)="onTypeFilterRemove($event)">
   </devtools-filter-field>
   <devtools-filter-field [title]="'Filter by Qualifier'" type="key-value" [autocompleteKeys]="qualifierKeys$ | async" [autocompleteValues]="qualifierValues$ | async"
@@ -8,11 +7,9 @@
                          [initialFilters]="qualifierFilters" (addKeyValueFilter)="onQualifierFilterAdd($event)" (removeKeyValueFilter)="onQualifierFilterRemove($event)">
   </devtools-filter-field>
   <devtools-filter-field [title]="'Filter by App'" type="value" placeholder="App" [autocompleteValues]="appSymbolicNames"
-                         [logicalOperator]="capabilityFilterSession.appLogicalOperator" (changeLogicalOperator)="onAppLogicalOperatorChange($event)"
                          [initialFilters]="appFilters" (addValueFilter)="onAppFilterAdd($event)" (removeValueFilter)="onAppFilterRemove($event)">
   </devtools-filter-field>
   <devtools-filter-field [title]="'Filter by ID'" type="value" placeholder="ID" [autocompleteValues]="capabilityIds$ | async"
-                         [logicalOperator]="capabilityFilterSession.idLogicalOperator" (changeLogicalOperator)="onIdLogicalOperatorChange($event)"
                          (addValueFilter)="onIdFilterAdd($event)" (removeValueFilter)="onIdFilterRemove($event)"
                          [initialFilters]="idFilters">
   </devtools-filter-field>

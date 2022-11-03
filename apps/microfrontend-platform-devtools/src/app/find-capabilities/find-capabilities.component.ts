@@ -97,19 +97,7 @@ export class FindCapabilitiesComponent {
     return this.capabilityFilterSession.appFilters;
   }
 
-  public onIdLogicalOperatorChange(logicalOperator: LogicalOperator): void {
-    this.capabilityFilterSession.idLogicalOperator = logicalOperator;
-  }
-
-  public onTypeLogicalOperatorChange(logicalOperator: LogicalOperator): void {
-    this.capabilityFilterSession.typeLogicalOperator = logicalOperator;
-  }
-
   public onQualifierLogicalOperatorChange(logicalOperator: LogicalOperator): void {
     this.capabilityFilterSession.qualifierLogicalOperator = logicalOperator;
-  }
-
-  public onAppLogicalOperatorChange(logicalOperator: LogicalOperator): void {
-    this.capabilityFilterSession.appLogicalOperator = logicalOperator;
   }
 }

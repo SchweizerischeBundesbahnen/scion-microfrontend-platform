@@ -1,6 +1,6 @@
 <header>
   <span class="title">{{title}}</span>
-  <span class="toggle-button">
+  <span class="toggle-button" *ngIf="logicalOperator">
     <button [class.active]="logicalOperator === OR" (click)="onLogicalOperatorClick(OR)" type="button">OR</button>
     <button [class.active]="logicalOperator === AND" (click)="onLogicalOperatorClick(AND)" type="button">AND</button>
   </span>
