@@ -32,7 +32,7 @@ export class FilterFieldComponent implements OnInit {
   public type: 'value' | 'key-value' = 'value';
 
   @Input()
-  public logicalOperator: LogicalOperator;
+  public logicalOperator?: LogicalOperator;
 
   @Input()
   public placeholder = 'Value';
