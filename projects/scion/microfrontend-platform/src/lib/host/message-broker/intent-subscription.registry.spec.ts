@@ -119,21 +119,6 @@ describe('IntentSubscriptionRegistry', () => {
     expect(testee.subscriptions({intent: {type: 'menu-item', qualifier: {entity: 'customer'}}}).length).toBe(0);
   });
 
-  it('should match subscription {qualifier: {entity: \'?\'}}', () => {
-    const testee = Beans.get(IntentSubscriptionRegistry);
-
-    testee.register(new IntentSubscription({qualifier: {entity: '?'}}, 'subscriber#id', newClient()));
-    expect(testee.subscriptions().length).toBe(1);
-    expect(testee.subscriptions({intent: {type: 'microfrontend'}}).length).toBe(1);
-    expect(testee.subscriptions({intent: {type: 'microfrontend', qualifier: {}}}).length).toBe(1);
-    expect(testee.subscriptions({intent: {type: 'microfrontend', qualifier: {entity: 'product'}}}).length).toBe(1);
-    expect(testee.subscriptions({intent: {type: 'microfrontend', qualifier: {entity: 'customer'}}}).length).toBe(1);
-    expect(testee.subscriptions({intent: {type: 'menu-item'}}).length).toBe(1);
-    expect(testee.subscriptions({intent: {type: 'menu-item', qualifier: {}}}).length).toBe(1);
-    expect(testee.subscriptions({intent: {type: 'menu-item', qualifier: {entity: 'product'}}}).length).toBe(1);
-    expect(testee.subscriptions({intent: {type: 'menu-item', qualifier: {entity: 'customer'}}}).length).toBe(1);
-  });
-
   it('should match subscription {qualifier: {entity: \'*\'}}', () => {
     const testee = Beans.get(IntentSubscriptionRegistry);
 

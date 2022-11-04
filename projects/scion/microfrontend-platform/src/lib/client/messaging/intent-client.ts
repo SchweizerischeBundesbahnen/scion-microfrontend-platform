@@ -128,21 +128,12 @@ export abstract class IntentClient {
    *  });
    * ```
    *
-   * @param  selector - Allows filtering intents. The qualifier allows using wildcards (such as `*` or `?`) to match multiple intents simultaneously.\
-   *         Note that the passed filter is only a filter for intents the application is qualified for, i.e., provides a fulfilling capability visible
-   *         to the sender.
-   *         <p>
-   *         <ul>
-   *           <li>**Asterisk wildcard character (`*`):**\
-   *             <ul>
-   *               <li>If used as qualifier property key, matches intents even if having additional properties. Use it like this: `{'*': '*'}`.</li>
-   *               <li>If used as qualifier property value, requires intents to contain that property, but with any value allowed (except for `null` or `undefined` values).</li>
-   *             </ul>
-   *           </li>
-   *           <li>**Optional wildcard character (`?`):**\
-   *               Is allowed as qualifier property value only and matches intents regardless of having or not having that property.
-   *           </li>
-   *         </ul>
+   * @param  selector - Allows filtering intents. Note that the passed filter is only a filter for intents the application is qualified for, i.e., provides a fulfilling capability visible to the sender.
+   *         In the qualifier of the filter, you can use the asterisk wildcard character (`*`) to match multiple intents simultaneously.
+   *         - Asterisk wildcard character (*)
+   *           Matches intents with such a qualifier property no matter of its value (except `null` or `undefined`). Use it like this: `{property: '*'}`.
+   *         - Partial wildcard (**)
+   *           Matches intents even if having additional properties. Use it like this: `{'*': '*'}`.
    *
    * @return An Observable that emits received intents. It never completes.
    */
@@ -185,8 +176,11 @@ export interface IntentSelector {
    */
   type?: string;
   /**
-   * If specified, filters intents matching the given qualifier. You can use the asterisk wildcard (`*`)
-   * or optional wildcard character (`?`) to match multiple intents.
+   * If specified, filters intents matching the given qualifier. You can use the asterisk wildcard (`*`) to match multiple intents.
+   * - Asterisk wildcard character (*)
+   *   Matches intents with such a qualifier property no matter of its value (except `null` or `undefined`). Use it like this: `{property: '*'}`.
+   * - Partial wildcard (**)
+   *   Matches intents even if having additional properties. Use it like this: `{'*': '*'}`.
    */
   qualifier?: Qualifier;
 }

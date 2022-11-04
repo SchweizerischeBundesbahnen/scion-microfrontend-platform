@@ -946,57 +946,21 @@ describe('Messaging', () => {
     await expectEmissions(intentCaptor).toEqual(['intent 1', 'intent 2']);
   });
 
-  it('should receive an intent for a capability having an exact qualifier', async () => {
+  it(`should receive an intent for a capability having the qualifier {entity: 'person', mode: 'new'}`, async () => {
     await MicrofrontendPlatform.startHost({applications: []});
 
     // Register capability
-    const capabilityId = await Beans.get(ManifestService).registerCapability({type: 'view', qualifier: {entity: 'person', id: '5'}});
+    const capabilityId = await Beans.get(ManifestService).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}});
 
     // Subscribe for intents
     const intentCaptor = new ObserveCaptor(capabilityIdExtractFn);
     Beans.get(IntentClient).observe$<string>().subscribe(intentCaptor);
 
     // Publish the intent
-    await Beans.get(IntentClient).publish({type: 'view', qualifier: {entity: 'person', id: '5'}});
+    await Beans.get(IntentClient).publish({type: 'view', qualifier: {entity: 'person', mode: 'new'}});
 
     // Expect the intent to be received
     await expectEmissions(intentCaptor).toEqual([capabilityId]);
-  });
-
-  it('should receive an intent for a capability having an asterisk qualifier', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    // Register capability
-    const capabilityId = await Beans.get(ManifestService).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}});
-
-    // Subscribe for intents
-    const intentCaptor = new ObserveCaptor(capabilityIdExtractFn);
-    Beans.get(IntentClient).observe$<string>().subscribe(intentCaptor);
-
-    // Publish the intent
-    await Beans.get(IntentClient).publish({type: 'view', qualifier: {entity: 'person', id: '5'}});
-
-    // Expect the intent to be received
-    await expectEmissions(intentCaptor).toEqual([capabilityId]);
-  });
-
-  it('should receive an intent for a capability having an optional qualifier', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    // Register capability
-    const capabilityId = await Beans.get(ManifestService).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}});
-
-    // Publish and receive intent published to {entity: 'person', id: '5'}
-    const intentCaptor1 = new ObserveCaptor(capabilityIdExtractFn);
-    Beans.get(IntentClient).observe$<string>().subscribe(intentCaptor1);
-    await Beans.get(IntentClient).publish({type: 'view', qualifier: {entity: 'person', id: '5'}});
-    await expectEmissions(intentCaptor1).toEqual([capabilityId]);
-
-    // Publish and receive intent published to {entity: 'person'}
-    const intentCaptor2 = new ObserveCaptor(capabilityIdExtractFn);
-    Beans.get(IntentClient).observe$<string>().subscribe(intentCaptor2);
-    await Beans.get(IntentClient).publish({type: 'view', qualifier: {entity: 'person'}});
-    await expectEmissions(intentCaptor2).toEqual([capabilityId]);
   });
 
   it('should transport topic message to subscribed client(s) only', async () => {
@@ -1195,17 +1159,17 @@ describe('Messaging', () => {
   it('should throw if the qualifier of an intent contains wildcard characters', async () => {
     await MicrofrontendPlatform.startHost({applications: []});
 
-    expect(() => Beans.get(IntentClient).publish({type: 'type', qualifier: {entity: 'person', id: '*'}})).toThrowError(/IllegalQualifierError/);
-    expect(() => Beans.get(IntentClient).publish({type: 'type', qualifier: {entity: 'person', id: '?'}})).toThrowError(/IllegalQualifierError/);
-    expect(() => Beans.get(IntentClient).publish({type: 'type', qualifier: {entity: '*', id: '*'}})).toThrowError(/IllegalQualifierError/);
+    expect(() => Beans.get(IntentClient).publish({type: 'type', qualifier: {entity: 'person', mode: '*'}})).toThrowError(/IllegalQualifierError/);
+    expect(() => Beans.get(IntentClient).publish({type: 'type', qualifier: {entity: 'person', mode: '?'}})).toThrowError(/IllegalQualifierError/);
+    expect(() => Beans.get(IntentClient).publish({type: 'type', qualifier: {entity: '*', mode: '*'}})).toThrowError(/IllegalQualifierError/);
   });
 
   it('should throw if the qualifier of an intent request contains wildcard characters', async () => {
     await MicrofrontendPlatform.startHost({applications: []});
 
-    expect(() => Beans.get(IntentClient).request$({type: 'type', qualifier: {entity: 'person', id: '*'}})).toThrowError(/IllegalQualifierError/);
-    expect(() => Beans.get(IntentClient).request$({type: 'type', qualifier: {entity: 'person', id: '?'}})).toThrowError(/IllegalQualifierError/);
-    expect(() => Beans.get(IntentClient).request$({type: 'type', qualifier: {entity: '*', id: '*'}})).toThrowError(/IllegalQualifierError/);
+    expect(() => Beans.get(IntentClient).request$({type: 'type', qualifier: {entity: 'person', mode: '*'}})).toThrowError(/IllegalQualifierError/);
+    expect(() => Beans.get(IntentClient).request$({type: 'type', qualifier: {entity: 'person', mode: '?'}})).toThrowError(/IllegalQualifierError/);
+    expect(() => Beans.get(IntentClient).request$({type: 'type', qualifier: {entity: '*', mode: '*'}})).toThrowError(/IllegalQualifierError/);
   });
 
   it('should prevent overriding platform specific message headers [pub/sub]', async () => {

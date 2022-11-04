@@ -14,6 +14,7 @@ import {Arrays, Maps} from '@scion/toolkit/util';
 import {Qualifier} from '../../platform.model';
 import {ManifestObject, ManifestObjectFilter} from './manifest-object.model';
 import {map} from 'rxjs/operators';
+import {Predicate} from '../message-broker/predicates.util';
 
 /**
  * Provides an in-memory store for provided capabilities and registered intentions.
@@ -42,7 +43,7 @@ export class ManifestObjectStore<T extends ManifestObject> {
    * Removes manifest objects from this store that match the given filter.
    *
    * @param filter - Control which manifest objects to remove by specifying filter criteria which are "AND"ed together.
-   *        Wildcards in the qualifier criterion, if any, are not interpreted as wildcards, but as exact values instead.
+   *        Wildcards in the qualifier criterion, if any, are interpreted as such.
    */
   public remove(filter: ManifestObjectFilter): void {
     const objectsToRemove = this.find(filter);
@@ -54,11 +55,8 @@ export class ManifestObjectStore<T extends ManifestObject> {
    *
    * @param filter - Control which manifest objects to return.
    *        Specified filter criteria are "AND"ed together. If no filter criteria are specified, all objects will be returned.
-   * @param qualifierPredicate - Predicate for testing qualifiers; is used in combination with a qualifier filter.
-   *        If not specifying a predicate, qualifiers will be matched against the specified qualifier filter, supporting
-   *        the asterisk wildcard, but not the optional wildcard character.
    */
-  public find(filter: ManifestObjectFilter, qualifierPredicate?: (testee: Qualifier) => boolean): T[] {
+  public find(filter: ɵManifestObjectFilter): T[] {
     const filterById = filter.id !== undefined;
     const filterByType = filter.type !== undefined;
     const filterByApp = filter.appSymbolicName !== undefined;
@@ -74,11 +72,11 @@ export class ManifestObjectStore<T extends ManifestObject> {
         if (filter.qualifier === undefined) {
           return true;
         }
-        if (qualifierPredicate) {
-          return qualifierPredicate(object.qualifier || {});
+        if (typeof filter.qualifier === 'function') {
+          return filter.qualifier(object.qualifier || {});
         }
 
-        return new QualifierMatcher(filter.qualifier, {evalAsterisk: true, evalOptional: false}).matches(object.qualifier);
+        return new QualifierMatcher(filter.qualifier).matches(object.qualifier);
       });
   }
 
@@ -120,3 +118,11 @@ export class ManifestObjectStore<T extends ManifestObject> {
   }
 }
 
+/**
+ * Like {@link ManifestObjectFilter}, but allows passing a predicate as qualifier filter.
+ *
+ * @internal
+ */
+export interface ɵManifestObjectFilter extends Omit<ManifestObjectFilter, 'qualifier'> {
+  qualifier?: Qualifier | Predicate<Qualifier>;
+}

@@ -653,7 +653,6 @@ test.describe('RouterOutlet', () => {
     // Verify that navigation was successful
     await expect(routerOutletPO).toHaveRouterOutletUrl(getPageUrl({path: Microfrontend2PagePO.PATH, origin: TestingAppOrigins.APP_1}));
 
-    // TODO [MSPI] Can you explain why?
     // Navigate back in the browser
     await Promise.race([
       page.waitForEvent('framenavigated'),

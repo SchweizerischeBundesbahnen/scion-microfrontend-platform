@@ -52,7 +52,7 @@ The _type_ of the intention must exactly match the type of the capability we wan
 
 NOTE: A micro application is implicitly qualified to interact with all its capabilities without declaring an intention.
 
-TIP: Using the asterisk wildcard (`*`) or optional wildcard character (`?`) in the qualifier allows matching multiple capabilities with a single intention declaration.
+TIP: Using the asterisk wildcard (`*`) in the qualifier allows matching multiple capabilities with a single intention declaration.
 
 To learn more about an intention, see chapter <<chapter:intention-api:intention>> in <<chapter:intention-api>>.
 

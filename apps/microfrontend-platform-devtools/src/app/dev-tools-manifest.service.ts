@@ -103,23 +103,14 @@ export class DevToolsManifestService {
   private findFulfillingIntentions$(capability: Capability): Observable<Intention[]> {
     return this._manifestService.lookupIntentions$({type: capability.type})
       .pipe(
-        filterArray(intention => (
-          new QualifierMatcher(intention.qualifier, {evalAsterisk: true, evalOptional: true}).matches(capability.qualifier) ||
-          new QualifierMatcher(capability.qualifier, {evalAsterisk: true, evalOptional: true}).matches(intention.qualifier)
-        )),
+        filterArray(intention => new QualifierMatcher(intention.qualifier).matches(capability.qualifier)),
         filterArray(intention => this.isCapabilityVisibleToApplication(capability, intention.metadata.appSymbolicName)),
       );
   }
 
   private findFulfillingCapabilities$(intention: Intention): Observable<Intention[]> {
-    return this._manifestService.lookupCapabilities$({type: intention.type})
-      .pipe(
-        filterArray(capability => (
-          new QualifierMatcher(intention.qualifier, {evalAsterisk: true, evalOptional: true}).matches(capability.qualifier) ||
-          new QualifierMatcher(capability.qualifier, {evalAsterisk: true, evalOptional: true}).matches(intention.qualifier)
-        )),
-        filterArray(capability => this.isCapabilityVisibleToApplication(capability, intention.metadata.appSymbolicName)),
-      );
+    return this._manifestService.lookupCapabilities$({type: intention.type, qualifier: intention.qualifier})
+      .pipe(filterArray(capability => this.isCapabilityVisibleToApplication(capability, intention.metadata.appSymbolicName)));
   }
 
   private isCapabilityVisibleToApplication(capability: Capability, appSymbolicName: string): boolean {
