@@ -160,10 +160,6 @@ test.describe('Messaging', () => {
       await IntendBasedMessagingSpecs.receiveAndFilterSpec(testingAppPO);
     });
 
-    test('allows receiving intents for a capability which declares wildcards in its qualifier', async ({testingAppPO}) => {
-      await IntendBasedMessagingSpecs.receiveIfMatchingCapabilityWildcardQualifierSpec(testingAppPO);
-    });
-
     test('allows receiving intents for a capability which declares required and optional params', async ({testingAppPO}) => {
       await IntendBasedMessagingSpecs.receiveIfMatchingCapabilityParamsSpec(testingAppPO);
     });

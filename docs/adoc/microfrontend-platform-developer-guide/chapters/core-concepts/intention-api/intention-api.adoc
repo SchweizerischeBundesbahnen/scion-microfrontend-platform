@@ -118,12 +118,7 @@ a| `Dictionary`
 a|
 The qualifier is a dictionary of key-value pairs to differentiate capabilities of the same _type_. The qualifier is like an abstract description of the capability. It should include enough information to uniquely identify the capability.
 
-Intents must exactly match the qualifier of the capability, if any. The capability qualifier allows using wildcards (such as `*` or `?`) to match multiple intents simultaneously.
-
-* *Asterisk wildcard character (`{asterisk}`):* +
-Intents must contain such a property, but any value is allowed (except `null` or `undefined`). Use it like this: `{property: '{asterisk}'}`
-* *Optional wildcard character (`?`):* +
-Intents can contain such a property. Use it like this: `{property: '?'}`.
+Intents must exactly match the qualifier of the capability, if any.
 
 | params
 a| `ParamDefinition[]`
@@ -195,12 +190,10 @@ Qualifies the capability which to interact with.
 
 The qualifier is a dictionary of arbitrary key-value pairs to differentiate capabilities of the same _type_.
 
-The intention must exactly match the qualifier of the capability, if any. The intention qualifier allows using wildcards (such as `*` or `?`) to match multiple capabilities simultaneously.
+The intention must exactly match the qualifier of the capability, if any. The intention qualifier allows using wildcards to match multiple capabilities simultaneously.
 
 * *Asterisk wildcard character (`{asterisk}`):* +
 Matches capabilities with such a qualifier property no matter of its value (except `null` or `undefined`). Use it like this: `{property: '{asterisk}'}`.
-* *Optional wildcard character (`?`):* +
-Matches capabilities regardless of having or not having such a property. Use it like this: `{property: '?'}`.
 * *Partial wildcard (`{asterisk}{asterisk}`):* +
 Matches capabilities even if having additional properties. Use it like this: `{'{asterisk}': '{asterisk}'}`.
 

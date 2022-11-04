@@ -141,13 +141,7 @@ export interface Capability {
    * The qualifier is a dictionary of arbitrary key-value pairs to differentiate capabilities of the same `type` and is like
    * an abstract description of the capability. It should include enough information to uniquely identify the capability.
    *
-   * Intents must exactly match the qualifier of the capability, if any. The capability qualifier allows using wildcards
-   * (such as `*` or `?`) to match multiple intents simultaneously.
-   *
-   * - **Asterisk wildcard character (`*`):**
-   *   Intents must contain such a property, but any value is allowed (except `null` or `undefined`). Use it like this: `{property: '*'}`
-   * - **Optional wildcard character (?):**\
-   *   Intents can contain such a property. Use it like this: `{property: '?'}`.
+   * Intents must exactly match the qualifier of the capability, if any.
    */
   qualifier?: Qualifier;
   /**
@@ -226,14 +220,12 @@ export interface Intention {
    * The qualifier is a dictionary of arbitrary key-value pairs to differentiate capabilities of the same `type`.
    *
    * The intention must exactly match the qualifier of the capability, if any. The intention qualifier allows using
-   * wildcards (such as `*` or `?`) to match multiple capabilities simultaneously.
+   * wildcards to match multiple capabilities simultaneously.
    *
    * In the intention, the following wildcards are supported:
    * - **Asterisk wildcard character (`*`):**\
    *   Matches capabilities with such a qualifier property no matter of its value (except `null` or `undefined`).
    *   Use it like this: `{property: '*'}`.
-   * - **Optional wildcard character (?):**\
-   *   Matches capabilities regardless of having or not having such a property. Use it like this: `{property: '?'}`.
    * - **Partial wildcard (`**`):**
    *   Matches capabilities even if having additional properties. Use it like this: `{'*': '*'}`.
    */

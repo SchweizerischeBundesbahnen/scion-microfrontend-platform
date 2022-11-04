@@ -184,40 +184,13 @@ test.describe('Manifest Registry', () => {
       const capability3Id = await registratorPO.registerCapability({type: 'type3', qualifier: {key: 'a'}, private: true});
       const capability4Id = await registratorPO.registerCapability({type: 'type4', qualifier: {key: 'b'}, private: true});
       const capability5Id = await registratorPO.registerCapability({type: 'type5', qualifier: {key: 'c'}, private: true});
-      const capability6Id = await registratorPO.registerCapability({type: 'type6', qualifier: {key: '*'}, private: true});
-      const capability7Id = await registratorPO.registerCapability({type: 'type7', qualifier: {key: '?'}, private: true});
-      const capability8Id = await registratorPO.registerCapability({type: 'type8', qualifier: {otherKey: '?'}, private: true});
+      const capability6Id = await registratorPO.registerCapability({type: 'type6', qualifier: {otherKey: 'a'}, private: true});
       await lookupPO.lookup();
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id, capability8Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id]);
 
       // Unregister by qualifier {key: '*'}
       await registratorPO.unregisterCapability({qualifier: {key: '*'}});
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability8Id]);
-    });
-
-    test('should interpret the question mark (?) as value (and not as wildcard) when removing capabilities', async ({testingAppPO}) => {
-      const pagePOs = await testingAppPO.navigateTo({
-        registrator: RegisterCapabilityPagePO,
-        lookup: LookupCapabilityPagePO,
-      }, {queryParams: new Map().set('activatorApiDisabled', true)});
-      const registratorPO = pagePOs.get<RegisterCapabilityPagePO>('registrator');
-      const lookupPO = pagePOs.get<LookupCapabilityPagePO>('lookup');
-
-      // Register capabilities
-      const capability1Id = await registratorPO.registerCapability({type: 'type1', qualifier: undefined, private: true});
-      const capability2Id = await registratorPO.registerCapability({type: 'type2', qualifier: {}, private: true});
-      const capability3Id = await registratorPO.registerCapability({type: 'type3', qualifier: {key: 'a'}, private: true});
-      const capability4Id = await registratorPO.registerCapability({type: 'type4', qualifier: {key: 'b'}, private: true});
-      const capability5Id = await registratorPO.registerCapability({type: 'type5', qualifier: {key: 'c'}, private: true});
-      const capability6Id = await registratorPO.registerCapability({type: 'type6', qualifier: {key: '*'}, private: true});
-      const capability7Id = await registratorPO.registerCapability({type: 'type7', qualifier: {key: '?'}, private: true});
-      const capability8Id = await registratorPO.registerCapability({type: 'type8', qualifier: {otherKey: '?'}, private: true});
-      await lookupPO.lookup();
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id, capability8Id]);
-
-      // Unregister by qualifier {key: '?'}
-      await registratorPO.unregisterCapability({qualifier: {key: '?'}});
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability8Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability6Id]);
     });
 
     test('should allow to unregister all capabilities by `AnyQualifier`', async ({testingAppPO}) => {
@@ -234,11 +207,9 @@ test.describe('Manifest Registry', () => {
       const capability3Id = await registratorPO.registerCapability({type: 'type3', qualifier: {key: 'a'}, private: true});
       const capability4Id = await registratorPO.registerCapability({type: 'type4', qualifier: {key: 'b'}, private: true});
       const capability5Id = await registratorPO.registerCapability({type: 'type5', qualifier: {key: 'c'}, private: true});
-      const capability6Id = await registratorPO.registerCapability({type: 'type6', qualifier: {key: '*'}, private: true});
-      const capability7Id = await registratorPO.registerCapability({type: 'type7', qualifier: {key: '?'}, private: true});
-      const capability8Id = await registratorPO.registerCapability({type: 'type8', qualifier: {otherKey: '?'}, private: true});
+      const capability6Id = await registratorPO.registerCapability({type: 'type6', qualifier: {otherKey: 'a'}, private: true});
       await lookupPO.lookup();
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id, capability8Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id]);
 
       // Unregister by qualifier {'*': '*'}
       await registratorPO.unregisterCapability({qualifier: {'*': '*'}});
@@ -257,20 +228,13 @@ test.describe('Manifest Registry', () => {
       const capability1Id = await registratorPO.registerCapability({type: 'type1', qualifier: undefined, private: true});
       const capability2Id = await registratorPO.registerCapability({type: 'type2', qualifier: {}, private: true});
       const capability3Id = await registratorPO.registerCapability({type: 'type3', qualifier: {key: 'a', otherKey: 'z'}, private: true});
-      const capability4Id = await registratorPO.registerCapability({type: 'type4', qualifier: {key: 'b', otherKey: '*'}, private: true});
-      const capability5Id = await registratorPO.registerCapability({type: 'type5', qualifier: {key: 'c', otherKey: '?'}, private: true});
-      const capability6Id = await registratorPO.registerCapability({type: 'type6', qualifier: {key: '*', otherKey: '*'}, private: true});
-      const capability7Id = await registratorPO.registerCapability({type: 'type7', qualifier: {key: '?', otherKey: '?'}, private: true});
+      const capability4Id = await registratorPO.registerCapability({type: 'type4', qualifier: {key: 'b', otherKey: 'y'}, private: true});
       await lookupPO.lookup();
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id]);
 
       // Unregister by qualifier {key: '*'}
       await registratorPO.unregisterCapability({qualifier: {key: '*'}});
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
-
-      // Unregister by qualifier {key: '?'}
-      await registratorPO.unregisterCapability({qualifier: {key: '?'}});
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id]);
 
       // Unregister by qualifier {'*': '*'}
       await registratorPO.unregisterCapability({qualifier: {'*': '*'}});
@@ -291,26 +255,12 @@ test.describe('Manifest Registry', () => {
       const capability3Id = await registratorPO.registerCapability({type: 'type3', qualifier: {key: 'a'}, private: true});
       const capability4Id = await registratorPO.registerCapability({type: 'type4', qualifier: {key: 'b'}, private: true});
       const capability5Id = await registratorPO.registerCapability({type: 'type5', qualifier: {key: 'c'}, private: true});
-      const capability6Id = await registratorPO.registerCapability({type: 'type6', qualifier: {key: '*'}, private: true});
-      const capability7Id = await registratorPO.registerCapability({type: 'type7', qualifier: {key: '?'}, private: true});
       await lookupPO.lookup();
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id]);
 
       // Unregister by qualifier {key: '*', otherKey: '*'}
       await registratorPO.unregisterCapability({qualifier: {key: '*', otherKey: '*'}});
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
-
-      // Unregister by qualifier {key: '?', otherKey: '*'}
-      await registratorPO.unregisterCapability({qualifier: {key: '?', otherKey: '*'}});
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
-
-      // Unregister by qualifier {key: '*', otherKey: '?'}
-      await registratorPO.unregisterCapability({qualifier: {key: '*', otherKey: '?'}});
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
-
-      // Unregister by qualifier {key: '?', otherKey: '?'}
-      await registratorPO.unregisterCapability({qualifier: {key: '?', otherKey: '?'}});
-      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id, capability6Id, capability7Id]);
+      await expect(await lookupPO.getLookedUpCapabilityIds()).toEqualIgnoreOrder([capability1Id, capability2Id, capability3Id, capability4Id, capability5Id]);
     });
 
     test('should not allow to unregister capabilities from other applications', async ({testingAppPO}) => {
@@ -780,43 +730,15 @@ test.describe('Manifest Registry', () => {
       const intention4Id = await registratorPO.registerIntention({type: 'type4', qualifier: {key: 'b'}});
       const intention5Id = await registratorPO.registerIntention({type: 'type5', qualifier: {key: 'c'}});
       const intention6Id = await registratorPO.registerIntention({type: 'type6', qualifier: {key: '*'}});
-      const intention7Id = await registratorPO.registerIntention({type: 'type7', qualifier: {key: '?'}});
-      const intention8Id = await registratorPO.registerIntention({type: 'type8', qualifier: {otherKey: '?'}});
-      const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*'}});
-      const intention10Id = await registratorPO.registerIntention({type: 'type10', qualifier: {'*': '*', 'key': '*'}});
+      const intention7Id = await registratorPO.registerIntention({type: 'type7', qualifier: {otherKey: 'a'}});
+      const intention8Id = await registratorPO.registerIntention({type: 'type8', qualifier: {'*': '*'}});
+      const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*', 'key': '*'}});
       await lookupPO.lookup();
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id, intention10Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
 
       // Unregister by qualifier {key: '*'}
       await registratorPO.unregisterIntentions({qualifier: {key: '*'}});
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention8Id, intention9Id, intention10Id]);
-    });
-
-    test('should interpret the question mark (?) as value (and not as wildcard) when removing intentions', async ({testingAppPO}) => {
-      const pagePOs = await testingAppPO.navigateTo({
-        registrator: RegisterIntentionPagePO,
-        lookup: LookupIntentionPagePO,
-      }, {queryParams: new Map().set('activatorApiDisabled', true)});
-      const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
-      const lookupPO = pagePOs.get<LookupIntentionPagePO>('lookup');
-
-      // Register intentions
-      const intention1Id = await registratorPO.registerIntention({type: 'type1', qualifier: undefined});
-      const intention2Id = await registratorPO.registerIntention({type: 'type2', qualifier: {}});
-      const intention3Id = await registratorPO.registerIntention({type: 'type3', qualifier: {key: 'a'}});
-      const intention4Id = await registratorPO.registerIntention({type: 'type4', qualifier: {key: 'b'}});
-      const intention5Id = await registratorPO.registerIntention({type: 'type5', qualifier: {key: 'c'}});
-      const intention6Id = await registratorPO.registerIntention({type: 'type6', qualifier: {key: '*'}});
-      const intention7Id = await registratorPO.registerIntention({type: 'type7', qualifier: {key: '?'}});
-      const intention8Id = await registratorPO.registerIntention({type: 'type8', qualifier: {otherKey: '?'}});
-      const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*'}});
-      const intention10Id = await registratorPO.registerIntention({type: 'type10', qualifier: {'*': '*', 'key': '*'}});
-      await lookupPO.lookup();
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id, intention10Id]);
-
-      // Unregister by qualifier {key: '?'}
-      await registratorPO.unregisterIntentions({qualifier: {key: '?'}});
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention8Id, intention9Id, intention10Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention7Id, intention8Id, intention9Id]);
     });
 
     test('should allow to unregister intentions by `AnyQualifier`', async ({testingAppPO}) => {
@@ -834,12 +756,11 @@ test.describe('Manifest Registry', () => {
       const intention4Id = await registratorPO.registerIntention({type: 'type4', qualifier: {key: 'b'}});
       const intention5Id = await registratorPO.registerIntention({type: 'type5', qualifier: {key: 'c'}});
       const intention6Id = await registratorPO.registerIntention({type: 'type6', qualifier: {key: '*'}});
-      const intention7Id = await registratorPO.registerIntention({type: 'type7', qualifier: {key: '?'}});
-      const intention8Id = await registratorPO.registerIntention({type: 'type8', qualifier: {otherKey: '?'}});
-      const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*'}});
-      const intention10Id = await registratorPO.registerIntention({type: 'type10', qualifier: {'*': '*', 'key': '*'}});
+      const intention7Id = await registratorPO.registerIntention({type: 'type7', qualifier: {otherKey: 'a'}});
+      const intention8Id = await registratorPO.registerIntention({type: 'type8', qualifier: {'*': '*'}});
+      const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*', 'key': '*'}});
       await lookupPO.lookup();
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id, intention10Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
 
       // Unregister by qualifier {'*': '*'}
       await registratorPO.unregisterIntentions({qualifier: {'*': '*'}});
@@ -859,21 +780,15 @@ test.describe('Manifest Registry', () => {
       const intention2Id = await registratorPO.registerIntention({type: 'type2', qualifier: {}});
       const intention3Id = await registratorPO.registerIntention({type: 'type3', qualifier: {key: 'a', otherKey: 'z'}});
       const intention4Id = await registratorPO.registerIntention({type: 'type4', qualifier: {key: 'b', otherKey: '*'}});
-      const intention5Id = await registratorPO.registerIntention({type: 'type5', qualifier: {key: 'c', otherKey: '?'}});
-      const intention6Id = await registratorPO.registerIntention({type: 'type6', qualifier: {key: '*', otherKey: '*'}});
-      const intention7Id = await registratorPO.registerIntention({type: 'type7', qualifier: {key: '?', otherKey: '?'}});
-      const intention8Id = await registratorPO.registerIntention({type: 'type8', qualifier: {'*': '*'}});
-      const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*', 'key': '*'}});
+      const intention5Id = await registratorPO.registerIntention({type: 'type5', qualifier: {key: '*', otherKey: '*'}});
+      const intention6Id = await registratorPO.registerIntention({type: 'type6', qualifier: {'*': '*'}});
+      const intention7Id = await registratorPO.registerIntention({type: 'type7', qualifier: {'*': '*', 'key': '*'}});
       await lookupPO.lookup();
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id]);
 
       // Unregister by qualifier {key: '*'}
       await registratorPO.unregisterIntentions({qualifier: {key: '*'}});
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
-
-      // Unregister by qualifier {key: '?'}
-      await registratorPO.unregisterIntentions({qualifier: {key: '?'}});
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id]);
 
       // Unregister by qualifier {'*': '*'}
       await registratorPO.unregisterIntentions({qualifier: {'*': '*'}});
@@ -895,31 +810,18 @@ test.describe('Manifest Registry', () => {
       const intention4Id = await registratorPO.registerIntention({type: 'type4', qualifier: {key: 'b'}});
       const intention5Id = await registratorPO.registerIntention({type: 'type5', qualifier: {key: 'c'}});
       const intention6Id = await registratorPO.registerIntention({type: 'type6', qualifier: {key: '*'}});
-      const intention7Id = await registratorPO.registerIntention({type: 'type7', qualifier: {key: '?'}});
-      const intention8Id = await registratorPO.registerIntention({type: 'type8', qualifier: {'*': '*'}});
-      const intention9Id = await registratorPO.registerIntention({type: 'type9', qualifier: {'*': '*', 'key': '*'}});
+      const intention7Id = await registratorPO.registerIntention({type: 'type7', qualifier: {'*': '*'}});
+      const intention8Id = await registratorPO.registerIntention({type: 'type8', qualifier: {'*': '*', 'key': '*'}});
       await lookupPO.lookup();
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqualIgnoreOrder([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id]);
 
       // Unregister by qualifier {key: '*', otherKey: '*'}
       await registratorPO.unregisterIntentions({qualifier: {key: '*', otherKey: '*'}});
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
-
-      // Unregister by qualifier {key: '?', otherKey: '*'}
-      await registratorPO.unregisterIntentions({qualifier: {key: '?', otherKey: '*'}});
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
-
-      // Unregister by qualifier {key: '*', otherKey: '?'}
-      await registratorPO.unregisterIntentions({qualifier: {key: '*', otherKey: '?'}});
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
-
-      // Unregister by qualifier {key: '?', otherKey: '?'}
-      await registratorPO.unregisterIntentions({qualifier: {key: '?', otherKey: '?'}});
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id, intention9Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention3Id, intention4Id, intention5Id, intention6Id, intention7Id, intention8Id]);
 
       // Unregister by qualifier {'*': '*', 'key': '*'}
       await registratorPO.unregisterIntentions({qualifier: {'*': '*', 'key': '*'}});
-      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention8Id]);
+      await expect(await lookupPO.getLookedUpIntentionIds()).toEqual([intention1Id, intention2Id, intention7Id]);
 
       // Unregister by qualifier {'*': '*'}
       await registratorPO.unregisterIntentions({qualifier: {'*': '*'}});

@@ -9,7 +9,7 @@
  */
 
 import {Capability, Intention, ParamDefinition} from '../../platform.model';
-import {ManifestObjectStore} from './manifest-object-store';
+import {ManifestObjectStore, ɵManifestObjectFilter} from './manifest-object-store';
 import {concatWith, defer, EMPTY, filter, merge, Observable, of, Subject} from 'rxjs';
 import {distinctUntilChanged, expand, mergeMap, take, takeUntil} from 'rxjs/operators';
 import {Intent, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
@@ -60,7 +60,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   public resolveCapabilitiesByIntent(intent: Intent, appSymbolicName: string): Capability[] {
     assertExactQualifier(intent.qualifier);
     const filter: ManifestObjectFilter = {type: intent.type, qualifier: intent.qualifier || {}};
-    return this._capabilityStore.find(filter, capabilityQualifier => new QualifierMatcher(capabilityQualifier, {evalAsterisk: true, evalOptional: true}).matches(intent.qualifier))
+    return this._capabilityStore.find(filter)
       .filter(capability => this.isApplicationQualifiedForCapability(appSymbolicName, capability));
   }
 
@@ -69,11 +69,11 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
    */
   public hasIntention(intent: Intent, appSymbolicName: string): boolean {
     assertExactQualifier(intent.qualifier);
-    const filter: ManifestObjectFilter = {appSymbolicName, type: intent.type, qualifier: intent.qualifier || {}};
+    const filter: ManifestObjectFilter = {appSymbolicName, type: intent.type};
     return (
       Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName) ||
-      this._intentionStore.find(filter, intentionQualifier => new QualifierMatcher(intentionQualifier, {evalAsterisk: true, evalOptional: true}).matches(intent.qualifier)).length > 0 ||
-      this._capabilityStore.find(filter, capabilityQualifier => new QualifierMatcher(capabilityQualifier, {evalAsterisk: true, evalOptional: true}).matches(intent.qualifier)).length > 0
+      this._intentionStore.find({...filter, qualifier: intentionQualifier => new QualifierMatcher(intentionQualifier).matches(intent.qualifier)}).length > 0 ||
+      this._capabilityStore.find({...filter, qualifier: intent.qualifier || {}}).length > 0  // An app has an implicit intention if it provides the capability itself
     );
   }
 
@@ -98,16 +98,25 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
    * Tests whether the given app has declared a matching intention for the given capability.
    */
   private hasIntentionForCapability(appSymbolicName: string, capability: Capability): boolean {
-    const filter: ManifestObjectFilter = {appSymbolicName, type: capability.type, qualifier: capability.qualifier};
-    return this._intentionStore.find(filter, intentionQualifier => new QualifierMatcher(intentionQualifier, {evalAsterisk: true, evalOptional: true}).matches(capability.qualifier)).length > 0;
+    const filter: ɵManifestObjectFilter = {appSymbolicName, type: capability.type, qualifier: intentionQualifier => new QualifierMatcher(intentionQualifier).matches(capability.qualifier)};
+    return this._intentionStore.find(filter).length > 0;
   }
 
   public async registerCapability(capability: Capability, appSymbolicName: string): Promise<string> {
     if (!capability) {
       throw Error('[CapabilityRegisterError] Missing required capability.');
     }
-    if (capability.qualifier && capability.qualifier.hasOwnProperty('*')) {
-      throw Error('[CapabilityRegisterError] Asterisk wildcard (\'*\') not allowed in the qualifier key.');
+    if (capability.qualifier) {
+      if (capability.qualifier.hasOwnProperty('*')) {
+        throw Error('[CapabilityRegisterError] Asterisk wildcard (\'*\') not allowed in the qualifier key.');
+      }
+      if (Object.values(capability.qualifier).some(value => value === '*')) {
+        throw Error('[CapabilityRegisterError] Asterisk wildcard (\'*\') not allowed in the qualifier value. Use required params instead.');
+      }
+      // TODO [#196]: Remove this check
+      if (Object.values(capability.qualifier).some(value => value === '?')) {
+        throw Error('[CapabilityRegisterError] Optional wildcard (\'?\') not allowed in the qualifier value. Use optional params instead.');
+      }
     }
 
     // Let the host app intercept the capability to register.
@@ -136,6 +145,10 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   public registerIntention(intention: Intention, appSymbolicName: string): string {
     if (!intention) {
       throw Error(`[IntentionRegisterError] Missing required intention.`);
+    }
+    // TODO [#196]: Remove this check
+    if (intention.qualifier && Object.values(intention.qualifier).some(value => value === '?')) {
+      throw Error('[IntentionRegisterError] Optional wildcard (\'?\') not allowed in the qualifier value. You should define optional params in the capability instead.');
     }
 
     const intentionToRegister: Intention = {

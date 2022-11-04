@@ -17,18 +17,15 @@ export class QualifierMatcher {
 
   private readonly _pattern: Qualifier;
   private readonly _patternKeys: string[];
-  private readonly _flags: Flags;
 
   /**
    * Constructs a matcher that will match given qualifiers against a pattern.
    *
    * @param pattern - Pattern to match qualifiers. If `null` or `undefined`, uses an empty qualifier pattern.
-   * @param flags   - Controls how to match qualifiers.
    */
-  constructor(pattern: Qualifier | null | undefined, flags: Flags) {
+  constructor(pattern: Qualifier | null | undefined) {
     this._pattern = pattern || {};
     this._patternKeys = Object.keys(this._pattern);
-    this._flags = flags;
   }
 
   /**
@@ -37,7 +34,7 @@ export class QualifierMatcher {
   public matches(qualifier: Qualifier | null | undefined): boolean {
     const testee = qualifier || {};
     const testeeKeys = Object.keys(testee);
-    const {_patternKeys: patternKeys, _pattern: pattern, _flags: flags} = this;
+    const {_patternKeys: patternKeys, _pattern: pattern} = this;
 
     // Test if the testee has no additional entries
     if (!patternKeys.includes('*') && testeeKeys.some(key => !patternKeys.includes(key))) {
@@ -50,10 +47,7 @@ export class QualifierMatcher {
         if (pattern[key] === testee[key]) {
           return true;
         }
-        if (flags.evalOptional && pattern[key] === '?') {
-          return true;
-        }
-        if (flags.evalAsterisk && pattern[key] === '*' && testee[key] !== undefined && testee[key] !== null) {
+        if (pattern[key] === '*' && testee[key] !== undefined && testee[key] !== null) {
           return true;
         }
         return false;
@@ -76,18 +70,4 @@ export function assertExactQualifier(qualifier: Qualifier | null | undefined): v
   if (Object.entries(qualifier).some(([key, value]) => key === '*' || value === '*' || value === '?')) {
     throw Error(`[IllegalQualifierError] Intent qualifier must not contain wildcards. [qualifier='${JSON.stringify(qualifier)}']`);
   }
-}
-
-/**
- * Controls how to match qualifiers.
- */
-export interface Flags {
-  /**
-   * Flag to enable wildcard matching. If `false`, the asterisk wildcard character (`*`) is interpreted as value.
-   */
-  evalAsterisk: boolean;
-  /**
-   * Flag to enable optional qualifier entry matching. If `false`, the question mark wildcard character (`?`) is interpreted as value.
-   */
-  evalOptional: boolean;
 }

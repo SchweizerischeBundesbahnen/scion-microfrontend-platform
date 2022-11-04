@@ -451,7 +451,6 @@ export namespace IntendBasedMessagingSpecs {
       receiver_app4_1: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
       receiver_app4_2: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
       receiver_app4_3: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
-      receiver_app4_4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
     });
 
     const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
@@ -470,23 +469,17 @@ export namespace IntendBasedMessagingSpecs {
     await receiverPO_app4_1.enterIntentSelector('testing', {key1: 'value1', key2: '*'});
     await receiverPO_app4_1.clickSubscribe();
 
-    // receive the intent using qualifier: {key1: 'value1', key2: '*', key3: '?'}
+    // receive the intent using qualifier: {'*': '*'}
     const receiverPO_app4_2 = pagePOs.get<ReceiveMessagePagePO>('receiver_app4_2');
     await receiverPO_app4_2.selectFlavor(MessagingFlavor.Intent);
-    await receiverPO_app4_2.enterIntentSelector('testing', {key1: 'value1', key2: '*', key3: '?'});
+    await receiverPO_app4_2.enterIntentSelector('testing', {'*': '*'});
     await receiverPO_app4_2.clickSubscribe();
 
-    // receive the intent using qualifier: {'*': '*'}
+    // receive the intent using qualifier: undefined
     const receiverPO_app4_3 = pagePOs.get<ReceiveMessagePagePO>('receiver_app4_3');
     await receiverPO_app4_3.selectFlavor(MessagingFlavor.Intent);
-    await receiverPO_app4_3.enterIntentSelector('testing', {'*': '*'});
+    await receiverPO_app4_3.enterIntentSelector('testing');
     await receiverPO_app4_3.clickSubscribe();
-
-    // receive the intent using qualifier: undefined
-    const receiverPO_app4_4 = pagePOs.get<ReceiveMessagePagePO>('receiver_app4_4');
-    await receiverPO_app4_4.selectFlavor(MessagingFlavor.Intent);
-    await receiverPO_app4_4.enterIntentSelector('testing');
-    await receiverPO_app4_4.clickSubscribe();
 
     // issue the intent
     const publisherPO_app3 = pagePOs.get<PublishMessagePagePO>('publisher_app3');
@@ -498,68 +491,6 @@ export namespace IntendBasedMessagingSpecs {
     await receiverPO_app4_1.getFirstMessageOrElseReject();
     await receiverPO_app4_2.getFirstMessageOrElseReject();
     await receiverPO_app4_3.getFirstMessageOrElseReject();
-    await receiverPO_app4_4.getFirstMessageOrElseReject();
-  }
-
-  /**
-   * Tests that intent routing for capabilities declaring wildcard characters works as expected.
-   */
-  export async function receiveIfMatchingCapabilityWildcardQualifierSpec(testingAppPO: TestingAppPO): Promise<void> {
-    const pagePOs = await testingAppPO.navigateTo({
-      managerOutlet: 'about:blank',
-      publisher_app1: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_1},
-      receiver_app3: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_3},
-      receiver_app4: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4},
-    });
-
-    const managerOutlet = pagePOs.get<BrowserOutletPO>('managerOutlet');
-
-    // register the intention
-    const intentionManagerPO_app1 = await managerOutlet.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1});
-    await intentionManagerPO_app1.registerIntention({type: 'testing', qualifier: {'*': '*'}});
-
-    // register the capability
-    // app-3: {key1: 'value1', key2: '*'}
-    // app-4: {key1: 'value1', key2: '?'}
-    const capabilityManagerPO_app3 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3});
-    await capabilityManagerPO_app3.registerCapability({type: 'testing', qualifier: {key1: 'value1', key2: '*'}, private: false});
-
-    const capabilityManagerPO_app4 = await managerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_4});
-    await capabilityManagerPO_app4.registerCapability({type: 'testing', qualifier: {key1: 'value1', key2: '?'}, private: false});
-
-    // receive the intent in app-3
-    const receiverPO_app3 = pagePOs.get<ReceiveMessagePagePO>('receiver_app3');
-    await receiverPO_app3.selectFlavor(MessagingFlavor.Intent);
-    await receiverPO_app3.clickSubscribe();
-
-    // receive the intent in app-4
-    const receiverPO_app4 = pagePOs.get<ReceiveMessagePagePO>('receiver_app4');
-    await receiverPO_app4.selectFlavor(MessagingFlavor.Intent);
-    await receiverPO_app4.clickSubscribe();
-
-    // issue the intent: {key1: 'value1', key2: 'value2'}
-    const publisherPO_app1 = pagePOs.get<PublishMessagePagePO>('publisher_app1');
-    await publisherPO_app1.selectFlavor(MessagingFlavor.Intent);
-    await publisherPO_app1.enterIntent('testing', {key1: 'value1', key2: 'value2'});
-    await publisherPO_app1.clickPublish();
-
-    // assert receiving the intent
-    await expect(await (await receiverPO_app3.getFirstMessageOrElseReject()).getIntentQualifier()).toEqual({'key1': 'value1', 'key2': 'value2'});
-    await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentQualifier()).toEqual({'key1': 'value1', 'key2': 'value2'});
-
-    await receiverPO_app3.clickClearMessages();
-    await receiverPO_app4.clickClearMessages();
-
-    // issue the intent: {key1: 'value1'}
-    await publisherPO_app1.selectFlavor(MessagingFlavor.Intent);
-    await publisherPO_app1.enterIntent('testing', {key1: 'value1'});
-    await publisherPO_app1.clickPublish();
-
-    // assert receiving the intent
-    await expect(receiverPO_app3.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
-    await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentQualifier()).toEqual({'key1': 'value1'});
-    await receiverPO_app3.clickClearMessages();
-    await receiverPO_app4.clickClearMessages();
   }
 
   /**

@@ -47,7 +47,7 @@ export class IntentSubscription extends MessageSubscription {
     if (this.selector.type && this.selector.type !== intent.type) {
       return false;
     }
-    if (this.selector.qualifier && !new QualifierMatcher(this.selector.qualifier, {evalAsterisk: true, evalOptional: true}).matches(intent.qualifier)) {
+    if (this.selector.qualifier && !new QualifierMatcher(this.selector.qualifier).matches(intent.qualifier)) {
       return false;
     }
     return true;

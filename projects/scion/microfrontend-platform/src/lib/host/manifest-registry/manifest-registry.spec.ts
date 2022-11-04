@@ -37,10 +37,10 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(() => Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app')).toThrowError(/IllegalQualifierError/);
+      expect(() => Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toThrowError(/IllegalQualifierError/);
     });
 
-    it(`should have an implicit intention for a capability having an exact qualifier ({entity: 'person', id: '5'})`, async () => {
+    it(`should have an implicit intention for a capability having the qualifier ({entity: 'person', mode: 'new'})`, async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
         applications: [
@@ -50,67 +50,21 @@ describe('ManifestRegistry', () => {
       });
 
       // Register capability
-      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1');
+      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1');
 
       // Expect app-1 to have an implicit intention because providing the capability
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
 
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '999'}}, 'app-1')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'edit'}}, 'app-1')).toBeFalse();
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBeFalse();
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBeFalse();
 
       // Expect app-2 to not have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBeFalse();
     });
 
-    it(`should have an implicit intention for a capability having an asterisk wildcard qualifier ({entity: 'person', id: '*'})`, async () => {
-      await MicrofrontendPlatform.startHost({
-        host: {symbolicName: 'host-app'},
-        applications: [
-          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
-          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
-        ],
-      });
-
-      // Register capability
-      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
-
-      // Expect app-1 to have an implicit intention because providing the capability
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1')).toBeTrue();
-
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toBeFalse();
-
-      // Expect app-2 to not have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toBeFalse();
-    });
-
-    it(`should have an implicit intention for a capability having an optional qualifier ({entity: 'person', id: '?'})`, async () => {
-      await MicrofrontendPlatform.startHost({
-        host: {symbolicName: 'host-app'},
-        applications: [
-          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
-          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
-        ],
-      });
-
-      // Register capability
-      await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'app-1');
-
-      // Expect app-1 to have an implicit intention because providing the capability
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1')).toBeTrue();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBeTrue();
-
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toBeFalse();
-
-      // Expect app-2 to not have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toBeFalse();
-    });
-
-    it(`should match an intention having an exact qualifier ({entity: 'person', id: '5'})`, async () => {
+    it(`should match an intention having an exact qualifier ({entity: 'person', mode: 'new'})`, async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
         applications: [
@@ -120,21 +74,21 @@ describe('ManifestRegistry', () => {
       });
 
       // Register intention
-      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1');
+      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1');
 
       // Expect app-1 to have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
 
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '999'}}, 'app-1')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'edit'}}, 'app-1')).toBeFalse();
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBeFalse();
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBeFalse();
 
       // Expect app-2 to not have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBeFalse();
     });
 
-    it(`should match an intention having an asterisk wildcard qualifier ({entity: 'person', id: '*'})`, async () => {
+    it(`should match an intention having an asterisk wildcard qualifier ({entity: 'person', mode: '*'})`, async () => {
       await MicrofrontendPlatform.startHost({
         host: {symbolicName: 'host-app'},
         applications: [
@@ -144,17 +98,17 @@ describe('ManifestRegistry', () => {
       });
 
       // Register intention
-      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
+      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'app-1');
 
       // Expect app-1 to have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
 
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBeFalse();
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBeFalse();
 
       // Expect app-2 to not have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBeFalse();
     });
 
     it(`should match an intention having an any-more wildcard (**) qualifier ({entity: 'person', '*': '*'})`, async () => {
@@ -167,41 +121,18 @@ describe('ManifestRegistry', () => {
       });
 
       // Register intention
-      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {'entity': 'person', '*': '*'}}, 'app-1');
+      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'app-1');
 
       // Expect app-1 to have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
 
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBeTrue();
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBeTrue();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBeTrue();
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'company'}}, 'app-1')).toBeFalse();
 
       // Expect app-2 to not have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toBeFalse();
-    });
-
-    it(`should match an intention having an optional wildcard (?) qualifier ({entity: 'person', id: '?'})`, async () => {
-      await MicrofrontendPlatform.startHost({
-        host: {symbolicName: 'host-app'},
-        applications: [
-          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
-          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
-        ],
-      });
-
-      // Register intention
-      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'app-1');
-
-      // Expect app-1 to have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1')).toBeTrue();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBeTrue();
-
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toBeFalse();
-
-      // Expect app-2 to not have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBeFalse();
     });
   });
 
@@ -213,12 +144,12 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(() => Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'host-app')).toThrowError(/IllegalQualifierError/);
+      expect(() => Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toThrowError(/IllegalQualifierError/);
     });
 
     describe('implicit intention', () => {
 
-      it('should resolve to own private capability having an exact qualifier', async () => {
+      it(`should resolve to own private capability having the qualifier ({entity: 'person', mode: 'new'})`, async () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [
@@ -228,57 +159,15 @@ describe('ManifestRegistry', () => {
         });
 
         // Register capability
-        const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1');
+        const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1');
 
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '999'}}, 'app-1')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'edit'}}, 'app-1')).toEqual([]);
         expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toEqual([]);
         expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toEqual([]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toEqual([]);
 
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toEqual([]);
-      });
-
-      it('should resolve to own private capability having an asterisk wildcard (*) in the qualifier', async () => {
-        await MicrofrontendPlatform.startHost({
-          host: {symbolicName: 'host-app'},
-          applications: [
-            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
-            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
-          ],
-        });
-
-        // Register capability
-        const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-1');
-
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '999'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toEqual([]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toEqual([]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toEqual([]);
-
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toEqual([]);
-      });
-
-      it('should resolve to own private capability having an optional wildcard (?) in the qualifier', async () => {
-        await MicrofrontendPlatform.startHost({
-          host: {symbolicName: 'host-app'},
-          applications: [
-            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
-            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
-          ],
-        });
-
-        // Register capability
-        const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'app-1');
-
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '999'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person'}}, 'app-1').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toEqual([]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5', other: 'property'}}, 'app-1')).toEqual([]);
-
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toEqual([]);
       });
 
       it('should not resolve to private capabilities of other applications', async () => {
@@ -291,18 +180,18 @@ describe('ManifestRegistry', () => {
         });
 
         // Register capabilities of app-1
-        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id1'}, private: true}, 'app-1');
-        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id2'}, private: true}, 'app-1');
-        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id3'}, private: true}, 'app-1');
+        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}, private: true}, 'app-1');
+        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'edit'}, private: true}, 'app-1');
+        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'delete'}, private: true}, 'app-1');
 
         // Register capabilities of app-2 (public, private, implicit-private)
-        const capabilityId1 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id1'}, private: false}, 'app-2');
-        const capabilityId2 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id2'}, private: true}, 'app-2');
-        const capabilityId3 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id3'}}, 'app-2');
+        const capabilityId1 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}, private: false}, 'app-2');
+        const capabilityId2 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'edit'}, private: true}, 'app-2');
+        const capabilityId3 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'delete'}}, 'app-2');
 
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id1'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId1]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id2'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId2]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id3'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId3]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId1]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'edit'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId2]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'delete'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId3]);
       });
 
       it('should not resolve to public capabilities of other applications', async () => {
@@ -315,24 +204,24 @@ describe('ManifestRegistry', () => {
         });
 
         // Register capabilities of app-1
-        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id1'}, private: false}, 'app-1');
-        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id2'}, private: false}, 'app-1');
-        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id3'}, private: false}, 'app-1');
+        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}, private: false}, 'app-1');
+        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'edit'}, private: false}, 'app-1');
+        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'delete'}, private: false}, 'app-1');
 
         // Register capabilities of app-2 (public, private, implicit-private)
-        const capabilityId1 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id1'}, private: false}, 'app-2');
-        const capabilityId2 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id2'}, private: true}, 'app-2');
-        const capabilityId3 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'id3'}}, 'app-2');
+        const capabilityId1 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}, private: false}, 'app-2');
+        const capabilityId2 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'edit'}, private: true}, 'app-2');
+        const capabilityId3 = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'delete'}}, 'app-2');
 
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id1'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId1]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id2'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId2]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'id3'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId3]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId1]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'edit'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId2]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'delete'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId3]);
       });
     });
 
     describe('explicit intention', () => {
 
-      it('should resolve to public foreign capability having an exact qualifier', async () => {
+      it(`should resolve to public foreign capability having the qualifier ({entity: 'person', mode: 'new'})`, async () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [
@@ -342,49 +231,12 @@ describe('ManifestRegistry', () => {
         });
 
         // Register capability of app-1
-        const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '5'}, private: false}, 'app-1');
+        const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}, private: false}, 'app-1');
 
         // Register intention of app-2
-        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2');
+        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2');
 
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-      });
-
-      it('should resolve to public foreign capability having an asterisk wildcard (*) in the qualifier', async () => {
-        await MicrofrontendPlatform.startHost({
-          host: {symbolicName: 'host-app'},
-          applications: [
-            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
-            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
-          ],
-        });
-
-        // Register capability of app-1
-        const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '*'}, private: false}, 'app-1');
-
-        // Register intention of app-2
-        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '*'}}, 'app-2');
-
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-      });
-
-      it('should resolve to public foreign capability having an optional wildcard (?) in the qualifier', async () => {
-        await MicrofrontendPlatform.startHost({
-          host: {symbolicName: 'host-app'},
-          applications: [
-            {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
-            {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
-          ],
-        });
-
-        // Register capability of app-1
-        const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: '?'}, private: false}, 'app-1');
-
-        // Register intention of app-2
-        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: '?'}}, 'app-2');
-
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: '5'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([capabilityId]);
       });
 
       it('should resolve to public (but not private) capabilities of other apps', async () => {
@@ -397,18 +249,18 @@ describe('ManifestRegistry', () => {
         });
 
         // Register capabilities of app-1
-        const publicCapabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'public'}, private: false}, 'app-1');
-        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'private'}, private: true}, 'app-1');
-        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', id: 'implicit-private'}}, 'app-1');
+        const publicCapabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'public'}, private: false}, 'app-1');
+        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'private'}, private: true}, 'app-1');
+        await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'implicit-private'}}, 'app-1');
 
         // Register intentions of app-2
-        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: 'public'}}, 'app-2');
-        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: 'private'}}, 'app-2');
-        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', id: 'implicit-private'}}, 'app-2');
+        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: 'public'}}, 'app-2');
+        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: 'private'}}, 'app-2');
+        Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: 'implicit-private'}}, 'app-2');
 
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'public'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([publicCapabilityId]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'private'}}, 'app-2')).toEqual([]);
-        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', id: 'implicit-private'}}, 'app-2')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'public'}}, 'app-2').map(capabilityIdExtractFn)).toEqual([publicCapabilityId]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'private'}}, 'app-2')).toEqual([]);
+        expect(Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: 'implicit-private'}}, 'app-2')).toEqual([]);
       });
     });
   });
@@ -419,7 +271,34 @@ describe('ManifestRegistry', () => {
       applications: [],
     });
 
-    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {'entity': 'person', '*': '*'}}, 'host-app')).toBeRejectedWithError(`[CapabilityRegisterError] Asterisk wildcard ('*') not allowed in the qualifier key.`);
+    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'host-app')).toBeRejectedWithError(`[CapabilityRegisterError] Asterisk wildcard ('*') not allowed in the qualifier key.`);
+  });
+
+  it('should not allow registering a capability using the asterisk wildcard (*) in its qualifier', async () => {
+    await MicrofrontendPlatform.startHost({
+      host: {symbolicName: 'host-app'},
+      applications: [],
+    });
+
+    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toBeRejectedWithError(`[CapabilityRegisterError] Asterisk wildcard ('*') not allowed in the qualifier value. Use required params instead.`);
+  });
+
+  it('should not allow registering a capability using the optional wildcard (?) in its qualifier', async () => {
+    await MicrofrontendPlatform.startHost({
+      host: {symbolicName: 'host-app'},
+      applications: [],
+    });
+
+    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: '?'}}, 'host-app')).toBeRejectedWithError(`[CapabilityRegisterError] Optional wildcard ('?') not allowed in the qualifier value. Use optional params instead.`);
+  });
+
+  it('should not allow registering an intention using the optional wildcard (?) in its qualifier', async () => {
+    await MicrofrontendPlatform.startHost({
+      host: {symbolicName: 'host-app'},
+      applications: [],
+    });
+
+    await expect(() => Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: '?'}}, 'host-app')).toThrowError(`[IntentionRegisterError] Optional wildcard ('?') not allowed in the qualifier value. You should define optional params in the capability instead.`);
   });
 
   describe('Capability Params', () => {

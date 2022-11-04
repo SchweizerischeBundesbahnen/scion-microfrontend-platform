@@ -148,7 +148,7 @@ export class ManifestService implements Initializer {
   /**
    * Registers the given intention, allowing the application to interact with public capabilities matching the intention.
    *
-   * The intention can match multiple capabilities by using wildcards (such as `*` or `?`) in the qualifier.
+   * The intention can match multiple capabilities by using the asterisk wildcard in the qualifier.
    *
    * <strong>This operation requires that the 'Intention Registration API' is enabled for your application.</strong>
    *
