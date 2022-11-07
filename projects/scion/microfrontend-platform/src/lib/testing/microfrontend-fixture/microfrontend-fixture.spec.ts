@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -168,7 +168,14 @@ describe('MicrofrontendFixture', () => {
 
   it('should allow passing arguments to the script', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    const args = {stringArg: 'value1', numberArg: 123, booleanArg: true, objectArg: {key: 'value'}};
+    const args = {
+      stringArg: 'value1',
+      numberArg: 123,
+      booleanArg: true,
+      objectArg: {key: 'value'},
+      mapArg: new Map().set('key', 'value'),
+      setArg: new Set().add('value1').add('value2')
+    };
     await fixture.insertIframe().loadScript('./lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_11', args);
 
     const captor = new ObserveCaptor();

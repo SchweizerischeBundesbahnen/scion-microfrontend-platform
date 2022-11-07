@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -233,7 +233,6 @@ export class MicrofrontendFixture {
   }
 
   private createHtmlToInvokeScript(scriptPath: string, scriptMethod: string, args: Dictionary, channels: MessageChannels): string {
-    const jsonArgs = JSON.stringify(args);
     return `
         <html>
           <head>
@@ -255,13 +254,32 @@ export class MicrofrontendFixture {
                     complete: () => window.parent.postMessage({ channel: '${channels.complete}'}, window.origin),
                   };
                   try {
+                    const args = fromJson('${toJson(args)}');
+                    
                     // Execute the script.
-                    await window['${WEBPACK_SCRIPT_CONTEXT}']('${scriptPath}')['${scriptMethod}'](JSON.parse('${jsonArgs}'), observer);
+                    await window['${WEBPACK_SCRIPT_CONTEXT}']('${scriptPath}')['${scriptMethod}'](args, observer);
                     // Signal script execution completed.
                     window.parent.postMessage({ channel: '${channels.load}'}, window.origin);
                   } 
                   catch (error) {
                     observer.error(error);  
+                  }
+                  
+                  /**
+                   * Unmarshalls given JSON, converting custom {Map} and {Set} objects back to the JavaScript data type.
+                   * 
+                   * @see toJson
+                   */
+                  function fromJson(json) {
+                    return JSON.parse(json, (key, value) => {
+                      if (value?.__type === 'Map' && Array.isArray(value.__value)) {
+                        return new Map(value.__value);
+                      }
+                      if (value?.__type === 'Set' && Array.isArray(value.__value)) {
+                        return new Set(value.__value);
+                      }
+                      return value;
+                    });
                   }
                 })();
             </script>
@@ -271,6 +289,27 @@ export class MicrofrontendFixture {
             ${scriptPath}#${scriptMethod}
           </body>
         </html>`;
+
+    /**
+     * Returns the JSON representation of the given dictionary.
+     *
+     * Note that JavaScript {Map} and {Set} are marshalled to custom objects since not supported by JavaScript JSON serialization.
+     *
+     * @see fromJson
+     */
+    function toJson(dictionary: Dictionary): string {
+      return JSON.stringify(dictionary, (key, value) => {
+        // Convert a {Map} to a custom map object of the form `{__type: 'Map', __value: [...[key, value]]}`.
+        if (value instanceof Map) {
+          return {__type: 'Map', __value: [...value]};
+        }
+        // Convert a {Set} to a custom set object of the form `{__type: 'Set', __value: [...values]}`.
+        if (value instanceof Set) {
+          return {__type: 'Set', __value: [...value]};
+        }
+        return value;
+      });
+    }
   }
 }
 
