@@ -686,4 +686,26 @@ describe('ManifestRegistry', () => {
     const actual = (await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({type: 'testee'})))[0];
     expect(actual.metadata.id).toEqual('1');
   });
+
+  it('should use a unique identifier for capability ID', async () => {
+    await MicrofrontendPlatform.startHost({
+      host: {symbolicName: 'host-app'},
+      applications: [],
+    });
+
+    const id1 = await Beans.get(ManifestRegistry).registerCapability({type: 'testee'}, 'host-app');
+    const id2 = await Beans.get(ManifestRegistry).registerCapability({type: 'testee'}, 'host-app');
+    expect(id1).not.toEqual(id2);
+  });
+
+  it('should use a unique identifier for intention ID', async () => {
+    await MicrofrontendPlatform.startHost({
+      host: {symbolicName: 'host-app'},
+      applications: [],
+    });
+
+    const id1 = Beans.get(ManifestRegistry).registerIntention({type: 'testee'}, 'host-app');
+    const id2 = Beans.get(ManifestRegistry).registerIntention({type: 'testee'}, 'host-app');
+    expect(id1).not.toEqual(id2);
+  });
 });
