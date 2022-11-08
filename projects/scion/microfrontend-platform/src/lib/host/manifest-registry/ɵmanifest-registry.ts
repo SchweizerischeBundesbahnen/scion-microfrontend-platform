@@ -9,7 +9,6 @@
  */
 
 import {Capability, Intention, ParamDefinition} from '../../platform.model';
-import {sha256} from 'js-sha256';
 import {ManifestObjectStore} from './manifest-object-store';
 import {concatWith, defer, EMPTY, filter, merge, of, Subject} from 'rxjs';
 import {distinctUntilChanged, expand, mergeMap, take, takeUntil} from 'rxjs/operators';
@@ -26,6 +25,7 @@ import {Logger, LoggingContext} from '../../logger';
 import {ManifestObjectFilter} from './manifest-object.model';
 import {ClientRegistry} from '../client-registry/client.registry';
 import {CapabilityInterceptor} from './capability-interceptors';
+import {UUID} from '@scion/toolkit/uuid';
 
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
@@ -113,8 +113,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
       optionalParams: undefined,
       private: capability.private ?? true,
       metadata: {
-        // use the first 7 digits of the capability hash as capability id
-        id: sha256(JSON.stringify({application: appSymbolicName, type: capability.type, ...capability.qualifier})).substring(0, 7),
+        id: UUID.randomUUID(),
         appSymbolicName: appSymbolicName,
       },
     });
@@ -133,19 +132,17 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
       throw Error(`[IntentionRegisterError] Missing required intention.`);
     }
 
-    // use the first 7 digits of the intention hash as intention id
-    const intentionId = sha256(JSON.stringify({application: appSymbolicName, type: intention.type, ...intention.qualifier})).substring(0, 7);
     const intentionToRegister: Intention = {
       ...intention,
       metadata: {
-        id: intentionId,
+        id: UUID.randomUUID(),
         appSymbolicName: appSymbolicName,
       },
     };
 
     // Register the intention.
     this._intentionStore.add(intentionToRegister);
-    return intentionId;
+    return intentionToRegister.metadata!.id;
   }
 
   private unregisterIntention(appSymbolicName: string, filter: ManifestObjectFilter): void {
@@ -302,7 +299,6 @@ export namespace ManifestRegistryTopics {
   export const UnregisterCapabilities = 'ɵUNREGISTER_CAPABILITIES';
   export const RegisterIntention = 'ɵREGISTER_INTENTION';
   export const UnregisterIntentions = 'ɵUNREGISTER_INTENTIONS';
-  export const LookupPlatformVersion = 'ɵLOOKUP_PLATFORM_VERSION';
 
   export function platformVersion(appSymbolicName: string): string {
     return `ɵapplication/${appSymbolicName}/platform/version`;
