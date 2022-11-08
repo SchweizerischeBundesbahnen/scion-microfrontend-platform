@@ -1,4 +1,4 @@
-import {Capability, CapabilityInterceptor, IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatform} from '@scion/microfrontend-platform';
+import {Capability, CapabilityInterceptor, Intent, IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatform} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 `
@@ -24,10 +24,10 @@ import {Beans} from '@scion/toolkit/bean-manager';
         "entity": "product"
       }
       "params": [
-        {"name":"productId", "required": true},
+        {"name":"id", "required": true},
       ],
       "properties": {
-        "path": "/products/:productId",
+        "path": "/products/:id",
       }
     }
   ],
@@ -46,16 +46,17 @@ import {Beans} from '@scion/toolkit/bean-manager';
 `
 // tag::capability-declaration[]
 {
-  "description": "Shows the product microfrontend.",
-  "type": "microfrontend",
+  "description": "Sensor to adjust the room temperature in the kitchen.", 
+  "type": "temperature",
   "qualifier": {
-    "entity": "product"
+    "room": "kitchen"
   },
   "params": [
-    {"name":"productId", "required": true},
+    {"name":"authorization", "required": false},
   ],
+  "private": false,
   "properties": {
-    "path": "/products/:productId",
+    "floor": "first floor",
   }
 }
 // end::capability-declaration[]
@@ -64,9 +65,9 @@ import {Beans} from '@scion/toolkit/bean-manager';
 `
 // tag::intention-declaration[]
 {
-  "type": "microfrontend",
+  "type": "temperature",
   "qualifier": {
-    "entity": "product"
+    "room": "kitchen"
   }
 }
 // end::intention-declaration[]
@@ -75,8 +76,8 @@ import {Beans} from '@scion/toolkit/bean-manager';
 {
 // tag::intent-handling[]
   const selector: IntentSelector = {
-    type: 'wizard',
-    qualifier: {process: 'checkout'},
+    type: 'temperature',
+    qualifier: {room: 'kitchen'},
   };
 
   Beans.get(IntentClient).observe$(selector).subscribe((message: IntentMessage) => {
@@ -86,22 +87,26 @@ import {Beans} from '@scion/toolkit/bean-manager';
 }
 
 {
-// tag::issue-intent[]
-  Beans.get(IntentClient).publish({
-    type: 'wizard',
-    qualifier: {process: 'checkout'},
-  });
-// end::issue-intent[]
+// tag::publish-intent[]
+  const intent: Intent = {
+    type: 'temperature',
+    qualifier: {room: 'kitchen'},
+  };
+
+  Beans.get(IntentClient).publish(intent, '22°C');
+// end::publish-intent[]
 }
 
 {
-// tag::issue-intent-with-params[]
-  Beans.get(IntentClient).publish({
-    type: 'wizard',
-    qualifier: {process: 'checkout'},
-    params: new Map().set('correlationId', '2b504c06-f38d-4c65-b96b-d683742b6f61'),
-  });
-// end::issue-intent-with-params[]
+// tag::publish-intent-with-params[]
+  const intent: Intent = {
+    type: 'temperature',
+    qualifier: {room: 'kitchen'},
+    params: new Map().set('authorization', 'Bearer <token>')
+  };
+
+  Beans.get(IntentClient).publish(intent, '22°C');
+// end::publish-intent-with-params[]
 }
 
 {

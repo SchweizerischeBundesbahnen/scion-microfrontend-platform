@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -11,6 +11,7 @@
 import {Observable, Subscription} from 'rxjs';
 import {Intent, IntentMessage, TopicMessage} from '../../messaging.model';
 import {Qualifier} from '../../platform.model';
+import {PublishOptions, RequestOptions} from './publish-options';
 
 /**
  * Allows sending and receiving intents between microfrontends across origins.
@@ -30,6 +31,14 @@ import {Qualifier} from '../../platform.model';
  * In intent-based communication, the destination are capabilities, formulated in an abstract way, consisting of a a type, and optionally
  * a qualifier. The type categorizes a capability in terms of its functional semantics. A capability may also define a qualifier to
  * differentiate the different capabilities of the same type. The type is a string literal and the qualifier a dictionary of key-value pairs.
+ *
+ * ### Retained Intents
+ * You can mark an intent as "retained" for helping newly subscribed clients to get the last intent published for a capability immediately upon
+ * subscription. The broker stores one retained intent per capability, i.e., a later sent retained intent will replace a previously sent retained
+ * intent. To delete a retained intent, send a retained intent without payload to the same destination.
+ *
+ * ### Retained Request
+ * Unlike retained intents, retained requests are not replaced by later retained requests/intents and remain in the broker until the requestor unsubscribes.
  *
  * ### Request-Response Messaging
  * Sometimes it is useful to initiate a request-response communication to wait for a response. Unlike with fire-and-forget intents, a temporary
@@ -53,6 +62,10 @@ export abstract class IntentClient {
    *
    * A micro application is implicitly qualified to interact with capabilities that it provides; thus, it must not declare an intention.
    *
+   * An intent can be marked as "retained" by setting the {@link PublishOptions.retain} flag to `true`. It instructs the broker to store this intent and
+   * deliver it to new subscribers, even if they subscribe after the intent has been published. The broker stores one retained intent per capability. To
+   * delete a retained intent, send a retained intent without payload. Deletion intents are not transported to subscribers.
+   *
    * @param  intent - Describes the intent. The qualifier, if any, must be exact, thus not contain wildcards.
    * @param  body - Specifies optional transfer data to be carried along with the intent.
    *         It can be any object which is serializable with the structured clone algorithm.
@@ -60,7 +73,7 @@ export abstract class IntentClient {
    * @return A Promise that resolves when dispatched the intent, or that rejects if the intent could not be dispatched,
    *         e.g., if missing the intention declaration, or because no application is registered to handle the intent.
    */
-  public abstract publish<T = any>(intent: Intent, body?: T, options?: IntentOptions): Promise<void>;
+  public abstract publish<T = any>(intent: Intent, body?: T, options?: PublishOptions): Promise<void>;
 
   /**
    * Sends an intent and receives one or more replies.
@@ -71,16 +84,21 @@ export abstract class IntentClient {
    *
    * A micro application is implicitly qualified to interact with capabilities that it provides; thus, it must not declare an intention.
    *
+   * A request can be marked as "retained" by setting the {@link RequestOptions.retain} flag to `true`. It instructs the broker to store this request and
+   * deliver it to new subscribers, even if they subscribe after the request has been sent. Retained requests are not replaced by later retained requests/
+   * intents and remain in the broker until the requestor unsubscribes.
+   *
+   * If not marking the request as "retained", at least one subscriber must be subscribed to the intent. Otherwise, the request is rejected.
+   *
    * @param  intent - Describes the intent. The qualifier, if any, must be exact, thus not contain wildcards.
    * @param  body - Specifies optional transfer data to be carried along with the intent.
    *         It can be any object which is serializable with the structured clone algorithm.
    * @param  options - Controls how to send the request and allows setting request headers.
-   * @return An Observable that emits when receiving a reply. It never completes unless the intent handler sets the status code {@link ResponseStatusCodes.TERMINAL}
+   * @return An Observable that emits when receiving a reply. It never completes unless the replier sets the status code {@link ResponseStatusCodes.TERMINAL}
    *         in the {@link MessageHeaders.Status} message header. Then, the Observable completes immediately after emitted the reply.
-   *         The Observable errors if the intent could not be dispatched or if no replier is currently available to handle the intent. It will also error if the
-   *         intent handler sets a status code greater than or equal to 400, e.g., {@link ResponseStatusCodes.ERROR}.
+   *         The Observable errors if the request could not be dispatched. It will also error if the replier sets a status code greater than or equal to 400, e.g., {@link ResponseStatusCodes.ERROR}.
    */
-  public abstract request$<T>(intent: Intent, body?: any, options?: IntentOptions): Observable<TopicMessage<T>>;
+  public abstract request$<T>(intent: Intent, body?: any, options?: RequestOptions): Observable<TopicMessage<T>>;
 
   /**
    * Receives an intent when some micro application wants to collaborate with this micro application.
@@ -96,21 +114,23 @@ export abstract class IntentClient {
    *
    * ```typescript
    *  const selector: IntentSelector = {
-   *    type: 'auth',
-   *    qualifier: {entity: 'user-access-token'},
+   *    type: 'temperature',
+   *    qualifier: {room: 'kitchen'},
    *  };
    *
    *  Beans.get(IntentClient).observe$(selector).subscribe((request: IntentMessage) => {
    *    const replyTo = request.headers.get(MessageHeaders.ReplyTo);
-   *    authService.userAccessToken$
+   *    sensor$
    *      .pipe(takeUntilUnsubscribe(replyTo))
-   *      .subscribe(token => {
-   *        Beans.get(MessageClient).publish(replyTo, token);
+   *      .subscribe(temperature => {
+   *        Beans.get(MessageClient).publish(replyTo, `${temperature}°C`);
    *      });
    *  });
    * ```
    *
    * @param  selector - Allows filtering intents. The qualifier allows using wildcards (such as `*` or `?`) to match multiple intents simultaneously.\
+   *         Note that the passed filter is only a filter for intents the application is qualified for, i.e., provides a fulfilling capability visible
+   *         to the sender.
    *         <p>
    *         <ul>
    *           <li>**Asterisk wildcard character (`*`):**\
@@ -154,18 +174,6 @@ export abstract class IntentClient {
    *         requestors, if any.
    */
   public abstract onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription;
-}
-
-/**
- * Control how to publish an intent.
- *
- * @category Messaging
- */
-export interface IntentOptions {
-  /**
-   * Sets headers to pass additional information with an intent.
-   */
-  headers?: Map<string, any>;
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,7 +10,7 @@
 
 import {Capability, Intention, ParamDefinition} from '../../platform.model';
 import {ManifestObjectStore} from './manifest-object-store';
-import {concatWith, defer, EMPTY, filter, merge, of, Subject} from 'rxjs';
+import {concatWith, defer, EMPTY, filter, merge, Observable, of, Subject} from 'rxjs';
 import {distinctUntilChanged, expand, mergeMap, take, takeUntil} from 'rxjs/operators';
 import {Intent, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from '../../client/messaging/message-client';
@@ -33,9 +33,15 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   private _intentionStore: ManifestObjectStore<Intention>;
   private _destroy$ = new Subject<void>();
 
+  public capabilityRegister$: Observable<Capability>;
+  public capabilityUnregister$: Observable<Capability[]>;
+
   constructor() {
     this._capabilityStore = new ManifestObjectStore<Capability>();
     this._intentionStore = new ManifestObjectStore<Intention>();
+
+    this.capabilityRegister$ = this._capabilityStore.add$;
+    this.capabilityUnregister$ = this._capabilityStore.remove$;
 
     this.installCapabilityRegisterRequestHandler();
     this.installCapabilityUnregisterRequestHandler();

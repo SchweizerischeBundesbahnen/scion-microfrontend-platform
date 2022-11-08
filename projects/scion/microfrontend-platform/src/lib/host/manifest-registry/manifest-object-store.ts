@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -9,10 +9,11 @@
  */
 
 import {QualifierMatcher} from '../../qualifier-matcher';
-import {Observable, Subject} from 'rxjs';
+import {merge, Observable, Subject} from 'rxjs';
 import {Arrays, Maps} from '@scion/toolkit/util';
 import {Qualifier} from '../../platform.model';
 import {ManifestObject, ManifestObjectFilter} from './manifest-object.model';
+import {map} from 'rxjs/operators';
 
 /**
  * Provides an in-memory store for provided capabilities and registered intentions.
@@ -24,7 +25,8 @@ export class ManifestObjectStore<T extends ManifestObject> {
   private readonly _objectById = new Map<string, T>();
   private readonly _objectsByType = new Map<string, T[]>();
   private readonly _objectsByApplication = new Map<string, T[]>();
-  private readonly _change$ = new Subject<void>();
+  private readonly _add$ = new Subject<T>();
+  private readonly _remove$ = new Subject<T[]>();
 
   /**
    * Adds the given {@link ManifestObject} to this store.
@@ -33,7 +35,7 @@ export class ManifestObjectStore<T extends ManifestObject> {
     this._objectById.set(object.metadata!.id, object);
     Maps.addListValue(this._objectsByType, object.type, object);
     Maps.addListValue(this._objectsByApplication, object.metadata!.appSymbolicName, object);
-    this._change$.next();
+    this._add$.next(object);
   }
 
   /**
@@ -84,21 +86,37 @@ export class ManifestObjectStore<T extends ManifestObject> {
    * Emits when an object is added to or removed from this store.
    */
   public get change$(): Observable<void> {
-    return this._change$.asObservable();
+    return merge(this.add$, this.remove$).pipe(map(() => undefined as void));
+  }
+
+  /**
+   * Emits when an object is added to this store.
+   */
+  public get add$(): Observable<T> {
+    return this._add$;
+  }
+
+  /**
+   * Emits when object(s) are removed from this store.
+   */
+  public get remove$(): Observable<T[]> {
+    return this._remove$;
   }
 
   /**
    * Removes the given objects from all internal maps.
    */
   private _remove(objects: T[]): void {
-    let deleted = false;
+    const deleted = new Set<T>();
     objects.forEach(object => {
       const objectId = object.metadata!.id;
-      deleted = this._objectById.delete(objectId) || deleted;
-      deleted = Maps.removeListValue(this._objectsByType, object.type, candidate => candidate.metadata?.id === objectId) || deleted;
-      deleted = Maps.removeListValue(this._objectsByApplication, object.metadata!.appSymbolicName, candidate => candidate.metadata?.id === objectId) || deleted;
+      if (this._objectById.delete(objectId)) {
+        Maps.removeListValue(this._objectsByType, object.type, candidate => candidate.metadata?.id === objectId);
+        Maps.removeListValue(this._objectsByApplication, object.metadata!.appSymbolicName, candidate => candidate.metadata?.id === objectId);
+        deleted.add(object);
+      }
     });
-    deleted && this._change$.next();
+    deleted.size && this._remove$.next(objects);
   }
 }
 

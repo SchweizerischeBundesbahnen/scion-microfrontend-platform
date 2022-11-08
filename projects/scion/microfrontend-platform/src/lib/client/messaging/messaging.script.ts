@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -76,6 +76,16 @@ export async function subscribeToTopic({symbolicName, topic, monitorTopicMessage
   else {
     Beans.get(MessageClient).observe$(topic).subscribe(observer);
   }
+}
+
+export async function publishIntent({symbolicName, intent, body, options}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await Beans.get(IntentClient).publish(intent, body, options);
+}
+
+export async function requestViaIntent({symbolicName, intent, body, options}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+  await MicrofrontendPlatform.connectToHost(symbolicName);
+  Beans.get(IntentClient).request$(intent, body, options).subscribe(observer);
 }
 
 export async function monitorTopicMessageChannel({symbolicName}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef

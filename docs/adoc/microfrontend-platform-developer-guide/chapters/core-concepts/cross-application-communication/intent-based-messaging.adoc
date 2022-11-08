@@ -10,10 +10,11 @@ This chapter introduces the intent-based communication for controlled collaborat
 In this Chapter
 
 - <<chapter:intent-based-messaging:what-is-intent-based-messaging>>
-- <<chapter:intent-based-messaging:declaring-an-intention>>
-- <<chapter:intent-based-messaging:issuing-an-intent>>
-- <<chapter:intent-based-messaging:declaring-a-capability>>
-- <<chapter:intent-based-messaging:handling-intents>>
+- <<chapter:intent-based-messaging:declaring-intention>>
+- <<chapter:intent-based-messaging:publishing-intent>>
+- <<chapter:intent-based-messaging:publishing-retained-intent>>
+- <<chapter:intent-based-messaging:declaring-capability>>
+- <<chapter:intent-based-messaging:receiving-intents>>
 - <<chapter:intent-based-messaging:request-response-message-exchange-pattern>>
 - <<chapter:intent-based-messaging:convenience-api-for-handling-intents>>
 ****
@@ -34,18 +35,18 @@ In topic-based communication, messages are published to a topic destination. In 
 
 The terminology and concepts are explained in more detail in the <<chapter:intention-api>> chapter. This chapter focuses on communication and illustrates how to send and receive intents using the link:{typedoc-url}/classes/intentclient.html[IntentClient, window=\"_blank\"], which is available from the Platform's <<terminology:bean-manager,bean manager>>.
 
-[[chapter:intent-based-messaging:declaring-an-intention]]
+[[chapter:intent-based-messaging:declaring-intention]]
 [discrete]
 === Declaring an Intention
-A micro application must declare an intention in its manifest in order to interact with a capability.
+An application must declare an intention in its manifest in order to interact with a capability.
 
-To explain the concept of intent-based messaging, let's imagine an eCommerce app where a micro application provides a checkout wizard that can be started via intent.
+To illustrate the concept of intent-based messaging, we will look at an IoT example with sensors controlling room temperature modeled as capabilities. To set the temperature of a room, we send an intent to the room sensor. To get the room temperature, we query the sensor using request-response.
 
 [source,json]
 ----
 include::intent-based-messaging.snippets.ts[tags=intention-declaration]
 ----
-<1> Declares the intention for starting the checkout wizard.
+<1> Declares the intention to interact with the temperature sensor in the kitchen.
 +
 The _type_ of the intention must exactly match the type of the capability we want to interact with. In specifying the qualifier, we are more flexible. For instance, we can use wildcards to match multiple capabilities with a single intention declaration. +
 
@@ -55,52 +56,65 @@ TIP: Using the asterisk wildcard (`*`) or optional wildcard character (`?`) in t
 
 To learn more about an intention, see chapter <<chapter:intention-api:intention>> in <<chapter:intention-api>>.
 
-[[chapter:intent-based-messaging:issuing-an-intent]]
+[[chapter:intent-based-messaging:publishing-intent]]
 [discrete]
-=== Issuing an Intent
-A micro application can issue intents for intentions declared in its manifest. The platform transports the intent to micro applications that provide a fulfilling capability. Along with the intent, the application can pass transfer data, either as payload, message headers or parameters. Passed data must be serializable with the _Structured Clone Algorithm_.
+=== Publishing an Intent
+An application can publish intents for intentions declared in its manifest. The platform transports the intent to applications that provide a fulfilling capability. Along with the intent, the application can pass transfer data, either as payload, message headers or parameters. Passed data must be serializable with the _Structured Clone Algorithm_.
 
-The following code snippet illustrates starting the checkout wizard via intent.
+In the following example, we send an intent to the temperature sensor in the kitchen to set the temperature to 22°C.
 
 [source,typescript]
 ----
-include::intent-based-messaging.snippets.ts[tags=issue-intent]
+include::intent-based-messaging.snippets.ts[tags=publish-intent]
 ----
-<1> Constructs the intent for starting the checkout wizard.
-<2> Publishes the intent via `IntentClient` obtained from the bean manager.
+<1> Constructs the intent to interact with the temperature sensor in the kitchen.
+<2> Publishes the intent via `IntentClient`, obtained from the bean manager.
 
-NOTE: The method to issue an intent returns a Promise that resolves when dispatched the intent, or that rejects if the message broker rejected the intent.
+NOTE: The method to publish an intent returns a Promise that resolves when dispatched the intent, or that rejects if the message broker rejected the intent.
 
 To learn more about an intent, see chapter <<chapter:intention-api:intent>> in <<chapter:intention-api>>.
 
-[[chapter:intent-based-messaging:declaring-a-capability]]
+[[chapter:intent-based-messaging:publishing-retained-intent]]
+[discrete]
+=== Publishing a Retained Intent
+The platform supports publishing an intent as a _retained_ intent. Retained intents help newly subscribed clients to get the last intent published for a capability immediately upon subscription. The broker stores one retained intent per capability, i.e., a later sent retained intent will replace a previously sent retained intent. To delete a retained intent, send a retained intent without payload to the same destination. Deletion intents are not transported to subscribers.
+
+In the following example, we set the kitchen temperature to 22°C. We send a retained intent since the kitchen temperature sensor may not be available yet. As soon as it connects to the platform, it will receive the intent for adjusting the temperature.
+
+[source,typescript]
+----
+include::intent-based-messaging.snippets.ts[tags=publish-retained-intent]
+----
+<1> Sets the `retain` flag to `true`, instructing the message broker to store this intent as a retained intent.
+
+[[chapter:intent-based-messaging:declaring-capability]]
 [discrete]
 === Declaring a Capability
-A micro application can provide functionality to other micro applications via capabilities declared in its manifest.
+An application can make functionality available to other applications via capabilities. Typically, capabilities are declared in the manifest, but can also be contributed programmatically using the `ManifestService`.
 
-The following code snippet illustrates how to declare the checkout wizard capability.
+The following code snippet illustrates the declaration of the kitchen temperature sensor as a capability in the manifest.
 
 [source,json]
 ----
 include::intent-based-messaging.snippets.ts[tags=capability-declaration]
 ----
 <1> Describes the capability.
-<2> Categorizes the capability as a `wizard`.
+<2> Categorizes the capability to be a `temperature` sensor.
 +
-There are a handful of platform-specific capability types, such as `activator` or `microfrontend`. For custom capabilities, you can choose any name.
-<3> Qualifies the capability if having multiple `wizard` capabilities.
-<4> Makes this a public capability, allowing other micro applications to invoke it.
+The platform provides some platform-specific capability types like `Activator` or `Microfrontend`. For custom capabilities, you can choose any name.
+<3> Qualifies the capability if having multiple `temperature` sensor capabilities.
+<4> Makes this a public capability so that other applications can interact with the kitchen sensor.
 
 TIP: To have consistency among the qualifiers in the <<terminology:application,application>>, we recommend defining guidelines how to name qualifier entries.
 
 To learn more about a capability, see chapter <<chapter:intention-api:capability>> in <<chapter:intention-api>>.
 
-[[chapter:intent-based-messaging:handling-intents]]
+[[chapter:intent-based-messaging:receiving-intents]]
 [discrete]
-=== Handling Intents
-Intents are transported to applications that provide a fulfilling capability and are typically subscribed to in an activator. An activator is a special microfrontend that a micro application can provide to interact with the platform. Activators are loaded when starting the host application and run for the entire application lifecycle. An activator microfrontend is special in that it is never displayed to the user. Learn more about activator in the chapter <<chapter:activator>>.
+=== Receiving Intents
+Intents are transported to applications that provide a fulfilling capability and are typically subscribed to in an activator. An activator is a special microfrontend that an application can provide. Activators are loaded when starting the host application and run for the entire application lifecycle. An activator microfrontend is special in that it is never displayed to the user. Learn more about activator in the chapter <<chapter:activator>>.
 
-The following code snippet illustrates how to listen to intents.
+The following code snippet illustrates how to receive intents.
 
 [source,typescript]
 ----
@@ -109,7 +123,7 @@ include::intent-based-messaging.snippets.ts[tags=handle-intent]
 <1> Defines the selector to filter intents. Without a selector, you would receive all intents you have defined a capability for. The selector supports the use of wildcards in the qualifier.
 <2> Subscribes to intents that match the selector.
 
-IMPORTANT: A micro application only receives intents for which it provides a fulfilling capability. The selector is used as a filter only.
+IMPORTANT: An application only receives intents for which it provides a fulfilling capability. The selector is used as a filter only.
 
 [[chapter:intent-based-messaging:request-response-message-exchange-pattern]]
 [discrete]
@@ -118,18 +132,18 @@ The platform facilitates the _request-response_ message exchange pattern for syn
 
 The communication is initiated by the requestor by sending a request. The recipient can then respond to the request. Just as in JMS (_Java Message Service_), the platform sets a `ReplyTo` message header on the intent, which contains the topic of a temporary inbox where the replier can send replies to. The inbox is destroyed when the requestor unsubscribes.
 
-The following code snippet illustrates how to initiate a _request-response_ communication via intent-based messaging and receiving replies. To explain this kind of communication, we have a requestor requesting the user’s access token.
+The following code snippet illustrates how to initiate a _request-response_ communication via intent-based messaging and receiving replies. To explain this type of communication, let's take a client that requests the current kitchen temperature.
 
 [source,typescript]
 ----
 include::intent-based-messaging.snippets.ts[tags=request]
 ----
 <1> Initiates a _request-response_ communication by invoking the `request$` method on the `IntentClient`.
-<2> Prints the received access token to the console.
+<2> Prints the received temperature to the console.
 
 [NOTE]
 ====
-In request-response communication, by default, the requestor’s Observable never completes. However, the replier can include a response status code in the reply’s headers, allowing to control the lifecycle of the requestor’s Observable. For example, the status code `250` `ResponseStatusCodes.TERMINAL` allows completing the requestor’s Observable after emitted the reply, or the status code `500` `ResponseStatusCodes.ERROR` to error the Observable. See the enum `ResponseStatusCodes` for available status codes.
+In request-response communication, by default, the requestor’s Observable never completes. However, the replier can include the response status code in the reply’s headers, allowing to control the lifecycle of the requestor’s Observable. For example, the status code `250` `ResponseStatusCodes.TERMINAL` allows completing the requestor’s Observable after emitted the reply, or the status code `500` `ResponseStatusCodes.ERROR` to error the Observable. See the enum `ResponseStatusCodes` for available status codes.
 
 If the replier does not complete the communication, the requestor can use the `take(1)` RxJS operator to unsubscribe upon the receipt of the first reply.
 
@@ -138,16 +152,16 @@ Note that the platform evaluates status codes only in request-response communica
 
 '''
 
-The following code snippet shows how requests (intents) are received and answered. You can reply to an intent by sending one or more replies to the `replyTo` topic contained in the intent's headers. Please note to send replies via the `MessageClient` and not via the `IntentClient`.
+The following code snippet shows how requests (intents) are received and answered. You can reply to an intent by sending one or more replies to the `replyTo` topic contained in the intent's headers. Please note to send replies via the `MessageClient`.
 
-_For illustration purposes, the following example subscribes to the authentication service for each intent to obtain the user's access token. The token observable never completes and continuously emits when the token is refreshed._
+_For illustration purposes, for each request, the following example subscribes to the temperature sensor. The sensor observable never completes and continuously emits when the temperature changes._
 
 [source,typescript]
 ----
 include::intent-based-messaging.snippets.ts[tags=reply]
 ----
 <1> Reads the `ReplyTo` topic from the request where to send replies to.
-<2> Sends the user’s access token to the requestor.
+<2> Sends the current kitchen temperature to the requestor.
 <3> Stops replying when the requestor unsubscribes.
 <4> Sets a message header to immediately complete the requestor's Observable after emitted the reply.
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -23,6 +23,10 @@ export interface Message {
    * Header values must be JSON serializable. If no headers are set, the `Map` is empty.
    */
   headers: Map<string, any>;
+  /**
+   * Indicates whether this message is retained on the broker for late subscribers.
+   */
+  retain?: boolean;
 }
 
 /**
@@ -101,16 +105,6 @@ export interface TopicMessage<BODY = any> extends Message {
    */
   body?: BODY;
   /**
-   * Instructs the broker to store this message on the broker as a retained message.
-   *
-   * Unlike a regular message, a retained message remains in the broker and is delivered to new subscribers, even if
-   * they subscribe after the message has been sent. The broker stores one retained message per topic, i.e., a later
-   * sent retained message will replace a previously sent retained message. This, however, does not apply to retained
-   * requests in request-response communication. Retained requests are NEVER replaced and remain in the broker until
-   * the requestor unsubscribes.
-   */
-  retain?: boolean;
-  /**
    * Contains the resolved values of the wildcard segments as specified in the topic.
    * For example: If subscribed to the topic `person/:id` and a message is published to the topic `person/5`,
    * the resolved id with the value `5` is contained in the params map.
@@ -165,7 +159,7 @@ export enum MessageHeaders {
    * See {@link ResponseStatusCodes} for available status codes. Other codes are also allowed.
    *
    * Status codes are primarily used in request-reply communication. In request-response communication, by default,
-   * the requestor’s Observable never completes. However, the replier can include a response status code in the reply’s
+   * the requestor’s Observable never completes. However, the replier can include the response status code in the reply’s
    * headers, allowing to control the lifecycle of the requestor’s Observable.
    *
    * For example, the status code {@link ResponseStatusCodes.TERMINAL 250} allows completing the requestor’s Observable

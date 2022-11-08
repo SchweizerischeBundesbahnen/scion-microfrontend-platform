@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -8,5 +8,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-export {MessageClient, PublishOptions, RequestOptions, takeUntilUnsubscribe} from './message-client';
-export {IntentClient, IntentOptions, IntentSelector} from './intent-client';
+export {MessageClient, takeUntilUnsubscribe} from './message-client';
+export {IntentClient, IntentSelector} from './intent-client';
+export {PublishOptions, RequestOptions} from './publish-options';

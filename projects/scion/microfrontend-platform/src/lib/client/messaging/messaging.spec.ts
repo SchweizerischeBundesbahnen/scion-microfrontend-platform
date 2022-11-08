@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {concat, NEVER, of, Subject} from 'rxjs';
-import {IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
+import {Intent, IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from './message-client';
 import {IntentClient} from './intent-client';
 import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, Latch, readConsoleLog, resetLoggerSpy, waitFor, waitUntilStable, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
@@ -20,6 +20,7 @@ import {ObserveCaptor} from '@scion/toolkit/testing';
 import {Handler, IntentInterceptor, MessageInterceptor} from '../../host/message-broker/message-interception';
 import {MicrofrontendFixture} from '../../testing/microfrontend-fixture/microfrontend-fixture';
 import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
+import {PublishOptions, RequestOptions} from './publish-options';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
 const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<string, any> => msg.headers;
@@ -566,27 +567,6 @@ describe('Messaging', () => {
     expect(replyCaptor.getError().message).toEqual('PING');
   });
 
-  it('should reject a \'request-response\' intent if no replier is found', async () => {
-    await MicrofrontendPlatform.startHost({
-      host: {
-        manifest: {
-          name: 'Host Application',
-          intentions: [{type: 'some-type'}],
-        },
-      },
-      applications: [
-        {
-          symbolicName: 'client-app',
-          manifestUrl: new ManifestFixture({name: 'Client Application', capabilities: [{type: 'some-type', private: false}]}).serve(),
-        },
-      ],
-    });
-
-    const replyCaptor = new ObserveCaptor();
-    Beans.get(IntentClient).request$({type: 'some-type'}, 'ping').subscribe(replyCaptor);
-    await replyCaptor.waitUntilCompletedOrErrored();
-    expect(replyCaptor.getError()).toMatch(/\[MessagingError].*No subscriber registered to answer the intent/);
-  });
   it('should allow an interceptor to handle a \'request-response\' intent message if no replier is running', async () => {
     // create an interceptor which handles intents of a given type and then swallows the message
     const interceptor = new class implements IntentInterceptor {
@@ -646,23 +626,6 @@ describe('Messaging', () => {
     await expectEmissions(replyCaptor).toEqual(['PING']);
     expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
     expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
-  });
-
-  it('should reject an intent if no application provides a fulfilling capability', async () => {
-    await MicrofrontendPlatform.startHost({
-      host: {
-        manifest: {
-          name: 'Host Application',
-          intentions: [{type: 'some-type'}],
-        },
-      },
-      applications: [],
-    });
-
-    const replyCaptor = new ObserveCaptor();
-    Beans.get(IntentClient).request$({type: 'some-type'}, 'ping').subscribe(replyCaptor);
-    await replyCaptor.waitUntilCompletedOrErrored();
-    expect(replyCaptor.getError()).toMatch(/NullProviderError/);
   });
 
   it('should reject a client connect attempt if the app is not registered', async () => {
@@ -2380,6 +2343,2049 @@ describe('Messaging', () => {
         // Expect the retained request to be received in app 2.
         await requestCaptorApp2.waitUntilEmitCount(1);
         expect(requestCaptorApp2.getValues()).toEqual([jasmine.objectContaining<TopicMessage>({topic: 'myhome/kitchen/temperature'})]);
+      });
+    });
+  });
+
+  describe('intent-based messaging', () => {
+
+    it('should error if no application provides a fulfilling capability', async () => {
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host App',
+            intentions: [
+              {type: 'temperature', qualifier: {room: 'kitchen'}},
+            ],
+          },
+        },
+        applications: [],
+      });
+
+      // Send intent.
+      const whenPublished = Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '20°C');
+      await expectAsync(whenPublished).toBeRejectedWithError(/NullProviderError/);
+    });
+
+    it('should not error if no subscriber is found', async () => {
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host Application',
+            intentions: [
+              {type: 'temperature', qualifier: {room: 'kitchen'}},
+            ],
+          },
+        },
+        applications: [
+          {
+            symbolicName: 'app1',
+            manifestUrl: new ManifestFixture({name: 'App 1', capabilities: [{type: 'temperature', qualifier: {room: 'kitchen'}, private: false}]}).serve(),
+          },
+        ],
+      });
+
+      // Send intent.
+      const whenPublished = Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '20°C');
+      await expectAsync(whenPublished).toBeResolved();
+    });
+
+    describe('intent request', () => {
+
+      it('should error if no application provides a fulfilling capability', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host Application',
+              intentions: [
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Send intent request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(responseCaptor);
+
+        // Expect the request to error.
+        await responseCaptor.waitUntilCompletedOrErrored();
+        expect(responseCaptor.hasErrored()).toBeTrue();
+        expect(responseCaptor.getError()).toMatch(/NullProviderError/);
+      });
+
+      it('should error if no replier is found', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host Application',
+              intentions: [
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({name: 'App 1', capabilities: [{type: 'temperature', qualifier: {room: 'kitchen'}, private: false}]}).serve(),
+            },
+          ],
+        });
+
+        // Send intent request.
+        const responseCaptor = new ObserveCaptor();
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(responseCaptor);
+
+        // Expect the request to error.
+        await responseCaptor.waitUntilCompletedOrErrored();
+        expect(responseCaptor.hasErrored()).toBeTrue();
+        expect(responseCaptor.getError()).toMatch(/\[MessagingError].*No subscriber registered to answer the intent/);
+      });
+    });
+
+    describe('retained intent', () => {
+
+      it('should error if no application provides a fulfilling capability', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              intentions: [
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Send retained intent.
+        const whenPublished = Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '20°C', {retain: true});
+        await expectAsync(whenPublished).toBeRejectedWithError(/NullProviderError/);
+      });
+
+      it('should not error if no subscriber is found', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host Application',
+              intentions: [
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({name: 'App 1', capabilities: [{type: 'temperature', qualifier: {room: 'kitchen'}, private: false}]}).serve(),
+            },
+          ],
+        });
+
+        // Send intent.
+        const whenPublished = Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '20°C', {retain: true});
+        await expectAsync(whenPublished).toBeResolved();
+      });
+
+      it('should receive retained intents matching an exact subscription', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'livingroom'}},
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+                {type: 'temperature', qualifier: {room: 'diningroom'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Publish retained intents
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, '22°C', {retain: true});
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '20°C', {retain: true});
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '19.5°C', {retain: true});
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'diningroom'}}, '21°C', {retain: true});
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'diningroom'}}, '21.5°C', {retain: true});
+
+        // Subscribe to intents {type: 'temperature', qualifier: {room: 'kitchen'}}
+        const intentCaptor1 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(intentCaptor1);
+        await waitUntilStable(() => intentCaptor1.getValues().length);
+        expect(intentCaptor1.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
+            body: '19.5°C',
+          }),
+        ]);
+
+        // Subscribe to intents {type: 'temperature', qualifier: {room: 'livingroom'}}
+        const intentCaptor2 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor2);
+        await waitUntilStable(() => intentCaptor2.getValues().length);
+        expect(intentCaptor2.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '22°C',
+          }),
+        ]);
+
+        // Subscribe to intents {type: 'temperature', qualifier: {room: 'diningroom'}}
+        const intentCaptor3 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'diningroom'}}).subscribe(intentCaptor3);
+        await waitUntilStable(() => intentCaptor3.getValues().length);
+        expect(intentCaptor3.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'diningroom'}, params: new Map()},
+            body: '21.5°C',
+          }),
+        ]);
+      });
+
+      it('should receive retained intents matching a wildcard subscription', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'livingroom'}},
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+                {type: 'temperature', qualifier: {room: 'diningroom'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        const intentCaptor = new ObserveCaptor();
+
+        // Publish retained intents
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, '22°C', {retain: true});
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '20°C', {retain: true});
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '19.5°C', {retain: true});
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'diningroom'}}, '21°C', {retain: true});
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'diningroom'}}, '21.5°C', {retain: true});
+
+        // Subscribe to intents {type: 'temperature', qualifier: {room: '*'}}
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: '*'}}).subscribe(intentCaptor);
+
+        await waitUntilStable(() => intentCaptor.getValues().length);
+        expect(intentCaptor.getValues()).toEqual(jasmine.arrayWithExactContents([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '22°C',
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
+            body: '19.5°C',
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'diningroom'}, params: new Map()},
+            body: '21.5°C',
+          }),
+        ]));
+      });
+
+      it('should delete retained intent', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'livingroom'}},
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Publish retained intent
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, '22°C', {retain: true});
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '20°C', {retain: true});
+
+        // Delete retained intent
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, undefined, {retain: true});
+
+        // Subscribe to intents {type: 'temperature', qualifier: {room: 'livingroom'}}
+        const intentCaptor1 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor1);
+        await waitUntilStable(() => intentCaptor1.getValues().length);
+        expect(intentCaptor1.getValues()).toEqual([]);
+
+        // Subscribe to intents {type: 'temperature', qualifier: {room: 'kitchen'}}
+        const intentCaptor2 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(intentCaptor2);
+        await waitUntilStable(() => intentCaptor2.getValues().length);
+        expect(intentCaptor2.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
+            body: '20°C',
+          }),
+        ]);
+      });
+
+      it('should not delete retained intent if sending `null` payload', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'livingroom'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Publish retained intent
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, '22°C', {retain: true});
+
+        // Publish retained intent with `null` payload
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, null, {retain: true});
+
+        // Subscribe to intents {type: 'temperature', qualifier: {room: 'livingroom'}}
+        const intentCaptor = new ObserveCaptor();
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor);
+        await waitUntilStable(() => intentCaptor.getValues().length);
+        expect(intentCaptor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: null,
+          }),
+        ]);
+      });
+
+      it('should not delete retained intent if sending `falsy` payload', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'livingroom'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Publish retained intent
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, '22°C', {retain: true});
+
+        // Publish retained intent with a `falsy` payload
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, 0, {retain: true});
+
+        // Subscribe to intents {type: 'temperature', qualifier: {room: 'livingroom'}}
+        const intentCaptor = new ObserveCaptor();
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor);
+        await waitUntilStable(() => intentCaptor.getValues().length);
+        expect(intentCaptor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: 0,
+          }),
+        ]);
+      });
+
+      it('should not dispatch retained intent deletion event', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'livingroom'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Publish retained intent
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, '22°C', {retain: true});
+
+        // Subscribe to intents {type: 'temperature', qualifier: {room: 'livingroom'}}
+        const intentCaptor = new ObserveCaptor();
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor);
+        await waitUntilStable(() => intentCaptor.getValues().length);
+        expect(intentCaptor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '22°C',
+          }),
+        ]);
+
+        intentCaptor.reset();
+
+        // Delete retained intent
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, undefined, {retain: true});
+        await waitUntilStable(() => intentCaptor.getValues().length);
+        expect(intentCaptor.getValues()).toEqual([]);
+      });
+
+      it('should delete retained intent(s) when unregistering associated capability', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'livingroom'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Publish retained intent
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, '22°C', {retain: true});
+
+        // Unregister the capability
+        await Beans.get(ManifestService).unregisterCapabilities({type: 'temperature', qualifier: {room: 'livingroom'}});
+
+        // Subscribe to intents {type: 'temperature', qualifier: {room: 'livingroom'}}
+        const intentCaptor = new ObserveCaptor();
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor);
+
+        // Expect the intent not to be received.
+        await waitUntilStable(() => intentCaptor.getValues().length);
+        expect(intentCaptor.getValues()).toEqual([]);
+      });
+
+      it('should dispatch a retained intent only to the newly subscribed subscriber', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'livingroom'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        const intentCaptor1 = new ObserveCaptor();
+        const intentCaptor2 = new ObserveCaptor();
+        const intentCaptor3 = new ObserveCaptor();
+        const intentCaptor4 = new ObserveCaptor();
+        const intentCaptor5 = new ObserveCaptor();
+
+        // Subscribe before publishing the retained intent
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor1);
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: '*'}}).subscribe(intentCaptor2);
+
+        // Publish the retained intent
+        await Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'livingroom'}}, '25°C', {retain: true});
+
+        await waitUntilStable(() => intentCaptor1.getValues().length);
+        expect(intentCaptor1.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '25°C',
+          }),
+        ]);
+        expect(intentCaptor2.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '25°C',
+          }),
+        ]);
+
+        // Subscribe after publishing the retained intent
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor3);
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: '*'}}).subscribe(intentCaptor4);
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(intentCaptor5);
+
+        // Expect subscriber 1 not to receive the intent again
+        await waitUntilStable(() => intentCaptor1.getValues().length);
+        expect(intentCaptor1.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '25°C',
+          }),
+        ]);
+        // Expect subscriber 2 not to receive the intent again
+        await waitUntilStable(() => intentCaptor2.getValues().length);
+        expect(intentCaptor2.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '25°C',
+          }),
+        ]);
+        // Expect subscriber 3 to receive the retained intent
+        await waitUntilStable(() => intentCaptor3.getValues().length);
+        expect(intentCaptor3.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '25°C',
+          }),
+        ]);
+        // Expect subscriber 4 to receive the retained intent
+        await waitUntilStable(() => intentCaptor4.getValues().length);
+        expect(intentCaptor4.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '25°C',
+          }),
+        ]);
+        // Expect subscriber 5 not to receive the retained intent
+        await waitUntilStable(() => intentCaptor5.getValues().length);
+        expect(intentCaptor5.getValues()).toEqual([]);
+      });
+
+      it('should deliver headers in retained intent', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            symbolicName: 'host-app',
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature'},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        await waitUntilStable(() => Beans.get(ClientRegistry).getByApplication('host-app').length);
+        const senderClientId = Beans.get(ClientRegistry).getByApplication('host-app')[0].id;
+
+        await Beans.get(IntentClient).publish({type: 'temperature'}, '22°C', {retain: true, headers: new Map().set('room', 'livingroom')});
+
+        const intentCaptor = new ObserveCaptor();
+        Beans.get(IntentClient).observe$<string>({type: 'temperature'}).subscribe(intentCaptor);
+        await waitUntilStable(() => intentCaptor.getValues().length);
+        expect(intentCaptor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map()},
+            body: '22°C',
+            headers: jasmine.mapContaining(new Map()
+              .set('room', 'livingroom')
+              .set(MessageHeaders.AppSymbolicName, 'host-app')
+              .set(MessageHeaders.ClientId, senderClientId),
+            ),
+          }),
+        ]);
+      });
+
+      it('should receive the latest intent per capability which the application is qualified to receive (1/4)', async () => {
+        // Two applications provide both the same public capability but declare no intention.
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: false},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: false},
+                ],
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '20°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Publish retained intent in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '21°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Receive intents in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intents in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 to receive retained intent sent by app 1
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '20°C',
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+        ]);
+
+        // Expect app2 to receive retained intent sent by app 2
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '21°C',
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+        ]);
+      }, 10_000);
+
+      it('should receive the latest intent per capability which the application is qualified to receive (2/4)', async () => {
+        // Two applications provide both the same public capability and declare an intention.
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: false},
+                ],
+                intentions: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: false},
+                ],
+                intentions: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}},
+                ],
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '20°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Publish retained intent in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '21°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Receive intents in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intents in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 to receive retained intent sent by app 2
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '21°C',
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+        ]);
+
+        // Expect app2 to receive retained intent sent by app 2
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '21°C',
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+        ]);
+      }, 10_000);
+
+      it('should receive the latest intent per capability which the application is qualified to receive (3/4)', async () => {
+        // Two applications provide both the same private capability and declare an intention.
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: true},
+                ],
+                intentions: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: true},
+                ],
+                intentions: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}},
+                ],
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '20°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Publish retained intent in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '21°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Receive intents in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intents in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 to receive retained intent sent by app 1
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '20°C',
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+        ]);
+
+        // Expect app2 to receive retained intent sent by app 2
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '21°C',
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+        ]);
+      }, 10_000);
+
+      it('should receive the latest intent per capability which the application is qualified to receive (4/4)', async () => {
+        // Two applications provide both the same capability, but with different visiblity.
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: true},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: false},
+                ],
+                intentions: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app3',
+              manifestUrl: new ManifestFixture({
+                name: 'App 3',
+                intentions: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}},
+                ],
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '20°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Publish retained intent in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '21°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Publish retained intent in app3
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app3',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '22°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Receive intents in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intents in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 to receive retained intent sent by app 1
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '20°C',
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+        ]);
+
+        // Expect app2 to receive retained intent sent by app 3
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '22°C',
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+        ]);
+      }, 10_000);
+
+      it('should delete retained intent per qualified capability (1/2)', async () => {
+        // Two applications provide both the same capability with private visiblity
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}},
+                ],
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '20°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Publish retained intent in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '21°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Delete intent in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: undefined,
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Receive intents in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intents in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 not to receive retained intent because deleted
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual([]);
+
+        // Expect app2 to still receive retained intent sent by app 2
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '21°C',
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+        ]);
+      });
+
+      it('should delete retained intent per qualified capability (2/2)', async () => {
+        // Two applications provide both the same capability with public visiblity
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: false},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: false},
+                ],
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '20°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Publish retained intent in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '21°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Delete intent in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: undefined,
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Receive intents in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intents in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 not to receive retained intent because deleted
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual([]);
+
+        // Expect app2 to still receive retained intent sent by app 2
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '21°C',
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+        ]);
+      });
+
+      it('should not receive retained intent if not qualified to receive', async () => {
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: false},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          body: '20°C',
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Receive intents in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intents in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 to receive retained intent
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            body: '20°C',
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+        ]);
+
+        // Expect app2 not to receive retained intent
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual([]);
+      });
+    });
+
+    describe('retained intent request', () => {
+
+      it('should not error if no replier is found', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              intentions: [
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({name: 'App 1', capabilities: [{type: 'temperature', qualifier: {room: 'kitchen'}, private: false}]}).serve(),
+            },
+          ],
+        });
+
+        // Send request.
+        const responseCaptor = new ObserveCaptor();
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'kitchen'}}, undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Expect the request not to error.
+        await waitFor(100);
+        expect(responseCaptor.hasErrored()).toBeFalse();
+      });
+
+      it('should error if no application provides a fulfilling capability', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              intentions: [
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Send retained intent request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'kitchen'}}, undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Expect the request to error.
+        await responseCaptor.waitUntilCompletedOrErrored();
+        expect(responseCaptor.hasErrored()).toBeTrue();
+        expect(responseCaptor.getError()).toMatch(/NullProviderError/);
+      });
+
+      it('should deliver retained intent request to late subscribers', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'livingroom'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Send retained intent request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'livingroom'}}, undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Add late subscriber.
+        Beans.get(IntentClient).onIntent({type: 'temperature', qualifier: {room: 'livingroom'}}, () => '20°C');
+
+        // Expect the request to be answered.
+        await responseCaptor.waitUntilCompletedOrErrored();
+        expect(responseCaptor.getValues()).toEqual(['20°C']);
+      });
+
+      it('should not replace retained intent request by later retained request', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', params: [{name: 'room', required: true}]},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Send retained intent request.
+        const responseCaptor1 = new ObserveCaptor(bodyExtractFn);
+        Beans.get(IntentClient).request$({type: 'temperature', params: new Map().set('room', 'kitchen')}, '20°C', {retain: true}).subscribe(responseCaptor1);
+
+        const responseCaptor2 = new ObserveCaptor(bodyExtractFn);
+        Beans.get(IntentClient).request$({type: 'temperature', params: new Map().set('room', 'livingroom')}, '21°C', {retain: true}).subscribe(responseCaptor2);
+
+        const responseCaptor3 = new ObserveCaptor(bodyExtractFn);
+        Beans.get(IntentClient).request$({type: 'temperature', params: new Map().set('room', 'livingroom')}, '22°C', {retain: true}).subscribe(responseCaptor3);
+
+        const responseCaptor4 = new ObserveCaptor(bodyExtractFn);
+        Beans.get(IntentClient).request$({type: 'temperature', params: new Map().set('room', 'livingroom')}, '22°C', {retain: true}).subscribe(responseCaptor4);
+
+        // Send retained intent to the same destination.
+        await Beans.get(IntentClient).publish({type: 'temperature', params: new Map().set('room', 'basement')}, '18°C', {retain: true});
+
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Add late subscriber.
+        Beans.get(IntentClient).onIntent({type: 'temperature'}, request => `${request.intent.params!.get('room')}: ${request.body}`);
+
+        // Expect the request to be answered.
+        await responseCaptor1.waitUntilCompletedOrErrored();
+        expect(responseCaptor1.getValues()).toEqual(['kitchen: 20°C']);
+
+        await responseCaptor2.waitUntilCompletedOrErrored();
+        expect(responseCaptor2.getValues()).toEqual(['livingroom: 21°C']);
+
+        await responseCaptor3.waitUntilCompletedOrErrored();
+        expect(responseCaptor3.getValues()).toEqual(['livingroom: 22°C']);
+
+        await responseCaptor4.waitUntilCompletedOrErrored();
+        expect(responseCaptor4.getValues()).toEqual(['livingroom: 22°C']);
+
+        // Expect retained intent requests not to be received anymore because above request-response communications have been completed.
+        // However, we should still receive the retained intent sent to the same capability.
+        const requestCaptor = new ObserveCaptor();
+        Beans.get(IntentClient).observe$({type: 'temperature'}).subscribe(requestCaptor);
+        await requestCaptor.waitUntilEmitCount(1);
+        expect(requestCaptor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'basement')},
+            body: '18°C',
+          }),
+        ]);
+      });
+
+      it('should not replace retained intent request by later retained intent', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', params: [{name: 'room', required: true}]},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Send retained intent request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(IntentClient).request$({type: 'temperature', params: new Map().set('room', 'kitchen')}, '20°C', {retain: true}).subscribe(responseCaptor);
+
+        // Send retained intent to the same topic.
+        await Beans.get(IntentClient).publish({type: 'temperature', params: new Map().set('room', 'basement')}, '18°C', {retain: true});
+
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Add late subscriber.
+        Beans.get(IntentClient).onIntent({type: 'temperature'}, request => `${request.intent.params!.get('room')}: ${request.body}`);
+
+        // Expect the request to be answered.
+        await responseCaptor.waitUntilCompletedOrErrored();
+        expect(responseCaptor.getValues()).toEqual(['kitchen: 20°C']);
+      });
+
+      it('should delete retained intent request when the replier terminates the communication', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Send retained intent request
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'kitchen'}}, undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Reply to the request with 20°C.
+        const latch = new Latch();
+        const replier$ = new Subject<string>();
+        Beans.get(IntentClient).onIntent({type: 'temperature', qualifier: {room: 'kitchen'}}, () => {
+          latch.release();
+          return replier$;
+        });
+        await latch.whenRelesed;
+        replier$.next('20°C');
+
+        // Expect the response to be received.
+        await responseCaptor.waitUntilEmitCount(1);
+        expect(responseCaptor.getValues()).toEqual(['20°C']);
+
+        // Expect the retained intent request still to be received.
+        const requestCaptor1 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: '*'}}).subscribe(requestCaptor1);
+        await requestCaptor1.waitUntilEmitCount(1);
+        expect(requestCaptor1.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
+          }),
+        ]);
+
+        // Reply to the request with 21°C.
+        replier$.next('21°C');
+
+        // Expect the response to be received.
+        await responseCaptor.waitUntilEmitCount(2);
+        expect(responseCaptor.getValues()).toEqual(['20°C', '21°C']);
+
+        // Expect the retained intentrequest still to be received.
+        const requestCaptor2 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: '*'}}).subscribe(requestCaptor2);
+        await waitUntilStable(() => requestCaptor2.getValues().length);
+        expect(requestCaptor2.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
+          }),
+        ]);
+
+        // Terminate the communication by completing the replier's Observable.
+        replier$.complete();
+
+        // Expect the communication to be terminated.
+        await responseCaptor.waitUntilCompletedOrErrored();
+        expect(responseCaptor.getValues()).toEqual(['20°C', '21°C']);
+        expect(responseCaptor.hasCompleted()).toBeTrue();
+
+        // Expect the retained intent request to be deleted.
+        const requestCaptor3 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: '*'}}).subscribe(requestCaptor3);
+        await waitUntilStable(() => requestCaptor3.getValues().length);
+        expect(requestCaptor3.getValues()).toEqual([]);
+      });
+
+      it('should delete retained intent request when the requestor unsubscribes before receiving a reply', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Send retained intent request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        const subscription = Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'kitchen'}}, undefined, {retain: true}).subscribe(responseCaptor);
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Expect the retained intent request still to be received.
+        const requestCaptor1 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(requestCaptor1);
+        await waitUntilStable(() => requestCaptor1.getValues().length);
+        expect(requestCaptor1.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
+          }),
+        ]);
+
+        // Unsubscribe the requestor.
+        subscription.unsubscribe();
+
+        // Wait some time until unsubscribed.
+        await waitFor(100);
+
+        // Expect the retained intent request to be deleted.
+        const requestCaptor2 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(requestCaptor2);
+        await waitUntilStable(() => requestCaptor2.getValues().length);
+        expect(requestCaptor2.getValues()).toEqual([]);
+      });
+
+      it('should delete retained intent request when the requestor unsubscribes after received a reply', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Send retained intent request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        const subscription = Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'kitchen'}}, undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Respond to the request but do not terminate the communication.
+        Beans.get(IntentClient).onIntent({type: 'temperature', qualifier: {room: 'kitchen'}}, () => concat(of('20°C'), NEVER)); // never terminates the communication
+
+        // Expect the response to be received.
+        await responseCaptor.waitUntilEmitCount(1);
+        expect(responseCaptor.getValues()).toEqual(['20°C']);
+
+        // Wait some time.
+        await waitFor(100);
+
+        // Expect the retained intent request still to be received
+        const requestCaptor1 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(requestCaptor1);
+        await requestCaptor1.waitUntilEmitCount(1);
+        expect(requestCaptor1.getValues()).toEqual([jasmine.objectContaining<IntentMessage>({intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()}})]);
+
+        // Unsubscribe the requestor.
+        subscription.unsubscribe();
+
+        // Wait some time until unsubscribed.
+        await waitFor(100);
+
+        // Expect the retained intent request to be deleted.
+        const requestCaptor2 = new ObserveCaptor();
+        Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(requestCaptor2);
+
+        // Wait some time until subscribed.
+        await waitFor(100);
+        expect(requestCaptor2.getValues()).toEqual([]);
+      });
+
+      it('should not delete previous retained intent request when sending a retained request without payload', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Send retained intent request
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'kitchen'}}, 'body', {retain: true}).subscribe(responseCaptor);
+
+        // Send retained intent request without payload
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'kitchen'}}, undefined, {retain: true}).subscribe();
+
+        // Expect the retained request not to be deleted.
+        const requestCaptor = new ObserveCaptor();
+        Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: '*'}}).subscribe(requestCaptor);
+        await requestCaptor.waitUntilEmitCount(2);
+        expect(requestCaptor.getValues()).toHaveSize(2);
+      });
+
+      it('should delete retained intent request(s) when unregistering associated capability', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              capabilities: [
+                {type: 'temperature', qualifier: {room: 'livingroom'}},
+              ],
+            },
+          },
+          applications: [],
+        });
+
+        // Publish retained intent
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'livingroom'}}, undefined, {retain: true}).subscribe();
+
+        // Unregister the capability
+        await Beans.get(ManifestService).unregisterCapabilities({type: 'temperature', qualifier: {room: 'livingroom'}});
+
+        // Subscribe to intents {type: 'temperature', qualifier: {room: 'livingroom'}}
+        const intentCaptor = new ObserveCaptor();
+        Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor);
+
+        // Expect the intent not to be received.
+        await waitUntilStable(() => intentCaptor.getValues().length);
+        expect(intentCaptor.getValues()).toEqual([]);
+      });
+
+      it('should receive intent request by multiple subscribers', async () => {
+        await MicrofrontendPlatform.startHost({
+          host: {
+            manifest: {
+              name: 'Host App',
+              intentions: [
+                {type: 'temperature', qualifier: {room: 'kitchen'}},
+              ],
+            },
+          },
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'kitchen'}, private: false},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'kitchen'}, private: false},
+                ],
+              }).serve(),
+            },
+          ],
+        });
+
+        // Send retained intent request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: 'kitchen'}}, undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Mount microfrontend of app 1.
+        const microfrontendApp1 = registerFixture(new MicrofrontendFixture());
+        await microfrontendApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1', intent: {type: 'temperature', qualifier: {room: 'kitchen'}}});
+        const requestCaptorApp1 = new ObserveCaptor();
+        microfrontendApp1.message$.subscribe(requestCaptorApp1);
+
+        // Mount microfrontend of app 2.
+        const microfrontendApp2 = registerFixture(new MicrofrontendFixture());
+        await microfrontendApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2', intent: {type: 'temperature', qualifier: {room: 'kitchen'}}});
+        const requestCaptorApp2 = new ObserveCaptor();
+        microfrontendApp2.message$.subscribe(requestCaptorApp2);
+
+        // Expect the retained intent request to be received in app 1.
+        await requestCaptorApp1.waitUntilEmitCount(1);
+        expect(requestCaptorApp1.getValues()).toEqual([jasmine.objectContaining<IntentMessage>({intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()}})]);
+
+        // Expect the retained intent request to be received in app 2.
+        await requestCaptorApp2.waitUntilEmitCount(1);
+        expect(requestCaptorApp2.getValues()).toEqual([jasmine.objectContaining<IntentMessage>({intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()}})]);
+      }, 10_000);
+
+      it('should receive intent requests per capability which the application is qualified to receive (1/4)', async () => {
+        // Two applications provide both the same public capability but declare no intention.
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', params: [{name: 'room', required: true}], private: false},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+                capabilities: [
+                  {type: 'temperature', params: [{name: 'room', required: true}], private: false},
+                ],
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent request in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Receive intent requests in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intent requests in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 to receive retained intent requests
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+        ]));
+
+        // Expect app2 to receive retained intent requests
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'basement')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+        ]);
+      }, 10_000);
+
+      it('should receive intent requests per capability which the application is qualified to receive (2/4)', async () => {
+        // Two applications provide both the same public capability and declare an intention.
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', params: [{name: 'room', required: true}], private: false},
+                ],
+                intentions: [
+                  {type: 'temperature'},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+                capabilities: [
+                  {type: 'temperature', params: [{name: 'room', required: true}], private: false},
+                ],
+                intentions: [
+                  {type: 'temperature'},
+                ],
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent request in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Receive intents in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intents in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 to receive retained intent requests
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'basement')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+        ]));
+
+        // Expect app2 to receive retained intent requests
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'basement')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+        ]));
+      }, 10_000);
+
+      it('should receive intent requests per capability which the application is qualified to receive (3/4)', async () => {
+        // Two applications provide both the same private capability and declare an intention.
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', params: [{name: 'room', required: true}], private: true},
+                ],
+                intentions: [
+                  {type: 'temperature'},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+                capabilities: [
+                  {type: 'temperature', params: [{name: 'room', required: true}], private: true},
+                ],
+                intentions: [
+                  {type: 'temperature'},
+                ],
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent request in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Receive intents in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intents in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 to receive retained intent requests
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+        ]));
+
+        // Expect app2 to receive retained intent requests
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'basement')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+        ]));
+      }, 10_000);
+
+      it('should receive intent requests per capability which the application is qualified to receive (4/4)', async () => {
+        // Two applications provide both the same capability, but with different visiblity.
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', params: [{name: 'room', required: true}], private: true},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+                capabilities: [
+                  {type: 'temperature', params: [{name: 'room', required: true}], private: false},
+                ],
+                intentions: [
+                  {type: 'temperature'},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app3',
+              manifestUrl: new ManifestFixture({
+                name: 'App 3',
+                intentions: [
+                  {type: 'temperature'},
+                ],
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent request in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent request in app2
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app2',
+          intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent in app3
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app3',
+          intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent in app3
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app3',
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Publish retained intent in app3
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app3',
+          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
+          options: {retain: true} as RequestOptions,
+        });
+
+        // Receive intents in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intents in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 to receive retained intent requests
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+        ]));
+
+        // Expect app2 to receive retained intent requests
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual(jasmine.arrayContaining([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'basement')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'basement')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+          }),
+        ]));
+      }, 10_000);
+
+      it('should not receive retained intent request if not qualified to receive', async () => {
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({
+                name: 'App 1',
+                capabilities: [
+                  {type: 'temperature', qualifier: {room: 'livingroom'}, private: false},
+                ],
+              }).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({
+                name: 'App 2',
+              }).serve(),
+            },
+          ],
+        });
+
+        // Publish retained intent request in app1
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+          symbolicName: 'app1',
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          options: {retain: true} as PublishOptions,
+        });
+
+        // Receive intents in app1
+        const intentApp1Captor = new ObserveCaptor();
+        const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        receiveIntentApp1.message$.subscribe(intentApp1Captor);
+
+        // Receive intents in app2
+        const intentApp2Captor = new ObserveCaptor();
+        const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
+        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        receiveIntentApp2.message$.subscribe(intentApp2Captor);
+
+        // Expect app1 to receive retained intent
+        await waitUntilStable(() => intentApp1Captor.getValues().length);
+        expect(intentApp1Captor.getValues()).toEqual([
+          jasmine.objectContaining<IntentMessage>({
+            intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
+            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+          }),
+        ]);
+
+        // Expect app2 not to receive retained intent
+        await waitUntilStable(() => intentApp2Captor.getValues().length);
+        expect(intentApp2Captor.getValues()).toEqual([]);
       });
     });
   });

@@ -1030,6 +1030,139 @@ export namespace IntendBasedMessagingSpecs {
   }
 
   /**
+   * Tests receiving intents which are retained on the broker.
+   */
+  export async function receiveRetainedIntentsSpec(testingAppPO: TestingAppPO): Promise<void> {
+    const pagePOs = await testingAppPO.navigateTo({
+      publisher: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_1},
+      receiver: 'about:blank',
+      manager: 'about:blank',
+    });
+
+    // register private capability in app-1
+    const managerOutletPO = pagePOs.get<BrowserOutletPO>('manager');
+    const registerCapabilityApp1PO = await managerOutletPO.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_1});
+    await registerCapabilityApp1PO.registerCapability({type: 'temperature', qualifier: {room: 'kitchen'}, private: true});
+
+    // register public capability in app-2
+    const registerCapabilityApp2PO = await managerOutletPO.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_2});
+    await registerCapabilityApp2PO.registerCapability({type: 'temperature', qualifier: {room: 'kitchen'}, private: false});
+
+    // register private capability in app-3
+    const registerCapabilityApp3PO = await managerOutletPO.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_3});
+    await registerCapabilityApp3PO.registerCapability({type: 'temperature', qualifier: {room: 'kitchen'}, private: true});
+
+    // register intention in app-1
+    const registerIntentionApp1PO = await managerOutletPO.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1});
+    await registerIntentionApp1PO.registerIntention({type: 'temperature', qualifier: {room: 'kitchen'}});
+
+    // publish a retained intent in app-1
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
+    await publisherPO.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO.enterIntent('temperature', {room: 'kitchen'});
+    await publisherPO.enterMessage('22°C');
+    await publisherPO.toggleRetain(true);
+    await publisherPO.clickPublish();
+
+    const receiverOutletPO = pagePOs.get<BrowserOutletPO>('receiver');
+
+    // test to receive retained intent in app-1
+    const receiverApp1PO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_1});
+    await receiverApp1PO.selectFlavor(MessagingFlavor.Intent);
+    await receiverApp1PO.enterIntentSelector('temperature', {room: 'kitchen'});
+    await receiverApp1PO.clickSubscribe();
+    await expect(await (await receiverApp1PO.getFirstMessageOrElseReject()).getBody()).toEqual('22°C');
+
+    // test to receive retained intent in app-2
+    const receiverApp2PO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2});
+    await receiverApp2PO.selectFlavor(MessagingFlavor.Intent);
+    await receiverApp1PO.enterIntentSelector('temperature', {room: 'kitchen'});
+    await receiverApp2PO.clickSubscribe();
+    await expect(await (await receiverApp2PO.getFirstMessageOrElseReject()).getBody()).toEqual('22°C');
+    await receiverApp2PO.clickClearMessages();
+
+    // test not to receive the retained message in app-3
+    const receiverApp3PO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_3});
+    await receiverApp3PO.selectFlavor(MessagingFlavor.Intent);
+    await receiverApp3PO.enterIntentSelector('temperature', {room: 'kitchen'});
+    await receiverApp3PO.clickSubscribe();
+    await expect(receiverApp3PO.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
+
+    // clear the retained intent
+    await publisherPO.enterMessage('');
+    await publisherPO.clickPublish();
+
+    // expect the empty message not to be dispatched
+    await expect(receiverApp1PO.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
+    await expect(receiverApp2PO.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
+  }
+
+  /**
+   * Tests receiving requests which are retained on the broker.
+   */
+  export async function receiveRetainedRequestsSpec(testingAppPO: TestingAppPO): Promise<void> {
+    const pagePOs = await testingAppPO.navigateTo({
+      publisher: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_1},
+      receiver: {useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2},
+      manager: 'about:blank',
+    });
+
+    // register public capability in app-2
+    const managerOutletPO = pagePOs.get<BrowserOutletPO>('manager');
+    const registerCapabilityApp1PO = await managerOutletPO.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_2});
+    await registerCapabilityApp1PO.registerCapability({type: 'temperature', qualifier: {room: 'kitchen'}, private: false});
+
+    // register intention in app-1
+    const registerIntentionApp1PO = await managerOutletPO.enterUrl<RegisterIntentionPagePO>({useClass: RegisterIntentionPagePO, origin: TestingAppOrigins.APP_1});
+    await registerIntentionApp1PO.registerIntention({type: 'temperature', qualifier: {room: 'kitchen'}});
+
+    // publish a retained request from app-1
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
+    await publisherPO.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO.enterIntent('temperature', {room: 'kitchen'});
+    await publisherPO.toggleRetain(true);
+    await publisherPO.toggleRequestReply(true);
+    await publisherPO.clickPublish();
+
+    const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
+
+    // test to receive retained intent in app-2
+    await receiverPO.selectFlavor(MessagingFlavor.Intent);
+    await receiverPO.enterIntentSelector('temperature', {room: 'kitchen'});
+    await receiverPO.clickSubscribe();
+    const requestPO = await receiverPO.getFirstMessageOrElseReject();
+    const replyTo = await requestPO.getReplyTo();
+
+    // send reply
+    await requestPO.clickReply();
+
+    // expect the reply to be received
+    const reply1PO = await publisherPO.getFirstReplyOrElseReject();
+    await expect(await reply1PO.getTopic()).toEqual(replyTo);
+    await expect(await reply1PO.getBody()).toEqual('this is a reply');
+    await expect(await reply1PO.getReplyTo()).toBeUndefined();
+
+    // clear the replies list
+    await publisherPO.clickClearReplies();
+    await expect(await publisherPO.getReplies()).toEqual([]);
+
+    // send another reply
+    await requestPO.clickReply();
+    const replyPO = await publisherPO.getFirstReplyOrElseReject();
+    await expect(await replyPO.getTopic()).toEqual(replyTo);
+    await expect(await replyPO.getBody()).toEqual('this is a reply');
+    await expect(await replyPO.getReplyTo()).toBeUndefined();
+
+    // cancel subscription of requestor
+    await publisherPO.clickCancel();
+
+    // expect retained request to be deleted
+    await receiverPO.clickUnsubscribe();
+    await receiverPO.clickSubscribe();
+    await expect(receiverPO.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
+  }
+
+  /**
    * Tests that the capability is present on the intent message to be intercepted.
    * The interceptor continues the interceptor chain with the message body replaced with the stringified capability.
    */

@@ -11,6 +11,7 @@ import {MonoTypeOperatorFunction, Observable, Subscription} from 'rxjs';
 import {TopicMessage} from '../../messaging.model';
 import {first, takeUntil} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {PublishOptions, RequestOptions} from './publish-options';
 
 /**
  * Message client for sending and receiving messages between microfrontends across origins.
@@ -172,36 +173,4 @@ export abstract class MessageClient {
  */
 export function takeUntilUnsubscribe<T>(topic: string): MonoTypeOperatorFunction<T> {
   return takeUntil(Beans.get(MessageClient).subscriberCount$(topic).pipe(first(count => count === 0)));
-}
-
-/**
- * Control how to publish a message.
- *
- * @category Messaging
- */
-export interface PublishOptions {
-  /**
-   * Sets headers to pass additional information with a message.
-   */
-  headers?: Map<string, any>;
-  /**
-   * Instructs the broker to store this message on the broker as a retained message.
-   *
-   * Unlike a regular message, a retained message remains in the broker and is delivered to new subscribers, even if
-   * they subscribe after the message has been sent. The broker stores one retained message per topic, i.e., a later
-   * sent retained message will replace a previously sent retained message. This, however, does not apply to retained
-   * requests in request-response communication. Retained requests are NEVER replaced and remain in the broker until
-   * the requestor unsubscribes.
-   *
-   * To delete the retained message, send a retained message without payload to the same destination.
-   */
-  retain?: boolean;
-}
-
-/**
- * Control how to publish a request in request-response communication.
- *
- * @category Messaging
- */
-export interface RequestOptions extends PublishOptions { // eslint-disable-line @typescript-eslint/no-empty-interface
 }

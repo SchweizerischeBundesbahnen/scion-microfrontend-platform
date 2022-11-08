@@ -188,6 +188,14 @@ test.describe('Messaging', () => {
       await IntendBasedMessagingSpecs.resolveCapabilitySpec(testingAppPO);
     });
 
+    test('allows receiving retained intents', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.receiveRetainedIntentsSpec(testingAppPO);
+    });
+
+    test('allows receiving retained requests', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.receiveRetainedRequestsSpec(testingAppPO);
+    });
+
     test.describe('intent-interception', () => {
 
       test('allows intercepting intents', async ({testingAppPO}) => {
