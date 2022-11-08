@@ -18,7 +18,7 @@ import {filterByChannel, filterByOrigin, filterByTransport, filterByWindow} from
 import {MessagingChannel, MessagingTransport} from '../../ɵmessaging.model';
 import {ɵBrokerGateway} from './broker-gateway';
 import {map} from 'rxjs/operators';
-import {TopicMessage} from '../../messaging.model';
+import {IntentMessage, TopicMessage} from '../../messaging.model';
 
 export async function connectToHost({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatform.connectToHost(symbolicName);
@@ -56,21 +56,26 @@ export async function sendMessageInUnload({symbolicName}): Promise<void> { // es
   });
 }
 
-export async function subscribeToTopic({symbolicName, topic}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+export async function subscribeToTopic({symbolicName, topic, monitorTopicMessageChannel}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatform.connectToHost(symbolicName);
 
-  Beans.get(MessageClient).observe$(topic).subscribe();
+  if (monitorTopicMessageChannel) {
+    Beans.get(MessageClient).observe$(topic).subscribe();
 
-  const session = Beans.get(ɵBrokerGateway).session;
-  fromEvent<MessageEvent>(window, 'message')
-    .pipe(
-      filterByWindow(session.broker.window),
-      filterByOrigin(session.broker.origin),
-      filterByTransport(MessagingTransport.BrokerToClient),
-      filterByChannel(MessagingChannel.Topic),
-      map(envelope => envelope.data.message),
-    )
-    .subscribe(observer);
+    const session = Beans.get(ɵBrokerGateway).session;
+    fromEvent<MessageEvent>(window, 'message')
+      .pipe(
+        filterByWindow(session.broker.window),
+        filterByOrigin(session.broker.origin),
+        filterByTransport(MessagingTransport.BrokerToClient),
+        filterByChannel(MessagingChannel.Topic),
+        map(envelope => envelope.data.message),
+      )
+      .subscribe(observer);
+  }
+  else {
+    Beans.get(MessageClient).observe$(topic).subscribe(observer);
+  }
 }
 
 export async function monitorTopicMessageChannel({symbolicName}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
@@ -88,21 +93,26 @@ export async function monitorTopicMessageChannel({symbolicName}, observer: Obser
     .subscribe(observer);
 }
 
-export async function subscribeToIntent({symbolicName, intent}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+export async function subscribeToIntent({symbolicName, intent, monitorIntentMessageChannel}, observer: Observer<TopicMessage | IntentMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatform.connectToHost(symbolicName);
 
-  Beans.get(IntentClient).observe$(intent).subscribe();
+  if (monitorIntentMessageChannel) {
+    Beans.get(IntentClient).observe$(intent).subscribe();
 
-  const session = Beans.get(ɵBrokerGateway).session;
-  fromEvent<MessageEvent>(window, 'message')
-    .pipe(
-      filterByWindow(session.broker.window),
-      filterByOrigin(session.broker.origin),
-      filterByTransport(MessagingTransport.BrokerToClient),
-      filterByChannel(MessagingChannel.Intent),
-      map(envelope => envelope.data.message),
-    )
-    .subscribe(observer);
+    const session = Beans.get(ɵBrokerGateway).session;
+    fromEvent<MessageEvent>(window, 'message')
+      .pipe(
+        filterByWindow(session.broker.window),
+        filterByOrigin(session.broker.origin),
+        filterByTransport(MessagingTransport.BrokerToClient),
+        filterByChannel(MessagingChannel.Intent),
+        map(envelope => envelope.data.message),
+      )
+      .subscribe(observer);
+  }
+  else {
+    Beans.get(IntentClient).observe$(intent).subscribe(observer);
+  }
 }
 
 export async function monitorIntentMessageChannel({symbolicName}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef

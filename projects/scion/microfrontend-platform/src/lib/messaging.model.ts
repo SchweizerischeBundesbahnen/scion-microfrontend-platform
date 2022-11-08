@@ -101,8 +101,13 @@ export interface TopicMessage<BODY = any> extends Message {
    */
   body?: BODY;
   /**
-   * Instructs the broker to store this message as retained message for the topic. With the retained flag set to `true`,
-   * a client receives this message immediately upon subscription. The broker stores only one retained message per topic.
+   * Instructs the broker to store this message on the broker as a retained message.
+   *
+   * Unlike a regular message, a retained message remains in the broker and is delivered to new subscribers, even if
+   * they subscribe after the message has been sent. The broker stores one retained message per topic, i.e., a later
+   * sent retained message will replace a previously sent retained message. This, however, does not apply to retained
+   * requests in request-response communication. Retained requests are NEVER replaced and remain in the broker until
+   * the requestor unsubscribes.
    */
   retain?: boolean;
   /**

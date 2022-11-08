@@ -31,11 +31,10 @@ export class IntentSubscriptionRegistry extends MessageSubscriptionRegistry<Inte
  *
  * @ignore
  */
-export class IntentSubscription implements MessageSubscription {
+export class IntentSubscription extends MessageSubscription {
 
-  constructor(public readonly selector: IntentSelector,
-              public readonly subscriberId: string,
-              public readonly client: Client) {
+  constructor(public readonly selector: IntentSelector, subscriberId: string, client: Client) {
+    super(subscriberId, client);
   }
 
   /**

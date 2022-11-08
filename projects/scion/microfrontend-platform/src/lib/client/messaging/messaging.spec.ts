@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,11 +7,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Subject} from 'rxjs';
+import {concat, NEVER, of, Subject} from 'rxjs';
 import {IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from './message-client';
 import {IntentClient} from './intent-client';
-import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, readConsoleLog, resetLoggerSpy, waitForCondition, waitUntilStable, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
+import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, Latch, readConsoleLog, resetLoggerSpy, waitFor, waitUntilStable, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {ClientRegistry} from '../../host/client-registry/client.registry';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -585,21 +585,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor();
     Beans.get(IntentClient).request$({type: 'some-type'}, 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
-    expect(replyCaptor.getError()).toEqual('[RequestReplyError] No subscriber registered to answer the intent [intent={"type":"some-type"}]');
+    expect(replyCaptor.getError()).toMatch(/\[MessagingError].*No subscriber registered to answer the intent/);
   });
-
-  it('should reject a \'request-response\' topic message if no replier is found', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    const replyCaptor = new ObserveCaptor();
-    Beans.get(MessageClient).request$('some-topic').subscribe(replyCaptor);
-    await replyCaptor.waitUntilCompletedOrErrored();
-    expect(replyCaptor.getValues()).withContext('emissions').toEqual([]);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeTrue();
-    expect(replyCaptor.getError()).toEqual('[RequestReplyError] No subscriber registered to answer the request [topic=some-topic]');
-  });
-
   it('should allow an interceptor to handle a \'request-response\' intent message if no replier is running', async () => {
     // create an interceptor which handles intents of a given type and then swallows the message
     const interceptor = new class implements IntentInterceptor {
@@ -675,7 +662,7 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor();
     Beans.get(IntentClient).request$({type: 'some-type'}, 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
-    expect(replyCaptor.getError()).toEqual('[NullProviderError] No application found to provide a capability of the type \'some-type\' and qualifiers \'{}\'. Maybe, the capability is not public API or the providing application not available.');
+    expect(replyCaptor.getError()).toMatch(/NullProviderError/);
   });
 
   it('should reject a client connect attempt if the app is not registered', async () => {
@@ -1061,7 +1048,7 @@ describe('Messaging', () => {
 
     // Mount client that monitors the topic message channel and subscribes to the test topic.
     const microfrontend1 = registerFixture(new MicrofrontendFixture());
-    await microfrontend1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'client', topic: 'test/topic'});
+    await microfrontend1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'client', topic: 'test/topic', monitorTopicMessageChannel: true});
     const microfrontend1TopicMessageChannel = new ObserveCaptor();
 
     // Mount client that monitors the topic message channel but DOES NOT subscribe to the test topic.
@@ -1116,7 +1103,7 @@ describe('Messaging', () => {
 
     // Mount client that monitors the intent message channel and subscribes to the test intent.
     const microfrontend1 = registerFixture(new MicrofrontendFixture());
-    await microfrontend1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'client', intent: {type: 'testee'}});
+    await microfrontend1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'client', intent: {type: 'testee'}, monitorIntentMessageChannel: true});
     const microfrontend1IntentMessageChannel = new ObserveCaptor();
 
     // Mount client that monitors the intent message channel but DOES NOT subscribe to the test intent.
@@ -1763,7 +1750,39 @@ describe('Messaging', () => {
 
   describe('topic-based messaging', () => {
 
+    it('should not error if no subscriber is found', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      // Send intent.
+      const whenPublished = Beans.get(MessageClient).publish('myhome/temperature/kitchen', '20°C');
+      await expectAsync(whenPublished).toBeResolved();
+    });
+
+    describe('request', () => {
+
+      it('should error if no replier is found', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        // Send request.
+        const responseCaptor = new ObserveCaptor();
+        Beans.get(MessageClient).request$('myhome/temperature/kitchen').subscribe(responseCaptor);
+
+        // Expect the request to error.
+        await responseCaptor.waitUntilCompletedOrErrored();
+        expect(responseCaptor.hasErrored()).toBeTrue();
+        expect(responseCaptor.getError()).toMatch(/\[MessagingError].*No subscriber registered to answer the request/);
+      });
+    });
+
     describe('retained message', () => {
+
+      it('should not error if no subscriber is found', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        // Send intent.
+        const whenPublished = Beans.get(MessageClient).publish('myhome/temperature/kitchen', '20°C', {retain: true});
+        await expectAsync(whenPublished).toBeResolved();
+      });
 
       it('should receive retained messages matching an exact subscription', async () => {
         await MicrofrontendPlatform.startHost({applications: []});
@@ -1826,7 +1845,7 @@ describe('Messaging', () => {
 
         // Subscribe to topic 'myhome/:room/temperature'
         Beans.get(MessageClient).observe$<string>('myhome/:room/temperature').subscribe(messageCaptor);
-        await waitUntilSubscriberCount('myhome/kitchen/temperature', 1);
+        await waitUntilStable(() => messageCaptor.getValues().length);
         expect(messageCaptor.getValues()).toEqual(jasmine.arrayWithExactContents([
           jasmine.objectContaining<TopicMessage>({
             topic: 'myhome/livingroom/temperature',
@@ -2032,39 +2051,335 @@ describe('Messaging', () => {
         expect(messageCollector6.getValues().length).toEqual(0);
       });
 
-      it('should deliver custom headers in retained message', async () => {
+      it('should deliver headers in retained message', async () => {
         await MicrofrontendPlatform.startHost({
           host: {symbolicName: 'host-app'},
           applications: [],
         });
 
-        await Beans.get(MessageClient).publish('some-topic', 'body', {retain: true, headers: new Map().set('custom-header', 'some-value')});
-
-        const headersCaptor = new ObserveCaptor(headersExtractFn);
-        Beans.get(MessageClient).observe$<string>('some-topic').subscribe(headersCaptor);
-
-        await headersCaptor.waitUntilEmitCount(1);
-        expect(headersCaptor.getLastValue().get(MessageHeaders.ClientId)).toBeDefined();
-        expect(headersCaptor.getLastValue().get(MessageHeaders.AppSymbolicName)).toEqual('host-app');
-        expect(headersCaptor.getLastValue().get('custom-header')).toEqual('some-value');
-      });
-
-      it('should deliver the client-id from the publisher when receiving a retained message upon subscription', async () => {
-        await MicrofrontendPlatform.startHost({
-          host: {symbolicName: 'host-app'},
-          applications: [],
-        });
-
-        await waitForCondition((): boolean => Beans.get(ClientRegistry).getByApplication('host-app').length > 0, 1000);
+        await waitUntilStable(() => Beans.get(ClientRegistry).getByApplication('host-app').length);
         const senderClientId = Beans.get(ClientRegistry).getByApplication('host-app')[0].id;
 
-        await Beans.get(MessageClient).publish('some-topic', 'body', {retain: true});
+        await Beans.get(MessageClient).publish('temperature', '18°C', {retain: true, headers: new Map().set('room', 'livingroom')});
 
-        const headersCaptor = new ObserveCaptor(headersExtractFn);
-        Beans.get(MessageClient).observe$<string>('some-topic').subscribe(headersCaptor);
+        const captor = new ObserveCaptor();
+        Beans.get(MessageClient).observe$<string>('temperature').subscribe(captor);
 
-        await headersCaptor.waitUntilEmitCount(1);
-        expect(headersCaptor.getLastValue().get(MessageHeaders.ClientId)).toEqual(senderClientId);
+        await waitUntilStable(() => captor.getValues().length);
+        expect(captor.getValues()).toEqual([
+          jasmine.objectContaining<TopicMessage>({
+            topic: 'temperature',
+            body: '18°C',
+            headers: jasmine.mapContaining(new Map()
+              .set('room', 'livingroom')
+              .set(MessageHeaders.AppSymbolicName, 'host-app')
+              .set(MessageHeaders.ClientId, senderClientId),
+            ),
+          }),
+        ]);
+      });
+    });
+
+    describe('retained request', () => {
+
+      it('should not error if no replier is found', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        // Send request.
+        const responseCaptor = new ObserveCaptor();
+        Beans.get(MessageClient).request$('myhome/temperature/kitchen', undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Expect the request not to error.
+        await waitFor(100);
+        expect(responseCaptor.hasErrored()).toBeFalse();
+      });
+
+      it('should deliver retained request to late subscribers', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        // Send retained request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(MessageClient).request$('myhome/livingroom/temperature', undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Add late subscriber.
+        Beans.get(MessageClient).onMessage('myhome/livingroom/temperature', () => '20°C');
+
+        // Expect the request to be answered.
+        await responseCaptor.waitUntilCompletedOrErrored();
+        expect(responseCaptor.getValues()).toEqual(['20°C']);
+      });
+
+      it('should not replace retained request by later retained request', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        // Send retained request.
+        const responseCaptor1 = new ObserveCaptor(bodyExtractFn);
+        Beans.get(MessageClient).request$('myhome/temperature', 'kitchen', {retain: true, headers: new Map().set('temperature', '20°C')}).subscribe(responseCaptor1);
+
+        const responseCaptor2 = new ObserveCaptor(bodyExtractFn);
+        Beans.get(MessageClient).request$('myhome/temperature', 'livingroom', {retain: true, headers: new Map().set('temperature', '21°C')}).subscribe(responseCaptor2);
+
+        const responseCaptor3 = new ObserveCaptor(bodyExtractFn);
+        Beans.get(MessageClient).request$('myhome/temperature', 'livingroom', {retain: true, headers: new Map().set('temperature', '22°C')}).subscribe(responseCaptor3);
+
+        const responseCaptor4 = new ObserveCaptor(bodyExtractFn);
+        Beans.get(MessageClient).request$('myhome/temperature', 'livingroom', {retain: true, headers: new Map().set('temperature', '22°C')}).subscribe(responseCaptor4);
+
+        // Send retained message to the same topic.
+        await Beans.get(MessageClient).publish('myhome/temperature', 'basement', {retain: true, headers: new Map().set('temperature', '18°C')});
+
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Add late subscriber.
+        Beans.get(MessageClient).onMessage('myhome/temperature', request => `${request.body}: ${request.headers.get('temperature')}`);
+
+        // Expect the request to be answered.
+        await responseCaptor1.waitUntilCompletedOrErrored();
+        expect(responseCaptor1.getValues()).toEqual(['kitchen: 20°C']);
+
+        await responseCaptor2.waitUntilCompletedOrErrored();
+        expect(responseCaptor2.getValues()).toEqual(['livingroom: 21°C']);
+
+        await responseCaptor3.waitUntilCompletedOrErrored();
+        expect(responseCaptor3.getValues()).toEqual(['livingroom: 22°C']);
+
+        await responseCaptor4.waitUntilCompletedOrErrored();
+        expect(responseCaptor4.getValues()).toEqual(['livingroom: 22°C']);
+
+        const requestCaptor = new ObserveCaptor();
+        Beans.get(MessageClient).observe$('myhome/temperature').subscribe(requestCaptor);
+
+        // Expect retained requests not to be received anymore because above request-response communications have been completed.
+        // However, we should still receive the retained message sent to the same topic.
+        await requestCaptor.waitUntilEmitCount(1);
+        expect(requestCaptor.getValues()).toEqual([
+          jasmine.objectContaining<TopicMessage>({
+            topic: 'myhome/temperature',
+            body: 'basement',
+            headers: jasmine.mapContaining(new Map().set('temperature', '18°C')),
+          }),
+        ]);
+      });
+
+      it('should not replace retained request by later retained message', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        // Send retained request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(MessageClient).request$('myhome/temperature', 'kitchen', {retain: true, headers: new Map().set('temperature', '20°C')}).subscribe(responseCaptor);
+
+        // Send retained message to the same topic.
+        await Beans.get(MessageClient).publish('myhome/temperature', 'basement', {retain: true, headers: new Map().set('temperature', '18°C')});
+
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Add late subscriber.
+        Beans.get(MessageClient).onMessage('myhome/temperature', request => `${request.body}: ${request.headers.get('temperature')}`);
+
+        // Expect the request to be answered.
+        await responseCaptor.waitUntilCompletedOrErrored();
+        expect(responseCaptor.getValues()).toEqual(['kitchen: 20°C']);
+      });
+
+      it('should delete retained request when the replier terminates the communication', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        // Send retained request
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(MessageClient).request$('myhome/kitchen/temperature', undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Reply to the request with 20°C.
+        const latch = new Latch();
+        const replier$ = new Subject<string>();
+        Beans.get(MessageClient).onMessage('myhome/kitchen/temperature', () => {
+          latch.release();
+          return replier$;
+        });
+        await latch.whenRelesed;
+        replier$.next('20°C');
+
+        // Expect the response to be received.
+        await responseCaptor.waitUntilEmitCount(1);
+        expect(responseCaptor.getValues()).toEqual(['20°C']);
+
+        // Expect the retained request still to be received.
+        const requestCaptor1 = new ObserveCaptor();
+        Beans.get(MessageClient).observe$('myhome/:room/temperature').subscribe(requestCaptor1);
+        await requestCaptor1.waitUntilEmitCount(1);
+        expect(requestCaptor1.getValues()).toEqual([
+          jasmine.objectContaining<TopicMessage>({
+            topic: 'myhome/kitchen/temperature',
+            params: jasmine.mapContaining(new Map().set('room', 'kitchen')),
+          }),
+        ]);
+
+        // Reply to the request with 21°C.
+        replier$.next('21°C');
+
+        // Expect the response to be received.
+        await responseCaptor.waitUntilEmitCount(2);
+        expect(responseCaptor.getValues()).toEqual(['20°C', '21°C']);
+
+        // Expect the retained request still to be received.
+        const requestCaptor2 = new ObserveCaptor();
+        Beans.get(MessageClient).observe$('myhome/kitchen/temperature').subscribe(requestCaptor2);
+        await requestCaptor2.waitUntilEmitCount(1);
+        expect(requestCaptor2.getValues()).not.toEqual([
+          jasmine.objectContaining<TopicMessage>({
+            topic: 'myhome/kitchen/temperature',
+            params: jasmine.mapContaining(new Map().set('room', 'kitchen')),
+          }),
+        ]);
+        expect(requestCaptor2.getValues()).toEqual([
+          jasmine.objectContaining<TopicMessage>({
+            topic: 'myhome/kitchen/temperature',
+          }),
+        ]);
+
+        // Terminate the communication by completing the replier's Observable.
+        replier$.complete();
+
+        // Expect the communication to be terminated.
+        await responseCaptor.waitUntilCompletedOrErrored();
+        expect(responseCaptor.getValues()).toEqual(['20°C', '21°C']);
+        expect(responseCaptor.hasCompleted()).toBeTrue();
+
+        // Expect the retained request to be deleted.
+        const requestCaptor3 = new ObserveCaptor();
+        Beans.get(MessageClient).observe$('myhome/kitchen/temperature').subscribe(requestCaptor2);
+        await waitUntilStable(() => requestCaptor3.getValues().length);
+        expect(requestCaptor3.getValues()).toEqual([]);
+      });
+
+      it('should delete retained request when the requestor unsubscribes before receiving a reply', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        // Send retained request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        const subscription = Beans.get(MessageClient).request$('myhome/kitchen/temperature', undefined, {retain: true}).subscribe(responseCaptor);
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Expect the retained request still to be received.
+        const requestCaptor1 = new ObserveCaptor();
+        Beans.get(MessageClient).observe$('myhome/kitchen/temperature').subscribe(requestCaptor1);
+        await requestCaptor1.waitUntilEmitCount(1);
+        expect(requestCaptor1.getValues()).toEqual([jasmine.objectContaining<TopicMessage>({topic: 'myhome/kitchen/temperature'})]);
+
+        // Unsubscribe the requestor.
+        subscription.unsubscribe();
+
+        // Wait some time until unsubscribed.
+        await waitFor(100);
+
+        // Expect the retained request to be deleted.
+        const requestCaptor2 = new ObserveCaptor();
+        Beans.get(MessageClient).observe$('myhome/kitchen/temperature').subscribe(requestCaptor2);
+        await waitUntilStable(() => requestCaptor2.getValues().length);
+        expect(requestCaptor2.getValues()).toEqual([]);
+      });
+
+      it('should delete retained request when the requestor unsubscribes after received a reply', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        // Send retained request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        const subscription = Beans.get(MessageClient).request$('myhome/kitchen/temperature', undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Wait some time to simulate late subscriber.
+        await waitFor(100);
+
+        // Respond to the request but do not terminate the communication.
+        Beans.get(MessageClient).onMessage('myhome/kitchen/temperature', () => concat(of('20°C'), NEVER)); // never terminates the communication
+
+        // Expect the response to be received.
+        await responseCaptor.waitUntilEmitCount(1);
+        expect(responseCaptor.getValues()).toEqual(['20°C']);
+
+        // Wait some time.
+        await waitFor(100);
+
+        // Expect the retained request still to be received
+        const requestCaptor1 = new ObserveCaptor();
+        Beans.get(MessageClient).observe$('myhome/kitchen/temperature').subscribe(requestCaptor1);
+        await waitUntilStable(() => requestCaptor1.getValues().length);
+        expect(requestCaptor1.getValues()).toEqual([jasmine.objectContaining<TopicMessage>({topic: 'myhome/kitchen/temperature'})]);
+
+        // Unsubscribe the requestor.
+        subscription.unsubscribe();
+
+        // Wait some time until unsubscribed.
+        await waitFor(100);
+
+        // Expect the retained request to be deleted.
+        const requestCaptor2 = new ObserveCaptor();
+        Beans.get(MessageClient).observe$('myhome/kitchen/temperature1').subscribe(requestCaptor2);
+        await waitUntilStable(() => requestCaptor2.getValues().length);
+        expect(requestCaptor2.getValues()).toEqual([]);
+      });
+
+      it('should not delete previous retained request when sending a retained request without payload', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        // Send retained request
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(MessageClient).request$('myhome/kitchen/temperature', undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Send retained request without payload
+        Beans.get(MessageClient).request$('myhome/kitchen/temperature', undefined, {retain: true}).subscribe();
+
+        // Expect the retained request not to be deleted.
+        const requestCaptor = new ObserveCaptor();
+        Beans.get(MessageClient).observe$('myhome/:room/temperature').subscribe(requestCaptor);
+        await requestCaptor.waitUntilEmitCount(2);
+        expect(requestCaptor.getValues()).toHaveSize(2);
+      });
+
+      it('should receive request by multiple subscribers', async () => {
+        await MicrofrontendPlatform.startHost({
+          applications: [
+            {
+              symbolicName: 'app1',
+              manifestUrl: new ManifestFixture({name: 'App 1'}).serve(),
+            },
+            {
+              symbolicName: 'app2',
+              manifestUrl: new ManifestFixture({name: 'App 2'}).serve(),
+            },
+          ],
+        });
+
+        // Send retained request.
+        const responseCaptor = new ObserveCaptor(bodyExtractFn);
+        Beans.get(MessageClient).request$('myhome/kitchen/temperature', undefined, {retain: true}).subscribe(responseCaptor);
+
+        // Mount microfrontend of app 1.
+        const microfrontendApp1 = registerFixture(new MicrofrontendFixture());
+        await microfrontendApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'app1', topic: 'myhome/kitchen/temperature'});
+        const requestCaptorApp1 = new ObserveCaptor();
+        microfrontendApp1.message$.subscribe(requestCaptorApp1);
+
+        // Mount microfrontend of app 2.
+        const microfrontendApp2 = registerFixture(new MicrofrontendFixture());
+        await microfrontendApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'app2', topic: 'myhome/kitchen/temperature'});
+        const requestCaptorApp2 = new ObserveCaptor();
+        microfrontendApp2.message$.subscribe(requestCaptorApp2);
+
+        // Expect the retained request to be received in app 1.
+        await requestCaptorApp1.waitUntilEmitCount(1);
+        expect(requestCaptorApp1.getValues()).toEqual([jasmine.objectContaining<TopicMessage>({topic: 'myhome/kitchen/temperature'})]);
+
+        // Expect the retained request to be received in app 2.
+        await requestCaptorApp2.waitUntilEmitCount(1);
+        expect(requestCaptorApp2.getValues()).toEqual([jasmine.objectContaining<TopicMessage>({topic: 'myhome/kitchen/temperature'})]);
       });
     });
   });

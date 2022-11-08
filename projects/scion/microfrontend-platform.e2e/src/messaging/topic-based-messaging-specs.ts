@@ -255,7 +255,7 @@ export namespace TopicBasedMessagingSpecs {
     await publisherPO.toggleRequestReply(true);
     await publisherPO.clickPublish();
 
-    await expect(await publisherPO.getPublishError()).toContain('[RequestReplyError]');
+    await expect(await publisherPO.getPublishError()).toContain('[MessagingError]');
   }
 
   /**
@@ -453,7 +453,7 @@ export namespace TopicBasedMessagingSpecs {
     await expect(await (await receiverApp1PO.getFirstMessageOrElseReject()).getBody()).toEqual('retained message');
 
     // test to receive retained message in app-2
-    let receiverApp2PO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2});
+    const receiverApp2PO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2});
     await receiverApp2PO.selectFlavor(MessagingFlavor.Topic);
     await receiverApp2PO.enterTopic('some-topic');
     await receiverApp2PO.clickSubscribe();
@@ -468,12 +468,71 @@ export namespace TopicBasedMessagingSpecs {
     await expect(receiverApp2PO.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
 
     // test not to receive the retained message in app-4
-    receiverApp2PO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4});
-    await receiverApp2PO.selectFlavor(MessagingFlavor.Topic);
-    await receiverApp2PO.enterTopic('some-topic');
-    await receiverApp2PO.clickSubscribe();
+    const receiverApp4PO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_4});
+    await receiverApp4PO.selectFlavor(MessagingFlavor.Topic);
+    await receiverApp4PO.enterTopic('some-topic');
+    await receiverApp4PO.clickSubscribe();
 
-    await expect(receiverApp2PO.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
+    await expect(receiverApp4PO.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
+  }
+
+  /**
+   * Tests receiving requests which are retained on the broker.
+   */
+  export async function receiveRetainedRequestsSpec(testingAppPO: TestingAppPO): Promise<void> {
+    const pagePOs = await testingAppPO.navigateTo({
+      publisher_app2: {useClass: PublishMessagePagePO, origin: TestingAppOrigins.APP_2},
+      receiver: 'about:blank',
+    });
+
+    // publish a retained request from app-1
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher_app2');
+    await publisherPO.selectFlavor(MessagingFlavor.Topic);
+    await publisherPO.enterTopic('some-topic');
+    await publisherPO.toggleRetain(true);
+    await publisherPO.toggleRequestReply(true);
+    await publisherPO.enterMessage('retained request');
+    await publisherPO.clickPublish();
+
+    const receiverOutletPO = pagePOs.get<BrowserOutletPO>('receiver');
+
+    // test to receive retained message in app-2
+    const receiverPO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2});
+    await receiverPO.selectFlavor(MessagingFlavor.Topic);
+    await receiverPO.enterTopic('some-topic');
+    await receiverPO.clickSubscribe();
+    const requestPO = await receiverPO.getFirstMessageOrElseReject();
+    const replyTo = await requestPO.getReplyTo();
+    await expect(await requestPO.getBody()).toEqual('retained request');
+    await expect(replyTo).not.toBeUndefined();
+
+    // send reply
+    await requestPO.clickReply();
+
+    // expect the reply to be received
+    const reply1PO = await publisherPO.getFirstReplyOrElseReject();
+    await expect(await reply1PO.getTopic()).toEqual(replyTo);
+    await expect(await reply1PO.getBody()).toEqual('this is a reply');
+    await expect(await reply1PO.getReplyTo()).toBeUndefined();
+
+    // clear the replies list
+    await publisherPO.clickClearReplies();
+    await expect(await publisherPO.getReplies()).toEqual([]);
+
+    // send another reply
+    await requestPO.clickReply();
+    const replyPO = await publisherPO.getFirstReplyOrElseReject();
+    await expect(await replyPO.getTopic()).toEqual(replyTo);
+    await expect(await replyPO.getBody()).toEqual('this is a reply');
+    await expect(await replyPO.getReplyTo()).toBeUndefined();
+
+    // cancel subscription of requestor
+    await publisherPO.clickCancel();
+
+    // expect retained request to be deleted
+    await receiverPO.clickUnsubscribe();
+    await receiverPO.clickSubscribe();
+    await expect(receiverPO.getFirstMessageOrElseReject()).rejects.toThrow(/\[NoMessageFoundError]/);
   }
 
   /**

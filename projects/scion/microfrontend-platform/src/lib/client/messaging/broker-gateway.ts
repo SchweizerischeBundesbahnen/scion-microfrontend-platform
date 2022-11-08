@@ -176,7 +176,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
           take(1),
           pluckMessage(),
           timeout({first: this._messageDeliveryTimeout, with: () => throwError(() => GatewayErrors.MESSAGE_DISPATCH_ERROR(this._messageDeliveryTimeout, envelope))}),
-          mergeMap(statusMessage => statusMessage.body!.ok ? EMPTY : throwError(() => statusMessage.body!.details)),
+          mergeMap(statusMessage => statusMessage.body!.ok ? EMPTY : throwError(() => Error(statusMessage.body!.details))),
           takeUntil(this._platformStopping$),
         )
         .subscribe({
@@ -338,7 +338,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
         mergeMap((messageEvent: MessageEvent<MessageEnvelope<TopicMessage<ConnackMessage>>>) => {
           const response: ConnackMessage | undefined = messageEvent.data.message.body;
           if (response?.returnCode !== 'accepted') {
-            return throwError(() => `${response?.returnMessage ?? 'UNEXPECTED: Empty broker discovery response'} [code: '${response?.returnCode ?? 'n/a'}']`);
+            return throwError(() => Error(`${response?.returnMessage ?? 'UNEXPECTED: Empty broker discovery response'} [code: '${response?.returnCode ?? 'n/a'}']`));
           }
           return of<Session>({
             clientId: response.clientId!,

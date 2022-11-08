@@ -26,7 +26,7 @@ export class ɵMessageClient implements MessageClient {
     const topicMessage: TopicMessage = {
       topic,
       retain: options?.retain ?? false,
-      headers: new Map(options?.headers || []),
+      headers: new Map(options?.headers),
     };
     setBodyIfDefined(topicMessage, message);
     return this._brokerGateway.postMessage(MessagingChannel.Topic, topicMessage);
@@ -38,9 +38,13 @@ export class ɵMessageClient implements MessageClient {
     // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
     // to the returned Observable, each subscription must have its individual message instance and headers map.
     // In addition, the headers are copied to prevent modifications before the effective subscription.
-    const headers = new Map(options?.headers || []);
+    const headers = new Map(options?.headers);
     return defer(() => {
-      const topicMessage: TopicMessage = {topic, retain: false, headers: new Map(headers) /* make a copy for each subscription to support multiple subscriptions */};
+      const topicMessage: TopicMessage = {
+        topic,
+        retain: options?.retain ?? false,
+        headers: new Map(headers), /* make a copy for each subscription to support multiple subscriptions */
+      };
       setBodyIfDefined(topicMessage, request);
       return this._brokerGateway.requestReply$(MessagingChannel.Topic, topicMessage).pipe(throwOnErrorStatus());
     });

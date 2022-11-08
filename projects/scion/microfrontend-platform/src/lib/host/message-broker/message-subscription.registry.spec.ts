@@ -28,15 +28,20 @@ describe('MessageSubscriptionRegistry', () => {
 
   afterEach(() => Beans.destroy());
 
-  it('should remove subscriptions when unregistering a client', () => {
+  it('should remove subscriptions when unregistering a client', async () => {
     const testee = Beans.get(MessageSubscriptionRegistry);
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
 
-    testee.register(newSubscription('subscriber#1', client1));
-    testee.register(newSubscription('subscriber#2', client1));
-    testee.register(newSubscription('subscriber#3', client2));
-    testee.register(newSubscription('subscriber#4', client2));
+    const subscription1 = new MessageSubscription('subscriber#1', client1);
+    const subscription2 = new MessageSubscription('subscriber#2', client1);
+    const subscription3 = new MessageSubscription('subscriber#3', client2);
+    const subscription4 = new MessageSubscription('subscriber#4', client2);
+
+    testee.register(subscription1);
+    testee.register(subscription2);
+    testee.register(subscription3);
+    testee.register(subscription4);
 
     // WHEN unregistering client 1
     Beans.get(ClientRegistry).unregisterClient(client1);
@@ -44,21 +49,34 @@ describe('MessageSubscriptionRegistry', () => {
       jasmine.objectContaining({subscriberId: 'subscriber#3'}),
       jasmine.objectContaining({subscriberId: 'subscriber#4'}),
     ]);
+    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription3.whenUnsubscribe).toBePending();
+    await expectAsync(subscription4.whenUnsubscribe).toBePending();
 
     // WHEN unregistering client 2
     Beans.get(ClientRegistry).unregisterClient(client2);
     expect(testee.subscriptions()).toEqual([]);
+    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription3.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription4.whenUnsubscribe).toBeResolved();
   });
 
-  it('should remove subscription by client', () => {
+  it('should remove subscription by client', async () => {
     const testee = Beans.get(MessageSubscriptionRegistry);
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
 
-    testee.register(newSubscription('subscriber#1', client1));
-    testee.register(newSubscription('subscriber#2', client1));
-    testee.register(newSubscription('subscriber#3', client2));
-    testee.register(newSubscription('subscriber#4', client2));
+    const subscription1 = new MessageSubscription('subscriber#1', client1);
+    const subscription2 = new MessageSubscription('subscriber#2', client1);
+    const subscription3 = new MessageSubscription('subscriber#3', client2);
+    const subscription4 = new MessageSubscription('subscriber#4', client2);
+
+    testee.register(subscription1);
+    testee.register(subscription2);
+    testee.register(subscription3);
+    testee.register(subscription4);
 
     // WHEN unregistering subscriptions of client 1
     testee.unregister({clientId: client1.id});
@@ -66,20 +84,32 @@ describe('MessageSubscriptionRegistry', () => {
       jasmine.objectContaining({subscriberId: 'subscriber#3'}),
       jasmine.objectContaining({subscriberId: 'subscriber#4'}),
     ]);
+    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription3.whenUnsubscribe).toBePending();
+    await expectAsync(subscription4.whenUnsubscribe).toBePending();
 
     // WHEN unregistering subscriptions of client 2
     testee.unregister({clientId: client2.id});
     expect(testee.subscriptions()).toEqual([]);
+    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription3.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription4.whenUnsubscribe).toBeResolved();
   });
 
-  it('should remove subscription by id', () => {
+  it('should remove subscription by id', async () => {
     const testee = Beans.get(MessageSubscriptionRegistry);
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
 
-    testee.register(newSubscription('subscriber#1', client1));
-    testee.register(newSubscription('subscriber#2', client1));
-    testee.register(newSubscription('subscriber#3', client2));
+    const subscription1 = new MessageSubscription('subscriber#1', client1);
+    const subscription2 = new MessageSubscription('subscriber#2', client1);
+    const subscription3 = new MessageSubscription('subscriber#3', client2);
+
+    testee.register(subscription1);
+    testee.register(subscription2);
+    testee.register(subscription3);
 
     // WHEN unregistering subscription 2
     testee.unregister({subscriberId: 'subscriber#2'});
@@ -87,6 +117,9 @@ describe('MessageSubscriptionRegistry', () => {
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
       jasmine.objectContaining({subscriberId: 'subscriber#3'}),
     ]);
+    await expectAsync(subscription1.whenUnsubscribe).toBePending();
+    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription3.whenUnsubscribe).toBePending();
 
     // WHEN unregistering subscription 3 (wrong client)
     testee.unregister({subscriberId: 'subscriber#3', clientId: client1.id});
@@ -94,12 +127,18 @@ describe('MessageSubscriptionRegistry', () => {
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
       jasmine.objectContaining({subscriberId: 'subscriber#3'}),
     ]);
+    await expectAsync(subscription1.whenUnsubscribe).toBePending();
+    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription3.whenUnsubscribe).toBePending();
 
     // WHEN unregistering subscription 3
     testee.unregister({subscriberId: 'subscriber#3', clientId: client2.id});
     expect(testee.subscriptions()).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
     ]);
+    await expectAsync(subscription1.whenUnsubscribe).toBePending();
+    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription3.whenUnsubscribe).toBeResolved();
   });
 
   it('should emit when registering a subscription', () => {
@@ -110,21 +149,21 @@ describe('MessageSubscriptionRegistry', () => {
     testee.register$.subscribe(registerCaptor);
 
     // WHEN registering a subscription
-    testee.register(newSubscription('subscriber#1', client));
+    testee.register(new MessageSubscription('subscriber#1', client));
     expect(registerCaptor.getValues()).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
     ]);
     registerCaptor.reset();
 
     // WHEN registering a subscription
-    testee.register(newSubscription('subscriber#2', client));
+    testee.register(new MessageSubscription('subscriber#2', client));
     expect(registerCaptor.getValues()).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#2'}),
     ]);
     registerCaptor.reset();
   });
 
-  it('should emit when unregistering a subscription', () => {
+  it('should emit when unregistering a subscription', async() => {
     const testee = Beans.get(MessageSubscriptionRegistry);
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
@@ -132,24 +171,41 @@ describe('MessageSubscriptionRegistry', () => {
     const unregisterCaptor = new ObserveCaptor();
     testee.unregister$.subscribe(unregisterCaptor);
 
-    testee.register(newSubscription('subscriber#1', client1));
-    testee.register(newSubscription('subscriber#2', client1));
-    testee.register(newSubscription('subscriber#3', client2));
-    testee.register(newSubscription('subscriber#4', client2));
+    const subscription1 = new MessageSubscription('subscriber#1', client1);
+    const subscription2 = new MessageSubscription('subscriber#2', client1);
+    const subscription3 = new MessageSubscription('subscriber#3', client2);
+    const subscription4 = new MessageSubscription('subscriber#4', client2);
+
+    testee.register(subscription1);
+    testee.register(subscription2);
+    testee.register(subscription3);
+    testee.register(subscription4);
 
     // WHEN unregistering subscription 4
     testee.unregister({subscriberId: 'subscriber#4'});
     expect(unregisterCaptor.getValues().length).toEqual(1);
+    await expectAsync(subscription1.whenUnsubscribe).toBePending();
+    await expectAsync(subscription2.whenUnsubscribe).toBePending();
+    await expectAsync(subscription3.whenUnsubscribe).toBePending();
+    await expectAsync(subscription4.whenUnsubscribe).toBeResolved();
     unregisterCaptor.reset();
 
     // WHEN unregistering subscriptions of client 1
     testee.unregister({clientId: client1.id});
     expect(unregisterCaptor.getValues().length).toEqual(1);
+    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription3.whenUnsubscribe).toBePending();
+    await expectAsync(subscription4.whenUnsubscribe).toBeResolved();
     unregisterCaptor.reset();
 
     // WHEN unregistering subscriptions of client 2
     testee.unregister({clientId: client2.id});
     expect(unregisterCaptor.getValues().length).toEqual(1);
+    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription3.whenUnsubscribe).toBeResolved();
+    await expectAsync(subscription4.whenUnsubscribe).toBeResolved();
     unregisterCaptor.reset();
   });
 
@@ -157,8 +213,8 @@ describe('MessageSubscriptionRegistry', () => {
     const testee = Beans.get(MessageSubscriptionRegistry);
     const client = newClient({id: 'client#1'});
 
-    testee.register(newSubscription('subscriber#1', client));
-    testee.register(newSubscription('subscriber#2', client));
+    testee.register(new MessageSubscription('subscriber#1', client));
+    testee.register(new MessageSubscription('subscriber#2', client));
 
     expect(testee.subscriptions()).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
@@ -170,8 +226,8 @@ describe('MessageSubscriptionRegistry', () => {
     const testee = Beans.get(MessageSubscriptionRegistry);
     const client = newClient({id: 'client#1'});
 
-    testee.register(newSubscription('subscriber#1', client));
-    testee.register(newSubscription('subscriber#2', client));
+    testee.register(new MessageSubscription('subscriber#1', client));
+    testee.register(new MessageSubscription('subscriber#2', client));
 
     expect(testee.subscriptions({subscriberId: 'subscriber#1'})).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
@@ -186,10 +242,10 @@ describe('MessageSubscriptionRegistry', () => {
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
 
-    testee.register(newSubscription('subscriber#1', client1));
-    testee.register(newSubscription('subscriber#2', client1));
-    testee.register(newSubscription('subscriber#3', client2));
-    testee.register(newSubscription('subscriber#4', client2));
+    testee.register(new MessageSubscription('subscriber#1', client1));
+    testee.register(new MessageSubscription('subscriber#2', client1));
+    testee.register(new MessageSubscription('subscriber#3', client2));
+    testee.register(new MessageSubscription('subscriber#4', client2));
 
     expect(testee.subscriptions({clientId: client1.id})).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
@@ -208,14 +264,14 @@ describe('MessageSubscriptionRegistry', () => {
     const client3 = newClient({id: 'client#3', appSymbolicName: 'app2'});
     const client4 = newClient({id: 'client#4', appSymbolicName: 'app2'});
 
-    testee.register(newSubscription('subscriber#1', client1));
-    testee.register(newSubscription('subscriber#2', client1));
-    testee.register(newSubscription('subscriber#3', client2));
-    testee.register(newSubscription('subscriber#4', client2));
-    testee.register(newSubscription('subscriber#5', client3));
-    testee.register(newSubscription('subscriber#6', client3));
-    testee.register(newSubscription('subscriber#7', client4));
-    testee.register(newSubscription('subscriber#8', client4));
+    testee.register(new MessageSubscription('subscriber#1', client1));
+    testee.register(new MessageSubscription('subscriber#2', client1));
+    testee.register(new MessageSubscription('subscriber#3', client2));
+    testee.register(new MessageSubscription('subscriber#4', client2));
+    testee.register(new MessageSubscription('subscriber#5', client3));
+    testee.register(new MessageSubscription('subscriber#6', client3));
+    testee.register(new MessageSubscription('subscriber#7', client4));
+    testee.register(new MessageSubscription('subscriber#8', client4));
 
     expect(testee.subscriptions({appSymbolicName: 'app1'})).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
@@ -238,14 +294,14 @@ describe('MessageSubscriptionRegistry', () => {
     const client3 = newClient({id: 'client#3', appSymbolicName: 'app2'});
     const client4 = newClient({id: 'client#4', appSymbolicName: 'app2'});
 
-    testee.register(newSubscription('subscriber#1', client1));
-    testee.register(newSubscription('subscriber#2', client1));
-    testee.register(newSubscription('subscriber#3', client2));
-    testee.register(newSubscription('subscriber#4', client2));
-    testee.register(newSubscription('subscriber#5', client3));
-    testee.register(newSubscription('subscriber#6', client3));
-    testee.register(newSubscription('subscriber#7', client4));
-    testee.register(newSubscription('subscriber#8', client4));
+    testee.register(new MessageSubscription('subscriber#1', client1));
+    testee.register(new MessageSubscription('subscriber#2', client1));
+    testee.register(new MessageSubscription('subscriber#3', client2));
+    testee.register(new MessageSubscription('subscriber#4', client2));
+    testee.register(new MessageSubscription('subscriber#5', client3));
+    testee.register(new MessageSubscription('subscriber#6', client3));
+    testee.register(new MessageSubscription('subscriber#7', client4));
+    testee.register(new MessageSubscription('subscriber#8', client4));
 
     expect(testee.subscriptions({clientId: client1.id, appSymbolicName: 'app1'})).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
@@ -275,9 +331,3 @@ function newClient(descriptor: {id: string; appSymbolicName?: string}): Client {
   } as Client;
 }
 
-function newSubscription(subscriberId: string, client: Client): MessageSubscription {
-  return new class implements MessageSubscription {
-    public readonly subscriberId = subscriberId;
-    public readonly client = client;
-  };
-}

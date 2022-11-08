@@ -187,3 +187,18 @@ export async function waitUntilSubscriberCount(topic: string, expectedCount: num
       });
   });
 }
+
+/**
+ * Synchronization to wait until some operation completes.
+ */
+export class Latch {
+  /**
+   * Releases this latch.
+   */
+  public release!: () => void;
+
+  /**
+   * Promise that resolves when released this latch.
+   */
+  public whenRelesed = new Promise<void>(resolve => this.release = resolve);
+}

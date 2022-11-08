@@ -62,6 +62,7 @@ export class MessageSubscriptionRegistry<T extends MessageSubscription = Message
       Maps.removeSetValue(this._subscriptionsByApp, subscription.client.application.symbolicName, subscription);
       Maps.removeSetValue(this._subscriptionsByClient, subscription.client.id, subscription);
       this.onUnregister?.(subscription);
+      subscription.notifyUnsubscribe();
     });
     this._unregister$.next(subscriptions);
   }
@@ -143,7 +144,17 @@ export class MessageSubscriptionRegistry<T extends MessageSubscription = Message
  *
  * @ignore
  */
-export interface MessageSubscription {
-  readonly subscriberId: string;
-  readonly client: Client;
+export class MessageSubscription {
+  /**
+   * Promise that resolves when the subscriber unsubscribes.
+   */
+  public readonly whenUnsubscribe = new Promise<void>(resolve => this.notifyUnsubscribe = resolve);
+
+  /**
+   * Notify when the subscriber unsubscribes.
+   */
+  public notifyUnsubscribe!: () => void;
+
+  constructor(public readonly subscriberId: string, public readonly client: Client) {
+  }
 }
