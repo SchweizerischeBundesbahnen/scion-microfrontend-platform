@@ -61,7 +61,7 @@ import {IntentSubscriptionRegistry} from './host/message-broker/intent-subscript
 /**
  * Current version of the SCION Microfrontend Platform.
  */
-const version = '1.0.0-rc.9';
+const version = '1.0.0-rc.10';
 
 /**
  * **SCION Microfrontend Platform is a TypeScript-based open-source library that helps to implement a microfrontend architecture.**
