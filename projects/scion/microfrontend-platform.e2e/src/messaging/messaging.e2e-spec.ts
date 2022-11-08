@@ -75,6 +75,10 @@ test.describe('Messaging', () => {
       await TopicBasedMessagingSpecs.receiveRetainedMessagesSpec(testingAppPO);
     });
 
+    test('allows receiving retained requests', async ({testingAppPO}) => {
+      await TopicBasedMessagingSpecs.receiveRetainedRequestsSpec(testingAppPO);
+    });
+
     test('allows receiving messages without a payload', async ({testingAppPO}) => {
       await TopicBasedMessagingSpecs.receiveMessagesWithoutPayloadSpec(testingAppPO);
     });

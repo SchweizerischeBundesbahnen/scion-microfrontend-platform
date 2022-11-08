@@ -25,7 +25,7 @@ export class ɵIntentClient implements IntentClient {
     assertExactQualifier(intent.qualifier);
     const intentMessage: IntentMessage = {
       intent,
-      headers: new Map(options?.headers || []),
+      headers: new Map(options?.headers),
       capability: undefined!, /* set by the broker when dispatching the intent */
     };
     setBodyIfDefined(intentMessage, body);
@@ -38,7 +38,7 @@ export class ɵIntentClient implements IntentClient {
     // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
     // to the returned Observable, each subscription must have its individual message instance and headers map.
     // In addition, the headers are copied to prevent modifications before the effective subscription.
-    const headers = new Map(options?.headers || []);
+    const headers = new Map(options?.headers);
     return defer(() => {
       const intentMessage: IntentMessage = {
         intent,

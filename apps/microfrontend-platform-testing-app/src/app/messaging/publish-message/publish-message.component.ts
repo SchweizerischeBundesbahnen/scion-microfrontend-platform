@@ -143,7 +143,7 @@ export class PublishMessageComponent implements OnDestroy {
     this.publishError = null;
     try {
       if (requestReply) {
-        this._requestResponseSubscription = this._messageClient.request$(topic, message, {headers: headers})
+        this._requestResponseSubscription = this._messageClient.request$(topic, message, {retain: this.form.get(RETAIN).value, headers})
           .pipe(finalize(() => this.markPublishing(false)))
           .subscribe({
             next: reply => this.replies.push(reply),
@@ -151,9 +151,9 @@ export class PublishMessageComponent implements OnDestroy {
           });
       }
       else {
-        this._messageClient.publish(topic, message, {retain: this.form.get(RETAIN).value, headers: headers})
+        this._messageClient.publish(topic, message, {retain: this.form.get(RETAIN).value, headers})
           .catch(error => {
-            this.publishError = error;
+            this.publishError = error?.message ?? `${error}`;
           })
           .finally(() => {
             this.markPublishing(false);
@@ -192,7 +192,7 @@ export class PublishMessageComponent implements OnDestroy {
       else {
         this._intentClient.publish({type, qualifier, params}, message, {headers: headers})
           .catch(error => {
-            this.publishError = error;
+            this.publishError = error?.message ?? `${error}`;
           })
           .finally(() => {
             this.markPublishing(false);

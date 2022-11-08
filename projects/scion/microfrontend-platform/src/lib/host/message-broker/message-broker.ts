@@ -31,8 +31,9 @@ import {ɵClient} from '../client-registry/ɵclient';
 import {stringifyError} from '../../error.util';
 import {IntentSubscription, IntentSubscriptionRegistry} from './intent-subscription.registry';
 import {TopicMatcher} from '../../topic-matcher.util';
-import {Defined} from '@scion/toolkit/util';
+import {Defined, Maps} from '@scion/toolkit/util';
 import {MessageClient} from '../../client/messaging/message-client';
+import {Predicates} from './predicates.util';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -59,7 +60,8 @@ export class MessageBroker implements Initializer, PreDestroy {
   private readonly _clientRegistry = Beans.get(ClientRegistry);
   private readonly _topicSubscriptionRegistry = Beans.get(TopicSubscriptionRegistry);
   private readonly _intentSubscriptionRegistry = Beans.get(IntentSubscriptionRegistry);
-  private readonly _retainedMessageStore = new Map<string, TopicMessage>();
+
+  private readonly _retainedMessageStore = new Map<string, TopicMessage[]>();
 
   private readonly _applicationRegistry: ApplicationRegistry;
   private readonly _manifestRegistry: ManifestRegistry;
@@ -88,12 +90,12 @@ export class MessageBroker implements Initializer, PreDestroy {
     this.installClientConnectListener();
     this.installClientDisconnectListener();
 
-    // Install message dispatchers.
-    this.installTopicMessageDispatcher();
+    // Install message handling.
+    this.installMessageDispatcher();
     this.installTopicSubscribeListener();
     this.installTopicUnsubscribeListener();
     this.installTopicSubscriberCountObserver();
-    this.sendRetainedTopicMessageOnSubscribe();
+    this.sendRetainedMessageOnSubscribe();
 
     // Install intent dispatchers.
     this.installIntentMessageDispatcher();
@@ -233,7 +235,7 @@ export class MessageBroker implements Initializer, PreDestroy {
   /**
    * Dispatches topic messages to subscribed clients.
    */
-  private installTopicMessageDispatcher(): void {
+  private installMessageDispatcher(): void {
     this._clientMessage$
       .pipe(
         filterByChannel<TopicMessage>(MessagingChannel.Topic),
@@ -245,30 +247,28 @@ export class MessageBroker implements Initializer, PreDestroy {
         const messageId = message.headers.get(MessageHeaders.MessageId);
 
         if (!message.topic) {
-          const error = '[TopicDispatchError] Missing property: topic';
+          const error = '[MessagingError] Missing message property: topic';
           sendDeliveryStatusError(client, messageId, error);
           return;
         }
 
-        // If retained message without payload, delete it.
-        if (message.retain && message.body === undefined) {
-          this._retainedMessageStore.delete(message.topic);
+        // If a retained message without payload, remove any stored retained message on that topic, if any.
+        if (message.retain && !isRequest(message) && message.body === undefined) {
+          Maps.removeListValue(this._retainedMessageStore, message.topic, Predicates.not(isRequest));
           sendDeliveryStatusSuccess(client, messageId);
           return;
         }
 
         try {
-          // If request-response communication, register subscription to receive replies.
-          this.subscribeForRepliesIfRequest(message, client);
-
-          // Ensure the message header 'ɵSUBSCRIBER_ID' to be removed; is set in request-response communication by the gateway.
+          // If a request of a request-response communication, create a subscription for the requestor to receive replies.
+          const requestorReplySubscription = this.subscribeForRepliesIfRequest(message, client);
+          // Ensure the message header 'ɵSUBSCRIBER_ID' to be removed; is set in request-response communication by the client gateway.
           message.headers.delete(MessageHeaders.ɵSubscriberId);
-
           // Dispatch the message.
           await this._messagePublisher.interceptAndPublish(message);
+          // If a retained message or request, store it for late subscribers.
+          this.storeMessageIfRetained(message, requestorReplySubscription);
 
-          // Store retained message, if any.
-          message.retain && this._retainedMessageStore.set(message.topic, message);
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
@@ -335,14 +335,20 @@ export class MessageBroker implements Initializer, PreDestroy {
       }));
   }
 
-  private sendRetainedTopicMessageOnSubscribe(): void {
+  /**
+   * Installs a listener that sends retained messages to new subscribers.
+   */
+  private sendRetainedMessageOnSubscribe(): void {
     this._topicSubscriptionRegistry.register$
       .pipe(takeUntil(this._destroy$))
       .subscribe(subscription => runSafe(() => {
-        this._retainedMessageStore.forEach(retainedMessage => this._messagePublisher.interceptAndPublish({
-          ...retainedMessage,
-          headers: new Map(retainedMessage.headers).set(MessageHeaders.ɵSubscriberId, subscription.subscriberId),
-        }));
+        Array.from(this._retainedMessageStore.values())
+          .flat()
+          .filter(retainedMessage => subscription.matches(retainedMessage.topic))
+          .forEach(retainedMessage => this._messagePublisher.interceptAndPublish({
+            ...retainedMessage,
+            headers: new Map(retainedMessage.headers).set(MessageHeaders.ɵSubscriberId, subscription.subscriberId),
+          }));
       }));
   }
 
@@ -458,8 +464,8 @@ export class MessageBroker implements Initializer, PreDestroy {
       });
 
       // If request-reply communication, reply with an error if no subscriber is registered to answer the request.
-      if (message.headers.has(MessageHeaders.ReplyTo) && !subscribers.length) {
-        throw Error(`[RequestReplyError] No subscriber registered to answer the request [topic=${message.topic}]`);
+      if (isRequest(message) && !message.retain && !subscribers.length) {
+        throw Error(`[MessagingError] No subscriber registered to answer the request [topic=${message.topic}]`);
       }
 
       subscribers.forEach(subscriber => runSafe(() => sendTopicMessage(subscriber, message)));
@@ -478,8 +484,8 @@ export class MessageBroker implements Initializer, PreDestroy {
       });
 
       // If request-reply communication, reply with an error if no subscriber is registered to answer the intent.
-      if (message.headers.has(MessageHeaders.ReplyTo) && !subscribers.length) {
-        throw Error(`[RequestReplyError] No subscriber registered to answer the intent [intent=${JSON.stringify(message.intent)}]`);
+      if (isRequest(message) && !subscribers.length) {
+        throw Error(`[MessagingError] No subscriber registered to answer the intent [intent=${JSON.stringify(message.intent)}]`);
       }
 
       subscribers.forEach(subscriber => runSafe(() => sendIntentMessage(subscriber, message)));
@@ -487,18 +493,50 @@ export class MessageBroker implements Initializer, PreDestroy {
   }
 
   /**
-   * If request-response communication, register subscription to receive replies.
+   * Create a subscription for the sender to receive replies if request-response communication.
    */
-  private subscribeForRepliesIfRequest(message: Message, requestor: Client): void {
+  private subscribeForRepliesIfRequest(message: Message, sender: Client): TopicSubscription | null {
+    if (!isRequest(message)) {
+      return null;
+    }
+    if (sender.deprecations.legacyRequestResponseSubscriptionApi) {
+      return null;
+    }
+
+    const subscriberId = Defined.orElseThrow(message.headers.get(MessageHeaders.ɵSubscriberId), () => Error('[MessagingError] Missing message header: subscriberId'));
     const replyTo = message.headers.get(MessageHeaders.ReplyTo);
-    if (!replyTo) {
+    const subscription = new TopicSubscription(replyTo, subscriberId, sender);
+    this._topicSubscriptionRegistry.register(subscription);
+    return subscription;
+  }
+
+  /**
+   * Stores the message if retained.
+   *
+   * Unlike a regular message, a retained message remains in the broker and is delivered to new subscribers, even if they subscribe
+   * after the request has been sent. The broker stores retained message per topic, i.e., a later sent retained message will replace
+   * a previously sent retained message. This, however, does not apply to retained requests in request-response communication.
+   * Retained requests are NEVER replaced and remain in the broker until the requestor unsubscribes.
+   *
+   * @param message - Message to be stored if retained.
+   * @param requestorReplySubscription - Subscription of the requestor to receive replies; only set in request-response communication.
+   */
+  private storeMessageIfRetained(message: TopicMessage, requestorReplySubscription: TopicSubscription | null): void {
+    if (!message.retain) {
       return;
     }
-    if (requestor.deprecations.legacyRequestResponseSubscriptionApi) {
-      return;
+
+    // If a retained request, store it. Retained requests are not replaced and are retained until the requestor unsubscribes.
+    if (isRequest(message)) {
+      Defined.orElseThrow(requestorReplySubscription, () => Error('[InternalMessagingError] An unexpected error occurred. Expected subscription not to be null.'));
+      Maps.addListValue(this._retainedMessageStore, message.topic, message);
+      requestorReplySubscription!.whenUnsubscribe.then(() => Maps.removeListValue(this._retainedMessageStore, message.topic, message));
     }
-    const subscriberId = Defined.orElseThrow(message.headers.get(MessageHeaders.ɵSubscriberId), () => Error('[ResponseResponseSubscribeError] Missing header: subscriberId'));
-    this._topicSubscriptionRegistry.register(new TopicSubscription(replyTo, subscriberId, requestor));
+    // If a retained message (not a request), replace any previously stored retained message on that topic, if any.
+    else {
+      Maps.removeListValue(this._retainedMessageStore, message.topic, Predicates.not(isRequest));
+      Maps.addListValue(this._retainedMessageStore, message.topic, message);
+    }
   }
 
   public preDestroy(): void {
@@ -645,6 +683,14 @@ function catchErrorAndRetry<T>(): MonoTypeOperatorFunction<T> {
     Beans.get(Logger).error('[UnexpectedError] An unexpected error occurred.', error);
     return caught;
   });
+}
+
+/**
+ * Tests whether given message is a request of a request-response communication.
+ * That is a message that contains the {@link MessageHeaders#ReplyTo} message header.
+ */
+function isRequest(message: Message): boolean {
+  return message.headers.has(MessageHeaders.ReplyTo);
 }
 
 /**

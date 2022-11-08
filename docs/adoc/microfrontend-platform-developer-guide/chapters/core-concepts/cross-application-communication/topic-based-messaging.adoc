@@ -57,7 +57,7 @@ A microfrontend can receive messages published to a topic as following.
 include::topic-based-messaging.snippets.ts[tags=subscribe]
 ----
 <1> Specifies the topic which to observe.
-<2> Prints the body of the received message to the console, which is `22 °C` in this example.
+<2> Prints the body of the received message to the console, which is `22°C` in this example.
 
 [[chapter:topic-based-messaging:wildcard-subscription]]
 [discrete]
@@ -76,7 +76,7 @@ include::topic-based-messaging.snippets.ts[tags=subscribe-with-wildcard-segments
 [[chapter:topic-based-messaging:publishing-a-retained-message]]
 [discrete]
 === Publishing a Retained Message
-The platform supports publishing a message as a _retained_ message. Retained messages help newly-subscribed clients to get the last message published to a topic immediately upon subscription. The broker stores one retained message per topic. To delete a retained message, send a retained message without a body to the topic. Deletion messages are not transported to subscribers.
+The platform supports publishing a message as a _retained_ message. Retained messages help newly subscribed clients to get the last message published to a topic immediately upon subscription. The broker stores one retained message per topic, i.e., a later sent retained message will replace a previously sent retained message. To delete a retained message, send a retained message without payload to the topic. Deletion messages are not transported to subscribers.
 
 The following example shows how to publish a message as a _retained_ message.
 
@@ -105,7 +105,7 @@ The recipient can then access the message headers via the `headers` property on 
 ----
 include::topic-based-messaging.snippets.ts[tags=receive-message-with-headers]
 ----
-<1> Prints received message headers to the console: `{"sensor-type" => "analog"}`.
+<1> Prints received message headers to the console: `{"authorization" => "Bearer <token>"}`.
 
 [NOTE]
 ====
@@ -129,14 +129,23 @@ The communication is initiated by the publisher by sending a request (instead of
 The following code snippet shows how to initiate a _request-response_ communication and receiving replies.
 [source,typescript]
 ----
-include::topic-based-messaging.snippets.ts[tags=request]
+include::topic-based-messaging.snippets.ts[tags=send-request]
 ----
 <1> Initiates a _request-response_ communication by invoking the `request$` method on the `MessageClient`.
 <2> Prints the received replies to the console.
 
+Similar to publishing a retained message, a request can also be marked as retained, instructing the broker to store it in the broker and deliver it to new subscribers, even if they subscribe after the request has been sent. Unlike retained messages, retained requests are not replaced by later retained requests or messages and remain in the broker until the requestor unsubscribes.
+
+The following code snippet illustrates how to send a retained request.
+[source,typescript]
+----
+include::topic-based-messaging.snippets.ts[tags=send-retained-request]
+----
+<1> The `retain` flag instructs the broker to retain this request until unsubscribed.
+
 [NOTE]
 ====
-In request-response communication, by default, the requestor’s Observable never completes. However, the replier can include a response status code in the reply’s headers, allowing to control the lifecycle of the requestor’s Observable. For example, the status code `250` `ResponseStatusCodes.TERMINAL` allows completing the requestor’s Observable after emitted the reply, or the status code `500` `ResponseStatusCodes.ERROR` to error the Observable. See the enum `ResponseStatusCodes` for available status codes.
+In request-response communication, by default, the requestor’s Observable never completes. However, the replier can include the response status code in the reply’s headers, allowing to control the lifecycle of the requestor’s Observable. For example, the status code `250` `ResponseStatusCodes.TERMINAL` allows completing the requestor’s Observable after emitted the reply, or the status code `500` `ResponseStatusCodes.ERROR` to error the Observable. See the enum `ResponseStatusCodes` for available status codes.
 
 If the replier does not complete the communication, the requestor can use the `take(1)` RxJS operator to unsubscribe upon the receipt of the first reply.
 

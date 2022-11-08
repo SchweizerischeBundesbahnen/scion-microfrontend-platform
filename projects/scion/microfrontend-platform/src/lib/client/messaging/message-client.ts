@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -27,9 +27,12 @@ import {Beans} from '@scion/toolkit/bean-manager';
  * other hand, can subscribe to multiple topics simultaneously by using wildcard segments in the topic.
  *
  * ### Retained Message
- * You can publish a message as a retained message for helping newly-subscribed clients to get the last message published to a topic
- * immediately upon subscription. The broker stores one retained message per topic. To delete a retained message, send a retained message
- * without a body to the topic. Deletion messages are not transported to subscribers.
+ * You can mark a message as "retained" for helping newly subscribed clients to get the last message published to a topic immediately upon
+ * subscription. The broker stores one retained message per topic, i.e., a later sent retained message will replace a previously sent retained
+ * message. To delete a retained message, send a retained message without payload to the topic.
+ *
+ * ### Retained Request
+ * Unlike retained messages, retained requests are not replaced by later retained requests/messages and remain in the broker until the requestor unsubscribes.
  *
  * ### Request-Response Messaging
  * Sometimes it is useful to initiate a request-response communication to wait for a response. Unlike with fire-and-forget messaging, a temporary
@@ -45,10 +48,9 @@ export abstract class MessageClient {
   /**
    * Publishes a message to the given topic. The message is transported to all consumers subscribed to the topic.
    *
-   * A message can be sent as a retained message by setting the {@link PublishOptions.retain} flag to `true`. It instructs the broker to store this
-   * message as a retained message for the topic; thus, clients receive this message immediately upon subscription. The broker stores only the latest
-   * retained message on a topic. To delete a retained message, send a retained message without a body to the topic - deletion messages are not
-   * transported to subscribers.
+   * A message can be marked as "retained" by setting the {@link PublishOptions.retain} flag to `true`. It instructs the broker to store this message and
+   * deliver it to new subscribers, even if they subscribe after the message has been published. The broker stores one retained message per topic. To
+   * delete a retained message, send a retained message without payload to the topic. Deletion messages are not transported to subscribers.
    *
    * @param  topic - Specifies the topic to which the message should be sent.
    *         Topics are case-sensitive and consist of one or more segments, each separated by a forward slash.
@@ -61,8 +63,13 @@ export abstract class MessageClient {
   public abstract publish<T = any>(topic: string, message?: T, options?: PublishOptions): Promise<void>;
 
   /**
-   * Sends a request to the given topic and receives one or more replies. To publish a request, at least one subscriber must be subscribed to the topic.
-   * Otherwise, the request is rejected.
+   * Sends a request to the given topic and receives one or more replies.
+   *
+   * A request can be marked as "retained" by setting the {@link RequestOptions.retain} flag to `true`. It instructs the broker to store this request and
+   * deliver it to new subscribers, even if they subscribe after the request has been sent. Retained requests are not replaced by later retained requests/
+   * messages and remain in the broker until the requestor unsubscribes.
+   *
+   * If not marking the request as "retained", at least one subscriber must be subscribed to the topic. Otherwise, the request is rejected.
    *
    * @param  topic - Specifies the topic to which the request should be sent.
    *         Topics are case-sensitive and consist of one or more segments, each separated by a forward slash.
@@ -72,8 +79,7 @@ export abstract class MessageClient {
    * @param  options - Controls how to send the request and allows setting request headers.
    * @return An Observable that emits when receiving a reply. It never completes unless the replier sets the status code {@link ResponseStatusCodes.TERMINAL}
    *         in the {@link MessageHeaders.Status} message header. Then, the Observable completes immediately after emitted the reply.
-   *         The Observable errors if the message could not be dispatched or if no replier is currently subscribed to the topic. It will also error if the
-   *         replier sets a status code greater than or equal to 400, e.g., {@link ResponseStatusCodes.ERROR}.
+   *         The Observable errors if the request could not be dispatched. It will also error if the replier sets a status code greater than or equal to 400, e.g., {@link ResponseStatusCodes.ERROR}.
    */
   public abstract request$<T>(topic: string, request?: any, options?: RequestOptions): Observable<TopicMessage<T>>;
 
@@ -104,7 +110,7 @@ export abstract class MessageClient {
    *   sensor$
    *     .pipe(takeUntilUnsubscribe(replyTo))
    *     .subscribe(temperature => {
-   *       Beans.get(MessageClient).publish(replyTo, `${temperature} °C`);
+   *       Beans.get(MessageClient).publish(replyTo, `${temperature}°C`);
    *     });
    * });
    * ```
@@ -169,7 +175,7 @@ export function takeUntilUnsubscribe<T>(topic: string): MonoTypeOperatorFunction
 }
 
 /**
- * Control how to publish the message.
+ * Control how to publish a message.
  *
  * @category Messaging
  */
@@ -179,21 +185,23 @@ export interface PublishOptions {
    */
   headers?: Map<string, any>;
   /**
-   * Instructs the broker to store this message as a retained message for the topic. With the retained flag set to `true`,
-   * a client receives this message immediately upon subscription. The broker stores only one retained message per topic.
-   * To delete the retained message, send a retained message without a body to the topic.
+   * Instructs the broker to store this message on the broker as a retained message.
+   *
+   * Unlike a regular message, a retained message remains in the broker and is delivered to new subscribers, even if
+   * they subscribe after the message has been sent. The broker stores one retained message per topic, i.e., a later
+   * sent retained message will replace a previously sent retained message. This, however, does not apply to retained
+   * requests in request-response communication. Retained requests are NEVER replaced and remain in the broker until
+   * the requestor unsubscribes.
+   *
+   * To delete the retained message, send a retained message without payload to the same destination.
    */
   retain?: boolean;
 }
 
 /**
- * Control how to publish a message in request-response communication.
+ * Control how to publish a request in request-response communication.
  *
  * @category Messaging
  */
-export interface RequestOptions {
-  /**
-   * Sets headers to pass additional information with a message.
-   */
-  headers?: Map<string, any>;
+export interface RequestOptions extends PublishOptions { // eslint-disable-line @typescript-eslint/no-empty-interface
 }
