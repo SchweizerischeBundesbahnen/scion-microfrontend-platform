@@ -1,3 +1,63 @@
+# [1.0.0-rc.10](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.9...1.0.0-rc.10) (2022-11-08)
+
+
+### Bug Fixes
+
+* **platform/messaging:** receive latest retained message per topic in wildcard subscription ([b578317](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/b5783173f14f77b06737e418de53b3341d9ff450))
+* **devtools:** activate selected tab in application details even after quick navigation ([b9e1cff](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/b9e1cffff7dac3c97b3dfd54d4dfac6885ec4938))
+
+
+### Features
+
+* **platform:** use unique identifier for capability and intention ID ([e2957ba](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/e2957baaa2ed22a73eb79b4cf2a53ce1891fff41)), closes [#162](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/162) [#171](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/171)
+* **platform/messaging:** support sending retained intents ([08afb72](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/08afb72037bb6f73cd52edf2068352c7def78142)), closes [#142](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/142)
+* **platform/messaging:** support sending retained requests to a topic ([1098f8f](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/1098f8f0e797e9d045983075fc63fed5cce94c41))
+* **devtools:** allow filtering capabilities by id ([fff5dd7](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/fff5dd7f86e82af3b6c99fe4fa5a17034e1e5a2f))
+* **devtools:** remove logical operator for capability filters where not useful ([3909ba3](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/3909ba3408d4e62e3d92d35cd4d27010ed41fb8c))
+* **devtools:** render logical operators (OR/AND) in capability filters as toggle button ([3130e88](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/3130e88529e8cf186e98bbd73659440b67b9593d))
+
+
+### BREAKING CHANGES
+
+* **platform/messaging:** The `IntentClient` now uses the same `options` object as the `MessageClient` to control how to send a message or request. The content of the `options` object has not changed, only its name, i.e., migration is only required if assigning it to a typed variable or decorating the `IntentClient`.
+
+  Note that the communication protocol between host and client has NOT changed, i.e., host and clients can be migrated independently.
+
+  To migrate:
+  - options for sending an intent was changed from `IntentOptions` to `PublishOptions` (`IntentClient#publish`)
+  - options for requesting data was changed from `IntentOptions` to `RequestOptions` (`IntentClient#request`)
+
+* **platform:** Using unique identifier for capability and intention ID introduced a breaking change.
+
+  Previously, the IDs used for capabilities and intentions were stable but not unique, which caused problems when deregistering capabilities and intentions. If your application requires stable capability identifiers, you can register a capability interceptor, as follows:
+
+  ```ts
+  import {Capability, CapabilityInterceptor} from '@scion/microfrontend-platform';
+  import {Crypto} from '@scion/toolkit/crypto';
+  import {Beans} from '@scion/toolkit/bean-manager';
+  
+  Beans.register(CapabilityInterceptor, {
+    useValue: new class implements CapabilityInterceptor {
+      public async intercept(capability: Capability): Promise<Capability> {
+        const stableId = await Crypto.digest(JSON.stringify({
+          type: capability.type,
+          qualifier: capability.qualifier,
+          application: capability.metadata!.appSymbolicName,
+        }));
+        return {
+          ...capability,
+          metadata: {...capability.metadata!, id: stableId},
+        };
+      }
+    },
+    multi: true
+  })
+  ```
+  
+  Note that the communication protocol between host and client has NOT changed. You can independently upgrade host and clients to the new version.
+
+
+
 # [1.0.0-rc.9](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.8...1.0.0-rc.9) (2022-11-02)
 
 
