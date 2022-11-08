@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -9,7 +9,7 @@
  */
 
 import {BeanDecorator} from '@scion/toolkit/bean-manager';
-import {Intent, IntentClient, IntentMessage, IntentOptions, IntentSelector, MessageClient, PublishOptions, RequestOptions, TopicMessage} from '@scion/microfrontend-platform';
+import {Intent, IntentClient, IntentMessage, IntentSelector, MessageClient, PublishOptions, RequestOptions, TopicMessage} from '@scion/microfrontend-platform';
 import {Injectable, NgZone} from '@angular/core';
 import {MonoTypeOperatorFunction, Observable, pipe, Subscription} from 'rxjs';
 import {observeInside, subscribeInside} from '@scion/toolkit/operators';
@@ -63,11 +63,11 @@ export class NgZoneIntentClientDecorator implements BeanDecorator<IntentClient> 
     const zone = this._zone;
     return new class implements IntentClient {
 
-      public publish<T = any>(intent: Intent, body?: T, options?: IntentOptions): Promise<void> {
+      public publish<T = any>(intent: Intent, body?: T, options?: PublishOptions): Promise<void> {
         return delegate.publish(intent, body, options);
       }
 
-      public request$<T>(intent: Intent, body?: any, options?: IntentOptions): Observable<TopicMessage<T>> {
+      public request$<T>(intent: Intent, body?: any, options?: RequestOptions): Observable<TopicMessage<T>> {
         return delegate.request$<T>(intent, body, options).pipe(synchronizeWithAngular(zone));
       }
 

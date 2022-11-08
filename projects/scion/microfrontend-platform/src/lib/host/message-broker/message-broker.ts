@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {EMPTY, fromEvent, merge, MonoTypeOperatorFunction, Observable, of, Subject} from 'rxjs';
+import {EMPTY, from, fromEvent, merge, MonoTypeOperatorFunction, Observable, of, Subject} from 'rxjs';
 import {catchError, filter, mergeMap, share, takeUntil} from 'rxjs/operators';
 import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
 import {ConnackMessage, IntentSubscribeCommand, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, UnsubscribeCommand} from '../../ɵmessaging.model';
@@ -62,6 +62,7 @@ export class MessageBroker implements Initializer, PreDestroy {
   private readonly _intentSubscriptionRegistry = Beans.get(IntentSubscriptionRegistry);
 
   private readonly _retainedMessageStore = new Map<string, TopicMessage[]>();
+  private readonly _retainedIntentStore = new Map<string, IntentMessage[]>();
 
   private readonly _applicationRegistry: ApplicationRegistry;
   private readonly _manifestRegistry: ManifestRegistry;
@@ -97,10 +98,12 @@ export class MessageBroker implements Initializer, PreDestroy {
     this.installTopicSubscriberCountObserver();
     this.sendRetainedMessageOnSubscribe();
 
-    // Install intent dispatchers.
-    this.installIntentMessageDispatcher();
+    // Install intent handling.
+    this.installIntentDispatcher();
     this.installIntentSubscribeListener();
     this.installIntentUnsubscribeListener();
+    this.sendRetainedIntentOnSubscribe();
+    this.deleteRetainedIntentOnCapabilityUnregister();
 
     // Assemble message interceptors to a chain of handlers which are called one after another. The publisher is added as terminal handler.
     this._messagePublisher = this.createMessagePublisher();
@@ -280,7 +283,7 @@ export class MessageBroker implements Initializer, PreDestroy {
   /**
    * Dispatches intents to qualified clients.
    */
-  private installIntentMessageDispatcher(): void {
+  private installIntentDispatcher(): void {
     this._clientMessage$
       .pipe(
         filterByChannel<IntentMessage>(MessagingChannel.Intent),
@@ -292,13 +295,13 @@ export class MessageBroker implements Initializer, PreDestroy {
         const messageId = message.headers.get(MessageHeaders.MessageId);
 
         if (!message.intent) {
-          const error = '[IntentDispatchError] Missing required property on message: intent';
+          const error = '[MessagingError] Missing message property: intent';
           sendDeliveryStatusError(client, messageId, error);
           return;
         }
 
         if (!message.intent.type) {
-          const error = '[IntentDispatchError] Missing required property on intent: type';
+          const error = '[MessagingError] Missing message property: type';
           sendDeliveryStatusError(client, messageId, error);
           return;
         }
@@ -317,16 +320,26 @@ export class MessageBroker implements Initializer, PreDestroy {
           return;
         }
 
+        // If a retained message without payload, remove any stored retained message for the resolved capabilities.
+        if (message.retain && !isRequest(message) && message.body === undefined) {
+          capabilities.forEach(capability => {
+            Maps.removeListValue(this._retainedIntentStore, capability.metadata!.id, Predicates.not(isRequest));
+            sendDeliveryStatusSuccess(client, messageId);
+          });
+          return;
+        }
+
         try {
-          // If request-response communication, register subscription to receive replies.
-          this.subscribeForRepliesIfRequest(message, client);
-
-          // Ensure the message header 'ɵSUBSCRIBER_ID' to be removed; is set in request-response communication by the gateway.
+          // If a request of a request-response communication, create a subscription for the requestor to receive replies.
+          const requestorReplySubscription = this.subscribeForRepliesIfRequest(message, client);
+          // Ensure the message header 'ɵSUBSCRIBER_ID' to be removed; is set in request-response communication by the client gateway.
           message.headers.delete(MessageHeaders.ɵSubscriberId);
-
           // Dispatch the message.
-          await Promise.all(capabilities.map(capability => this._intentPublisher.interceptAndPublish({...message, capability})));
-
+          const messagesPerCapability = await Promise.all(capabilities
+            .map<IntentMessage>(capability => ({...message, capability}))
+            .map(message => this._intentPublisher.interceptAndPublish(message).then(() => message)));
+          // If a retained message or request, store it for late subscribers.
+          messagesPerCapability.forEach(message => this.storeIntentIfRetained(message, requestorReplySubscription));
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
@@ -349,6 +362,38 @@ export class MessageBroker implements Initializer, PreDestroy {
             ...retainedMessage,
             headers: new Map(retainedMessage.headers).set(MessageHeaders.ɵSubscriberId, subscription.subscriberId),
           }));
+      }));
+  }
+
+  /**
+   * Installs a listener that sends retained intents to new subscribers.
+   */
+  private sendRetainedIntentOnSubscribe(): void {
+    this._intentSubscriptionRegistry.register$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(subscription => runSafe(() => {
+        Array.from(this._retainedIntentStore.values())
+          .flat()
+          .filter(retainedMessage => subscription.client.application.symbolicName === retainedMessage.capability.metadata!.appSymbolicName)
+          .filter(retainedMessage => subscription.matches(retainedMessage.intent))
+          .forEach(retainedMessage => this._intentPublisher.interceptAndPublish({
+            ...retainedMessage,
+            headers: new Map(retainedMessage.headers).set(MessageHeaders.ɵSubscriberId, subscription.subscriberId),
+          }));
+      }));
+  }
+
+  /**
+   * Installs a listener that removes retained intent(s) when associated capability is removed.
+   */
+  private deleteRetainedIntentOnCapabilityUnregister(): void {
+    this._manifestRegistry.capabilityUnregister$
+      .pipe(
+        mergeMap(capabilities => from(capabilities)),
+        takeUntil(this._destroy$),
+      )
+      .subscribe(capability => runSafe(() => {
+        Maps.removeListValue(this._retainedIntentStore, capability.metadata!.id, Predicates.alwaysTrue);
       }));
   }
 
@@ -484,7 +529,7 @@ export class MessageBroker implements Initializer, PreDestroy {
       });
 
       // If request-reply communication, reply with an error if no subscriber is registered to answer the intent.
-      if (isRequest(message) && !subscribers.length) {
+      if (isRequest(message) && !message.retain && !subscribers.length) {
         throw Error(`[MessagingError] No subscriber registered to answer the intent [intent=${JSON.stringify(message.intent)}]`);
       }
 
@@ -514,7 +559,7 @@ export class MessageBroker implements Initializer, PreDestroy {
    * Stores the message if retained.
    *
    * Unlike a regular message, a retained message remains in the broker and is delivered to new subscribers, even if they subscribe
-   * after the request has been sent. The broker stores retained message per topic, i.e., a later sent retained message will replace
+   * after the request has been sent. The broker stores one retained message per topic, i.e., a later sent retained message will replace
    * a previously sent retained message. This, however, does not apply to retained requests in request-response communication.
    * Retained requests are NEVER replaced and remain in the broker until the requestor unsubscribes.
    *
@@ -536,6 +581,26 @@ export class MessageBroker implements Initializer, PreDestroy {
     else {
       Maps.removeListValue(this._retainedMessageStore, message.topic, Predicates.not(isRequest));
       Maps.addListValue(this._retainedMessageStore, message.topic, message);
+    }
+  }
+
+  private storeIntentIfRetained(message: IntentMessage, requestorReplySubscription: TopicSubscription | null): void {
+    if (!message.retain) {
+      return;
+    }
+
+    const capabilityId = message.capability.metadata!.id;
+
+    // If a retained request, store it. Retained requests are not replaced and are retained until the requestor unsubscribes.
+    if (isRequest(message)) {
+      Defined.orElseThrow(requestorReplySubscription, () => Error('[InternalMessagingError] An unexpected error occurred. Expected subscription not to be null.'));
+      Maps.addListValue(this._retainedIntentStore, capabilityId, message);
+      requestorReplySubscription!.whenUnsubscribe.then(() => Maps.removeListValue(this._retainedIntentStore, capabilityId, message));
+    }
+    // If a retained message (i.e. not a request), replace any previously stored retained message for that capability, if any.
+    else {
+      Maps.removeListValue(this._retainedIntentStore, capabilityId, Predicates.not(isRequest));
+      Maps.addListValue(this._retainedIntentStore, capabilityId, message);
     }
   }
 

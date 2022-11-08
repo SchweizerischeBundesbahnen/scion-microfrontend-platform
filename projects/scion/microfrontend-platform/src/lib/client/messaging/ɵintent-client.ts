@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -13,18 +13,20 @@ import {Intent, IntentMessage, throwOnErrorStatus, TopicMessage} from '../../mes
 import {BrokerGateway} from './broker-gateway';
 import {IntentSubscribeCommand, MessagingChannel} from '../../ɵmessaging.model';
 import {assertExactQualifier} from '../../qualifier-matcher';
-import {IntentClient, IntentOptions, IntentSelector} from './intent-client';
+import {IntentClient, IntentSelector} from './intent-client';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageHandler} from './message-handler';
+import {PublishOptions, RequestOptions} from './publish-options';
 
 export class ɵIntentClient implements IntentClient {
 
   private readonly _brokerGateway = Beans.get(BrokerGateway);
 
-  public publish<T = any>(intent: Intent, body?: T, options?: IntentOptions): Promise<void> {
+  public publish<T = any>(intent: Intent, body?: T, options?: PublishOptions): Promise<void> {
     assertExactQualifier(intent.qualifier);
     const intentMessage: IntentMessage = {
       intent,
+      retain: options?.retain ?? false,
       headers: new Map(options?.headers),
       capability: undefined!, /* set by the broker when dispatching the intent */
     };
@@ -32,7 +34,7 @@ export class ɵIntentClient implements IntentClient {
     return this._brokerGateway.postMessage(MessagingChannel.Intent, intentMessage);
   }
 
-  public request$<T>(intent: Intent, body?: any, options?: IntentOptions): Observable<TopicMessage<T>> {
+  public request$<T>(intent: Intent, body?: any, options?: RequestOptions): Observable<TopicMessage<T>> {
     assertExactQualifier(intent.qualifier);
     // IMPORTANT:
     // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
@@ -42,6 +44,7 @@ export class ɵIntentClient implements IntentClient {
     return defer(() => {
       const intentMessage: IntentMessage = {
         intent,
+        retain: options?.retain ?? false,
         headers: new Map(headers) /* make a copy for each subscription to support multiple subscriptions */,
         capability: undefined!, /* set by the broker when dispatching the intent */
       };

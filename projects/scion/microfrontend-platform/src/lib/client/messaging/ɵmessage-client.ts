@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -12,10 +12,11 @@ import {IntentMessage, mapToBody, throwOnErrorStatus, TopicMessage} from '../../
 import {BrokerGateway} from './broker-gateway';
 import {MessagingChannel, PlatformTopics, TopicSubscribeCommand} from '../../ɵmessaging.model';
 import {Topics} from '../../topics.util';
-import {MessageClient, PublishOptions, RequestOptions} from './message-client';
+import {MessageClient} from './message-client';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageHandler} from './message-handler';
 import {takeUntil} from 'rxjs/operators';
+import {PublishOptions, RequestOptions} from './publish-options';
 
 export class ɵMessageClient implements MessageClient {
 

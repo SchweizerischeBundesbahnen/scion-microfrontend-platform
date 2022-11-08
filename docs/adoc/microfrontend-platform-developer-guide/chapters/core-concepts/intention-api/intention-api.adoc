@@ -80,7 +80,7 @@ a| `<<objects::intention,Intention>>[]`
 
 [[chapter:intention-api:capability]]
 === What is a Capability?
-A capability can be thought of as an API that an application provides that can be invoked via intent, browsed via the DevTools or programmatically via the Intention API. Capabilities must be registered in the manifest.
+A capability can be thought of as an API that an application provides that can be invoked via intent, browsed via the DevTools or programmatically via the Intention API. Capabilities must be registered in the manifest or contributed programmatically via `ManifestService`.
 
 A capability is formulated in an abstract way consisting of a _type_ and optionally a _qualifier_. The _type_ categorizes a capability in terms of its functional semantics (e.g., `microfrontend` if providing a microfrontend). Multiple capabilities can be of the same _type_. In addition to the _type_, a capability can define a qualifier to differentiate the different capabilities of the same _type_. A qualifier is a dictionary of arbitrary key-value pairs.
 
@@ -150,7 +150,7 @@ a| `Dictionary`
 | Arbitrary metadata to be associated with the capability.
 |===
 
-In addition to declaring a capability in the manifest, the micro application may also subscribe to intents to handle them. Intent handling typically is implemented in an activator. Refer to chapter <<chapter:activator>> for more information.
+In addition to declaring a capability in the manifest, the micro application typically subscribes to intents in an activator. Refer to chapter <<chapter:activator>> for more information.
 
 The following code snippet shows an example of how an application can subscribe to intents.
 
@@ -161,7 +161,7 @@ include::intention-api.snippets.ts[tags=intent-handling]
 
 IMPORTANT: A micro application only receives intents for which it provides a fulfilling capability. The selector is used as a filter only.
 
-For more information about handling an intent, see the chapter <<chapter:intent-based-messaging:handling-intents>> in <<chapter:intent-based-messaging>>.
+For more information about handling an intent, see the chapter <<chapter:intent-based-messaging:receiving-intents>> in <<chapter:intent-based-messaging>>.
 
 [[chapter:intention-api:intention]]
 === What is an Intention?
@@ -212,21 +212,23 @@ The intent is the message that a micro application sends to interact with functi
 
 An intent consists of a type and optionally a qualifier, which are used by the platform to identify the capability(s) to which to transport the intent. A micro application can issue an intent only if having declared a respective intention in its manifest. Along with the intent, you can pass transfer data, either as payload, message headers or parameters. Passed data must be serializable with the Structured Clone Algorithm.
 
-The following code snippet illustrates starting the checkout wizard via intent.
+The following code snippet illustrates how to send an intent.
 
 [source,typescript]
 ----
-include::intention-api.snippets.ts[tags=issue-intent]
+include::intention-api.snippets.ts[tags=publish-intent]
 ----
 
 The following code snippet illustrates how to pass parameters with an intent. Passed parameters must be defined in the capability, otherwise the intent would be rejected.
 
+In the following example, we use an `authorization` param to pass along the authorization token.
+
 [source,typescript]
 ----
-include::intention-api.snippets.ts[tags=issue-intent-with-params]
+include::intention-api.snippets.ts[tags=publish-intent-with-params]
 ----
 
-For more information about issuing an intent, see the chapter <<chapter:intent-based-messaging:issuing-an-intent>> in <<chapter:intent-based-messaging>>.
+For more information about publishing an intent, see the chapter <<chapter:intent-based-messaging:publishing-intent>> in <<chapter:intent-based-messaging>>.
 
 [[chapter:intention-api:capability-lookup]]
 === Browsing Capabilities
@@ -251,7 +253,7 @@ include::intention-api.snippets.ts[tags=capability-lookup-toolbar-items]
 <1> Looks up toolbar items for the main application toolbar.
 <2> Issues an intent when the user clicks a toolbar item. For the intent, we use the type and qualifier of the capability. The micro application providing the capability does then handle the intent.
 
-NOTE: To see how to handle intents in the capability providing micro application, see the chapter <<chapter:intent-based-messaging:handling-intents>> in <<chapter:intent-based-messaging>>.
+NOTE: To see how to handle intents in the capability providing micro application, see the chapter <<chapter:intent-based-messaging:receiving-intents>> in <<chapter:intent-based-messaging>>.
 
 By passing a `ManifestObjectFilter` to the `lookupCapabilities$` method, you can control which capabilities to observe. Specified filter criteria are "AND"ed together. If not passing a filter, all capabilities visible to the requesting micro application are observed. When subscribing to the Observable, it emits the requested capabilities. The Observable never completes and emits continuously when fulfilling capabilities are registered or unregistered.
 

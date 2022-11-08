@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -10,6 +10,7 @@
 
 import {Capability, Intention} from '../../platform.model';
 import {Intent} from '../../messaging.model';
+import {Observable} from 'rxjs';
 
 /**
  * Central point for looking up or managing capabilities or intentions available in the platform.
@@ -38,4 +39,14 @@ export abstract class ManifestRegistry {
    * Registers the given intention for the given application.
    */
   public abstract registerIntention(intention: Intention, appSymbolicName: string): string;
+
+  /**
+   * Notifies when a capability is registered with the platform.
+   */
+  public abstract readonly capabilityRegister$: Observable<Capability>;
+
+  /**
+   * Notifies when capabilities are unregistered from the platform.
+   */
+  public abstract readonly capabilityUnregister$: Observable<Capability[]>;
 }

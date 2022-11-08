@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -182,7 +182,7 @@ export class PublishMessageComponent implements OnDestroy {
     this.publishError = null;
     try {
       if (requestReply) {
-        this._requestResponseSubscription = this._intentClient.request$({type, qualifier}, message, {headers: headers})
+        this._requestResponseSubscription = this._intentClient.request$({type, qualifier}, message, {retain: this.form.get(RETAIN).value, headers})
           .pipe(finalize(() => this.markPublishing(false)))
           .subscribe({
             next: reply => this.replies.push(reply),
@@ -190,7 +190,7 @@ export class PublishMessageComponent implements OnDestroy {
           });
       }
       else {
-        this._intentClient.publish({type, qualifier, params}, message, {headers: headers})
+        this._intentClient.publish({type, qualifier, params}, message, {retain: this.form.get(RETAIN).value, headers})
           .catch(error => {
             this.publishError = error?.message ?? `${error}`;
           })

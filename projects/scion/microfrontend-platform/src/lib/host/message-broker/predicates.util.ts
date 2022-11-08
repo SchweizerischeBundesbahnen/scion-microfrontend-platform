@@ -19,6 +19,11 @@ export namespace Predicates {
   export function not<T>(predicate: Predicate<T>): Predicate<T> {
     return (value: T) => !predicate(value);
   }
+
+  /**
+   * Represents a predicate that always evaluates to `true`.
+   */
+  export const alwaysTrue = (): true => true;
 }
 
 /**
