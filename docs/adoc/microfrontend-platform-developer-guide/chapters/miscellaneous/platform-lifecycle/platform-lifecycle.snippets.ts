@@ -46,16 +46,16 @@ import {MicrofrontendPlatform, MicrofrontendPlatformStopper, PlatformState} from
 
 {
   // tag::platform-lifecycle:microfrontend-platform-stopper[]
-  class BeforeUnloadMicrofrontendPlatformStopper implements MicrofrontendPlatformStopper {
+  class OnUnloadMicrofrontendPlatformStopper implements MicrofrontendPlatformStopper {
 
     constructor() {
       // Destroys the platform when the document is about to be unloaded.
-      window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy(), {once: true});
+      window.addEventListener('unload', () => MicrofrontendPlatform.destroy(), {once: true});
     }
   }
 
   // Registers custom platform stopper.
-  Beans.register(MicrofrontendPlatformStopper, {useClass: BeforeUnloadMicrofrontendPlatformStopper});
+  Beans.register(MicrofrontendPlatformStopper, {useClass: OnUnloadMicrofrontendPlatformStopper});
   // end::platform-lifecycle:microfrontend-platform-stopper[]
 }
 

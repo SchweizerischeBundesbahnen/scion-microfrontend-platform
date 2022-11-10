@@ -18,7 +18,8 @@ import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
 export class ReceiveMessagePagePO implements OutletPageObject {
 
-  public readonly path = 'receive-message';
+  public static readonly PATH = 'receive-message';
+  public readonly path = ReceiveMessagePagePO.PATH;
 
   private readonly _locator: Locator;
   private readonly _messageListPO: SciListPO;

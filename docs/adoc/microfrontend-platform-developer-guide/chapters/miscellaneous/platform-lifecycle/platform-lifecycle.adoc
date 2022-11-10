@@ -90,7 +90,7 @@ When the platform is stopped, it first enters the `Stopping` platform state. In 
 
 The platform allows the application to send messages while the platform is stopping. After all beans are destroyed, the client is disconnected from the host and the platform enters the `Stopped` state.
 
-By default, the platform initiates platform shutdown when the browser unloads the document. For this purpose, the platform binds to the browser's `unload` event. It does not bind to the `beforeunload` event since the browser fires that event only when navigating to another page, but not when removing the iframe.
+By default, the platform initiates shutdown when the browser unloads the document, i.e., when `beforeunload` is triggered. The main reason for `beforeunload` instead of `unload` is to avoid posting messages to disposed windows. However, if `beforeunload` is not triggered, e.g., when an iframe is removed, we fall back to `unload`.
 
 You can change this behavior by registering a custom `MicrofrontendPlatformStopper` bean, as follows:
 
