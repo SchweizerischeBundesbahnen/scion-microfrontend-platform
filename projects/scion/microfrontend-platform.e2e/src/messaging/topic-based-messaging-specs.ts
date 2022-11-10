@@ -13,6 +13,10 @@ import {MessagingFlavor, PublishMessagePagePO} from './publish-message-page.po';
 import {ReceiveMessagePagePO} from './receive-message-page.po';
 import {BrowserOutletPO} from '../browser-outlet/browser-outlet.po';
 import {expect} from '@playwright/test';
+import {OutletRouterPagePO} from '../router-outlet/outlet-router-page.po';
+import {RouterOutletPagePO} from '../router-outlet/router-outlet-page.po';
+import {ClearOutletThenSendMessageTestPagePO} from '../test-pages/clear-outlet-then-send-message-test-page.po';
+import {ConsoleLogs} from '../console-logs';
 
 /**
  * Contains Specs for topic-based messaging.
@@ -685,6 +689,59 @@ export namespace TopicBasedMessagingSpecs {
       headers: new Map().set('header1', 'value').set('header2', '42'),
       params: new Map(),
     });
+  }
+
+  /**
+   * Tests to not post messages to disposed windows, causing "Failed to execute 'postMessage' on 'DOMWindow'" error.
+   *
+   * The error occurred when posting a message to a microfrontend that was unloaded, but before the disconnect event arrived in the broker.
+   * To reproduce the bug, we subscribe to messages in a router outlet, unload it, and send a message right after.
+   */
+  export async function doNotPostMessageToDisposedWindow(testingAppPO: TestingAppPO, consoleLogs: ConsoleLogs): Promise<void> {
+    const pagePOs = await testingAppPO.navigateTo({
+      testpage: ClearOutletThenSendMessageTestPagePO,
+      router: OutletRouterPagePO,
+      receiver1: {useClass: RouterOutletPagePO, origin: TestingAppOrigins.APP_2},
+      receiver2: {useClass: RouterOutletPagePO, origin: TestingAppOrigins.APP_3},
+    });
+
+    // Mount router outlet.
+    const routerOutlet1PO = pagePOs.get<RouterOutletPagePO>('receiver1');
+    await routerOutlet1PO.enterOutletName('test-outlet');
+    await routerOutlet1PO.clickApply();
+
+    // Mount router outlet.
+    const routerOutlet2PO = pagePOs.get<RouterOutletPagePO>('receiver2');
+    await routerOutlet2PO.enterOutletName('test-outlet');
+    await routerOutlet2PO.clickApply();
+
+    // Load message receiver into the outlets.
+    const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+    await routerPO.enterOutletName('test-outlet');
+    await routerPO.enterUrl(`../${ReceiveMessagePagePO.PATH}`);
+    await routerPO.clickNavigate();
+
+    // Subscribe to messages in the outlet.
+    const receiver1PO = new ReceiveMessagePagePO(routerOutlet1PO.routerOutletFrameLocator);
+    await receiver1PO.enterTopic('test-topic');
+    await receiver1PO.clickSubscribe();
+
+    // Subscribe to messages in the outlet.
+    const receiver2PO = new ReceiveMessagePagePO(routerOutlet2PO.routerOutletFrameLocator);
+    await receiver2PO.enterTopic('test-topic');
+    await receiver2PO.clickSubscribe();
+
+    // Run the test to provoke the error.
+    // 1. Unload the outlet that has loaded a microfrontend subscribed to messages.
+    // 2. Send a message to the subscribed topic.
+    const testepagePO = pagePOs.get<ClearOutletThenSendMessageTestPagePO>('testpage');
+    await testepagePO.enterOutletName('test-outlet');
+    await testepagePO.enterTopic('test-topic');
+    await testepagePO.clickRunTest();
+
+    // Expect no error to be thrown
+    const errors = await consoleLogs.get({filter: /Failed to execute 'postMessage' on 'DOMWindow'/, severity: 'error'});
+    await expect(errors).toEqual([]);
   }
 
   /**

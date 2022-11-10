@@ -1,0 +1,12 @@
+<form autocomplete="off" [formGroup]="form">
+  <sci-form-field label="Router Outlet">
+    <input [formControlName]="OUTLET" class="e2e-outlet" title="Specifies the name of the outlet which to clear.">
+  </sci-form-field>
+  <sci-form-field label="Message Topic">
+    <input [formControlName]="TOPIC" class="e2e-topic" title="Specifies the topic where to send a message after cleared the outlet.">
+  </sci-form-field>
+
+  <button type="submit" class="e2e-run-test" [disabled]="form.invalid" (click)="onRunTestClick()">
+    Clear outlet, then send message to topic
+  </button>
+</form>

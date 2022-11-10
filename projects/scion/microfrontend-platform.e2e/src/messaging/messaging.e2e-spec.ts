@@ -91,6 +91,10 @@ test.describe('Messaging', () => {
       await TopicBasedMessagingSpecs.passHeadersSpec(testingAppPO);
     });
 
+    test('should stop platform in `beforeunload` to avoid posting messages to disposed windows', async ({testingAppPO, consoleLogs}) => {
+      await TopicBasedMessagingSpecs.doNotPostMessageToDisposedWindow(testingAppPO, consoleLogs);
+    });
+
     test.describe('message-interception', () => {
 
       test('allows intercepting messages', async ({testingAppPO}) => {
