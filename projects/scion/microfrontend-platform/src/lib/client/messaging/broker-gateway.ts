@@ -57,11 +57,6 @@ export abstract class BrokerGateway {
    * Subscribes to described destination, unless the platform has been stopped at the time of subscription.
    */
   public abstract subscribe$<T extends Message>(subscriptionDescriptor: SubscriptionDescriptor): Observable<T>;
-
-  /**
-   * An Observable that emits when a message from the message broker is received.
-   */
-  public abstract get message$(): Observable<MessageEvent<MessageEnvelope>>;
 }
 
 /**
@@ -114,8 +109,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   private _messageDeliveryTimeout: number;
   private _session: Session | null = null;
   private _session$ = new AsyncSubject<Session>();
-
-  public readonly message$ = new Subject<MessageEvent<MessageEnvelope>>();
+  private _message$ = new Subject<MessageEvent<MessageEnvelope>>();
 
   constructor(connectOptions?: ConnectOptions) {
     this._appSymbolicName = Beans.get<string>(APP_IDENTITY);
@@ -170,7 +164,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     // Install Promise that resolves once the broker has acknowledged the message, or that rejects otherwise.
     const postError$ = new Subject<never>();
     const whenPosted = new Promise<void>((resolve, reject) => {
-      merge(this.message$, postError$)
+      merge(this._message$, postError$)
         .pipe(
           filterByTopicChannel<MessageDeliveryStatus>(messageId),
           take(1),
@@ -212,7 +206,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
         .set(MessageHeaders.ɵSubscriberId, subscriberId); // message header to subscribe for replies
 
       // Receive replies sent to the reply topic.
-      merge(this.message$, requestError$)
+      merge(this._message$, requestError$)
         .pipe(
           filterByChannel<TopicMessage<T>>(MessagingChannel.Topic),
           filterByMessageHeader({name: MessageHeaders.ɵSubscriberId, value: subscriberId}),
@@ -248,7 +242,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       const subscribeError$ = new Subject<never>();
 
       // Receive messages of given subscription.
-      merge(this.message$, subscribeError$)
+      merge(this._message$, subscribeError$)
         .pipe(
           filterByChannel<T>(messageChannel),
           filterByMessageHeader({name: MessageHeaders.ɵSubscriberId, value: subscriberId}),
@@ -290,7 +284,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
 
   /**
    * Subscribes to messages sent to this client.
-   * Messages are dispatched to {@link message$}.
+   * Messages are dispatched to {@link _message$}.
    */
   private installBrokerMessageListener(session: Session): void {
     fromEvent<MessageEvent>(window, 'message')
@@ -301,7 +295,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
         fixMapObjects(),
         takeUntil(this._platformStopping$),
       )
-      .subscribe(this.message$);
+      .subscribe(this._message$);
   }
 
   /**
