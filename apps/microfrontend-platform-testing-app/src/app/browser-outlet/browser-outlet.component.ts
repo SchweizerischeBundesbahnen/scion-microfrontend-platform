@@ -7,8 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, ElementRef, Injector, Input, ViewChild} from '@angular/core';
-import {OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
+import {ChangeDetectionStrategy, Component, ElementRef, Injector, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {MessageClient, OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {Overlay} from '@angular/cdk/overlay';
 import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
@@ -16,6 +16,9 @@ import {RouterOutletSettingsComponent} from '../router-outlet-settings/router-ou
 import {ActivatedRoute} from '@angular/router';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {environment} from '../../environments/environment';
+import {takeUntil} from 'rxjs/operators';
+import {Subject} from 'rxjs';
+import {TestingAppTopics} from '../testing-app.topics';
 
 export const URL = 'url';
 
@@ -28,11 +31,13 @@ export const URL = 'url';
   styleUrls: ['./browser-outlet.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BrowserOutletComponent {
+export class BrowserOutletComponent implements OnInit, OnDestroy {
 
   public URL = URL;
   public form: UntypedFormGroup;
   public appEntryPoints: AppEndpoint[];
+
+  private _destroy$ = new Subject<void>();
 
   @Input()
   public outletName: string;
@@ -55,6 +60,10 @@ export class BrowserOutletComponent {
       [URL]: new UntypedFormControl('', Validators.required),
     });
     this.appEntryPoints = this.readAppEntryPoints();
+  }
+
+  public ngOnInit(): void {
+    this.installOutletContextUpdateHandler(this.outletName);
   }
 
   public onUrlClearClick(): void {
@@ -116,6 +125,21 @@ export class BrowserOutletComponent {
           };
         }));
     }, new Array<AppEndpoint>());
+  }
+
+  /**
+   * Listens for messages to update the context of this outlet.
+   */
+  private installOutletContextUpdateHandler(outletName: string): void {
+    Beans.get(MessageClient).observe$(TestingAppTopics.routerOutletContextUpdateTopic(outletName, ':key'))
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(message => {
+        this.routerOutlet.nativeElement.setContextValue(message.params.get('key'), message.body);
+      });
+  }
+
+  public ngOnDestroy(): void {
+    this._destroy$.next();
   }
 }
 

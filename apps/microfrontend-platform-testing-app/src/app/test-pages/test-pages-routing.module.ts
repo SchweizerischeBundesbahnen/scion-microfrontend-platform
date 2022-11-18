@@ -17,6 +17,16 @@ const routes: Routes = [
     data: {pageTitle: 'Test page that clears an outlet and sends a message'},
     loadComponent: (): any => import('./clear-outlet-then-send-message-test-page/clear-outlet-then-send-message-test-page.component').then(m => m.ClearOutletThenSendMessageTestPageComponent),
   },
+  {
+    path: 'angular-zone-test-page',
+    data: {pageTitle: 'Test page to test NgZone Synchronization'},
+    loadComponent: (): any => import('./angular-zone-test-page/angular-zone-test-page.component').then(m => m.AngularZoneTestPageComponent),
+  },
+  {
+    path: 'angular-change-detection-test-page',
+    data: {pageTitle: 'Test page to test Angular change detection cycles'},
+    loadComponent: (): any => import('./angular-change-detection-test-page/angular-change-detection-test-page.component').then(m => m.AngularChangeDetectionTestPageComponent),
+  },
 ];
 
 @NgModule({

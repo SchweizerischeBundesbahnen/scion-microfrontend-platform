@@ -523,7 +523,7 @@ applies to the `@scion/microfrontend-platform` version.
          return messageClient.onMessage(topic, callback);
        }
        ```
-       See https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular for more information.
+       See https://scion-microfrontend-platform-developer-guide-v1-0-0-rc-10.vercel.app/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular for more information.
     
     - If an Angular project, add the method `onIntent` to your `NgZone` intent client decorator, as following:
        ```typescript
@@ -531,7 +531,7 @@ applies to the `@scion/microfrontend-platform` version.
          return intentClient.onIntent(selector, callback);
        }
        ```
-       See https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular for more information.
+       See https://scion-microfrontend-platform-developer-guide-v1-0-0-rc-10.vercel.app/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular for more information.
 * **platform:** Enabling the message/intent replier to control the requestor’s Observable lifecycle introduced a breaking change in the host/client communication protocol.
     
     > Note: The messaging protocol between host and client HAS CHANGED for registering/unregistering capabilities/intentions using the `ManifestService`. Therefore, you must update the host and affected clients to the new version together. The API has not changed; the breaking change only applies to the `@scion/microfrontend-platform` version.
@@ -656,7 +656,7 @@ Renamed options object of the following methods:
 - _IntentClient#request$_: _MessageOptions_ -> _IntentOptions_
 
 #### Breaking change for decorating MessageClient and IntentClient bean
-For Angular developers, see [Preparing the MessageClient and IntentClient for use with Angular](https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular) how to decorate the `MessageClient` and `IntentClient` for making Observables to emit inside the Angular zone.
+For Angular developers, see [Preparing the MessageClient and IntentClient for use with Angular](https://scion-microfrontend-platform-developer-guide-v1-0-0-rc-10.vercel.app/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular) how to decorate the `MessageClient` and `IntentClient` for making Observables to emit inside the Angular zone.
 
 #### Breaking change for disabling messaging in tests
 Messaging can now be deactivated via options object when starting the platform. Previously you had to register a `NullMessageClient` bean.

@@ -1,0 +1,12 @@
+<div #angular_change_detection_indicator class="angular-change-detection-indicator">Angular Change Detection Cycle</div>
+<div class="e2e-element element" tabindex="0" #element>Element</div>
+<label>
+  <input type="checkbox" class="e2e-prevent-default-on-mousedown" #preventdefault_on_mousedown>
+  <span>PreventDefault on Mousedown</span>
+</label>
+
+<textarea #angular_change_detection_cycles class="e2e-angular-change-detection-cycles angular-change-detection-cycles"></textarea>
+<button #angular_change_detection_cycles_clear>Clear</button>
+
+<!-- Captures Angular change detection cycles -->
+{{onChangeDetectionCycle}}

@@ -1,0 +1,164 @@
+<sci-accordion [variant]="'solid'">
+
+  <!-- MessageClient#observe$ -->
+  <ng-container *ngIf="tests.messageClient.observe$ as test">
+    <ng-template sciAccordionItem [panel]="panel" cssClass="e2e-message-client e2e-observe">
+      <header>MessageClient#observe$</header>
+    </ng-template>
+
+    <ng-template #panel>
+      <label>
+        <sci-checkbox [(ngModel)]="test.runInAngular" class="e2e-run-inside-angular"></sci-checkbox>
+        <span>Angular Zone</span>
+      </label>
+      <button (click)="onMessageClientObserve()" class="e2e-subscribe">Subscribe</button>
+      <output *ngIf="test.response as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
+    </ng-template>
+  </ng-container>
+
+  <!-- MessageClient#request$ -->
+  <ng-container *ngIf="tests.messageClient.request$ as test">
+    <ng-template sciAccordionItem [panel]="panel" cssClass="e2e-message-client e2e-request">
+      <header>MessageClient#request$</header>
+    </ng-template>
+
+    <ng-template #panel>
+      <label>
+        <sci-checkbox [(ngModel)]="test.runInAngular" class="e2e-run-inside-angular"></sci-checkbox>
+        <span>Angular Zone</span>
+      </label>
+      <button (click)="onMessageClientRequest()" class="e2e-subscribe">Subscribe</button>
+      <output *ngIf="test.response as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
+    </ng-template>
+  </ng-container>
+
+  <!-- MessageClient#subscriberCount$ -->
+  <ng-container *ngIf="tests.messageClient.subscriberCount$ as test">
+    <ng-template sciAccordionItem [panel]="panel" cssClass="e2e-message-client e2e-subscriber-count">
+      <header>MessageClient#subscriberCount$</header>
+    </ng-template>
+
+    <ng-template #panel>
+      <label>
+        <sci-checkbox [(ngModel)]="test.runInAngular" class="e2e-run-inside-angular"></sci-checkbox>
+        <span>Angular Zone</span>
+      </label>
+      <button (click)="onMessageClientSubscriberCount()" class="e2e-subscribe">Subscribe</button>
+      <output *ngIf="test.response as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
+    </ng-template>
+  </ng-container>
+
+  <!-- IntentClient#observe$ -->
+  <ng-container *ngIf="tests.intentClient.observe$ as test">
+    <ng-template sciAccordionItem [panel]="panel" cssClass="e2e-intent-client e2e-observe">
+      <header>IntentClient#observe$</header>
+    </ng-template>
+
+    <ng-template #panel>
+      <label>
+        <sci-checkbox [(ngModel)]="test.runInAngular" class="e2e-run-inside-angular"></sci-checkbox>
+        <span>Angular Zone</span>
+      </label>
+      <button (click)="onIntentClientObserve()" class="e2e-subscribe">Subscribe</button>
+      <output *ngIf="test.response as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
+    </ng-template>
+  </ng-container>
+
+  <!-- IntentClient#request$ -->
+  <ng-container *ngIf="tests.intentClient.request$ as test">
+    <ng-template sciAccordionItem [panel]="panel" cssClass="e2e-intent-client e2e-request">
+      <header>IntentClient#request$</header>
+    </ng-template>
+
+    <ng-template #panel>
+      <label>
+        <sci-checkbox [(ngModel)]="test.runInAngular" class="e2e-run-inside-angular"></sci-checkbox>
+        <span>Angular Zone</span>
+      </label>
+      <button (click)="onIntentClientRequest()" class="e2e-subscribe">Subscribe</button>
+      <output *ngIf="test.response as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
+    </ng-template>
+  </ng-container>
+
+  <!-- ContextService#observe$ -->
+  <ng-container *ngIf="tests.contextService.observe$ as test">
+    <ng-template sciAccordionItem [panel]="panel" cssClass="e2e-context-service e2e-observe">
+      <header>ContextService#observe$</header>
+    </ng-template>
+
+    <ng-template #panel>
+      <label>
+        <sci-checkbox [(ngModel)]="test.runInAngular" class="e2e-run-inside-angular"></sci-checkbox>
+        <span>Angular Zone</span>
+      </label>
+      <button (click)="onContextServiceObserve()" class="e2e-subscribe">Subscribe</button>
+      <output *ngIf="test.response1 as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
+      <output *ngIf="test.response2 as response" class="zone e2e-response-2" [attr.data-zone]="response.zone">{{response.label}}</output>
+    </ng-template>
+  </ng-container>
+
+  <!-- ContextService#names$ -->
+  <ng-container *ngIf="tests.contextService.names$ as test">
+    <ng-template sciAccordionItem [panel]="panel" cssClass="e2e-context-service e2e-names">
+      <header>ContextService#names$</header>
+    </ng-template>
+
+    <ng-template #panel>
+      <label>
+        <sci-checkbox [(ngModel)]="test.runInAngular" class="e2e-run-inside-angular"></sci-checkbox>
+        <span>Angular Zone</span>
+      </label>
+      <button (click)="onContextServiceNames()" class="e2e-subscribe">Subscribe</button>
+      <output *ngIf="test.response1 as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
+      <output *ngIf="test.response2 as response" class="zone e2e-response-2" [attr.data-zone]="response.zone">{{response.label}}</output>
+    </ng-template>
+  </ng-container>
+
+  <!-- ManifestService#lookupCapabilities$ -->
+  <ng-container *ngIf="tests.manifestService.lookupCapabilities$ as test">
+    <ng-template sciAccordionItem [panel]="panel" cssClass="e2e-manifest-service e2e-lookup-capabilities">
+      <header>ManifestService#lookupCapabilities$</header>
+    </ng-template>
+
+    <ng-template #panel>
+      <label>
+        <sci-checkbox [(ngModel)]="test.runInAngular" class="e2e-run-inside-angular"></sci-checkbox>
+        <span>Angular Zone</span>
+      </label>
+      <button (click)="onManifestServiceLookupCapabilities()" class="e2e-subscribe">Subscribe</button>
+      <output *ngIf="test.response as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
+    </ng-template>
+  </ng-container>
+
+  <!-- ManifestService#lookupIntentions$ -->
+  <ng-container *ngIf="tests.manifestService.lookupIntentions$ as test">
+    <ng-template sciAccordionItem [panel]="panel" cssClass="e2e-manifest-service e2e-lookup-intentions">
+      <header>ManifestService#lookupIntentions$</header>
+    </ng-template>
+
+    <ng-template #panel>
+      <label>
+        <sci-checkbox [(ngModel)]="test.runInAngular" class="e2e-run-inside-angular"></sci-checkbox>
+        <span>Angular Zone</span>
+      </label>
+      <button (click)="onManifestServiceLookupIntentions()" class="e2e-subscribe">Subscribe</button>
+      <output *ngIf="test.response as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
+    </ng-template>
+  </ng-container>
+
+  <!-- FocusMonitor#focusWithin$ -->
+  <ng-container *ngIf="tests.focusMonitor.focusWithin$ as test">
+    <ng-template sciAccordionItem [panel]="panel" cssClass="e2e-focus-monitor e2e-focus-within">
+      <header>FocusMonitor#focusWithin$</header>
+    </ng-template>
+
+    <ng-template #panel>
+      <label>
+        <sci-checkbox [(ngModel)]="test.runInAngular" class="e2e-run-inside-angular"></sci-checkbox>
+        <span>Angular Zone</span>
+      </label>
+      <button (click)="onFocusMonitorFocusWithin()" class="e2e-subscribe">Subscribe</button>
+      <output *ngIf="test.response as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
+    </ng-template>
+  </ng-container>
+</sci-accordion>

@@ -3,6 +3,7 @@
     <img *ngIf="isPlatformHost" class="banner" src="assets/scion-microfrontend-platform-banner.svg" alt="SCION Microfrontend Platform">
     <span *ngIf="pageTitle" class="page-title">{{pageTitle}}</span>
   </div>
+  <span class="angular-change-detection-indicator" title="Indicates that Angular is currently checking the application for changes." #angular_change_detection_indicator></span>
   <span class="chip focus-within e2e-focus-within" title="This document or its embedded web content has received focus" *ngIf="isFocusWithin">focus-within</span>
   <span class="chip app-name">{{appSymbolicName}}</span>
   <span class="chip devtools" *ngIf="isDevtoolsEnabled" (click)="onDevToolsToggle()">
@@ -20,3 +21,6 @@
     <app-devtools></app-devtools>
   </ng-template>
 </sci-sashbox>
+
+<!-- Captures Angular change detection cycles -->
+{{onAngularChangeDetectionCycle}}
