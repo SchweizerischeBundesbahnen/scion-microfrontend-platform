@@ -27,8 +27,8 @@ export class ɵIntentClient implements IntentClient {
       retain: options?.retain ?? false,
       headers: new Map(options?.headers),
       capability: undefined!, /* set by the broker when dispatching the intent */
+      body,
     };
-    setBodyIfDefined(intentMessage, body);
     return this._brokerGateway.postMessage(MessagingChannel.Intent, intentMessage);
   }
 
@@ -44,8 +44,8 @@ export class ɵIntentClient implements IntentClient {
         retain: options?.retain ?? false,
         headers: new Map(headers) /* make a copy for each subscription to support multiple subscriptions */,
         capability: undefined!, /* set by the broker when dispatching the intent */
+        body,
       };
-      setBodyIfDefined(intentMessage, body);
       return this._brokerGateway.requestReply$(MessagingChannel.Intent, intentMessage).pipe(throwOnErrorStatus());
     });
   }
@@ -61,11 +61,5 @@ export class ɵIntentClient implements IntentClient {
 
   public onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
     return new MessageHandler(Beans.get(IntentClient).observe$<IN>(selector), callback).subscription;
-  }
-}
-
-function setBodyIfDefined<T>(message: TopicMessage<T> | IntentMessage<T>, body?: T): void {
-  if (body !== undefined) {
-    message.body = body;
   }
 }

@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {defer, noop, Observable, Subject, Subscription} from 'rxjs';
-import {IntentMessage, mapToBody, throwOnErrorStatus, TopicMessage} from '../../messaging.model';
+import {mapToBody, throwOnErrorStatus, TopicMessage} from '../../messaging.model';
 import {BrokerGateway} from './broker-gateway';
 import {MessagingChannel, PlatformTopics, TopicSubscribeCommand} from '../../ɵmessaging.model';
 import {MessageClient} from './message-client';
@@ -26,8 +26,8 @@ export class ɵMessageClient implements MessageClient {
       topic,
       retain: options?.retain ?? false,
       headers: new Map(options?.headers),
+      body: message,
     };
-    setBodyIfDefined(topicMessage, message);
     return this._brokerGateway.postMessage(MessagingChannel.Topic, topicMessage);
   }
 
@@ -42,8 +42,8 @@ export class ɵMessageClient implements MessageClient {
         topic,
         retain: options?.retain ?? false,
         headers: new Map(headers), /* make a copy for each subscription to support multiple subscriptions */
+        body: request,
       };
-      setBodyIfDefined(topicMessage, request);
       return this._brokerGateway.requestReply$(MessagingChannel.Topic, topicMessage).pipe(throwOnErrorStatus());
     });
   }
@@ -76,11 +76,5 @@ export class ɵMessageClient implements MessageClient {
         });
       return (): void => unsubscribe$.next();
     });
-  }
-}
-
-function setBodyIfDefined<T>(message: TopicMessage<T> | IntentMessage<T>, body?: T): void {
-  if (body !== undefined) {
-    message.body = body;
   }
 }
