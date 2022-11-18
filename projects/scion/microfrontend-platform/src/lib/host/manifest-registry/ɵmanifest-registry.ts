@@ -17,13 +17,14 @@ import {MessageClient} from '../../client/messaging/message-client';
 import {ApplicationRegistry} from '../application-registry';
 import {filterArray} from '@scion/toolkit/operators';
 import {ManifestRegistry} from './manifest-registry';
-import {assertExactQualifier, QualifierMatcher} from '../../qualifier-matcher';
+import {QualifierMatcher} from '../../qualifier-matcher';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {Logger, LoggingContext} from '../../logger';
 import {ManifestObjectFilter} from './manifest-object.model';
 import {ClientRegistry} from '../client-registry/client.registry';
 import {CapabilityInterceptor} from './capability-interceptors';
 import {UUID} from '@scion/toolkit/uuid';
+import {Qualifiers} from '../../qualifiers.util';
 
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
@@ -56,7 +57,11 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
    * @inheritDoc
    */
   public resolveCapabilitiesByIntent(intent: Intent, appSymbolicName: string): Capability[] {
-    assertExactQualifier(intent.qualifier);
+    const illegalQualifierError = Qualifiers.validateQualifier(intent.qualifier, {exactQualifier: true});
+    if (illegalQualifierError) {
+      throw illegalQualifierError;
+    }
+
     const filter: ManifestObjectFilter = {type: intent.type, qualifier: intent.qualifier || {}};
     return this._capabilityStore.find(filter)
       .filter(capability => this.isApplicationQualifiedForCapability(appSymbolicName, capability));
@@ -66,7 +71,11 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
    * @inheritDoc
    */
   public hasIntention(intent: Intent, appSymbolicName: string): boolean {
-    assertExactQualifier(intent.qualifier);
+    const illegalQualifierError = Qualifiers.validateQualifier(intent.qualifier, {exactQualifier: true});
+    if (illegalQualifierError) {
+      throw illegalQualifierError;
+    }
+
     const filter: ManifestObjectFilter = {appSymbolicName, type: intent.type};
     return (
       Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName) ||
@@ -102,19 +111,14 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
   public async registerCapability(capability: Capability, appSymbolicName: string): Promise<string> {
     if (!capability) {
-      throw Error('[CapabilityRegisterError] Missing required capability.');
+      throw Error('[CapabilityRegisterError] Capability must not be null or undefined.');
     }
-    if (capability.qualifier) {
-      if (capability.qualifier.hasOwnProperty('*')) {
-        throw Error('[CapabilityRegisterError] Asterisk wildcard (\'*\') not allowed in the qualifier key.');
-      }
-      if (Object.values(capability.qualifier).some(value => value === '*')) {
-        throw Error('[CapabilityRegisterError] Asterisk wildcard (\'*\') not allowed in the qualifier value. Use required params instead.');
-      }
-      // TODO [#196]: Remove this check
-      if (Object.values(capability.qualifier).some(value => value === '?')) {
-        throw Error('[CapabilityRegisterError] Optional wildcard (\'?\') not allowed in the qualifier value. Use optional params instead.');
-      }
+    if (!capability.type) {
+      throw Error('[CapabilityRegisterError] Missing capability property: type');
+    }
+    const illegalQualifierError = Qualifiers.validateLegacyCapabilityQualifier(capability.qualifier) || Qualifiers.validateQualifier(capability.qualifier, {exactQualifier: true});
+    if (illegalQualifierError) {
+      throw illegalQualifierError;
     }
 
     // Let the host app intercept the capability to register.
@@ -142,11 +146,14 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
   public registerIntention(intention: Intention, appSymbolicName: string): string {
     if (!intention) {
-      throw Error(`[IntentionRegisterError] Missing required intention.`);
+      throw Error('[IntentionRegisterError] Intention must not be null or undefined.');
     }
-    // TODO [#196]: Remove this check
-    if (intention.qualifier && Object.values(intention.qualifier).some(value => value === '?')) {
-      throw Error('[IntentionRegisterError] Optional wildcard (\'?\') not allowed in the qualifier value. You should define optional params in the capability instead.');
+    if (!intention.type) {
+      throw Error('[IntentionRegisterError] Missing intention property: type');
+    }
+    const illegalQualifierError = Qualifiers.validateLegacyIntentionQualifier(intention.qualifier) || Qualifiers.validateQualifier(intention.qualifier, {exactQualifier: false});
+    if (illegalQualifierError) {
+      throw illegalQualifierError;
     }
 
     const intentionToRegister: Intention = {
@@ -205,6 +212,11 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
       const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
       const lookupFilter = request.body || {};
 
+      const illegalQualifierError = Qualifiers.validateQualifier(lookupFilter.qualifier, {exactQualifier: false});
+      if (illegalQualifierError) {
+        throw illegalQualifierError;
+      }
+
       // The queried capabilities may change on both, capability or intention change, because the computation
       // of visible and qualified capabilities depends on registered capabilities and manifested intentions.
       const registryChange$ = merge(this._capabilityStore.change$, this._intentionStore.change$);
@@ -221,6 +233,12 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   private installIntentionsLookupRequestHandler(): void {
     this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, Intention[]>(ManifestRegistryTopics.LookupIntentions, (request: TopicMessage<ManifestObjectFilter>) => {
       const lookupFilter = request.body || {};
+
+      const illegalQualifierError = Qualifiers.validateQualifier(lookupFilter.qualifier, {exactQualifier: false});
+      if (illegalQualifierError) {
+        throw illegalQualifierError;
+      }
+
       const finder$ = defer(() => of(this._intentionStore.find(lookupFilter)));
       return finder$
         .pipe(

@@ -34,6 +34,7 @@ import {Defined, Maps} from '@scion/toolkit/util';
 import {MessageClient} from '../../client/messaging/message-client';
 import {Predicates} from './predicates.util';
 import {Topics} from '../../topics.util';
+import {Qualifiers} from '../../qualifiers.util';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -307,6 +308,12 @@ export class MessageBroker implements Initializer, PreDestroy {
           return;
         }
 
+        const illegalQualifierError = Qualifiers.validateQualifier(message.intent.qualifier, {exactQualifier: true});
+        if (illegalQualifierError) {
+          sendDeliveryStatusError(client, messageId, illegalQualifierError);
+          return;
+        }
+
         if (!this._manifestRegistry.hasIntention(message.intent, client.application.symbolicName)) {
           const error = `[NotQualifiedError] Application '${client.application.symbolicName}' is not qualified to publish intents of the type '${message.intent.type}' and qualifier '${JSON.stringify(message.intent.qualifier || {})}'. Ensure to have listed the intention in the application manifest.`;
           sendDeliveryStatusError(client, messageId, error);
@@ -468,6 +475,12 @@ export class MessageBroker implements Initializer, PreDestroy {
         const client = getSendingClient(event);
         const envelope = event.data;
         const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
+
+        const illegalQualifierError = Qualifiers.validateQualifier(envelope.message.selector?.qualifier, {exactQualifier: false});
+        if (illegalQualifierError) {
+          sendDeliveryStatusError(client, messageId, illegalQualifierError);
+          return;
+        }
 
         try {
           const subscriberId = Defined.orElseThrow(envelope.message.subscriberId, () => Error('[IntentSubscribeError] Missing property: subscriberId'));

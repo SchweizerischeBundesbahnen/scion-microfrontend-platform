@@ -7,34 +7,34 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {assertExactQualifier, QualifierMatcher} from './qualifier-matcher';
+import {QualifierMatcher} from './qualifier-matcher';
 
 describe('QualifierTester', () => {
 
   it('should match a pattern containing the asterisk wildcard (*)', () => {
-      const matcher = new QualifierMatcher({entity: 'person', mode: '*'});
+    const matcher = new QualifierMatcher({entity: 'person', mode: '*'});
 
-      expect(matcher.matches({entity: 'person', mode: 'new'})).toBeTrue();
-      expect(matcher.matches({entity: 'person', mode: '*'})).toBeTrue();
-      expect(matcher.matches({entity: 'person'})).toBeFalse();
-      expect(matcher.matches({entity: 'person', other: 'property'})).toBeFalse();
-      expect(matcher.matches({entity: 'person', mode: 'new', other: 'property'})).toBeFalse();
-      expect(matcher.matches({entity: 'person', mode: '*', other: 'property'})).toBeFalse();
-      expect(matcher.matches({})).toBeFalse();
+    expect(matcher.matches({entity: 'person', mode: 'new'})).toBeTrue();
+    expect(matcher.matches({entity: 'person', mode: '*'})).toBeTrue();
+    expect(matcher.matches({entity: 'person'})).toBeFalse();
+    expect(matcher.matches({entity: 'person', other: 'property'})).toBeFalse();
+    expect(matcher.matches({entity: 'person', mode: 'new', other: 'property'})).toBeFalse();
+    expect(matcher.matches({entity: 'person', mode: '*', other: 'property'})).toBeFalse();
+    expect(matcher.matches({})).toBeFalse();
   });
 
   it('should match a pattern containing the asterisk wildcard (*) and the any-more wildcard (**)', () => {
-      const matcher = new QualifierMatcher({entity: 'person', mode: '*', '*': '*'});
+    const matcher = new QualifierMatcher({entity: 'person', mode: '*', '*': '*'});
 
-      expect(matcher.matches({entity: 'person', mode: 'new'})).toBeTrue();
-      expect(matcher.matches({entity: 'person', mode: '*'})).toBeTrue();
-      expect(matcher.matches({entity: 'person'})).toBeFalse();
-      expect(matcher.matches({entity: 'person', other: 'property'})).toBeFalse();
-      expect(matcher.matches({entity: 'person', mode: 'new', other: 'property'})).toBeTrue();
-      expect(matcher.matches({entity: 'person', mode: '*', other: 'property'})).toBeTrue();
-      expect(matcher.matches({})).toBeFalse();
-      expect(matcher.matches(null)).toBeFalse();
-      expect(matcher.matches(undefined)).toBeFalse();
+    expect(matcher.matches({entity: 'person', mode: 'new'})).toBeTrue();
+    expect(matcher.matches({entity: 'person', mode: '*'})).toBeTrue();
+    expect(matcher.matches({entity: 'person'})).toBeFalse();
+    expect(matcher.matches({entity: 'person', other: 'property'})).toBeFalse();
+    expect(matcher.matches({entity: 'person', mode: 'new', other: 'property'})).toBeTrue();
+    expect(matcher.matches({entity: 'person', mode: '*', other: 'property'})).toBeTrue();
+    expect(matcher.matches({})).toBeFalse();
+    expect(matcher.matches(null)).toBeFalse();
+    expect(matcher.matches(undefined)).toBeFalse();
   });
 
   it('should match if the pattern is empty', async () => {
@@ -119,17 +119,5 @@ describe('QualifierTester', () => {
     expect(matcher.matches({})).toBeFalse();
     expect(matcher.matches(null)).toBeFalse();
     expect(matcher.matches(undefined)).toBeFalse();
-  });
-
-  it('should throw if the qualifier is not exact', () => {
-    expect(() => assertExactQualifier({entity: 'person', mode: 'new'})).not.toThrowError(/IllegalQualifierError/);
-    expect(() => assertExactQualifier({entity: 'person', mode: '*'})).toThrowError(/IllegalQualifierError/);
-    expect(() => assertExactQualifier({entity: 'person'})).not.toThrowError(/IllegalQualifierError/);
-    expect(() => assertExactQualifier({entity: 'person', other: 'property'})).not.toThrowError(/IllegalQualifierError/);
-    expect(() => assertExactQualifier({entity: 'person', mode: 'new', other: 'property'})).not.toThrowError(/IllegalQualifierError/);
-    expect(() => assertExactQualifier({entity: 'person', mode: '*', other: 'property'})).toThrowError(/IllegalQualifierError/);
-    expect(() => assertExactQualifier({})).not.toThrowError(/IllegalQualifierError/);
-    expect(() => assertExactQualifier(null)).not.toThrowError(/IllegalQualifierError/);
-    expect(() => assertExactQualifier(undefined)).not.toThrowError(/IllegalQualifierError/);
   });
 });
