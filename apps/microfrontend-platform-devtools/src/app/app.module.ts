@@ -8,12 +8,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {BrowserModule} from '@angular/platform-browser';
-import {APP_INITIALIZER, NgModule, NgZone} from '@angular/core';
+import {APP_INITIALIZER, inject, NgModule, NgZone} from '@angular/core';
 
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {IntentClient, ManifestService, MessageClient, MicrofrontendPlatform, OutletRouter, PlatformState} from '@scion/microfrontend-platform';
-import {NgZoneIntentClientDecorator, NgZoneMessageClientDecorator} from './ng-zone-decorators';
+import {IntentClient, ManifestService, MessageClient, MicrofrontendPlatform, ObservableDecorator, OutletRouter} from '@scion/microfrontend-platform';
+import {NgZoneObservableDecorator} from './ng-zone-observable-decorator';
 import {AppDetailsComponent} from './app-details/app-details.component';
 import {AppListComponent} from './app-list/app-list.component';
 import {SciViewportModule} from '@scion/components/viewport';
@@ -87,7 +87,6 @@ import {CustomParamMetadataPipe} from './custom-param-metadata.pipe';
       provide: APP_INITIALIZER,
       useFactory: providePlatformInitializerFn,
       multi: true,
-      deps: [NgZoneMessageClientDecorator, NgZoneIntentClientDecorator, NgZone],
     },
     {provide: MessageClient, useFactory: () => Beans.get(MessageClient)},
     {provide: IntentClient, useFactory: () => Beans.get(IntentClient)},
@@ -99,15 +98,10 @@ import {CustomParamMetadataPipe} from './custom-param-metadata.pipe';
 export class AppModule {
 }
 
-export function providePlatformInitializerFn(ngZoneMessageClientDecorator: NgZoneMessageClientDecorator, ngZoneIntentClientDecorator: NgZoneIntentClientDecorator, zone: NgZone): () => Promise<void> {
+export function providePlatformInitializerFn(): () => Promise<void> {
+  const zone = inject(NgZone);
   return (): Promise<void> => {
-    // Make the platform to run with Angular
-    MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
-      Beans.registerDecorator(MessageClient, {useValue: ngZoneMessageClientDecorator});
-      Beans.registerDecorator(IntentClient, {useValue: ngZoneIntentClientDecorator});
-    });
-
-    // Run the microfrontend platform as client app
+    Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)});
     return zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost('devtools').catch(() => null));
   };
 }

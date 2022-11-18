@@ -33,6 +33,23 @@
       }
     }
 
+    > span.angular-change-detection-indicator {
+      width: 1em;
+      height: 1em;
+      min-width: 1em;
+      min-height: 1em;
+      border: 1px solid var(--sci-color-primary);
+      border-radius: 50%;
+      background-color: var(--sci-color-P50);
+      position: relative;
+      top: .5em;
+      margin: 0 .5em;
+
+      &:not(.active) {
+        visibility: hidden;
+      }
+    }
+
     > span.chip {
       flex: none;
 

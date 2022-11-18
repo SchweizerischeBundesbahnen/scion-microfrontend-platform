@@ -18,7 +18,7 @@ In this Chapter
 - <<chapter:angular-integration-guide:providing-activator-services>>
 - <<chapter:angular-integration-guide:providing-platform-beans-for-dependency-injection>>
 - <<chapter:angular-integration-guide:providing-microfrontends-as-lazy-loaded-modules>>
-- <<chapter:angular-integration-guide:preparing-messaging-for-use-with-angular>>
+- <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>>
 ****
 '''
 
@@ -71,7 +71,7 @@ NOTE: We recommend connecting to the platform host outside of the Angular zone i
 include::start-platform-via-initializer.snippets.ts[tags=micro-app:initializer]
 ----
 <1> Provides an initializer to the `APP_INITIALIZER` injection token.
-<2> Instructs Angular to pass the `NgZone` to the higher order function.
+<2> Instructs Angular to pass the `NgZone` to the higher order function. Alternatively, since Angular 14, you can inject the zone directly in the factory function with `inject(NgZone)`.
 <3> Returns the initializer function, which connects to the host. We recommend connecting to the host outside of the Angular zone in order to avoid excessive change detection cycles.
 
 [[chapter:angular-integration-guide:using-route-resolver-instead-app-initializer]]
@@ -220,70 +220,28 @@ A microfrontend module could look similar to the following:
 include::lazy-loaded-modules.snippets.ts[tags=microfrontend-1-module]
 ----
 
-[[chapter:angular-integration-guide:preparing-messaging-for-use-with-angular]]
+[[chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone]]
 [discrete]
-=== Synchronizing MessageClient and IntentClient with the Angular Zone
+=== Synchronizing RxJS Observables with the Angular Zone
 
-If you start or connect to the platform outside of the Angular zone, which we strongly recommend, messages and intents will be received outside of the Angular zone. In consequence, Angular does not trigger a change detection cycle, which may not update the UI as expected.
+Angular applications expect an RxJS Observable to emit in the same Angular zone in which subscribed to the Observable. That is, if subscribing inside the Angular zone, emissions are expected to be received inside the Angular zone. Otherwise, the UI may not be updated as expected but delayed until the next change detection cycle. Similarly, if subscribing outside the Angular zone, emissions are expected to be received outside the Angular zone. Otherwise, this would cause unnecessary change detection cycles resulting in potential performance degradation.
 
-Consequently, when receiving messages or intents, you have to synchronize with the Angular zone. For example, as follows.
-
-[source,typescript]
-----
-include::angular-integration-guide.snippets.ts[tags=synchronize-with-angular-zone-subscription]
-----
-<1> Runs the passed lambda inside the Angular zone.
-
-You can also use the `observeInside` RxJS operator of `@scion/toolkit` to run downstream operators and the subscription handler inside the Angular zone.
+Therefore, the platform supports the decoration of its observables to emit in the correct zone. We strongly recommend decoration for Angular applications. A decorator must implement `ObservableDecorator` and be registered in the bean manager before the platform is started, as follows:
 
 [source,typescript]
 ----
-include::angular-integration-guide.snippets.ts[tags=synchronize-with-angular-zone-observeInside-operator]
+include::angular-zone-observable-decorator.snippets.ts[tags=register-ng-zone-observable-decorator]
 ----
-<1> Runs downstream operators and the subscription handler inside the Angular zone.
+<1> Injects the Angular `NgZone`.
+<2> Registers the decorator.
 
-
-Alternatively, to not have to synchronize each subscription with the Angular zone, we recommend decorating the two beans `MessageClient` and `IntentClient` with a bean decorator to pipe Observable emissions into the Angular zone in a central place.
-
-TIP: Decorators allow intercepting bean method invocations. For more information about decorators, refer to the link:https://github.com/SchweizerischeBundesbahnen/scion-toolkit/blob/master/docs/site/tools/bean-manager.md[documentation of the bean manager, window=\"_blank\"].
-
-**MessageClient decorator example:**
+Example of a decorator for synchronizing the Angular zone.
 
 [source,typescript]
 ----
-include::angular-zone-message-client-decorator.snippets.ts[tags=message-client-decorator]
+include::angular-zone-observable-decorator.snippets.ts[tags=ng-zone-observable-decorator]
 ----
-<1> Obtains the `NgZone` from Angular's DI framework to synchronize Observable emissions with Angular.
-<2> Creates an anonymous class for the `MessageClient`, delegating invocations to the actual message client, but piping Observables to emit inside the Angular zone.
-<3> Mirrors the source Observable, but continues the operator chain inside the Angular zone.
-
-**IntentClient decorator example:**
-
-[source,typescript]
-----
-include::angular-zone-message-client-decorator.snippets.ts[tags=intent-client-decorator]
-----
-<1> Obtains the `NgZone` from Angular's DI framework to synchronize Observable emissions with Angular.
-<2> Creates an anonymous class for the `IntentClient`, delegating invocations to the actual intent client, but piping Observables to emit inside the Angular zone.
-<3> Mirrors the source Observable, but continues the operator chain inside the Angular zone.
-
-**Custom RxJS operator for synchronization with the Angular Zone:**
-
-The above decorators use the following custom RxJS operator for synchronizing Observable emissions with the Angular zone.
-
-[source,typescript]
-----
-include::angular-zone-message-client-decorator.snippets.ts[tags=emit-inside-angular]
-----
-
-**Decorator registration example:**
-
-The decorators for the `MessageClient` and `IntentClient` can be registered as following:
-
-[source,typescript]
-----
-include::angular-zone-message-client-decorator.snippets.ts[tags=register-decorator]
-----
-<1> Registers `NgZoneMessageClientDecorator` for decorating the `MessageClient` bean.
-<2> Registers `NgZoneIntentClientDecorator` for decorating the `IntentClient` bean.
+<1> Captures the zone at the time of subscription to the Observable.
+<2> Subscribes to the source outside of the Angular zone.
+<3> Runs subscription handlers (`next`, `error`, `complete`) in the same zone in which subscribed to the Observable.
 

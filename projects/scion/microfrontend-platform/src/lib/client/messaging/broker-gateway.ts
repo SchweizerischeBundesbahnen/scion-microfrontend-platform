@@ -23,6 +23,7 @@ import {MicrofrontendPlatformRef} from '../../microfrontend-platform-ref';
 import {MessageClient} from '../../client/messaging/message-client';
 import {runSafe} from '../../safe-runner';
 import {stringifyError} from '../../error.util';
+import {decorateObservable} from '../../observable-decorator';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.
@@ -211,6 +212,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
           filterByChannel<TopicMessage<T>>(MessagingChannel.Topic),
           filterByMessageHeader({name: MessageHeaders.ɵSubscriberId, value: subscriberId}),
           pluckMessage(),
+          decorateObservable(),
           takeUntil(merge(this._platformStopping$, unsubscribe$)),
           finalize(() => this.unsubscribe({unsubscribeChannel: MessagingChannel.TopicUnsubscribe, subscriberId, logContext: `[subscriberId=${subscriberId}, topic=${replyTo}]`})),
         )
@@ -247,6 +249,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
           filterByChannel<T>(messageChannel),
           filterByMessageHeader({name: MessageHeaders.ɵSubscriberId, value: subscriberId}),
           pluckMessage(),
+          decorateObservable(),
           takeUntil(merge(this._platformStopping$, unsubscribe$)),
           finalize(() => this.unsubscribe({unsubscribeChannel, subscriberId, logContext: JSON.stringify(newSubscribeCommand(subscriberId))})),
         )

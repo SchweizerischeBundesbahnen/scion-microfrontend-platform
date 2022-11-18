@@ -7,9 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, HostListener, OnDestroy} from '@angular/core';
+import {Component, HostListener, NgZone, OnDestroy} from '@angular/core';
 import {ContextService, MicrofrontendPlatform, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {fromEvent, merge, Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+import {subscribeInside} from '@scion/toolkit/operators';
 
 @Component({
   selector: 'app-root',
@@ -17,10 +20,12 @@ import {Beans} from '@scion/toolkit/bean-manager';
 })
 export class AppComponent implements OnDestroy {
 
+  private _destroy$ = new Subject<void>();
   private _outletContext: Promise<OutletContext>;
 
-  constructor() {
+  constructor(private _zone: NgZone) {
     this._outletContext = Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
+    this.installPropagatedKeyboardEventLogger();
   }
 
   @HostListener('document:keydown.control.alt.shift.s', ['$event'])
@@ -32,17 +37,27 @@ export class AppComponent implements OnDestroy {
     }
   }
 
-  @HostListener('document:keydown', ['$event'])
-  @HostListener('document:keyup', ['$event'])
-  public async onPropagatedKeyboardEvent(event: KeyboardEvent): Promise<void> {
-    // only log propagated keyboard events, i.e., keyboard events propagated across iframe boundaries.
-    if (!event.isTrusted && (event.target as Element).tagName === 'SCI-ROUTER-OUTLET') {
-      const outletContextName = (await this._outletContext)?.name ?? 'n/a';
-      console.debug(`[AppComponent::document:on${event.type}] [SYNTHETIC] [outletContext=${outletContextName}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}]`);
-    }
+  /**
+   * Logs propagated keyboard events, i.e., keyboard events propagated across iframe boundaries.
+   *
+   * Do not install via {@link HostListener} to not trigger change detection for each keyboard event.
+   */
+  private installPropagatedKeyboardEventLogger(): void {
+    merge(fromEvent<KeyboardEvent>(document, 'keydown'), fromEvent<KeyboardEvent>(document, 'keyup'))
+      .pipe(
+        subscribeInside(fn => this._zone.runOutsideAngular(fn)),
+        takeUntil(this._destroy$),
+      )
+      .subscribe(event => async () => {
+        if (!event.isTrusted && (event.target as Element).tagName === 'SCI-ROUTER-OUTLET') {
+          const outletContextName = (await this._outletContext)?.name ?? 'n/a';
+          console.debug(`[AppComponent::document:on${event.type}] [SYNTHETIC] [outletContext=${outletContextName}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}]`);
+        }
+      });
   }
 
   public ngOnDestroy(): void {
     MicrofrontendPlatform.destroy().then(); // Platform is started in {@link PlatformInitializer}
+    this._destroy$.next();
   }
 }

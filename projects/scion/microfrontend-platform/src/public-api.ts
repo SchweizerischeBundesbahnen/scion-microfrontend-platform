@@ -22,3 +22,4 @@ export * from './lib/client/public_api';
 export * from './lib/host/public_api';
 export * from './lib/topic-matcher.util';
 export * from './lib/qualifier-matcher';
+export * from './lib/observable-decorator';

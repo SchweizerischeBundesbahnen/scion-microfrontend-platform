@@ -15,6 +15,7 @@ import {mapToBody, MessageHeaders, ResponseStatusCodes} from '../../messaging.mo
 import {ContextLookupOptions, Contexts} from './context.model';
 import {IS_PLATFORM_HOST} from '../../platform.model';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {decorateObservable} from '../../observable-decorator';
 
 /**
  * Allows looking up contextual data set on a {@link SciRouterOutletElement `<sci-router-outlet>`} at any parent level.
@@ -93,6 +94,7 @@ export class ContextService implements PreDestroy {
         filter(event => event.name === name),
         startWith(undefined as void),
         switchMap(() => this.lookupContextValue$<T>(name, options)),
+        decorateObservable(),
       );
   }
 
@@ -159,6 +161,7 @@ export class ContextService implements PreDestroy {
       .pipe(
         startWith(undefined as void),
         switchMap(() => this.lookupContextNames$()),
+        decorateObservable(),
       );
   }
 

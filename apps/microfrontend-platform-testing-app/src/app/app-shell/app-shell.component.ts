@@ -7,10 +7,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, HostBinding, OnDestroy} from '@angular/core';
-import {asapScheduler, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
+import {Component, ElementRef, HostBinding, NgZone, OnDestroy, ViewChild} from '@angular/core';
+import {asapScheduler, debounceTime, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
-import {takeUntil} from 'rxjs/operators';
+import {takeUntil, tap} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
 import {Defined} from '@scion/toolkit/util';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -25,18 +25,24 @@ export class AppShellComponent implements OnDestroy {
 
   private _destroy$ = new Subject<void>();
   private _routeActivate$ = new Subject<void>();
+  private _angularChangeDetectionCycle$ = new Subject<void>();
+
   public appSymbolicName: string;
   public pageTitle: string;
   public isFocusWithin: boolean;
   public isDevToolsOpened = false;
   public isPlatformHost = Beans.get<boolean>(IS_PLATFORM_HOST);
 
-  constructor() {
+  @ViewChild('angular_change_detection_indicator', {static: true})
+  private _changeDetectionElement: ElementRef<HTMLElement>;
+
+  constructor(private _zone: NgZone) {
     this.appSymbolicName = Beans.get<string>(APP_IDENTITY);
 
     this.installFocusWithinListener();
     this.installRouteActivateListener();
     this.installKeystrokeRegisterLogger();
+    this.installAngularChangeDetectionIndicator();
   }
 
   private installRouteActivateListener(): void {
@@ -78,6 +84,19 @@ export class AppShellComponent implements OnDestroy {
       });
   }
 
+  private installAngularChangeDetectionIndicator(): void {
+    this._angularChangeDetectionCycle$
+      .pipe(
+        tap(() => NgZone.assertNotInAngularZone()),
+        tap(() => this._changeDetectionElement.nativeElement.classList.add('active')),
+        debounceTime(500),
+        takeUntil(this._destroy$),
+      )
+      .subscribe(() => {
+        this._changeDetectionElement.nativeElement.classList.remove('active');
+      });
+  }
+
   /**
    * asapScheduler is used in order to avoid 'ExpressionChangedAfterItHasBeenCheckedError'.
    *
@@ -108,6 +127,14 @@ export class AppShellComponent implements OnDestroy {
 
   public onDevToolsToggle(): void {
     this.isDevToolsOpened = !this.isDevToolsOpened;
+  }
+
+  /**
+   * Method invoked on each Angular change detection cycle.
+   */
+  public get onAngularChangeDetectionCycle(): void {
+    this._zone.runOutsideAngular(() => this._angularChangeDetectionCycle$.next());
+    return undefined as void;
   }
 
   public ngOnDestroy(): void {

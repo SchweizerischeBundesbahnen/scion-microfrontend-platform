@@ -11,9 +11,16 @@
 /**
  * Declares topics of the testing app.
  */
-export enum TestingAppTopics {
+export namespace TestingAppTopics {
   /**
    * The host app sends a ping request to the activators when started the platform.
    */
-  ActivatorPing = 'activators/ping',
+  export const ActivatorPing = 'activators/ping';
+
+  /**
+   * Computes the topic to which a message can be sent to update the context of an outlet.
+   */
+  export function routerOutletContextUpdateTopic(outletName: string, contextValueKey: string): string {
+    return `testing-app/sci-router-outlets/${outletName}/context/${contextValueKey}`;
+  }
 }
