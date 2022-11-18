@@ -133,7 +133,9 @@ export class ActivatorInstaller implements Initializer {
     // Provide the activation context
     routerOutlet.setContextValue<ActivationContext>(ACTIVATION_CONTEXT, {primary, activator});
     // Add CSS classes for debugging purposes
-    routerOutlet.classList.add('sci-activator', application.symbolicName);
+    routerOutlet.classList.add('sci-activator');
+    // Add custom data attribute with the application's symbolic name for debugging purposes
+    routerOutlet.dataset['app'] = application.symbolicName;
     // Make the router outlet invisible
     routerOutlet.style.display = 'none';
     // Take the router outlet out of the document flow

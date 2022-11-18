@@ -33,7 +33,7 @@ test.describe('RouterOutlet', () => {
     await routerOutletPO.enterOutletName('microfrontend-outlet');
     await routerOutletPO.clickApply();
 
-    expect(await routerOutletPO.getRouterOutletName()).toEqual('microfrontend-outlet');
+    await expect(await routerOutletPO.getRouterOutletName()).toEqual('microfrontend-outlet');
   });
 
   test('should set the iframe name to the outlet name', async ({testingAppPO}) => {
@@ -45,7 +45,7 @@ test.describe('RouterOutlet', () => {
     await routerOutletPO.enterOutletName('microfrontend-outlet');
     await routerOutletPO.clickApply();
 
-    expect(await routerOutletPO.getRouterOutletFrameName()).toEqual('microfrontend-outlet');
+    await expect(await routerOutletPO.getRouterOutletFrameName()).toEqual('microfrontend-outlet');
   });
 
   test('should allow navigating within the outlet (self navigation)', async ({testingAppPO}) => {

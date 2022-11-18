@@ -1,0 +1,20 @@
+<div class="e2e-element element" tabindex="0" (mousedown)="!preventdefault_on_mousedown.isChecked">Element</div>
+
+<label>
+  <sci-checkbox class="e2e-prevent-default-on-mousedown" #preventdefault_on_mousedown></sci-checkbox>
+  <span>PreventDefault on Mousedown</span>
+</label>
+
+<section class="dispatched-mouse-events e2e-dispatched-mouse-events">
+  <header>Received Dispatched Mouse Events</header>
+  <sci-viewport>
+    <div *ngFor="let dispatchedEvent of dispatchedEvents" class="event e2e-event">
+      <span>{{dispatchedEvent.timestamp | date:'hh:mm:ss:SSS'}}</span><span class="e2e-type">{{dispatchedEvent.type}}</span>
+    </div>
+  </sci-viewport>
+  <label>
+    <sci-checkbox [formControl]="followTailFormControl"></sci-checkbox>
+    <span>Follow tail</span>
+  </label>
+  <button (click)="onClearDispatchedEvent()" class="e2e-clear">Clear</button>
+</section>
