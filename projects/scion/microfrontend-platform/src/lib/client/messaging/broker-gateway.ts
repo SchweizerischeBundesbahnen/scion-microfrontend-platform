@@ -7,12 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {AsyncSubject, EMPTY, firstValueFrom, fromEvent, interval, lastValueFrom, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout, timer} from 'rxjs';
+import {AsyncSubject, EMPTY, firstValueFrom, fromEvent, lastValueFrom, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout, timer} from 'rxjs';
 import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, SubscribeCommand, UnsubscribeCommand} from '../../ɵmessaging.model';
 import {finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
 import {filterByChannel, filterByMessageHeader, filterByOrigin, filterByTopicChannel, filterByTransport, filterByWindow, pluckMessage} from '../../operators';
 import {UUID} from '@scion/toolkit/uuid';
-import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
+import {IntentMessage, Message, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {Logger, NULL_LOGGER} from '../../logger';
 import {Dictionaries} from '@scion/toolkit/util';
 import {Beans, Initializer, PreDestroy} from '@scion/toolkit/bean-manager';
@@ -127,7 +127,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     try {
       const session = await this.connectToBroker();
       this.installBrokerMessageListener(session);
-      this.installHeartbeatPublisher(session);
+      this.installPingReplier(session);
       this._session = session;
       this._session$.next(session);
       this._session$.complete();
@@ -305,18 +305,20 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   }
 
   /**
-   * Installs a scheduler that periodically sends a heartbeat to indicate that this client is connected to the host.
+   * Installs a ping replier to indicate that this client is connected to the host.
    *
-   * Note that no heartbeat scheduler is installed if running in the context of the host application.
+   * Note that no ping replier is installed if running in the context of the host application.
    */
-  private installHeartbeatPublisher(session: Session): void {
+  private installPingReplier(session: Session): void {
     if (Beans.get(IS_PLATFORM_HOST)) {
-      return; // The host app client does not send a heartbeat.
+      return; // The host app client does not reply to pings.
     }
-    interval(session.heartbeatInterval)
+
+    Beans.get(MessageClient).observe$(PlatformTopics.ping(session.clientId))
       .pipe(takeUntil(this._platformStopping$))
-      .subscribe(() => runSafe(() => {
-        Beans.get(MessageClient).publish(PlatformTopics.heartbeat(session.clientId)).then();
+      .subscribe(request => runSafe(() => {
+        const replyTo = request.headers.get(MessageHeaders.ReplyTo);
+        Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)}).then();
       }));
   }
 
@@ -342,7 +344,6 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
           }
           return of<Session>({
             clientId: response.clientId!,
-            heartbeatInterval: response.heartbeatInterval!,
             broker: {
               window: messageEvent.source as Window,
               origin: messageEvent.origin,
@@ -496,7 +497,6 @@ function isPlatformStopped(): boolean {
  */
 interface Session {
   clientId: string;
-  heartbeatInterval: number;
   broker: {
     origin: string;
     window: Window;

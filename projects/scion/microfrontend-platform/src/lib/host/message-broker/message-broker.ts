@@ -26,7 +26,6 @@ import {bufferUntil} from '@scion/toolkit/operators';
 import {filterByChannel, filterByTransport} from '../../operators';
 import {Client} from '../client-registry/client';
 import {semver} from '../semver';
-import {CLIENT_HEARTBEAT_INTERVAL} from '../client-registry/client.constants';
 import {ɵClient} from '../client-registry/ɵclient';
 import {stringifyError} from '../../error.util';
 import {IntentSubscription, IntentSubscriptionRegistry} from './intent-subscription.registry';
@@ -69,12 +68,10 @@ export class MessageBroker implements Initializer, PreDestroy {
 
   private readonly _messagePublisher: PublishInterceptorChain<TopicMessage>;
   private readonly _intentPublisher: PublishInterceptorChain<IntentMessage>;
-  private readonly _heartbeatInterval: number;
 
   constructor() {
     this._applicationRegistry = Beans.get(ApplicationRegistry);
     this._manifestRegistry = Beans.get(ManifestRegistry);
-    this._heartbeatInterval = Beans.get(CLIENT_HEARTBEAT_INTERVAL);
 
     // Construct a stream of messages sent by clients.
     this._clientMessage$ = fromEvent<MessageEvent>(window, 'message')
@@ -177,7 +174,7 @@ export class MessageBroker implements Initializer, PreDestroy {
         if (currentClient && currentClient.application.messageOrigin === event.origin && currentClient.application.symbolicName === application.symbolicName) {
           sendTopicMessage<ConnackMessage>(currentClient, {
             topic: replyTo,
-            body: {returnCode: 'accepted', clientId: currentClient.id, heartbeatInterval: this._heartbeatInterval},
+            body: {returnCode: 'accepted', clientId: currentClient.id},
             headers: new Map(),
           });
           return;
@@ -193,7 +190,7 @@ export class MessageBroker implements Initializer, PreDestroy {
 
         sendTopicMessage<ConnackMessage>(client, {
           topic: replyTo,
-          body: {returnCode: 'accepted', clientId: client.id, heartbeatInterval: this._heartbeatInterval},
+          body: {returnCode: 'accepted', clientId: client.id},
           headers: new Map(),
         });
       }));
@@ -657,13 +654,9 @@ function checkOriginTrusted<T extends Message>(): MonoTypeOperatorFunction<Messa
       return EMPTY;
     }
 
-    // Assert source window unless the request is stale, i.e., if the origin window has been closed or a site with a different origin has been loaded.
-    // We still process stale requests to enable proper disconnection of the client, such as delivery of messages published by the client during shutdown,
-    // but mark the client as stale and queue it for later removal.
-    if (event.source === null) {
-      client.markStaleAndQueueForRemoval();
-    }
-    else if (event.source !== client.window) {
+    // Assert the source window unless it is `null`, that is, it has been closed or a page from another origin has been loaded into the window.
+    // We still process requests of stale clients to enable proper disconnection, such as delivery of messages published by the client during shutdown.
+    if (event.source !== null && event.source !== client.window) {
       const sender = new MessageTarget(event);
       const error = `[MessagingError] Message rejected: Wrong window [origin=${event.origin}]`;
       sendDeliveryStatusError(sender, messageId, error);

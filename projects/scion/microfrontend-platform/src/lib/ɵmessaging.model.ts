@@ -100,10 +100,10 @@ export namespace PlatformTopics {
    */
   export const Applications = 'ɵAPPLICATIONS';
   /**
-   * Computes the topic where a client can publish its heartbeat.
+   * Computes the topic where the host can ping clients.
    */
-  export function heartbeat(clientId: string): string {
-    return `ɵclient/${clientId}/heartbeat`;
+  export function ping(clientId: string): string {
+    return `ɵclient/${clientId}/ping`;
   }
 }
 
@@ -117,10 +117,6 @@ export interface ConnackMessage {
    * Unique id assigned to the client by the broker. Is only set on success.
    */
   clientId?: string;
-  /**
-   * Specifies the interval (in seconds) at which the client must send a heartbeat to indicate to be connected to the host.
-   */
-  heartbeatInterval?: number;
 }
 
 export interface SubscribeCommand extends Message {

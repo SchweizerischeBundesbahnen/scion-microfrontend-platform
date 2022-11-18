@@ -114,76 +114,19 @@ You can set a different timeout per application via <<objects::application-confi
 
 By default, no timeout is set, meaning that if an app fails to signal readiness, e.g., due to an error, that app would block the host startup process indefinitely. It is therefore recommended to specify a timeout accordingly.
 
-| heartbeatInterval
-a| `number`
+| liveness
+a| `<<objects::liveness-config,LivenessConfig>>`
 | no
-| 60
-| Interval (in seconds) at which connected clients must send a heartbeat to indicate connectivity to the host.
+|
+| Configures the liveness probe performed between host and clients to detect and dispose stale clients.
+
+See <<objects::liveness-config,LivenessConfig>> for an overview of the properties.
 
 | properties
 a| `Dictionary`
 | no
 |
 | Defines user-defined properties which can be read by micro applications via `PlatformPropertyService`.
-
-|===
-
-The `HostConfig` object is used to configure the interaction of the host application with the platform.
-
-[[objects::host-config]]
-.Properties of `HostConfig`
-[cols="1,2,1,1,5"]
-|===
-| Property | Type | Mandatory | Default | Description
-
-| symbolicName
-a| `string`
-| no
-a| `host`
-| Symbolic name of the host.
-
-If not set, `host` is used as the symbolic name of the host. The symbolic name must be unique and contain only lowercase alphanumeric characters and hyphens.
-
-| manifest
-a| `string` \|
-`<<objects::manifest,Manifest>>`
-| no
-|
-| The manifest of the host.
-
-The manifest can be passed either as an object literal or specified as a URL to be loaded over the network. Providing a manifest lets the host contribute capabilities or declare intentions.
-
-See <<objects::manifest,Manifest>> for an overview of the properties of the manifest.
-
-| scopeCheckDisabled
-a| `boolean`
-| no
-a| `false`
-| Controls whether the host can interact with private capabilities of other micro applications.
-
-By default, scope check is enabled. Disabling scope check is strongly discouraged.
-
-| intentionCheckDisabled
-a| `boolean`
-| no
-a| `false`
-| Controls whether the host can interact with the capabilities of other apps without having to declare respective intentions.
-
-By default, intention check is enabled. Disabling intention check is strongly discouraged.
-
-| intentionRegisterApiDisabled
-a| `boolean`
-| no
-a| `true`
-| Controls whether the host can register and unregister intentions dynamically at runtime.
-
-By default, this API is disabled. Enabling this API is strongly discouraged.
-
-| messageDeliveryTimeout
-a| `number`
-| no
-a| `10'000ms`
-| Maximum time (in milliseconds) that the platform waits to receive dispatch confirmation for messages sent by the host until rejecting the publishing Promise.
 
 |===
 
@@ -267,3 +210,88 @@ By default, this API is disabled. Enabling this API is strongly discouraged.
 
 |===
 
+The `HostConfig` object is used to configure the interaction of the host application with the platform.
+
+[[objects::host-config]]
+.Properties of `HostConfig`
+[cols="1,2,1,1,5"]
+|===
+| Property | Type | Mandatory | Default | Description
+
+| symbolicName
+a| `string`
+| no
+a| `host`
+| Symbolic name of the host.
+
+If not set, `host` is used as the symbolic name of the host. The symbolic name must be unique and contain only lowercase alphanumeric characters and hyphens.
+
+| manifest
+a| `string` \|
+`<<objects::manifest,Manifest>>`
+| no
+|
+| The manifest of the host.
+
+The manifest can be passed either as an object literal or specified as a URL to be loaded over the network. Providing a manifest lets the host contribute capabilities or declare intentions.
+
+See <<objects::manifest,Manifest>> for an overview of the properties of the manifest.
+
+| scopeCheckDisabled
+a| `boolean`
+| no
+a| `false`
+| Controls whether the host can interact with private capabilities of other micro applications.
+
+By default, scope check is enabled. Disabling scope check is strongly discouraged.
+
+| intentionCheckDisabled
+a| `boolean`
+| no
+a| `false`
+| Controls whether the host can interact with the capabilities of other apps without having to declare respective intentions.
+
+By default, intention check is enabled. Disabling intention check is strongly discouraged.
+
+| intentionRegisterApiDisabled
+a| `boolean`
+| no
+a| `true`
+| Controls whether the host can register and unregister intentions dynamically at runtime.
+
+By default, this API is disabled. Enabling this API is strongly discouraged.
+
+| messageDeliveryTimeout
+a| `number`
+| no
+a| `10'000ms`
+| Maximum time (in milliseconds) that the platform waits to receive dispatch confirmation for messages sent by the host until rejecting the publishing Promise.
+
+|===
+
+The `LivenessConfig` object is used to configure the liveness probe performed between host and clients to detect and dispose stale clients. Clients not replying to the probe are removed.
+
+[[objects::liveness-config]]
+.Properties of `LivenessConfig`
+[cols="1,2,1,3,5"]
+|===
+| Property | Type | Mandatory | Default | Description
+
+| interval
+a| `number`
+| yes
+a| `60s` (if no `LivenessConfig` is provided)
+| Interval (in seconds) at which liveness probes are performed between host and connected clients.
+
+Note that the interval must not be 0 and be greater than twice the timeout period to give a probe enough time to complete before performing a new probe.
+
+
+| timeout
+a| `number`
+| yes
+a| `10s` (if no `LivenessConfig` is provided)
+| Timeout (in seconds) after which a client is unregistered if not replying to the probe.
+
+Note that the timeout must not be 0 and be less than half the interval period to give a probe enough time to complete before performing a new probe.
+
+|===

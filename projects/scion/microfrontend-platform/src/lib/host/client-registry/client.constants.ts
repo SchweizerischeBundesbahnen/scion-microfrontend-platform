@@ -1,13 +1,23 @@
-/**
- * Specifies the interval (in milliseconds) at which connected clients must send a heartbeat to indicate connectivity to the host.
+/*
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
- * By default, if not set, a heartbeat interval of 60s is used.
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  */
-export const CLIENT_HEARTBEAT_INTERVAL = Symbol('CLIENT_HEARTBEAT_INTERVAL');
 
 /**
- * Specifies the delay (in milliseconds) for unregistering a stale client.
+ * Specifies the interval (in milliseconds) at which the host pings connected clients.
  *
- * By default, if not set, stale clients are unregistered after 2 seconds.
+ * By default, if not set, a ping interval of 60s is used.
  */
-export const STALE_CLIENT_UNREGISTER_DELAY = Symbol('STALE_CLIENT_UNREGISTER_DELAY');
+export const CLIENT_PING_INTERVAL = Symbol('CLIENT_PING_INTERVAL');
+
+/**
+ * Specifies the ping timeout (in milliseconds) for unregistering a client.
+ *
+ * By default, if not set, clients are unregistered if not answering the ping within 10 seconds.
+ */
+export const CLIENT_PING_TIMEOUT = Symbol('CLIENT_PING_TIMEOUT');
