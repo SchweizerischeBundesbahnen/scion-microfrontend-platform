@@ -12,7 +12,6 @@ import {defer, Observable, Subscription} from 'rxjs';
 import {Intent, IntentMessage, throwOnErrorStatus, TopicMessage} from '../../messaging.model';
 import {BrokerGateway} from './broker-gateway';
 import {IntentSubscribeCommand, MessagingChannel} from '../../ɵmessaging.model';
-import {assertExactQualifier} from '../../qualifier-matcher';
 import {IntentClient, IntentSelector} from './intent-client';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageHandler} from './message-handler';
@@ -23,7 +22,6 @@ export class ɵIntentClient implements IntentClient {
   private readonly _brokerGateway = Beans.get(BrokerGateway);
 
   public publish<T = any>(intent: Intent, body?: T, options?: PublishOptions): Promise<void> {
-    assertExactQualifier(intent.qualifier);
     const intentMessage: IntentMessage = {
       intent,
       retain: options?.retain ?? false,
@@ -35,7 +33,6 @@ export class ɵIntentClient implements IntentClient {
   }
 
   public request$<T>(intent: Intent, body?: any, options?: RequestOptions): Observable<TopicMessage<T>> {
-    assertExactQualifier(intent.qualifier);
     // IMPORTANT:
     // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
     // to the returned Observable, each subscription must have its individual message instance and headers map.

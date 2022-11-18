@@ -1121,22 +1121,6 @@ describe('Messaging', () => {
     expect(headersCaptor.getLastValue().get(MessageHeaders.AppSymbolicName)).toEqual('host-app');
   });
 
-  it('should throw if the qualifier of an intent contains wildcard characters', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    expect(() => Beans.get(IntentClient).publish({type: 'type', qualifier: {entity: 'person', mode: '*'}})).toThrowError(/IllegalQualifierError/);
-    expect(() => Beans.get(IntentClient).publish({type: 'type', qualifier: {entity: 'person', mode: '?'}})).toThrowError(/IllegalQualifierError/);
-    expect(() => Beans.get(IntentClient).publish({type: 'type', qualifier: {entity: '*', mode: '*'}})).toThrowError(/IllegalQualifierError/);
-  });
-
-  it('should throw if the qualifier of an intent request contains wildcard characters', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    expect(() => Beans.get(IntentClient).request$({type: 'type', qualifier: {entity: 'person', mode: '*'}})).toThrowError(/IllegalQualifierError/);
-    expect(() => Beans.get(IntentClient).request$({type: 'type', qualifier: {entity: 'person', mode: '?'}})).toThrowError(/IllegalQualifierError/);
-    expect(() => Beans.get(IntentClient).request$({type: 'type', qualifier: {entity: '*', mode: '*'}})).toThrowError(/IllegalQualifierError/);
-  });
-
   it('should prevent overriding platform specific message headers [pub/sub]', async () => {
     await MicrofrontendPlatform.startHost({applications: []});
 
@@ -2505,7 +2489,98 @@ describe('Messaging', () => {
       await expectAsync(whenPublished).toBeResolved();
     });
 
+    it('should error if publish qualifier contains wildcards', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: '*'}})).toBeRejectedWithError(/IllegalQualifierError/);
+      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {'*': '*'}})).toBeRejectedWithError(/IllegalQualifierError/);
+    });
+
+    it('should error if publish qualifier contains entries with an illegal data type', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: {} as any}})).toBeRejectedWithError(/IllegalQualifierError/);
+    });
+
+    it('should error if publish qualifier contains empty entries', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: ''}})).toBeRejectedWithError(/IllegalQualifierError/);
+      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: null}})).toBeRejectedWithError(/IllegalQualifierError/);
+      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: undefined}})).toBeRejectedWithError(/IllegalQualifierError/);
+    });
+
+    it('should error if observe qualifier contains entries with an illegal data type', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      const captor = new ObserveCaptor();
+      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: {} as any}}).subscribe(captor);
+      await captor.waitUntilCompletedOrErrored();
+      expect(captor.getError()).toMatch(/IllegalQualifierError/);
+    });
+
+    it('should error if observe qualifier contains empty entries', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      const captor1 = new ObserveCaptor();
+      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: ''}}).subscribe(captor1);
+      await captor1.waitUntilCompletedOrErrored();
+      expect(captor1.getError()).toMatch(/IllegalQualifierError/);
+
+      const captor2 = new ObserveCaptor();
+      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: null}}).subscribe(captor2);
+      await captor2.waitUntilCompletedOrErrored();
+      expect(captor2.getError()).toMatch(/IllegalQualifierError/);
+
+      const captor3 = new ObserveCaptor();
+      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: undefined}}).subscribe(captor3);
+      await captor3.waitUntilCompletedOrErrored();
+      expect(captor3.getError()).toMatch(/IllegalQualifierError/);
+    });
+
     describe('intent request', () => {
+
+      it('should error if request qualifier contains wildcards', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        const captor1 = new ObserveCaptor();
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: '*'}}).subscribe(captor1);
+        await captor1.waitUntilCompletedOrErrored();
+        expect(captor1.getError()).toMatch(/IllegalQualifierError/);
+
+        const captor2 = new ObserveCaptor();
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {'*': '*'}}).subscribe(captor2);
+        await captor2.waitUntilCompletedOrErrored();
+        expect(captor2.getError()).toMatch(/IllegalQualifierError/);
+      });
+
+      it('should error if request qualifier contains entries with an illegal data type', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        const captor = new ObserveCaptor();
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: {} as any}}).subscribe(captor);
+        await captor.waitUntilCompletedOrErrored();
+        expect(captor.getError()).toMatch(/IllegalQualifierError/);
+      });
+
+      it('should error if request qualifier contains empty entries', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        const captor1 = new ObserveCaptor();
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: ''}}).subscribe(captor1);
+        await captor1.waitUntilCompletedOrErrored();
+        expect(captor1.getError()).toMatch(/IllegalQualifierError/);
+
+        const captor2 = new ObserveCaptor();
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: null}}).subscribe(captor2);
+        await captor2.waitUntilCompletedOrErrored();
+        expect(captor2.getError()).toMatch(/IllegalQualifierError/);
+
+        const captor3 = new ObserveCaptor();
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: undefined}}).subscribe(captor3);
+        await captor3.waitUntilCompletedOrErrored();
+        expect(captor3.getError()).toMatch(/IllegalQualifierError/);
+      });
 
       it('should error if no application provides a fulfilling capability', async () => {
         await MicrofrontendPlatform.startHost({

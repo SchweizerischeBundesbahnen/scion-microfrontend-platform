@@ -64,7 +64,7 @@ export class ApplicationRegistry {
         await Beans.get(ManifestRegistry).registerCapability(capability, applicationConfig.symbolicName);
       }
       catch (error) {
-        Beans.get(Logger).error(`[CapabilityRegisterError] Failed to register capability for application '${applicationConfig.symbolicName}'.`, error);
+        Beans.get(Logger).error(`[CapabilityRegisterError] Failed to register capability for application '${applicationConfig.symbolicName}'. [capability=${JSON.stringify(capability)}]`, error);
       }
     }
 
@@ -73,7 +73,7 @@ export class ApplicationRegistry {
         Beans.get(ManifestRegistry).registerIntention(intention, applicationConfig.symbolicName);
       }
       catch (error) {
-        Beans.get(Logger).error(`[IntentionRegisterError] Failed to register intention for application '${applicationConfig.symbolicName}'.`, error);
+        Beans.get(Logger).error(`[IntentionRegisterError] Failed to register intention for application '${applicationConfig.symbolicName}' [intention=${JSON.stringify(intention)}].`, error);
       }
     });
   }

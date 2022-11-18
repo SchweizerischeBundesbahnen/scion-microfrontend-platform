@@ -54,20 +54,3 @@ export class QualifierMatcher {
       });
   }
 }
-
-/**
- * Asserts the given qualifier not to contain wildcards.
- *
- * For example, the qualifier of an intent must be exact. The qualifier of an intention, on the other hand, allows wildcards.
- *
- * @internal
- */
-export function assertExactQualifier(qualifier: Qualifier | null | undefined): void {
-  if (!qualifier || Object.keys(qualifier).length === 0) {
-    return;
-  }
-
-  if (Object.entries(qualifier).some(([key, value]) => key === '*' || value === '*' || value === '?')) {
-    throw Error(`[IllegalQualifierError] Intent qualifier must not contain wildcards. [qualifier='${JSON.stringify(qualifier)}']`);
-  }
-}

@@ -271,7 +271,7 @@ describe('ManifestRegistry', () => {
       applications: [],
     });
 
-    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'host-app')).toBeRejectedWithError(`[CapabilityRegisterError] Asterisk wildcard ('*') not allowed in the qualifier key.`);
+    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'host-app')).toBeRejectedWithError('[IllegalQualifierError] Asterisk wildcard (\'*\') not allowed in the capability qualifier anymore. To migrate, use required or optional params instead.');
   });
 
   it('should not allow registering a capability using the asterisk wildcard (*) in its qualifier', async () => {
@@ -280,7 +280,7 @@ describe('ManifestRegistry', () => {
       applications: [],
     });
 
-    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toBeRejectedWithError(`[CapabilityRegisterError] Asterisk wildcard ('*') not allowed in the qualifier value. Use required params instead.`);
+    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toBeRejectedWithError('[IllegalQualifierError] Asterisk wildcard (\'*\') not allowed in the capability qualifier anymore. To migrate, use required params instead.');
   });
 
   it('should not allow registering a capability using the optional wildcard (?) in its qualifier', async () => {
@@ -289,7 +289,7 @@ describe('ManifestRegistry', () => {
       applications: [],
     });
 
-    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: '?'}}, 'host-app')).toBeRejectedWithError(`[CapabilityRegisterError] Optional wildcard ('?') not allowed in the qualifier value. Use optional params instead.`);
+    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: '?'}}, 'host-app')).toBeRejectedWithError('[IllegalQualifierError] Optional wildcard (\'?\') not allowed in the capability qualifier anymore. To migrate, use optional params instead.');
   });
 
   it('should not allow registering an intention using the optional wildcard (?) in its qualifier', async () => {
@@ -298,7 +298,7 @@ describe('ManifestRegistry', () => {
       applications: [],
     });
 
-    await expect(() => Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: '?'}}, 'host-app')).toThrowError(`[IntentionRegisterError] Optional wildcard ('?') not allowed in the qualifier value. You should define optional params in the capability instead.`);
+    await expect(() => Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: '?'}}, 'host-app')).toThrowError('[IllegalQualifierError] Optional wildcard (\'?\') not allowed in the intention qualifier anymore. To migrate, define optional params in the capability instead.');
   });
 
   describe('Capability Params', () => {
