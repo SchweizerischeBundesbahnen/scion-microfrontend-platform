@@ -10,17 +10,15 @@
 
 import {Capability, Intention, ParamDefinition} from '../../platform.model';
 import {ManifestObjectStore, ɵManifestObjectFilter} from './manifest-object-store';
-import {concatWith, defer, EMPTY, filter, merge, Observable, of, Subject} from 'rxjs';
-import {distinctUntilChanged, expand, mergeMap, take, takeUntil} from 'rxjs/operators';
-import {Intent, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
-import {MessageClient, takeUntilUnsubscribe} from '../../client/messaging/message-client';
+import {concatWith, defer, EMPTY, filter, merge, Observable, of, Subscription} from 'rxjs';
+import {distinctUntilChanged, expand, mergeMap, take} from 'rxjs/operators';
+import {Intent, MessageHeaders, TopicMessage} from '../../messaging.model';
+import {MessageClient} from '../../client/messaging/message-client';
 import {ApplicationRegistry} from '../application-registry';
-import {runSafe} from '../../safe-runner';
 import {filterArray} from '@scion/toolkit/operators';
 import {ManifestRegistry} from './manifest-registry';
 import {assertExactQualifier, QualifierMatcher} from '../../qualifier-matcher';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
-import {stringifyError} from '../../error.util';
 import {Logger, LoggingContext} from '../../logger';
 import {ManifestObjectFilter} from './manifest-object.model';
 import {ClientRegistry} from '../client-registry/client.registry';
@@ -31,7 +29,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
   private _capabilityStore: ManifestObjectStore<Capability>;
   private _intentionStore: ManifestObjectStore<Intention>;
-  private _destroy$ = new Subject<void>();
+  private _subscriptions = new Set<Subscription>();
 
   public capabilityRegister$: Observable<Capability>;
   public capabilityUnregister$: Observable<Capability[]>;
@@ -169,126 +167,71 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   private installCapabilityRegisterRequestHandler(): void {
-    Beans.get(MessageClient).observe$<Capability>(ManifestRegistryTopics.RegisterCapability)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((request: TopicMessage<Capability>) => runSafe(async () => {
-        const replyTo = request.headers.get(MessageHeaders.ReplyTo);
-        const capability = request.body!;
-        const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
-
-        try {
-          const capabilityId = await this.registerCapability(capability, appSymbolicName);
-          Beans.get(MessageClient).publish(replyTo, capabilityId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
-        }
-        catch (error) {
-          Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
-        }
-      }));
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<Capability, string>(ManifestRegistryTopics.RegisterCapability, (request: TopicMessage<Capability>) => {
+      const capability = request.body!;
+      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
+      return this.registerCapability(capability, appSymbolicName);
+    }));
   }
 
   private installCapabilityUnregisterRequestHandler(): void {
-    Beans.get(MessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.UnregisterCapabilities)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
-        const replyTo = request.headers.get(MessageHeaders.ReplyTo);
-        const capabilityFilter = request.body || {};
-        const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
-
-        try {
-          this.unregisterCapabilities(appSymbolicName, capabilityFilter);
-          Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
-        }
-        catch (error) {
-          Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
-        }
-      }));
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, void>(ManifestRegistryTopics.UnregisterCapabilities, (request: TopicMessage<ManifestObjectFilter>) => {
+      const capabilityFilter = request.body || {};
+      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
+      this.unregisterCapabilities(appSymbolicName, capabilityFilter);
+    }));
   }
 
   private installIntentionRegisterRequestHandler(): void {
-    Beans.get(MessageClient).observe$<Intention>(ManifestRegistryTopics.RegisterIntention)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((request: TopicMessage<Intention>) => runSafe(() => {
-        const replyTo = request.headers.get(MessageHeaders.ReplyTo);
-        const intention = request.body!;
-        const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
-
-        try {
-          assertIntentionRegisterApiEnabled(appSymbolicName);
-          const intentionId = this.registerIntention(intention, appSymbolicName);
-          Beans.get(MessageClient).publish(replyTo, intentionId, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
-        }
-        catch (error) {
-          Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
-        }
-      }));
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<Intention, string>(ManifestRegistryTopics.RegisterIntention, (request: TopicMessage<Intention>) => {
+      const intention = request.body!;
+      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
+      assertIntentionRegisterApiEnabled(appSymbolicName);
+      return this.registerIntention(intention, appSymbolicName);
+    }));
   }
 
   private installIntentionUnregisterRequestHandler(): void {
-    Beans.get(MessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.UnregisterIntentions)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
-        const replyTo = request.headers.get(MessageHeaders.ReplyTo);
-        const intentFilter = request.body || {};
-        const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
-
-        try {
-          assertIntentionRegisterApiEnabled(appSymbolicName);
-          this.unregisterIntention(appSymbolicName, intentFilter);
-          Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
-        }
-        catch (error) {
-          Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
-        }
-      }));
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, void>(ManifestRegistryTopics.UnregisterIntentions, (request: TopicMessage<ManifestObjectFilter>) => {
+      const intentFilter = request.body || {};
+      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
+      assertIntentionRegisterApiEnabled(appSymbolicName);
+      this.unregisterIntention(appSymbolicName, intentFilter);
+    }));
   }
 
   private installCapabilitiesLookupRequestHandler(): void {
-    Beans.get(MessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.LookupCapabilities)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
-        const replyTo = request.headers.get(MessageHeaders.ReplyTo);
-        const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
-        const lookupFilter = request.body || {};
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, Capability[]>(ManifestRegistryTopics.LookupCapabilities, (request: TopicMessage<ManifestObjectFilter>) => {
+      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
+      const lookupFilter = request.body || {};
 
-        // The queried capabilities may change on both, capability or intention change, because the computation
-        // of visible and qualified capabilities depends on registered capabilities and manifested intentions.
-        const registryChange$ = merge(this._capabilityStore.change$, this._intentionStore.change$);
-        const finder$ = defer(() => of(this._capabilityStore.find(lookupFilter)));
-        return finder$
-          .pipe(
-            expand(() => registryChange$.pipe(take(1), mergeMap(() => finder$))),
-            filterArray(capability => this.isApplicationQualifiedForCapability(appSymbolicName, capability)),
-            distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-            takeUntilUnsubscribe(replyTo),
-          )
-          .subscribe(capabilities => { // eslint-disable-line rxjs/no-nested-subscribe
-            Beans.get(MessageClient).publish<Capability[]>(replyTo, capabilities, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
-          });
-      }));
+      // The queried capabilities may change on both, capability or intention change, because the computation
+      // of visible and qualified capabilities depends on registered capabilities and manifested intentions.
+      const registryChange$ = merge(this._capabilityStore.change$, this._intentionStore.change$);
+      const finder$ = defer(() => of(this._capabilityStore.find(lookupFilter)));
+      return finder$
+        .pipe(
+          expand(() => registryChange$.pipe(take(1), mergeMap(() => finder$))),
+          filterArray(capability => this.isApplicationQualifiedForCapability(appSymbolicName, capability)),
+          distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        );
+    }));
   }
 
   private installIntentionsLookupRequestHandler(): void {
-    Beans.get(MessageClient).observe$<ManifestObjectFilter>(ManifestRegistryTopics.LookupIntentions)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((request: TopicMessage<ManifestObjectFilter>) => runSafe(() => {
-        const replyTo = request.headers.get(MessageHeaders.ReplyTo);
-        const lookupFilter = request.body || {};
-
-        const finder$ = defer(() => of(this._intentionStore.find(lookupFilter)));
-        return finder$
-          .pipe(
-            expand(() => this._intentionStore.change$.pipe(take(1), mergeMap(() => finder$))),
-            distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-            takeUntilUnsubscribe(replyTo),
-          )
-          .subscribe(intentions => { // eslint-disable-line rxjs/no-nested-subscribe
-            Beans.get(MessageClient).publish<Intention[]>(replyTo, intentions, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
-          });
-      }));
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, Intention[]>(ManifestRegistryTopics.LookupIntentions, (request: TopicMessage<ManifestObjectFilter>) => {
+      const lookupFilter = request.body || {};
+      const finder$ = defer(() => of(this._intentionStore.find(lookupFilter)));
+      return finder$
+        .pipe(
+          expand(() => this._intentionStore.change$.pipe(take(1), mergeMap(() => finder$))),
+          distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        );
+    }));
   }
 
   private installVersionLookupHandler(): void {
-    Beans.get(MessageClient).onMessage<void, string>(ManifestRegistryTopics.platformVersion(':appSymbolicName'), message => {
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<void, string>(ManifestRegistryTopics.platformVersion(':appSymbolicName'), message => {
       const appSymbolicName = message.params!.get('appSymbolicName')!;
       const clientRegister$ = Beans.get(ClientRegistry).register$.pipe(filter(client => client.application.symbolicName === appSymbolicName));
       const platformVersion$ = defer(() => {
@@ -300,11 +243,11 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
           concatWith(clientRegister$.pipe(mergeMap(() => platformVersion$))),
           take(1),
         );
-    });
+    }));
   }
 
   public preDestroy(): void {
-    this._destroy$.next();
+    this._subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 }
 
