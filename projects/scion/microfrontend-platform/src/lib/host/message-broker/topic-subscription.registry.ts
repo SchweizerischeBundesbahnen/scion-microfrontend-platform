@@ -11,7 +11,7 @@
 import {TopicMatcher} from '../../topic-matcher.util';
 import {Client} from '../client-registry/client';
 import {MessageSubscription, MessageSubscriptionRegistry} from './message-subscription.registry';
-import {filter, Observable, Subject} from 'rxjs';
+import {filter, Observable, Subject, throwError} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {Arrays, Maps} from '@scion/toolkit/util';
 import {Topics} from '../../topics.util';
@@ -72,8 +72,9 @@ export class TopicSubscriptionRegistry extends MessageSubscriptionRegistry<Topic
    *         emits continuously when the number of subscribers changes.
    */
   public subscriptionCount$(topic: string): Observable<number> {
-    if (Topics.containsWildcardSegments(topic)) {
-      throw Error(`[TopicObserveError] Observing the number of subscribers is only allowed on exact topics. Exact topics must not contain wildcard segments. [topic='${topic}']`);
+    const illegalTopicError = Topics.validateTopic(topic, {exactTopic: true});
+    if (illegalTopicError) {
+      return throwError(() => illegalTopicError);
     }
 
     return new Observable(observer => {

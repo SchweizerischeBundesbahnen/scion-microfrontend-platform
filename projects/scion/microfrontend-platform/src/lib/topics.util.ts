@@ -23,6 +23,13 @@ export namespace Topics {
   }
 
   /**
+   * Tests whether given topic contains empty segments.
+   */
+  export function containsEmptySegments(topic: string): boolean {
+    return topic.split('/').some(segment => !segment.length);
+  }
+
+  /**
    * Tests whether given segment is a wildcard segment.
    */
   export function isWildcardSegment(segment: string): boolean {
@@ -78,5 +85,23 @@ export namespace Topics {
    */
   export function replaceWildcardSegments(topic: string, replacement: string): string {
     return topic.replace(/:[^/]+/g, replacement);
+  }
+
+  /**
+   * Validates given topic.
+   *
+   * @return `null` if valid, or the `Error` otherwise.
+   */
+  export function validateTopic(topic: string | null | undefined, options: {exactTopic: boolean}): Error | null {
+    if (!topic) {
+      return Error('[IllegalTopicError] Topic must not be `null`, `undefined` or empty');
+    }
+    if (Topics.containsEmptySegments(topic)) {
+      return Error(`[IllegalTopicError] Topic must not contain empty segments [topic='${topic}']`);
+    }
+    if (options.exactTopic && Topics.containsWildcardSegments(topic)) {
+      return Error(`[IllegalTopicError] Topic must be exact, i.e., not contain wildcard segments [topic='${topic}']`);
+    }
+    return null;
   }
 }

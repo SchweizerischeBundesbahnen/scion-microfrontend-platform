@@ -9,7 +9,7 @@
  */
 import {EMPTY, from, fromEvent, merge, MonoTypeOperatorFunction, Observable, of, Subject} from 'rxjs';
 import {catchError, filter, mergeMap, share, takeUntil} from 'rxjs/operators';
-import {IntentMessage, Message, MessageHeaders, TopicMessage} from '../../messaging.model';
+import {IntentMessage, Message, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {ConnackMessage, IntentSubscribeCommand, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, TopicSubscribeCommand, UnsubscribeCommand} from '../../ɵmessaging.model';
 import {ApplicationRegistry} from '../application-registry';
 import {ManifestRegistry} from '../manifest-registry/manifest-registry';
@@ -33,6 +33,7 @@ import {TopicMatcher} from '../../topic-matcher.util';
 import {Defined, Maps} from '@scion/toolkit/util';
 import {MessageClient} from '../../client/messaging/message-client';
 import {Predicates} from './predicates.util';
+import {Topics} from '../../topics.util';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -221,15 +222,18 @@ export class MessageBroker implements Initializer, PreDestroy {
   private installTopicSubscriberCountObserver(): void {
     Beans.get(MessageClient).observe$<string>(PlatformTopics.RequestSubscriberCount)
       .pipe(takeUntil(this._destroy$))
-      .subscribe(request => {
+      .subscribe(request => runSafe(() => {
         const topic = request.body!;
         const replyTo = request.headers.get(MessageHeaders.ReplyTo);
         const unsubscribe$ = this._topicSubscriptionRegistry.subscriptionCount$(replyTo).pipe(filter(count => count === 0));
 
         this._topicSubscriptionRegistry.subscriptionCount$(topic)
           .pipe(takeUntil(merge(this._destroy$, unsubscribe$)))
-          .subscribe(count => Beans.get(MessageClient).publish(replyTo, count)); // eslint-disable-line rxjs/no-nested-subscribe
-      });
+          .subscribe({ // eslint-disable-line rxjs/no-nested-subscribe
+            next: count => Beans.get(MessageClient).publish(replyTo, count),
+            error: error => Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)}),
+          });
+      }));
   }
 
   /**
@@ -246,9 +250,9 @@ export class MessageBroker implements Initializer, PreDestroy {
         const message = event.data.message;
         const messageId = message.headers.get(MessageHeaders.MessageId);
 
-        if (!message.topic) {
-          const error = '[MessagingError] Missing message property: topic';
-          sendDeliveryStatusError(client, messageId, error);
+        const illegalTopicError = Topics.validateTopic(message.topic, {exactTopic: true});
+        if (illegalTopicError) {
+          sendDeliveryStatusError(client, messageId, illegalTopicError);
           return;
         }
 
@@ -407,10 +411,16 @@ export class MessageBroker implements Initializer, PreDestroy {
         const client = getSendingClient(event);
         const envelope = event.data;
         const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
+        const topic = envelope.message.topic;
+
+        const illegalTopicError = Topics.validateTopic(topic, {exactTopic: false});
+        if (illegalTopicError) {
+          sendDeliveryStatusError(client, messageId, illegalTopicError);
+          return;
+        }
 
         try {
           const subscriberId = Defined.orElseThrow(envelope.message.subscriberId, () => Error('[TopicSubscribeError] Missing property: subscriberId'));
-          const topic = Defined.orElseThrow(envelope.message.topic, () => Error('[TopicSubscribeError] Missing property: topic'));
           this._topicSubscriptionRegistry.register(new TopicSubscription(topic, subscriberId, client));
           sendDeliveryStatusSuccess(client, messageId);
         }
