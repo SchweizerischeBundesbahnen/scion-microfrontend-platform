@@ -13,9 +13,9 @@ import {Microfrontend1PagePO} from '../microfrontend/microfrontend-1-page.po';
 import {test} from '../fixtures';
 import {expect} from '@playwright/test';
 
-test.describe('Focus', () => {
+test.describe('Focus Tracker', () => {
 
-  test('should track the focus across microfrontends [This test only works if the browser window keeps the focus while executing the test, i.e. the browser window is the active window or the test runs headless.]', async ({testingAppPO}) => {
+  test('should track the focus across microfrontends (focus-within)', async ({testingAppPO}) => {
     const pagePOs = await testingAppPO.navigateTo({
       outlet1: {
         outlet1a: Microfrontend1PagePO,
@@ -128,6 +128,55 @@ test.describe('Focus', () => {
     await expect(await microfrontend1b.isFocusWithin()).toBe(false);
     await expect(await microfrontend2a.isFocusWithin()).toBe(false);
     await expect(await microfrontend2b.isFocusWithin()).toBe(true);
+  });
+
+  test('should track the focus across microfrontends (has-focus)', async ({testingAppPO}) => {
+    const pagePOs = await testingAppPO.navigateTo({
+      microfrontend1: Microfrontend1PagePO,
+      microfrontend2: Microfrontend1PagePO,
+    });
+
+    const microfrontend1 = pagePOs.get<Microfrontend1PagePO>('microfrontend1');
+    const microfrontend1Outlet = pagePOs.get<BrowserOutletPO>('microfrontend1:outlet');
+
+    const microfrontend2 = pagePOs.get<Microfrontend1PagePO>('microfrontend2');
+    const microfrontend2Outlet = pagePOs.get<BrowserOutletPO>('microfrontend2:outlet');
+
+    // Focus outlet of microfrontend 1 (contained in the root document)
+    await microfrontend1Outlet.focusUrl();
+    await expect(await testingAppPO.hasFocus()).toBe(true);
+    await expect(await microfrontend1.hasFocus()).toBe(false);
+    await expect(await microfrontend2.hasFocus()).toBe(false);
+
+    // Click focusable element in microfrontend 1
+    await microfrontend1.clickFocusableElement();
+    await expect(await testingAppPO.hasFocus()).toBe(false);
+    await expect(await microfrontend1.hasFocus()).toBe(true);
+    await expect(await microfrontend2.hasFocus()).toBe(false);
+
+    // Click focusable element in microfrontend 2
+    await microfrontend2.clickFocusableElement();
+    await expect(await testingAppPO.hasFocus()).toBe(false);
+    await expect(await microfrontend1.hasFocus()).toBe(false);
+    await expect(await microfrontend2.hasFocus()).toBe(true);
+
+    // Click non-focusable element in microfrontend 1
+    await microfrontend1.clickNonFocusableElement();
+    await expect(await testingAppPO.hasFocus()).toBe(false);
+    await expect(await microfrontend1.hasFocus()).toBe(true);
+    await expect(await microfrontend2.hasFocus()).toBe(false);
+
+    // Click non-focusable element in microfrontend 2
+    await microfrontend2.clickNonFocusableElement();
+    await expect(await testingAppPO.hasFocus()).toBe(false);
+    await expect(await microfrontend1.hasFocus()).toBe(false);
+    await expect(await microfrontend2.hasFocus()).toBe(true);
+
+    // Focus outlet of microfrontend 2 (contained in the root document)
+    await microfrontend2Outlet.focusUrl();
+    await expect(await testingAppPO.hasFocus()).toBe(true);
+    await expect(await microfrontend1.hasFocus()).toBe(false);
+    await expect(await microfrontend2.hasFocus()).toBe(false);
   });
 });
 

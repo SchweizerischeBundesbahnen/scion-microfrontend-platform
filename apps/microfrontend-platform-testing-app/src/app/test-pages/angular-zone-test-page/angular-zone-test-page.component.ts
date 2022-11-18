@@ -52,6 +52,7 @@ export class AngularZoneTestPageComponent {
     },
     focusMonitor: {
       focusWithin$: {runInAngular: true, response: {zone: null, label: null}},
+      focus$: {runInAngular: true, response: {zone: null, label: null}},
     },
   };
 
@@ -281,6 +282,21 @@ export class AngularZoneTestPageComponent {
         .pipe(take(1))
         .subscribe(() => {
           this.tests.focusMonitor.focusWithin$.response = createZoneAwareResponse({
+            insideAngular: 'Received response INSIDE Angular zone',
+            outsideAngular: 'Received response OUTSIDE Angular zone',
+          });
+          this.detectChangesIfOutsideAngular();
+        });
+    });
+  }
+
+  public onFocusMonitorFocus(): void {
+    this.tests.focusMonitor.focus$.response = null;
+    this.runInZone(this.tests.focusMonitor.focus$.runInAngular, async (): Promise<void> => {
+      Beans.get(FocusMonitor).focus$
+        .pipe(take(1))
+        .subscribe(() => {
+          this.tests.focusMonitor.focus$.response = createZoneAwareResponse({
             insideAngular: 'Received response INSIDE Angular zone',
             outsideAngular: 'Received response OUTSIDE Angular zone',
           });

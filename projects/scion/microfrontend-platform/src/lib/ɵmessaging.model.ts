@@ -92,6 +92,10 @@ export namespace PlatformTopics {
    */
   export const IsFocusWithin = 'ɵIS_FOCUS_WITHIN';
   /**
+   * Allows testing whether the requester has received focus.
+   */
+  export const HasFocus = 'ɵHAS_FOCUS';
+  /**
    * Allows reading the platform properties from this retained topic.
    */
   export const PlatformProperties = 'ɵPLATFORM_PROPERTIES';

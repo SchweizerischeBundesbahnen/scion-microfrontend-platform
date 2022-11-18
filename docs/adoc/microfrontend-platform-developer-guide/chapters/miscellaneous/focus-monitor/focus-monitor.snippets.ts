@@ -1,15 +1,20 @@
-import { FocusMonitor } from '@scion/microfrontend-platform';
-import { filter } from 'rxjs/operators';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {FocusMonitor} from '@scion/microfrontend-platform';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 {
-  // tag::focus-monitor[]
-  Beans.get(FocusMonitor).focusWithin$
-    .pipe(filter(focusWithin => !focusWithin))
-    .subscribe(() => {
-      console.log('focus lost');
-    });
-// end::focus-monitor[]
+  // tag::focus-monitor#focus$[]
+  Beans.get(FocusMonitor).focus$.subscribe(hasFocus => {
+    console.log('on focus change', hasFocus);
+  });
+// end::focus-monitor#focus$[]
+}
+
+{
+  // tag::focus-monitor#focus-within$[]
+  Beans.get(FocusMonitor).focusWithin$.subscribe(isFocusWithin => {
+    console.log('on focus change', isFocusWithin);
+  });
+// end::focus-monitor#focus-within$[]
 }
 
 {

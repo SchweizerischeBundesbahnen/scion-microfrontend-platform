@@ -19,10 +19,12 @@ export abstract class MicrofrontendPagePO implements OutletPageObject {
 
   private readonly _locator: Locator;
   private readonly _focusWithinLocator: Locator;
+  private readonly _hasFocusLocator: Locator;
 
   protected constructor(frameLocator: FrameLocator) {
     this._locator = frameLocator.locator('app-microfrontend');
     this._focusWithinLocator = frameLocator.locator('app-root').locator('.e2e-focus-within');
+    this._hasFocusLocator = frameLocator.locator('app-root').locator('.e2e-has-focus');
   }
 
   public async getAppInstanceId(): Promise<string> {
@@ -50,10 +52,25 @@ export abstract class MicrofrontendPagePO implements OutletPageObject {
   }
 
   /**
-   * Returns `true` if this microfrontend has received focus, or `false` if not.
+   * Returns `true` if this microfrontend or any descendant element has received focus, or `false` if not.
    */
   public async isFocusWithin(): Promise<boolean> {
     return isPresent(this._focusWithinLocator);
+  }
+
+  /**
+   * Returns `true` if this microfrontend has received focus, or `false` if not.
+   */
+  public async hasFocus(): Promise<boolean> {
+    return isPresent(this._hasFocusLocator);
+  }
+
+  public clickFocusableElement(): Promise<void> {
+    return this._locator.locator('section.e2e-focusable').click();
+  }
+
+  public clickNonFocusableElement(): Promise<void> {
+    return this._locator.locator('section.e2e-non-focusable').click();
   }
 }
 

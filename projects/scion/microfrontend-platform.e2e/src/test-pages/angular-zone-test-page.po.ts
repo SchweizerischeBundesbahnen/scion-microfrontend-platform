@@ -40,6 +40,7 @@ export class AngularZoneTestPagePO implements OutletPageObject {
 
   public focusMonitor: {
     focusWithin$PO: PanelPO;
+    focus$PO: PanelPO;
   };
 
   constructor(frameLocator: FrameLocator) {
@@ -63,6 +64,7 @@ export class AngularZoneTestPagePO implements OutletPageObject {
     };
     this.focusMonitor = {
       focusWithin$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-focus-monitor.e2e-focus-within'),
+      focus$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-focus-monitor.e2e-focus'),
     };
   }
 }

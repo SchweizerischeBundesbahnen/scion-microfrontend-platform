@@ -29,17 +29,17 @@ export class AppShellComponent implements OnDestroy {
 
   public appSymbolicName: string;
   public pageTitle: string;
-  public isFocusWithin: boolean;
   public isDevToolsOpened = false;
   public isPlatformHost = Beans.get<boolean>(IS_PLATFORM_HOST);
+  public focusMonitor: FocusMonitor;
 
   @ViewChild('angular_change_detection_indicator', {static: true})
   private _changeDetectionElement: ElementRef<HTMLElement>;
 
   constructor(private _zone: NgZone) {
     this.appSymbolicName = Beans.get<string>(APP_IDENTITY);
+    this.focusMonitor = Beans.get(FocusMonitor);
 
-    this.installFocusWithinListener();
     this.installRouteActivateListener();
     this.installKeystrokeRegisterLogger();
     this.installAngularChangeDetectionIndicator();
@@ -73,14 +73,6 @@ export class AppShellComponent implements OnDestroy {
       )
       .subscribe(([keystroke, outletName]) => {
         console.debug(`[AppShellComponent::${keystroke}][app=${this.appSymbolicName}][location=${window.location.href}][outlet=${outletName}]`);
-      });
-  }
-
-  private installFocusWithinListener(): void {
-    Beans.get(FocusMonitor).focusWithin$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe(isFocusWithin => {
-        this.isFocusWithin = isFocusWithin;
       });
   }
 

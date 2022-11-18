@@ -161,4 +161,20 @@
       <output *ngIf="test.response as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
     </ng-template>
   </ng-container>
+
+  <!-- FocusMonitor#focus$ -->
+  <ng-container *ngIf="tests.focusMonitor.focus$ as test">
+    <ng-template sciAccordionItem [panel]="panel" cssClass="e2e-focus-monitor e2e-focus">
+      <header>FocusMonitor#focus$</header>
+    </ng-template>
+
+    <ng-template #panel>
+      <label>
+        <sci-checkbox [(ngModel)]="test.runInAngular" class="e2e-run-inside-angular"></sci-checkbox>
+        <span>Angular Zone</span>
+      </label>
+      <button (click)="onFocusMonitorFocus()" class="e2e-subscribe">Subscribe</button>
+      <output *ngIf="test.response as response" class="zone e2e-response-1" [attr.data-zone]="response.zone">{{response.label}}</output>
+    </ng-template>
+  </ng-container>
 </sci-accordion>

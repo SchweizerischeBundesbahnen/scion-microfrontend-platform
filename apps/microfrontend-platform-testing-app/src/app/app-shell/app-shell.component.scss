@@ -22,6 +22,9 @@
 
     > div.title {
       flex: auto;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
 
       > img.banner {
         height: 35px;
@@ -53,15 +56,15 @@
     > span.chip {
       flex: none;
 
-      &.focus-within {
+      &.focus-within, &.focus {
         @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
-        padding: .25em 1.5em;
+        padding: .25em .75em;
         font-size: 1.1rem;
       }
 
       &.app-name {
         @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), var(--sci-color-A50), var(--sci-color-accent));
-        padding: .25em 1.5em;
+        padding: .25em .75em;
         font-size: 1.1rem;
         font-weight: bold;
       }

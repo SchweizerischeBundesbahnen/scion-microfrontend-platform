@@ -14,7 +14,7 @@ import {mapToBody} from '../../messaging.model';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
- * Allows observing if the current microfrontend has received focus or contains embedded web content that has received focus.
+ * Allow observing whether the current microfrontend has received focus or contains embedded web content that has received focus.
  *
  * @category Focus
  */
@@ -34,4 +34,12 @@ export class FocusMonitor {
    * See also the `onfocuswithin` event triggered by `<sci-router-outlet>` when embedded content has gained or lost focus.
    */
   public readonly focusWithin$: Observable<boolean> = Beans.get(MessageClient).request$<boolean>(PlatformTopics.IsFocusWithin).pipe(mapToBody());
+
+  /**
+   * Observable that emits when the current microfrontend has gained or lost focus.
+   *
+   * Upon subscription, the Observable emits the current focus state, and then continuously emits when it changes.
+   * It never completes.
+   */
+  public readonly focus$: Observable<boolean> = Beans.get(MessageClient).request$<boolean>(PlatformTopics.HasFocus).pipe(mapToBody());
 }

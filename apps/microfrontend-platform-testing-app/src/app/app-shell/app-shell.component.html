@@ -4,7 +4,8 @@
     <span *ngIf="pageTitle" class="page-title">{{pageTitle}}</span>
   </div>
   <span class="angular-change-detection-indicator" title="Indicates that Angular is currently checking the application for changes." #angular_change_detection_indicator></span>
-  <span class="chip focus-within e2e-focus-within" title="This document or its embedded web content has received focus" *ngIf="isFocusWithin">focus-within</span>
+  <span class="chip focus-within e2e-focus-within" title="This document or its embedded web content has received focus" *ngIf="focusMonitor.focusWithin$ | async">focus-within</span>
+  <span class="chip focus e2e-has-focus" *ngIf="focusMonitor.focus$ | async">has-focus</span>
   <span class="chip app-name">{{appSymbolicName}}</span>
   <span class="chip devtools" *ngIf="isDevtoolsEnabled" (click)="onDevToolsToggle()">
     <span>DevTools</span>
