@@ -1121,41 +1121,6 @@ describe('Messaging', () => {
     expect(headersCaptor.getLastValue().get(MessageHeaders.AppSymbolicName)).toEqual('host-app');
   });
 
-  it('should throw if the topic of a message to publish is empty, `null` or `undefined`, or contains wildcard segments', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    expect(() => Beans.get(MessageClient).publish('myhome/:room/temperature')).toThrowError(/IllegalTopicError/);
-    expect(() => Beans.get(MessageClient).publish(null)).toThrowError(/IllegalTopicError/);
-    expect(() => Beans.get(MessageClient).publish(undefined)).toThrowError(/IllegalTopicError/);
-    expect(() => Beans.get(MessageClient).publish('')).toThrowError(/IllegalTopicError/);
-  });
-
-  it('should throw if the topic of a request is empty, `null` or `undefined`, or contains wildcard segments', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    expect(() => Beans.get(MessageClient).request$('myhome/:room/temperature')).toThrowError(/IllegalTopicError/);
-    expect(() => Beans.get(MessageClient).request$(null)).toThrowError(/IllegalTopicError/);
-    expect(() => Beans.get(MessageClient).request$(undefined)).toThrowError(/IllegalTopicError/);
-    expect(() => Beans.get(MessageClient).request$('')).toThrowError(/IllegalTopicError/);
-  });
-
-  it('should throw if the topic to observe the subscriber count is empty, `null` or `undefined`, or contains wildcard segments', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    expect(() => Beans.get(MessageClient).subscriberCount$('myhome/:room/temperature')).toThrowError(/IllegalTopicError/);
-    expect(() => Beans.get(MessageClient).subscriberCount$(null)).toThrowError(/IllegalTopicError/);
-    expect(() => Beans.get(MessageClient).subscriberCount$(undefined)).toThrowError(/IllegalTopicError/);
-    expect(() => Beans.get(MessageClient).subscriberCount$('')).toThrowError(/IllegalTopicError/);
-  });
-
-  it('should throw if the topic to observe is empty, `null` or `undefined`', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    expect(() => Beans.get(MessageClient).observe$(null)).toThrowError(/IllegalTopicError/);
-    expect(() => Beans.get(MessageClient).observe$(undefined)).toThrowError(/IllegalTopicError/);
-    expect(() => Beans.get(MessageClient).observe$('')).toThrowError(/IllegalTopicError/);
-  });
-
   it('should throw if the qualifier of an intent contains wildcard characters', async () => {
     await MicrofrontendPlatform.startHost({applications: []});
 
@@ -1680,12 +1645,198 @@ describe('Messaging', () => {
     it('should not error if no subscriber is found', async () => {
       await MicrofrontendPlatform.startHost({applications: []});
 
-      // Send intent.
+      // Send message.
       const whenPublished = Beans.get(MessageClient).publish('myhome/temperature/kitchen', '20°C');
       await expectAsync(whenPublished).toBeResolved();
     });
 
+    it('should error if publish topic is "empty", "null" or "undefined"', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      await expectAsync(Beans.get(MessageClient).publish('')).toBeRejectedWithError(/IllegalTopicError/);
+      await expectAsync(Beans.get(MessageClient).publish(null)).toBeRejectedWithError(/IllegalTopicError/);
+      await expectAsync(Beans.get(MessageClient).publish(undefined)).toBeRejectedWithError(/IllegalTopicError/);
+    });
+
+    it('should error if publish topic contains empty segments', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      await expectAsync(Beans.get(MessageClient).publish('/myhome/kitchen/')).toBeRejectedWithError(/IllegalTopicError/);
+      await expectAsync(Beans.get(MessageClient).publish('/myhome/kitchen')).toBeRejectedWithError(/IllegalTopicError/);
+      await expectAsync(Beans.get(MessageClient).publish('myhome/kitchen/')).toBeRejectedWithError(/IllegalTopicError/);
+      await expectAsync(Beans.get(MessageClient).publish('/myhome//temperature')).toBeRejectedWithError(/IllegalTopicError/);
+      await expectAsync(Beans.get(MessageClient).publish('/')).toBeRejectedWithError(/IllegalTopicError/);
+    });
+
+    it('should error if publish topic contains wildcard segments', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      await expectAsync(Beans.get(MessageClient).publish('myhome/:room/temperature')).toBeRejectedWithError(/IllegalTopicError/);
+    });
+
+    it('should error if observe topic is "empty", "null" or "undefined"', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      const captor1 = new ObserveCaptor();
+      Beans.get(MessageClient).observe$('').subscribe(captor1);
+      await captor1.waitUntilCompletedOrErrored();
+      expect(captor1.getError()).toMatch(/IllegalTopicError/);
+
+      const captor2 = new ObserveCaptor();
+      Beans.get(MessageClient).observe$(null).subscribe(captor2);
+      await captor2.waitUntilCompletedOrErrored();
+      expect(captor2.getError()).toMatch(/IllegalTopicError/);
+
+      const captor3 = new ObserveCaptor();
+      Beans.get(MessageClient).observe$(undefined).subscribe(captor3);
+      await captor3.waitUntilCompletedOrErrored();
+      expect(captor3.getError()).toMatch(/IllegalTopicError/);
+    });
+
+    it('should error if observe topic contains empty segments', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      const captor1 = new ObserveCaptor();
+      Beans.get(MessageClient).observe$('/myhome/kitchen/').subscribe(captor1);
+      await captor1.waitUntilCompletedOrErrored();
+      expect(captor1.getError()).toMatch(/IllegalTopicError/);
+
+      const captor2 = new ObserveCaptor();
+      Beans.get(MessageClient).observe$('/myhome/kitchen').subscribe(captor2);
+      await captor2.waitUntilCompletedOrErrored();
+      expect(captor2.getError()).toMatch(/IllegalTopicError/);
+
+      const captor3 = new ObserveCaptor();
+      Beans.get(MessageClient).observe$('myhome/kitchen/').subscribe(captor3);
+      await captor3.waitUntilCompletedOrErrored();
+      expect(captor3.getError()).toMatch(/IllegalTopicError/);
+
+      const captor4 = new ObserveCaptor();
+      Beans.get(MessageClient).observe$('/myhome//temperature').subscribe(captor4);
+      await captor4.waitUntilCompletedOrErrored();
+      expect(captor4.getError()).toMatch(/IllegalTopicError/);
+
+      const captor5 = new ObserveCaptor();
+      Beans.get(MessageClient).observe$('/').subscribe(captor5);
+      await captor5.waitUntilCompletedOrErrored();
+      expect(captor5.getError()).toMatch(/IllegalTopicError/);
+    });
+
+    it('should error if subscriber count topic is empty', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      const captor1 = new ObserveCaptor();
+      Beans.get(MessageClient).subscriberCount$('').subscribe(captor1);
+      await captor1.waitUntilCompletedOrErrored();
+      expect(captor1.getError()).toMatch(/IllegalTopicError/);
+
+      const captor2 = new ObserveCaptor();
+      Beans.get(MessageClient).subscriberCount$(null).subscribe(captor2);
+      await captor2.waitUntilCompletedOrErrored();
+      expect(captor2.getError()).toMatch(/IllegalTopicError/);
+
+      const captor3 = new ObserveCaptor();
+      Beans.get(MessageClient).subscriberCount$(undefined).subscribe(captor3);
+      await captor3.waitUntilCompletedOrErrored();
+      expect(captor3.getError()).toMatch(/IllegalTopicError/);
+    });
+
+    it('should error if subscriber count topic contains empty segments', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      const captor1 = new ObserveCaptor();
+      Beans.get(MessageClient).subscriberCount$('/myhome/kitchen/').subscribe(captor1);
+      await captor1.waitUntilCompletedOrErrored();
+      expect(captor1.getError()).toMatch(/IllegalTopicError/);
+
+      const captor2 = new ObserveCaptor();
+      Beans.get(MessageClient).subscriberCount$('/myhome/kitchen').subscribe(captor2);
+      await captor2.waitUntilCompletedOrErrored();
+      expect(captor2.getError()).toMatch(/IllegalTopicError/);
+
+      const captor3 = new ObserveCaptor();
+      Beans.get(MessageClient).subscriberCount$('myhome/kitchen/').subscribe(captor3);
+      await captor3.waitUntilCompletedOrErrored();
+      expect(captor3.getError()).toMatch(/IllegalTopicError/);
+
+      const captor4 = new ObserveCaptor();
+      Beans.get(MessageClient).subscriberCount$('/myhome//temperature').subscribe(captor4);
+      await captor4.waitUntilCompletedOrErrored();
+      expect(captor4.getError()).toMatch(/IllegalTopicError/);
+
+      const captor5 = new ObserveCaptor();
+      Beans.get(MessageClient).subscriberCount$('/').subscribe(captor5);
+      await captor5.waitUntilCompletedOrErrored();
+      expect(captor5.getError()).toMatch(/IllegalTopicError/);
+    });
+
+    it('should error if subscriber count topic contains wildcard segments', async () => {
+      await MicrofrontendPlatform.startHost({applications: []});
+
+      const captor = new ObserveCaptor();
+      Beans.get(MessageClient).subscriberCount$('myhome/:room/temperature').subscribe(captor);
+      await captor.waitUntilCompletedOrErrored();
+      expect(captor.getError()).toMatch(/IllegalTopicError/);
+    });
+
     describe('request', () => {
+
+      it('should error if request topic is empty', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        const captor1 = new ObserveCaptor();
+        Beans.get(MessageClient).request$('').subscribe(captor1);
+        await captor1.waitUntilCompletedOrErrored();
+        expect(captor1.getError()).toMatch(/IllegalTopicError/);
+
+        const captor2 = new ObserveCaptor();
+        Beans.get(MessageClient).request$(null).subscribe(captor2);
+        await captor2.waitUntilCompletedOrErrored();
+        expect(captor2.getError()).toMatch(/IllegalTopicError/);
+
+        const captor3 = new ObserveCaptor();
+        Beans.get(MessageClient).request$(undefined).subscribe(captor3);
+        await captor3.waitUntilCompletedOrErrored();
+        expect(captor3.getError()).toMatch(/IllegalTopicError/);
+      });
+
+      it('should error if request topic contains empty segments', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        const captor1 = new ObserveCaptor();
+        Beans.get(MessageClient).request$('/myhome/kitchen/').subscribe(captor1);
+        await captor1.waitUntilCompletedOrErrored();
+        expect(captor1.getError()).toMatch(/IllegalTopicError/);
+
+        const captor2 = new ObserveCaptor();
+        Beans.get(MessageClient).request$('/myhome/kitchen').subscribe(captor2);
+        await captor2.waitUntilCompletedOrErrored();
+        expect(captor2.getError()).toMatch(/IllegalTopicError/);
+
+        const captor3 = new ObserveCaptor();
+        Beans.get(MessageClient).request$('myhome/kitchen/').subscribe(captor3);
+        await captor3.waitUntilCompletedOrErrored();
+        expect(captor3.getError()).toMatch(/IllegalTopicError/);
+
+        const captor4 = new ObserveCaptor();
+        Beans.get(MessageClient).request$('/myhome//temperature').subscribe(captor4);
+        await captor4.waitUntilCompletedOrErrored();
+        expect(captor4.getError()).toMatch(/IllegalTopicError/);
+
+        const captor5 = new ObserveCaptor();
+        Beans.get(MessageClient).request$('/').subscribe(captor5);
+        await captor5.waitUntilCompletedOrErrored();
+        expect(captor5.getError()).toMatch(/IllegalTopicError/);
+      });
+
+      it('should error if request topic contains wildcard segments', async () => {
+        await MicrofrontendPlatform.startHost({applications: []});
+
+        const captor = new ObserveCaptor();
+        Beans.get(MessageClient).request$('myhome/:room/temperature').subscribe(captor);
+        await captor.waitUntilCompletedOrErrored();
+        expect(captor.getError()).toMatch(/IllegalTopicError/);
+      });
 
       it('should error if no replier is found', async () => {
         await MicrofrontendPlatform.startHost({applications: []});

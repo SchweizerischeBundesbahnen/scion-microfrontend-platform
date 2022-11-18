@@ -92,11 +92,6 @@ describe('TopicSubscriptionRegistry', () => {
     await expectEmissions(subscriptionCountCaptor).toEqual([0, 1, 2, 3, 2, 1, 0]);
   });
 
-  it('should throw if trying to observe a non-exact topic', async () => {
-    const testee = Beans.get(TopicSubscriptionRegistry);
-    await expect(() => testee.subscriptionCount$('myhome/livingroom/:measurement')).toThrowError(/TopicObserveError/);
-  });
-
   it('should allow multiple subscriptions on different topics of the same client', async () => {
     const testee = Beans.get(TopicSubscriptionRegistry);
     const client = newClient({id: 'client'});
