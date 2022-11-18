@@ -50,13 +50,14 @@ import {createHostApplicationConfig} from './host/host-application-config-provid
 import {HostManifestInterceptor, ɵHostManifestInterceptor} from './host/host-manifest-interceptor';
 import {ApplicationConfig} from './host/application-config';
 import {TopicSubscriptionRegistry} from './host/message-broker/topic-subscription.registry';
-import {CLIENT_HEARTBEAT_INTERVAL, STALE_CLIENT_UNREGISTER_DELAY} from './host/client-registry/client.constants';
+import {CLIENT_PING_INTERVAL, CLIENT_PING_TIMEOUT} from './host/client-registry/client.constants';
 import {MicrofrontendPlatformStopper, ɵMicrofrontendPlatformStopper} from './microfrontend-platform-stopper';
 import {ɵClientRegistry} from './host/client-registry/ɵclient.registry';
 import {IntentInterceptor} from './host/message-broker/message-interception';
 import {MicrofrontendIntentNavigator} from './host/router/microfrontend-intent-navigator.interceptor';
 import {IntentParamValidator} from './host/message-broker/intent-param-validator.interceptor';
 import {IntentSubscriptionRegistry} from './host/message-broker/intent-subscription.registry';
+import {LivenessConfig} from './host/liveness-config';
 
 /**
  * Current version of the SCION Microfrontend Platform.
@@ -158,8 +159,6 @@ export class MicrofrontendPlatform {
         Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
         Beans.register(HostManifestInterceptor, {useClass: ɵHostManifestInterceptor, multi: true});
         Beans.register(ClientRegistry, {useClass: ɵClientRegistry, destroyOrder: BeanDestroyOrders.CORE});
-        Beans.registerIfAbsent(CLIENT_HEARTBEAT_INTERVAL, {useValue: (config.heartbeatInterval ?? 60) * 10_000});
-        Beans.registerIfAbsent(STALE_CLIENT_UNREGISTER_DELAY, {useValue: 2_000});
         Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: BeanDestroyOrders.CORE});
         Beans.register(PlatformPropertyService);
         Beans.registerIfAbsent(HttpClient);
@@ -185,6 +184,11 @@ export class MicrofrontendPlatform {
         Beans.register(KeyboardEventDispatcher, {eager: true});
         Beans.register(IntentInterceptor, {useClass: IntentParamValidator, multi: true});
         Beans.register(IntentInterceptor, {useClass: MicrofrontendIntentNavigator, multi: true});
+
+        // Register liveness config.
+        const {interval, timeout} = provideLivenessConfig(config.liveness);
+        Beans.registerIfAbsent(CLIENT_PING_INTERVAL, {useValue: interval * 1_000});
+        Beans.registerIfAbsent(CLIENT_PING_TIMEOUT, {useValue: timeout * 1_000});
 
         // Register broker gateway.
         registerBrokerGateway({
@@ -463,6 +467,19 @@ export class MicrofrontendPlatform {
       .pipe(takeUntil(from(MicrofrontendPlatform.whenState(PlatformState.Started))))
       .subscribe(MicrofrontendPlatform._startupProgress$);
   }
+}
+
+/** @ignore */
+function provideLivenessConfig(config?: LivenessConfig): {interval: number; timeout: number} {
+  const defaults = {interval: 60, timeout: 10};
+
+  const interval = config?.interval ?? defaults.interval;
+  const timeout = config?.timeout ?? defaults.timeout;
+  if (!interval || !timeout || interval <= 2 * timeout) {
+    Beans.get(Logger).warn(`[LivenessProbeConfig] Illegal config provided. The interval [${interval}s] must be greater than twice the timeout period [${timeout}s]. Using platform defaults instead: [interval=${defaults.interval}s, timeout=${defaults.timeout}s]`);
+    return {interval: defaults.interval, timeout: defaults.timeout};
+  }
+  return {interval, timeout};
 }
 
 /** @ignore */

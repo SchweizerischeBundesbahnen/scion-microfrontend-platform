@@ -10,6 +10,7 @@
 
 import {ApplicationConfig} from './application-config';
 import {HostConfig} from './host-config';
+import {LivenessConfig} from './liveness-config';
 
 /**
  * Configures the platform and defines the micro applications running in the platform.
@@ -61,11 +62,10 @@ export abstract class MicrofrontendPlatformConfig {
    */
   public abstract readonly activatorLoadTimeout?: number;
   /**
-   * Interval (in seconds) at which connected clients must send a heartbeat to indicate connectivity to the host.
-   *
-   * By default, if not set, a heartbeat interval of 60s is used.
+   * Configures the liveness probe performed at regular intervals between host and clients to detect and dispose stale clients.
+   * Clients not replying to the probe are removed.
    */
-  public abstract readonly heartbeatInterval?: number;
+  public abstract readonly liveness?: LivenessConfig;
   /**
    * Defines user-defined properties which can be read by micro applications via {@link PlatformPropertyService}.
    */

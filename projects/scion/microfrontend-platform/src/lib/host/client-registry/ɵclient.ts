@@ -7,17 +7,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Subscription, timer} from 'rxjs';
+import {interval, retry, Subscription, switchMap, timeout} from 'rxjs';
 import {APP_IDENTITY, ɵVERSION} from '../../platform.model';
 import {semver} from '../semver';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageClient} from '../../client/messaging/message-client';
 import {PlatformTopics} from '../../ɵmessaging.model';
-import {debounceTime, filter, startWith} from 'rxjs/operators';
-import {MessageHeaders} from '../../messaging.model';
 import {Logger, LoggingContext} from '../../logger';
 import {ClientRegistry} from './client.registry';
-import {CLIENT_HEARTBEAT_INTERVAL, STALE_CLIENT_UNREGISTER_DELAY} from './client.constants';
+import {CLIENT_PING_INTERVAL, CLIENT_PING_TIMEOUT} from './client.constants';
 import {Client} from './client';
 import {ɵApplication} from '../application-registry';
 import {IntentSubscription, IntentSubscriptionRegistry} from '../message-broker/intent-subscription.registry';
@@ -27,19 +25,14 @@ export class ɵClient implements Client {
 
   public readonly version: string;
   public readonly deprecations: {legacyIntentSubscriptionApi: boolean; legacyRequestResponseSubscriptionApi: boolean};
-  private _heartbeat: Subscription | undefined;
-  private _heartbeatInterval: number;
-  private _staleClientUnregisterTimer: Subscription | undefined;
-  private _staleClientUnregisterDelay: number;
+  private _livenessDetector: Subscription | undefined;
 
   constructor(public readonly id: string,
               public readonly window: Window,
               public readonly application: ɵApplication,
               version: string) {
     this.version = version ?? '0.0.0';
-    this._heartbeatInterval = Beans.get(CLIENT_HEARTBEAT_INTERVAL);
-    this._staleClientUnregisterDelay = Beans.get(STALE_CLIENT_UNREGISTER_DELAY);
-    this.installHeartbeatMonitor();
+    this.installLivenessDetector();
     this.deprecations = {
       legacyIntentSubscriptionApi: semver.lt(this.version, '1.0.0-rc.8'),
       legacyRequestResponseSubscriptionApi: semver.lt(this.version, '1.0.0-rc.9'),
@@ -54,8 +47,9 @@ export class ɵClient implements Client {
   }
 
   /**
-   * Monitors the heartbeat of this client to detect when this client is no longer connected to the host.
-   * When not receiving any more heartbeat, this client will be marked as stale and queued for removal.
+   * Starts performing liveness tests to detect when this client is no longer connected to the host.
+   *
+   * Liveness is detected by sending ping requests at regular intervals.
    *
    * A client may fail to disconnect from the broker for a number of reasons:
    * - The client was disposed without notice, i.e., without receiving the browser's "unload" event.
@@ -63,49 +57,39 @@ export class ɵClient implements Client {
    *   Typically, the browser discards messages for windows that are already closed or if another page
    *   has been loaded into the window, both indicating a high load on the client during unloading.
    */
-  private installHeartbeatMonitor(): void {
-    // The host app client does not send a heartbeat.
+  private installLivenessDetector(): void {
+    // The host app client does not reply to pings.
     if (this.application.symbolicName === Beans.get(APP_IDENTITY)) {
       return;
     }
 
-    // Only clients of version 1.0.0-rc.1 or greater send a heartbeat.
-    if (semver.lt(this.version, '1.0.0-rc.1')) {
-      Beans.get(Logger).warn(`[VersionMismatch] Since '@scion/microfrontend-platform@1.0.0-rc.1', connected clients must send a heartbeat to indicate liveness. Please upgrade @scion/microfrontend-platform of application '${this.application.symbolicName}' from version '${this.version}' to version '${Beans.get(ɵVERSION)}'.`, new LoggingContext(this.application.symbolicName, this.version));
-      return;
+    // Only clients of version 1.0.0-rc.11 or greater reply to pings.
+    if (semver.lt(this.version, '1.0.0-rc.11')) {
+      Beans.get(Logger).warn(`[VersionMismatch] Since '@scion/microfrontend-platform@1.0.0-rc.11', connected clients must reply to pings to indicate liveness. Please upgrade @scion/microfrontend-platform of application '${this.application.symbolicName}' from version '${this.version}' to version '${Beans.get(ɵVERSION)}'.`, new LoggingContext(this.application.symbolicName, this.version));
     }
 
-    this._heartbeat = Beans.get(MessageClient).observe$(PlatformTopics.heartbeat(this.id))
-      .pipe(
-        filter(message => message.headers.get(MessageHeaders.ClientId) === this.id),
-        startWith(undefined as void),
-        debounceTime(2 * this._heartbeatInterval),
-      )
-      .subscribe(() => {
-        this.logStaleClientWarning();
-        Beans.get(ClientRegistry).unregisterClient(this);
+    // Observable to perform the ping. If the client does not respond, we ping the client again to account for the rare situation where
+    // the computer goes into standby immediately after sending the ping. Upon resumption, the timeout would expire immediately without
+    // the client being able to send the response.
+    const performPing$ = Beans.get(MessageClient).request$(PlatformTopics.ping(this.id))
+      .pipe(timeout(Beans.get<number>(CLIENT_PING_TIMEOUT)), retry(1));
+
+    this._livenessDetector = interval(Beans.get<number>(CLIENT_PING_INTERVAL))
+      .pipe(switchMap(() => performPing$))
+      .subscribe({
+        error: () => {
+          this.logStaleClientWarning();
+          Beans.get(ClientRegistry).unregisterClient(this);
+        },
       });
   }
 
-  public markStaleAndQueueForRemoval(): void {
-    if (this._staleClientUnregisterTimer) {
-      return;
-    }
-
-    this._staleClientUnregisterTimer = timer(this._staleClientUnregisterDelay).subscribe(() => {
-      this.logStaleClientWarning();
-      Beans.get(ClientRegistry).unregisterClient(this);
-    });
-    this._heartbeat?.unsubscribe();
-  }
-
   public get stale(): boolean {
-    return !!this._staleClientUnregisterTimer || window.closed;
+    return window.closed;
   }
 
   public dispose(): void {
-    this._heartbeat?.unsubscribe();
-    this._staleClientUnregisterTimer?.unsubscribe();
+    this._livenessDetector?.unsubscribe();
   }
 
   private logStaleClientWarning(): void {

@@ -42,11 +42,6 @@ export interface Client {
   readonly stale: boolean;
 
   /**
-   * Marks this client as stale and queues it for removal, allowing it to terminate gracefully.
-   */
-  markStaleAndQueueForRemoval(): void;
-
-  /**
    * Deprecated APIs used by the client.
    */
   readonly deprecations: {

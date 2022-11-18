@@ -14,7 +14,6 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {ClientRegistry} from '../host/client-registry/client.registry';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {installLoggerSpies, readConsoleLog} from '../testing/spec.util.spec';
-import {STALE_CLIENT_UNREGISTER_DELAY} from '../host/client-registry/client.constants';
 import {filter} from 'rxjs/operators';
 
 describe('MicrofrontendPlatform', () => {
@@ -227,8 +226,6 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should disconnect client if not receiving a "DISCONNECT" when loading a non-SCION app into its window (staleness)', async () => {
-    Beans.register(STALE_CLIENT_UNREGISTER_DELAY, {useValue: 100});
-
     await MicrofrontendPlatform.startHost({
       applications: [
         {
@@ -236,7 +233,10 @@ describe('MicrofrontendPlatform', () => {
           manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
         },
       ],
-      heartbeatInterval: .1,
+      liveness: {
+        interval: .5, // 500ms
+        timeout: .1,  // 100ms
+      },
     });
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
@@ -259,8 +259,6 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should disconnect client if not receiving a "DISCONNECT" when removing its iframe (staleness)', async () => {
-    Beans.register(STALE_CLIENT_UNREGISTER_DELAY, {useValue: 100});
-
     await MicrofrontendPlatform.startHost({
       applications: [
         {
@@ -268,7 +266,10 @@ describe('MicrofrontendPlatform', () => {
           manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
         },
       ],
-      heartbeatInterval: .1,
+      liveness: {
+        interval: .5, // 500ms
+        timeout: .1,  // 100ms
+      },
     });
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
