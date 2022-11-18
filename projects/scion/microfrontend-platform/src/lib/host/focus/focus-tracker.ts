@@ -7,10 +7,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {BehaviorSubject, Subject} from 'rxjs';
-import {distinctUntilChanged, map, takeUntil} from 'rxjs/operators';
-import {MessageClient, takeUntilUnsubscribe} from '../../client/messaging/message-client';
-import {MessageHeaders, TopicMessage} from '../../messaging.model';
+import {BehaviorSubject, Subscription} from 'rxjs';
+import {distinctUntilChanged, map} from 'rxjs/operators';
+import {MessageClient} from '../../client/messaging/message-client';
+import {MessageHeaders} from '../../messaging.model';
 import {runSafe} from '../../safe-runner';
 import {PlatformTopics} from '../../ɵmessaging.model';
 import {ClientRegistry} from '../client-registry/client.registry';
@@ -18,7 +18,7 @@ import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {Client} from '../client-registry/client';
 
 /**
- * Tracks the focus across microfrontends and answers {@link PlatformTopics.IsFocusWithin} requests.
+ * Tracks the focus across microfrontends and answers {@link PlatformTopics.IsFocusWithin} and {@link PlatformTopics.HasFocus} requests.
  *
  * @see FocusInEventDispatcher
  * @see FocusMonitor
@@ -26,23 +26,23 @@ import {Client} from '../client-registry/client';
  */
 export class FocusTracker implements PreDestroy {
 
-  private _destroy$ = new Subject<void>();
   private _focusOwner$ = new BehaviorSubject<Client | undefined>(undefined);
+  private _subscriptions = new Set<Subscription>();
 
   constructor() {
-    this.monitorFocusInEvents();
-    this.replyToIsFocusWithinRequests();
+    this._subscriptions.add(this.monitorFocusInEvents());
+    this._subscriptions.add(this.replyToIsFocusWithinRequests());
+    this._subscriptions.add(this.replyToHasFocusRequests());
   }
 
   /**
    * Monitors when a client gains the focus.
    */
-  private monitorFocusInEvents(): void {
-    Beans.get(MessageClient).observe$<void>(PlatformTopics.FocusIn)
+  private monitorFocusInEvents(): Subscription {
+    return Beans.get(MessageClient).observe$<void>(PlatformTopics.FocusIn)
       .pipe(
         map(event => event.headers.get(MessageHeaders.ClientId)),
         distinctUntilChanged(),
-        takeUntil(this._destroy$),
       )
       .subscribe(clientId => runSafe(() => {
         this._focusOwner$.next(Beans.get(ClientRegistry).getByClientId(clientId) || undefined);
@@ -52,24 +52,29 @@ export class FocusTracker implements PreDestroy {
   /**
    * Replies to 'focus-within' requests.
    */
-  private replyToIsFocusWithinRequests(): void {
-    Beans.get(MessageClient).observe$<void>(PlatformTopics.IsFocusWithin)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((request: TopicMessage<void>) => runSafe(() => {
-        const clientId = request.headers.get(MessageHeaders.ClientId);
-        const replyTo = request.headers.get(MessageHeaders.ReplyTo);
+  private replyToIsFocusWithinRequests(): Subscription {
+    return Beans.get(MessageClient).onMessage<void, boolean>(PlatformTopics.IsFocusWithin, request => {
+      const clientId = request.headers.get(MessageHeaders.ClientId);
+      return this._focusOwner$
+        .pipe(
+          map(focusOwner => this.isFocusWithin(clientId, focusOwner)),
+          distinctUntilChanged(),
+        );
+    });
+  }
 
-        this._focusOwner$
-          .pipe(
-            map(focusOwner => this.isFocusWithin(clientId, focusOwner)),
-            distinctUntilChanged(),
-            takeUntilUnsubscribe(replyTo),
-            takeUntil(this._destroy$),
-          )
-          .subscribe((isFocusWithin: boolean) => { // eslint-disable-line rxjs/no-nested-subscribe
-            Beans.get(MessageClient).publish(replyTo, isFocusWithin);
-          });
-      }));
+  /**
+   * Replies to 'focus' requests.
+   */
+  private replyToHasFocusRequests(): Subscription {
+    return Beans.get(MessageClient).onMessage<void, boolean>(PlatformTopics.HasFocus, request => {
+      const clientId = request.headers.get(MessageHeaders.ClientId);
+      return this._focusOwner$
+        .pipe(
+          map(focusOwner => focusOwner?.id === clientId),
+          distinctUntilChanged(),
+        );
+    });
   }
 
   /**
@@ -92,6 +97,6 @@ export class FocusTracker implements PreDestroy {
   }
 
   public preDestroy(): void {
-    this._destroy$.next();
+    this._subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 }

@@ -159,10 +159,17 @@ export class TestingAppPO {
   }
 
   /**
-   * Returns `true` if the testing app has received focus, or `false` if not.
+   * Returns `true` if the testing app or any descendant element has received focus, or `false` if not.
    */
   public async isFocusWithin(): Promise<boolean> {
     return isPresent(this._page.locator('app-root').locator('.e2e-focus-within'));
+  }
+
+  /**
+   * Returns `true` if the testing app has received focus, or `false` if not.
+   */
+  public async hasFocus(): Promise<boolean> {
+    return isPresent(this._page.locator('app-root').locator('.e2e-has-focus'));
   }
 
   /**

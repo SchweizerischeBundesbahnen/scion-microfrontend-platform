@@ -215,4 +215,23 @@ test.describe('Angular Zone Synchronization', () => {
       await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(false);
     });
   });
+
+  test('should emit in the same Angular zone as subscribed to "FocusMonitor#focus$"', async ({testingAppPO}) => {
+    const pagePOs = await testingAppPO.navigateTo({
+      angularZonePage: AngularZoneTestPagePO,
+    });
+
+    const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
+    const observe$PO = angularZonePage.focusMonitor.focus$PO;
+    await observe$PO.expand();
+
+    await test.step('subscribeInsideAngularZone', async () => {
+      await observe$PO.subscribe({subscribeInAngularZone: true});
+      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(true);
+    });
+    await test.step('subscribeOutsideAngularZone', async () => {
+      await observe$PO.subscribe({subscribeInAngularZone: false});
+      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(false);
+    });
+  });
 });

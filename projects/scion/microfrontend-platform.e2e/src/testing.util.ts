@@ -46,7 +46,7 @@ export async function findAsync<T>(items: T[], predicate: (item: T) => Promise<b
  * Returns true if the element is present in the DOM.
  */
 export async function isPresent(element: Locator): Promise<boolean> {
-  return await element.count() > 0;
+  return await waitUntilStable(() => element.count(), {probeInterval: 25}) > 0;
 }
 
 /**
