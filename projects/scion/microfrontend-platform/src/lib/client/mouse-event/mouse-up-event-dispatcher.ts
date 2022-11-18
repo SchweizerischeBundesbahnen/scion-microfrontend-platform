@@ -7,19 +7,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {fromEvent, Subject} from 'rxjs';
+import {EMPTY, fromEvent, Subject, switchMap} from 'rxjs';
 import {filter, takeUntil} from 'rxjs/operators';
 import {MessageClient} from '../messaging/message-client';
 import {UUID} from '@scion/toolkit/uuid';
 import {mapToBody} from '../../messaging.model';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {ACTIVATION_CONTEXT} from '../../platform.model';
+import {FocusMonitor} from '../focus/focus-monitor';
+import {ContextService} from '../context/context-service';
 
 /**
  * Dispatches 'mouseup' events originating from other documents as synthetic 'sci-mouseup' events on the document event bus.
  *
- * Mouse event dispatching is important when using custom scrollbars which are positioned at the iframe border. It allows the user
- * to scroll seamlessly even when the mouse cursor leaves the iframe, which is because by default, mouse events are only received
- * by the currently hovering document.
+ * Mouse event dispatching is important if having non-focusable scrollbars which are positioned at the iframe border. It enables the user
+ * to scroll seamlessly even when the mouse cursor leaves the iframe.
  *
  * @ignore
  */
@@ -29,19 +31,32 @@ export class MouseUpEventDispatcher implements PreDestroy {
   private _dispatcherId = UUID.randomUUID();
 
   constructor() {
-    // IMPORTANT: In Angular applications, the platform should be started outside of the Angular zone in order to avoid excessive change detection cycles
-    // of platform-internal subscriptions to global DOM events. For that reason, we subscribe to `document.mouseup` events in the dispatcher's constructor.
-    this.produceSynthEvents();
-    this.consumeSynthEvents();
+    // IMPORTANT: For Angular applications, the platform is started outside the Angular zone. To avoid excessive change detection cycles,
+    // this dispatcher is eagerly set up at platform startup and installed only for regular microfrontends, not activator microfrontends.
+    this.installMouseEventDispatcher().then();
   }
 
   /**
-   * Produces synth events from native 'mouseup' events and publishes them on the message bus.
-   * It allows event dispatchers in other documents to consume these events and publish them on the document's event bus.
+   * Installs mouse event dispatching, but only if not loaded as activator.
    */
-  private produceSynthEvents(): void {
-    fromEvent<MouseEvent>(document, 'mouseup')
-      .pipe(takeUntil(this._destroy$))
+  private async installMouseEventDispatcher(): Promise<void> {
+    if (await Beans.get(ContextService).isPresent(ACTIVATION_CONTEXT)) {
+      return;
+    }
+
+    this.publishMouseUpEvent();
+    this.receiveMouseMoveEvent();
+  }
+
+  /**
+   * Publishes 'mouseup' events, but only if this document does not have the focus, so that the active document can dispatch the events on its event bus.
+   */
+  private publishMouseUpEvent(): void {
+    Beans.get(FocusMonitor).focus$
+      .pipe(
+        switchMap(hasFocus => hasFocus ? EMPTY : fromEvent(window, 'mouseup', {capture: true})),
+        takeUntil(this._destroy$),
+      )
       .subscribe(() => {
         const options = {headers: new Map().set(DISPATCHER_ID_HEADER, this._dispatcherId)};
         Beans.get(MessageClient).publish(MOUSEUP_EVENT_TOPIC, undefined, options);
@@ -49,11 +64,12 @@ export class MouseUpEventDispatcher implements PreDestroy {
   }
 
   /**
-   * Consumes synth events produced by dispatchers from other documents and dispatches them on the event bus of the current document.
+   * Receives 'mouseup' events from other documents, but only if this document has the focus, and dispatches them on the event bus.
    */
-  private consumeSynthEvents(): void {
-    Beans.get(MessageClient).observe$<void>(MOUSEUP_EVENT_TOPIC)
+  private receiveMouseMoveEvent(): void {
+    Beans.get(FocusMonitor).focus$
       .pipe(
+        switchMap(hasFocus => hasFocus ? Beans.get(MessageClient).observe$<void>(MOUSEUP_EVENT_TOPIC) : EMPTY),
         filter(msg => msg.headers.get(DISPATCHER_ID_HEADER) !== this._dispatcherId),
         mapToBody(),
         takeUntil(this._destroy$),

@@ -1,0 +1,52 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+
+  > div.element {
+    flex: none;
+    border: 1px dashed var(--sci-color-P400);
+    color: var(--sci-color-P500);
+    padding: 1em;
+    user-select: none;
+    text-align: center;
+  }
+
+  > section.dispatched-mouse-events {
+    flex: auto;
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
+    margin-top: .5em;
+
+    > header {
+      flex: none;
+      font-weight: bold;
+    }
+
+    > sci-viewport {
+      flex: 1 1 0;
+      border: 1px solid var(--sci-color-P400);
+      font-family: monospace;
+
+      &::part(content) {
+        display: flex;
+        flex-direction: column;
+        gap: .25em;
+        padding: .5em;
+      }
+
+      div.event {
+        display: flex;
+        gap: 1em;
+      }
+    }
+  }
+
+  label {
+    display: flex;
+    gap: .75em;
+    align-items: center;
+    user-select: none;
+  }
+}

@@ -18,6 +18,11 @@ const routes: Routes = [
     loadComponent: (): any => import('./clear-outlet-then-send-message-test-page/clear-outlet-then-send-message-test-page.component').then(m => m.ClearOutletThenSendMessageTestPageComponent),
   },
   {
+    path: 'mouse-event-dispatch-test-page',
+    data: {pageTitle: 'Test page to test mouse event dispatching'},
+    loadComponent: (): any => import('./mouse-event-dispatch-test-page/mouse-event-dispatch-test-page.component').then(m => m.MouseEventDispatchTestPageComponent),
+  },
+  {
     path: 'angular-zone-test-page',
     data: {pageTitle: 'Test page to test NgZone Synchronization'},
     loadComponent: (): any => import('./angular-zone-test-page/angular-zone-test-page.component').then(m => m.AngularZoneTestPageComponent),

@@ -10,7 +10,7 @@
 import {Component, HostListener, NgZone, OnDestroy} from '@angular/core';
 import {ContextService, MicrofrontendPlatform, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {fromEvent, merge, Subject} from 'rxjs';
+import {fromEvent, merge, Subject, withLatestFrom} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {subscribeInside} from '@scion/toolkit/operators';
 
@@ -21,7 +21,7 @@ import {subscribeInside} from '@scion/toolkit/operators';
 export class AppComponent implements OnDestroy {
 
   private _destroy$ = new Subject<void>();
-  private _outletContext: Promise<OutletContext>;
+  private _outletContext: Promise<OutletContext | null>;
 
   constructor(private _zone: NgZone) {
     this._outletContext = Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
@@ -45,13 +45,13 @@ export class AppComponent implements OnDestroy {
   private installPropagatedKeyboardEventLogger(): void {
     merge(fromEvent<KeyboardEvent>(document, 'keydown'), fromEvent<KeyboardEvent>(document, 'keyup'))
       .pipe(
+        withLatestFrom(this._outletContext),
         subscribeInside(fn => this._zone.runOutsideAngular(fn)),
         takeUntil(this._destroy$),
       )
-      .subscribe(event => async () => {
+      .subscribe(([event, outletContext]: [KeyboardEvent, OutletContext | null]) => {
         if (!event.isTrusted && (event.target as Element).tagName === 'SCI-ROUTER-OUTLET') {
-          const outletContextName = (await this._outletContext)?.name ?? 'n/a';
-          console.debug(`[AppComponent::document:on${event.type}] [SYNTHETIC] [outletContext=${outletContextName}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}]`);
+          console.debug(`[AppComponent::document:on${event.type}] [SYNTHETIC] [outletContext=${outletContext?.name ?? 'n/a'}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}]`);
         }
       });
   }

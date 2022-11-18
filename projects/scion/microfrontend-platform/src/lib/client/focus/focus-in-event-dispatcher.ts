@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {fromEvent, Subject} from 'rxjs';
+import {EMPTY, fromEvent, race, Subject, switchMap} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {MessageClient} from '../messaging/message-client';
 import {PlatformTopics} from '../../ɵmessaging.model';
@@ -15,6 +15,7 @@ import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {FocusMonitor} from './focus-monitor';
 import {OUTLET_CONTEXT, OutletContext, RouterOutlets} from '../router-outlet/router-outlet.element';
 import {ContextService} from '../context/context-service';
+import {ACTIVATION_CONTEXT} from '../../platform.model';
 
 /**
  * Sends a 'focusin' event to the topic {@link PlatformTopics.FocusIn} when this document gains focus.
@@ -27,25 +28,37 @@ export class FocusInEventDispatcher implements PreDestroy {
   private _destroy$ = new Subject<void>();
 
   constructor() {
-    // IMPORTANT: In Angular applications, the platform should be started outside of the Angular zone in order to avoid excessive change detection cycles
-    // of platform-internal subscriptions to global DOM events. For that reason, we subscribe to `window.focus` events in the dispatcher's constructor.
-    this.makeWindowFocusable();
-    this.dispatchDocumentFocusInEvent();
-    this.reportFocusWithinEventToParentOutlet();
+    // IMPORTANT: For Angular applications, the platform is started outside the Angular zone. To avoid excessive change detection cycles,
+    // this dispatcher is eagerly set up at platform startup and installed only for regular microfrontends, not activator microfrontends.
+    this.installFocusEventDispatcher().then();
   }
 
   /**
-   * Installs a listener for `focusin` events.
+   * Installs focus event dispatching, but only if not loaded as activator.
    */
-  private dispatchDocumentFocusInEvent(): void {
-    fromEvent<FocusEvent>(window, 'focusin')
-      .pipe(takeUntil(this._destroy$))
-      .subscribe(event => {
-        // Do not dispatch the event if the focusing occurs within this document.
-        // In this case, the related target is set, unless the focus owner is disposed.
-        if (!event.relatedTarget) {
-          Beans.get(MessageClient).publish(PlatformTopics.FocusIn, null, {retain: true}); // do not set `undefined` as payload as this would delete the retained message
-        }
+  private async installFocusEventDispatcher(): Promise<void> {
+    if (await Beans.get(ContextService).isPresent(ACTIVATION_CONTEXT)) {
+      return;
+    }
+
+    this.publishFocusInEvent();
+    await this.notifyOutletAboutFocusChange();
+  }
+
+  /**
+   * Publishes 'focusin' events for the platform to track focus ownership.
+   */
+  private publishFocusInEvent(): void {
+    Beans.get(FocusMonitor).focus$
+      .pipe(
+        switchMap(hasFocus => hasFocus ? EMPTY : race(
+          fromEvent(window, 'focusin', {once: true}), // when gaining focus, e.g., via click on focusable element or sequential keyboard navigation
+          fromEvent(window, 'mousedown', {once: true, capture: true}), // required if "focusin" is not triggered, e.g., if element is not focusable or prevent default was invoked on the mousedown event
+        )),
+        takeUntil(this._destroy$),
+      )
+      .subscribe(() => {
+        Beans.get(MessageClient).publish<void>(PlatformTopics.FocusIn);
       });
   }
 
@@ -53,7 +66,7 @@ export class FocusInEventDispatcher implements PreDestroy {
    * Reports the embedding outlet when the current microfrontend or any of its child microfrontends has gained or lost focus.
    * It does not report while the focus remains within this microfrontend or any of its child microfrontends.
    */
-  private async reportFocusWithinEventToParentOutlet(): Promise<void> {
+  private async notifyOutletAboutFocusChange(): Promise<void> {
     const outletContext = await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
     if (!outletContext) {
       return;
@@ -65,15 +78,6 @@ export class FocusInEventDispatcher implements PreDestroy {
         const publishTo = RouterOutlets.focusWithinOutletTopic(outletContext.uid);
         Beans.get(MessageClient).publish<boolean>(publishTo, focusWithin);
       });
-  }
-
-  /**
-   * Makes this Window focusable in order to receive 'focusin' events.
-   */
-  private makeWindowFocusable(): void {
-    const body = window.document.body;
-    body.setAttribute('tabindex', '0');
-    body.style.outline = 'none';
   }
 
   public preDestroy(): void {
