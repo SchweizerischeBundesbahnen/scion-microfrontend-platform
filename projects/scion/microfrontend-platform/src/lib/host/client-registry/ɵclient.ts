@@ -29,6 +29,7 @@ export class ɵClient implements Client {
 
   constructor(public readonly id: string,
               public readonly window: Window,
+              public readonly origin: string,
               public readonly application: ɵApplication,
               version: string) {
     this.version = version ?? '0.0.0';

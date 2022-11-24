@@ -136,11 +136,11 @@ export class MessageBroker implements Initializer, PreDestroy {
         const replyTo = envelope.message.headers.get(MessageHeaders.ReplyTo);
 
         if (!clientAppName) {
-          const warning = `Client connect attempt rejected by the message broker: Bad request. [origin='${event.origin}']`;
+          const warning = `Client connect attempt rejected: Bad request. [origin='${event.origin}']`;
           Beans.get(Logger).warn(`[CONNECT] ${warning}`);
           sendTopicMessage<ConnackMessage>(clientMessageTarget, {
             topic: replyTo,
-            body: {returnCode: 'refused:bad-request', returnMessage: `[MessageClientConnectError] ${warning}`},
+            body: {returnCode: 'refused:bad-request', returnMessage: `[ClientConnectError] ${warning}`},
             headers: new Map(),
           });
           return;
@@ -148,23 +148,23 @@ export class MessageBroker implements Initializer, PreDestroy {
 
         const application = this._applicationRegistry.getApplication(clientAppName);
         if (!application) {
-          const warning = `Client connect attempt rejected by the message broker: Unknown client. [app='${clientAppName}']`;
+          const warning = `Client connect attempt rejected: Unknown client. [app='${clientAppName}']`;
           Beans.get(Logger).warn(`[CONNECT] ${warning}`);
           sendTopicMessage<ConnackMessage>(clientMessageTarget, {
             topic: replyTo,
-            body: {returnCode: 'refused:rejected', returnMessage: `[MessageClientConnectError] ${warning}`},
+            body: {returnCode: 'refused:rejected', returnMessage: `[ClientConnectError] ${warning}`},
             headers: new Map(),
           });
           return;
         }
 
-        if (event.origin !== application.messageOrigin) {
-          const warning = `Client connect attempt blocked by the message broker: Wrong origin [actual='${event.origin}', expected='${application.messageOrigin}', app='${application.symbolicName}']`;
+        if (!application.allowedMessageOrigins.has(event.origin)) {
+          const warning = `Client connect attempt blocked: Wrong origin [actual='${event.origin}', expected='${Array.from(application.allowedMessageOrigins)}', app='${application.symbolicName}']`;
           Beans.get(Logger).warn(`[CONNECT] ${warning}`);
 
           sendTopicMessage<ConnackMessage>(clientMessageTarget, {
             topic: replyTo,
-            body: {returnCode: 'refused:blocked', returnMessage: `[MessageClientConnectError] ${warning}`},
+            body: {returnCode: 'refused:blocked', returnMessage: `[ClientConnectError] ${warning}`},
             headers: new Map(),
           });
           return;
@@ -173,7 +173,7 @@ export class MessageBroker implements Initializer, PreDestroy {
         // Check if the client is already connected. If already connected, do nothing. A client can potentially initiate multiple connect requests, for example,
         // when not receiving connect confirmation in time.
         const currentClient = this._clientRegistry.getByWindow(eventSource);
-        if (currentClient && currentClient.application.messageOrigin === event.origin && currentClient.application.symbolicName === application.symbolicName) {
+        if (currentClient && currentClient.origin === event.origin && currentClient.application.symbolicName === application.symbolicName) {
           sendTopicMessage<ConnackMessage>(currentClient, {
             topic: replyTo,
             body: {returnCode: 'accepted', clientId: currentClient.id},
@@ -182,7 +182,7 @@ export class MessageBroker implements Initializer, PreDestroy {
           return;
         }
 
-        const client = new ɵClient(UUID.randomUUID(), eventSource, application, envelope.message.headers.get(MessageHeaders.Version));
+        const client = new ɵClient(UUID.randomUUID(), eventSource, event.origin, application, envelope.message.headers.get(MessageHeaders.Version));
         this._clientRegistry.registerClient(client);
 
         // Check if the client is compatible with the platform version of the host.
@@ -668,10 +668,10 @@ function checkOriginTrusted<T extends Message>(): MonoTypeOperatorFunction<Messa
     }
 
     // Assert source origin.
-    if (event.origin !== client.application.messageOrigin) {
+    if (event.origin !== client.origin) {
       if (event.source !== null) {
         const sender = new MessageTarget(event);
-        const error = `[MessagingError] Message rejected: Wrong origin [actual=${event.origin}, expected=${client.application.messageOrigin}, application=${client.application.symbolicName}]`;
+        const error = `[MessagingError] Message rejected: Wrong origin [actual=${event.origin}, expected=${client.origin}, application=${client.application.symbolicName}]`;
         sendDeliveryStatusError(sender, messageId, error);
       }
       return EMPTY;
@@ -730,10 +730,10 @@ function sendTopicMessage<T>(target: MessageTarget | Client | TopicSubscription,
     const client = subscription.client;
     envelope.message.headers.set(client.deprecations.legacyIntentSubscriptionApi ? 'ɵTOPIC_SUBSCRIBER_ID' : MessageHeaders.ɵSubscriberId, target.subscriberId);
     envelope.message.params = new TopicMatcher(subscription.topic).match(message.topic).params;
-    !client.stale && client.window.postMessage(envelope, client.application.messageOrigin);
+    !client.stale && client.window.postMessage(envelope, client.origin);
   }
   else {
-    !target.stale && target.window.postMessage(envelope, target.application.messageOrigin);
+    !target.stale && target.window.postMessage(envelope, target.origin);
   }
 }
 
@@ -751,7 +751,7 @@ function sendIntentMessage(subscription: IntentSubscription, message: IntentMess
     },
   };
   const client = subscription.client;
-  !client.stale && client.window.postMessage(envelope, client.application.messageOrigin);
+  !client.stale && client.window.postMessage(envelope, client.origin);
 }
 
 /**
