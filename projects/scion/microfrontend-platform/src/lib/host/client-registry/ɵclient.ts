@@ -24,7 +24,14 @@ import {UUID} from '@scion/toolkit/uuid';
 export class ɵClient implements Client {
 
   public readonly version: string;
-  public readonly deprecations: {legacyIntentSubscriptionApi: boolean; legacyRequestResponseSubscriptionApi: boolean};
+  public readonly deprecations: {
+    /** @deprecated **/
+    legacyIntentSubscriptionProtocol: boolean;
+    /** @deprecated **/
+    legacyRequestResponseSubscriptionProtocol: boolean;
+    /** @deprecated **/
+    legacyHeartbeatLivenessProtocol: boolean;
+  };
   private _livenessDetector: Subscription | undefined;
 
   constructor(public readonly id: string,
@@ -33,18 +40,22 @@ export class ɵClient implements Client {
               public readonly application: ɵApplication,
               version: string) {
     this.version = version ?? '0.0.0';
-    this.installLivenessDetector();
     this.deprecations = {
-      legacyIntentSubscriptionApi: semver.lt(this.version, '1.0.0-rc.8'),
-      legacyRequestResponseSubscriptionApi: semver.lt(this.version, '1.0.0-rc.9'),
+      legacyIntentSubscriptionProtocol: semver.lt(this.version, '1.0.0-rc.8'),
+      legacyRequestResponseSubscriptionProtocol: semver.lt(this.version, '1.0.0-rc.9'),
+      legacyHeartbeatLivenessProtocol: semver.lt(this.version, '1.0.0-rc.11'),
     };
-    if (this.deprecations.legacyIntentSubscriptionApi) {
+    if (this.deprecations.legacyIntentSubscriptionProtocol) {
       this.installLegacyClientIntentSubscription();
-      Beans.get(Logger).warn(`[DEPRECATION][FE93C94] Application "${application.symbolicName}" is using a legacy protocol for subscribing to intents. Please update @scion/microfrontend-platform to version '${Beans.get(ɵVERSION)}'.`, new LoggingContext(application.symbolicName, this.version));
+      Beans.get(Logger).warn(`[DEPRECATION][FE93C94] Application "${application.symbolicName}" is using a legacy protocol for subscribing to intents. Please update @scion/microfrontend-platform to version '${Beans.get(ɵVERSION)}'. Legacy support will be dropped in version '2.0.0'.`, new LoggingContext(application.symbolicName, this.version));
     }
-    if (this.deprecations.legacyRequestResponseSubscriptionApi) {
-      Beans.get(Logger).warn(`[DEPRECATION][F6DC38E] Application "${application.symbolicName}" is using a legacy request-response communication protocol. Please update @scion/microfrontend-platform to version '${Beans.get(ɵVERSION)}'.`, new LoggingContext(application.symbolicName, this.version));
+    if (this.deprecations.legacyRequestResponseSubscriptionProtocol) {
+      Beans.get(Logger).warn(`[DEPRECATION][F6DC38E] Application "${application.symbolicName}" is using a legacy request-response communication protocol. Please update @scion/microfrontend-platform to version '${Beans.get(ɵVERSION)}'. Legacy support will be dropped in version '2.0.0'.`, new LoggingContext(application.symbolicName, this.version));
     }
+    if (this.deprecations.legacyHeartbeatLivenessProtocol) {
+      Beans.get(Logger).warn(`[DEPRECATION][CD981D7] Application "${application.symbolicName}" is using a legacy liveness probe protocol. Please update @scion/microfrontend-platform to version '${Beans.get(ɵVERSION)}'. Legacy support will be dropped in version '2.0.0'.`, new LoggingContext(application.symbolicName, this.version));
+    }
+    this.installLivenessDetector();
   }
 
   /**
@@ -59,14 +70,14 @@ export class ɵClient implements Client {
    *   has been loaded into the window, both indicating a high load on the client during unloading.
    */
   private installLivenessDetector(): void {
-    // The host app client does not reply to pings.
+    // The client of the host app needs not to be checked for liveness as it is part of the host.
     if (this.application.symbolicName === Beans.get(APP_IDENTITY)) {
       return;
     }
 
-    // Only clients of version 1.0.0-rc.11 or greater reply to pings.
-    if (semver.lt(this.version, '1.0.0-rc.11')) {
-      Beans.get(Logger).warn(`[VersionMismatch] Since '@scion/microfrontend-platform@1.0.0-rc.11', connected clients must reply to pings to indicate liveness. Please upgrade @scion/microfrontend-platform of application '${this.application.symbolicName}' from version '${this.version}' to version '${Beans.get(ɵVERSION)}'.`, new LoggingContext(this.application.symbolicName, this.version));
+    // Ignore clients not supporting the liveness protocol.
+    if (this.deprecations.legacyHeartbeatLivenessProtocol) {
+      return;
     }
 
     // Observable to perform the ping. If the client does not respond, we ping the client again to account for the rare situation where

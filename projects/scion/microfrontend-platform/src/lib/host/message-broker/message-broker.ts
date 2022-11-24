@@ -176,7 +176,13 @@ export class MessageBroker implements Initializer, PreDestroy {
         if (currentClient && currentClient.origin === event.origin && currentClient.application.symbolicName === application.symbolicName) {
           sendTopicMessage<ConnackMessage>(currentClient, {
             topic: replyTo,
-            body: {returnCode: 'accepted', clientId: currentClient.id},
+            body: {
+              returnCode: 'accepted',
+              clientId: currentClient.id,
+              // Clients older than version `1.0.0-rc.11` expect the host to include the heartbeat interval in the connect acknowledgment.
+              // If not, they would send a heartbeat constantly, thus overloading the message bus.
+              ...(currentClient.deprecations.legacyHeartbeatLivenessProtocol ? {heartbeatInterval: 24 * 60 * 60 * 1000} as Partial<ConnackMessage> : {}),
+            },
             headers: new Map(),
           });
           return;
@@ -192,7 +198,13 @@ export class MessageBroker implements Initializer, PreDestroy {
 
         sendTopicMessage<ConnackMessage>(client, {
           topic: replyTo,
-          body: {returnCode: 'accepted', clientId: client.id},
+          body: {
+            returnCode: 'accepted',
+            clientId: client.id,
+            // Clients older than version `1.0.0-rc.11` expect the host to include the heartbeat interval in the connect acknowledgment.
+            // If not, they would send a heartbeat constantly, thus overloading the message bus.
+            ...(client.deprecations.legacyHeartbeatLivenessProtocol ? {heartbeatInterval: 24 * 60 * 60 * 1000} as Partial<ConnackMessage> : {}),
+          },
           headers: new Map(),
         });
       }));
@@ -564,7 +576,7 @@ export class MessageBroker implements Initializer, PreDestroy {
     if (!isRequest(message)) {
       return null;
     }
-    if (sender.deprecations.legacyRequestResponseSubscriptionApi) {
+    if (sender.deprecations.legacyRequestResponseSubscriptionProtocol) {
       return null;
     }
 
@@ -728,7 +740,7 @@ function sendTopicMessage<T>(target: MessageTarget | Client | TopicSubscription,
   else if (target instanceof TopicSubscription) {
     const subscription = target;
     const client = subscription.client;
-    envelope.message.headers.set(client.deprecations.legacyIntentSubscriptionApi ? 'ɵTOPIC_SUBSCRIBER_ID' : MessageHeaders.ɵSubscriberId, target.subscriberId);
+    envelope.message.headers.set(client.deprecations.legacyIntentSubscriptionProtocol ? 'ɵTOPIC_SUBSCRIBER_ID' : MessageHeaders.ɵSubscriberId, target.subscriberId);
     envelope.message.params = new TopicMatcher(subscription.topic).match(message.topic).params;
     !client.stale && client.window.postMessage(envelope, client.origin);
   }
