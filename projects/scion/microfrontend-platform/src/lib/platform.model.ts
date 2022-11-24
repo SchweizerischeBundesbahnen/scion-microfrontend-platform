@@ -70,10 +70,6 @@ export interface Application {
    */
   baseUrl: string;
   /**
-   * Specifies the origin where message from this application must originate from. Messages of a different origin will be rejected.
-   */
-  messageOrigin: string;
-  /**
    * URL to the manifest of this application.
    */
   manifestUrl: string;

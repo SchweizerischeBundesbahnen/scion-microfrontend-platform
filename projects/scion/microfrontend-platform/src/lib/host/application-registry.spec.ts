@@ -193,4 +193,24 @@ describe('ApplicationRegistry', () => {
     expect(registry.getApplication('app').name).toEqual('app');
     expect(registry.getApplication('app').symbolicName).toEqual('app');
   });
+
+  it('should set the application\'s manifest origin as allowed message origin', async () => {
+    await registry.registerApplication({symbolicName: 'app', manifestUrl: 'https://app.com/manifest'}, {name: 'App'});
+    expect(registry.getApplication('app').allowedMessageOrigins).toEqual(new Set().add('https://app.com'));
+  });
+
+  it('should set the application\'s base origin as allowed message origin', async () => {
+    await registry.registerApplication({symbolicName: 'app', manifestUrl: 'https://app.com/manifest'}, {name: 'App', baseUrl: 'https://primary.app.com'});
+    expect(registry.getApplication('app').allowedMessageOrigins).toEqual(new Set().add('https://primary.app.com'));
+  });
+
+  it('should add secondary origin to the allowed message origins (1/2)', async () => {
+    await registry.registerApplication({symbolicName: 'app', manifestUrl: 'https://app.com/manifest', secondaryOrigin: 'https://secondary.app.com'}, {name: 'App'});
+    expect(registry.getApplication('app').allowedMessageOrigins).toEqual(new Set().add('https://app.com').add('https://secondary.app.com'));
+  });
+
+  it('should add secondary origin to the allowed message origins (2/2)', async () => {
+    await registry.registerApplication({symbolicName: 'app', manifestUrl: 'https://app.com/manifest', secondaryOrigin: 'https://secondary.app.com'}, {name: 'App', baseUrl: 'https://primary.app.com'});
+    expect(registry.getApplication('app').allowedMessageOrigins).toEqual(new Set().add('https://primary.app.com').add('https://secondary.app.com'));
+  });
 });

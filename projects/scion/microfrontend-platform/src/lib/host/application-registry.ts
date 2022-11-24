@@ -9,7 +9,7 @@
  */
 
 import {Application, Manifest} from '../platform.model';
-import {Defined} from '@scion/toolkit/util';
+import {Arrays, Defined} from '@scion/toolkit/util';
 import {Urls} from '../url.util';
 import {MicrofrontendPlatformConfig} from './microfrontend-platform-config';
 import {ManifestRegistry} from './manifest-registry/manifest-registry';
@@ -46,14 +46,15 @@ export class ApplicationRegistry {
       throw Error(`[ApplicationRegistrationError] Symbolic name must be unique [symbolicName='${applicationConfig.symbolicName}'].`);
     }
 
+    const baseUrl = this.computeBaseUrl(applicationConfig, manifest);
     this._applications.set(applicationConfig.symbolicName, {
       symbolicName: applicationConfig.symbolicName,
       name: manifest.name ?? applicationConfig.symbolicName,
-      baseUrl: this.computeBaseUrl(applicationConfig, manifest),
+      baseUrl: baseUrl,
       manifestUrl: Urls.newUrl(applicationConfig.manifestUrl, Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? applicationConfig.manifestUrl : window.origin).toString(),
       manifestLoadTimeout: applicationConfig.manifestLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).manifestLoadTimeout,
       activatorLoadTimeout: applicationConfig.activatorLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).activatorLoadTimeout,
-      messageOrigin: applicationConfig.messageOrigin ?? Urls.newUrl(this.computeBaseUrl(applicationConfig, manifest)).origin,
+      allowedMessageOrigins: new Set(Arrays.coerce(applicationConfig.secondaryOrigin)).add(Urls.newUrl(baseUrl).origin),
       scopeCheckDisabled: Defined.orElse(applicationConfig.scopeCheckDisabled, false),
       intentionCheckDisabled: Defined.orElse(applicationConfig.intentionCheckDisabled, false),
       intentionRegisterApiDisabled: Defined.orElse(applicationConfig.intentionRegisterApiDisabled, true),
@@ -136,4 +137,8 @@ export class ApplicationRegistry {
  * The version is omitted because not known at the time of registration, but only when first connecting to the host, e.g., in an activator.
  */
 export interface ɵApplication extends Omit<Application, 'platformVersion'> { // eslint-disable-line @typescript-eslint/no-empty-interface
+  /**
+   * Specifies the origin(s) where message from this application must originate from. Messages of a different origin will be rejected.
+   */
+  allowedMessageOrigins: Set<string>;
 }

@@ -628,40 +628,6 @@ describe('Messaging', () => {
     expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
   });
 
-  it('should reject a client connect attempt if the app is not registered', async () => {
-    await MicrofrontendPlatform.startHost({applications: []}); // no app is registered
-
-    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-    const script = microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'bad-client'});
-
-    await expectAsync(script).toBeRejectedWithError(/\[MessageClientConnectError] Client connect attempt rejected by the message broker: Unknown client./);
-  });
-
-  it('should reject a client connect attempt if the client\'s origin is different to the registered app origin', async () => {
-    await MicrofrontendPlatform.startHost({
-      applications: [
-        {
-          symbolicName: 'client',
-          manifestUrl: new ManifestFixture({name: 'Client', baseUrl: 'http://app-origin'}).serve(),
-        },
-      ],
-    });
-
-    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-    // Client connects under karma test runner origin, but is registered under `http://app-origin`.
-    const script = microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
-
-    await expectAsync(script).toBeRejectedWithError(/\[MessageClientConnectError] Client connect attempt blocked by the message broker: Wrong origin./);
-  });
-
-  it('should reject startup promise if the message broker cannot be discovered', async () => {
-    const loggerSpy = getLoggerSpy('error');
-    const startup = MicrofrontendPlatform.connectToHost('client-app', {brokerDiscoverTimeout: 250});
-    await expectPromise(startup).toReject(/MicrofrontendPlatformStartupError/);
-
-    await expect(loggerSpy).toHaveBeenCalledWith('[GatewayError] Message broker not discovered within 250ms. Messages cannot be published or received.');
-  });
-
   it('should not error with `ClientConnectError` when starting the platform host and if initializers in runlevel 0 take a long time to complete, e.g., to fetch manifests', async () => {
     const loggerSpy = getLoggerSpy('error');
     const initializerDuration = 1000;

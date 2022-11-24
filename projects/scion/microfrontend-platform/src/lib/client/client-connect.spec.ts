@@ -14,6 +14,7 @@ import {ManifestFixture} from '../testing/manifest-fixture/manifest-fixture';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ClientRegistry} from '../host/client-registry/client.registry';
 import {ObserveCaptor} from '@scion/toolkit/testing';
+import {expectPromise, getLoggerSpy, installLoggerSpies} from '../testing/spec.util.spec';
 
 describe('MicrofrontendPlatform', () => {
 
@@ -21,6 +22,7 @@ describe('MicrofrontendPlatform', () => {
 
   beforeEach(async () => {
     await MicrofrontendPlatform.destroy();
+    installLoggerSpies();
   });
 
   afterEach(async () => {
@@ -86,20 +88,57 @@ describe('MicrofrontendPlatform', () => {
     expect(clientIdCaptor.getValues()).toEqual([clientId, clientId, clientId]);
   });
 
-  it('should reject messages from wrong origin', async () => {
+  it('should reject client connect attempt if the app is not registered', async () => {
+    await MicrofrontendPlatform.startHost({applications: []}); // no app is registered
+
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
+    const script = microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'bad-client'});
+
+    await expectAsync(script).toBeRejectedWithError(/\[ClientConnectError] Client connect attempt rejected: Unknown client./);
+  });
+
+  it('should reject client connect attempt if the client\'s origin is different to the registered app origin', async () => {
     await MicrofrontendPlatform.startHost({
       applications: [
         {
           symbolicName: 'client',
-          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
-          messageOrigin: 'http://wrong-origin.dev',
+          manifestUrl: new ManifestFixture({name: 'Client', baseUrl: 'http://app-origin'}).serve(),
         },
       ],
     });
 
-    const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    const connectPromise = microfrontendFixture.loadScript('./lib/client/client-connect.script.ts', 'connectToHost', {symbolicName: 'client'});
-    await expectAsync(connectPromise).toBeRejectedWithError(/\[MessageClientConnectError] Client connect attempt blocked by the message broker: Wrong origin \[actual='http:\/\/localhost:[\d]+', expected='http:\/\/wrong-origin.dev', app='client'] \[code: 'refused:blocked']/);
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
+    // Client connects under karma test runner origin (location.origin), but is registered under `http://app-origin`.
+    const script = microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
+
+    await expectAsync(script).toBeRejectedWithError(/\[ClientConnectError] Client connect attempt blocked: Wrong origin./);
+  });
+
+  it('should accept client connect attempt if originating from the secondary origin', async () => {
+    await MicrofrontendPlatform.startHost({
+      applications: [
+        {
+          symbolicName: 'client',
+          manifestUrl: new ManifestFixture({name: 'Client', baseUrl: 'http://app-origin'}).serve(),
+          secondaryOrigin: location.origin
+        },
+      ],
+    });
+
+    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
+    // - Client connects under karma test runner origin (location.origin)
+    // - Base origin is 'app-origin'
+    // - Application is configured to allow messages from secondary origin, which is karma test runner origin (location.origin)
+    const script = microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
+    await expectAsync(script).toBeResolved();
+  });
+
+  it('should reject startup promise if the message broker cannot be discovered', async () => {
+    const loggerSpy = getLoggerSpy('error');
+    const startup = MicrofrontendPlatform.connectToHost('client-app', {brokerDiscoverTimeout: 250});
+    await expectPromise(startup).toReject(/MicrofrontendPlatformStartupError/);
+
+    await expect(loggerSpy).toHaveBeenCalledWith('[GatewayError] Message broker not discovered within 250ms. Messages cannot be published or received.');
   });
 
   /**

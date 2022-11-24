@@ -27,6 +27,11 @@ export interface Client {
   readonly window: Window;
 
   /**
+   * The origin of this client; is one of {@link ɵApplication.allowedMessageOrigins}.
+   */
+  readonly origin: string;
+
+  /**
    * The application this client belongs to.
    */
   readonly application: ɵApplication;

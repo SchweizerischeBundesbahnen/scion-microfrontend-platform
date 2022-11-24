@@ -80,6 +80,6 @@ describe('ClientRegistry', () => {
 
   function newClient(clientId: string, appSymbolicName: string): Client {
     const application: Partial<ɵApplication> = {symbolicName: appSymbolicName};
-    return new ɵClient(clientId, {} as Window, application as ɵApplication, Beans.get(ɵVERSION));
+    return new ɵClient(clientId, {} as Window, 'origin', application as ɵApplication, Beans.get(ɵVERSION));
   }
 });
