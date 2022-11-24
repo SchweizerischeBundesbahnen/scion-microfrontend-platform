@@ -51,13 +51,17 @@ export interface Client {
    */
   readonly deprecations: {
     /**
-     * @deprecated since version 1.0.0-rc.8; Legacy support will be removed in version 1.0.0.
+     * @deprecated since version 1.0.0-rc.8; Legacy support will be removed in version 2.0.0.
      */
-    legacyIntentSubscriptionApi: boolean;
+    legacyIntentSubscriptionProtocol: boolean;
     /**
-     * @deprecated since version 1.0.0-rc.9; Legacy support will be removed in version 1.0.0.
+     * @deprecated since version 1.0.0-rc.9; Legacy support will be removed in version 2.0.0.
      */
-    legacyRequestResponseSubscriptionApi: boolean;
+    legacyRequestResponseSubscriptionProtocol: boolean;
+    /**
+     * @deprecated since version 1.0.0-rc.11; Legacy support will be removed in version 2.0.0.
+     */
+    legacyHeartbeatLivenessProtocol: boolean;
   };
 
   /**

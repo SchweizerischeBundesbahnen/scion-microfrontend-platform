@@ -71,27 +71,6 @@ describe('MicrofrontendPlatform', () => {
     ]));
   });
 
-  it('should warn if client does not support liveness ping introduced in version "1.0.0-rc.11"', async () => {
-    Beans.register(ɵVERSION, {useValue: '1.0.0'});
-
-    await MicrofrontendPlatform.startHost({
-      applications: [
-        {
-          symbolicName: 'client',
-          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
-        },
-      ],
-    });
-
-    const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    await microfrontendFixture.loadScript('./lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: '1.0.0-beta.20'});
-
-    // Assert version mismatch warning
-    expect(readConsoleLog('warn', {filter: /\[VersionMismatch]/})).toEqual(jasmine.arrayContaining([
-      `[VersionMismatch] Since '@scion/microfrontend-platform@1.0.0-rc.11', connected clients must reply to pings to indicate liveness. Please upgrade @scion/microfrontend-platform of application 'client' from version '1.0.0-beta.20' to version '1.0.0'.`,
-    ]));
-  });
-
   it('should resolve the version of the SCION Microfronted Platform used by applications', async () => {
     await MicrofrontendPlatform.startHost({
       applications: [
