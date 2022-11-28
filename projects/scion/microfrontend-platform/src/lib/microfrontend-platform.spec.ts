@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -9,7 +9,7 @@
  */
 
 import {MicrofrontendPlatform} from './microfrontend-platform';
-import {expectPromise, waitFor} from './testing/spec.util.spec';
+import {waitFor} from './testing/spec.util.spec';
 import {PlatformState} from './platform-state';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {PlatformPropertyService} from './platform-property-service';
@@ -22,7 +22,7 @@ describe('MicrofrontendPlatform', () => {
 
   it('should report that the app is not connected to the platform host when the host platform is not found', async () => {
     const startup = MicrofrontendPlatform.connectToHost('client-app', {brokerDiscoverTimeout: 250});
-    await expectPromise(startup).toReject();
+    await expectAsync(startup).toBeRejected();
     await expect(await MicrofrontendPlatform.isConnectedToHost()).toBeFalse();
   });
 
@@ -38,34 +38,22 @@ describe('MicrofrontendPlatform', () => {
   it('should enter state \'started\' when started', async () => {
     const startup = MicrofrontendPlatform.connectToHost('A', {connect: false});
 
-    await expectPromise(startup).toResolve();
+    await expectAsync(startup).toBeResolved();
     expect(MicrofrontendPlatform.state).toEqual(PlatformState.Started);
   });
 
   it('should reject starting the client platform multiple times', async () => {
-    const startup = MicrofrontendPlatform.connectToHost('A', {connect: false});
-    await expectPromise(startup).toResolve();
-
-    try {
-      await MicrofrontendPlatform.connectToHost('A');
-      fail('expected \'MicrofrontendPlatform.forClient()\' to error');
-    }
-    catch (error) {
-      await expect(error.message).toMatch(/\[PlatformStateError] Failed to enter platform state \[prevState=Started, newState=Starting]/);
-    }
+    const connect = MicrofrontendPlatform.connectToHost('A', {connect: false});
+    await expectAsync(connect).toBeResolved();
+    // Connect to the host again
+    await expectAsync(MicrofrontendPlatform.connectToHost('A')).toBeRejectedWithError(/\[MicrofrontendPlatformStartupError] Platform already started/);
   });
 
   it('should reject starting the host platform multiple times', async () => {
     const startup = MicrofrontendPlatform.startHost({applications: []});
-    await expectPromise(startup).toResolve();
-
-    try {
-      await MicrofrontendPlatform.startHost({applications: []});
-      fail('expected \'MicrofrontendPlatform.startHost()\' to error');
-    }
-    catch (error) {
-      await expect(error.message).toMatch(/\[PlatformStateError] Failed to enter platform state \[prevState=Started, newState=Starting]/);
-    }
+    await expectAsync(startup).toBeResolved();
+    // Start the platform again
+    await expectAsync(MicrofrontendPlatform.startHost({applications: []})).toBeRejectedWithError(/\[MicrofrontendPlatformStartupError] Platform already started/);
   });
 
   it('should construct eager beans at platform startup', async () => {
@@ -218,7 +206,7 @@ describe('MicrofrontendPlatform', () => {
     Beans.registerInitializer(() => Promise.resolve());
     Beans.registerInitializer(() => Promise.resolve());
 
-    await expectPromise(MicrofrontendPlatform.startPlatform()).toResolve();
+    await expectAsync(MicrofrontendPlatform.startPlatform()).toBeResolved();
   });
 
   it('should reject the \'start\' Promise when an initializer rejects', async () => {
@@ -226,7 +214,7 @@ describe('MicrofrontendPlatform', () => {
     Beans.registerInitializer(() => Promise.reject());
     Beans.registerInitializer(() => Promise.resolve());
 
-    await expectPromise(MicrofrontendPlatform.startPlatform()).toReject(/MicrofrontendPlatformStartupError/);
+    await expectAsync(MicrofrontendPlatform.startPlatform()).toBeRejectedWithError(/MicrofrontendPlatformStartupError/);
   });
 
   it('should allow looking up platform properties from the host', async () => {
