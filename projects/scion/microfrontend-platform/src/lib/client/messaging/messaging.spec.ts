@@ -1588,6 +1588,41 @@ describe('Messaging', () => {
         `[DEPRECATION][4EAC5956] Application 'host-app' passes a deprecated parameter in the intent: 'param4'.`,
       ]);
     });
+
+    it('should validate params before intent interception', async () => {
+      let intercepted = false;
+
+      // Register interceptor
+      Beans.register(IntentInterceptor, {
+        multi: true,
+        useValue: new class implements IntentInterceptor {
+          public intercept(intent: IntentMessage, next: Handler<IntentMessage>): Promise<void> {
+            intercepted = true;
+            return next.handle(intent);
+          }
+        },
+      });
+
+      // Start the platform
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host Application',
+            capabilities: [
+              {
+                type: 'capability',
+                params: [{name: 'param', required: true}],
+              },
+            ],
+          },
+        },
+        applications: [],
+      });
+
+      // Publish intent without passing required param.
+      await expectAsync(Beans.get(IntentClient).publish({type: 'capability'})).toBeRejectedWithError(/IntentParamValidationError/);
+      expect(intercepted).toBeFalse();
+    });
   });
 
   describe('topic-based messaging', () => {

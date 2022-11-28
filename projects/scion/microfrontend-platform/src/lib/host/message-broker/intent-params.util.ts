@@ -7,7 +7,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Handler, IntentInterceptor} from './message-interception';
 import {Intent, IntentMessage, MessageHeaders} from '../../messaging.model';
 import {ParamMatcher, ParamsMatcherResult} from './param-matcher';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -15,40 +14,45 @@ import {Logger, LoggingContext} from '../../logger';
 import {ParamDefinition} from '../../platform.model';
 
 /**
- * Rejects an intent if passing invalid params and warns if passing deprecated params.
+ * Provides utilities for working with intent params.
  *
- * @ignore
+ * @internal
  */
-export class IntentParamValidator implements IntentInterceptor {
+export namespace IntentParams {
 
-  public async intercept(intentMessage: IntentMessage, next: Handler<IntentMessage>): Promise<void> {
-    const capability = intentMessage.capability;
+  /**
+   * Validates params of given intent.
+   *
+   * @throws if the message contains invalid params.
+   */
+  export function validateParams(intentMessage: IntentMessage): void {
+    const {intent, capability} = intentMessage;
     const sender = intentMessage.headers.get(MessageHeaders.AppSymbolicName);
+    intent.params = new Map(intent.params);
 
     // Remove params with `undefined` as value.
-    intentMessage.intent.params?.forEach((value, key) => {
+    intent.params.forEach((value, key) => {
       if (value === undefined) {
-        intentMessage.intent.params!.delete(key);
+        intent.params!.delete(key);
       }
     });
 
     // Test params passed with the intent to match expected params as declared on the capability.
-    const paramMatcherResult = new ParamMatcher(capability.params!).match(intentMessage.intent.params);
+    const paramMatcherResult = new ParamMatcher(capability.params || []).match(intent.params);
     if (!paramMatcherResult.matches) {
-      const error = toParamValidationError(paramMatcherResult, intentMessage.intent);
-      return Promise.reject(Error(`[IntentParamValidationError] ${error}`));
+      const error = toParamValidationError(paramMatcherResult, intent);
+      throw Error(`[IntentParamValidationError] ${error}`);
     }
 
     // Warn about the usage of deprecated params.
     if (paramMatcherResult.deprecatedParams.length) {
       paramMatcherResult.deprecatedParams.forEach(deprecatedParam => {
         const warning = toDeprecatedParamWarning(deprecatedParam, {appSymbolicName: sender});
-        Beans.get(Logger).warn(`[DEPRECATION][4EAC5956] ${warning}`, new LoggingContext(sender), intentMessage.intent);
+        Beans.get(Logger).warn(`[DEPRECATION][4EAC5956] ${warning}`, new LoggingContext(sender), intent);
       });
       // Use the matcher's parameters to have deprecated params mapped to their replacement.
-      intentMessage.intent.params = paramMatcherResult.params!;
+      intent.params = paramMatcherResult.params;
     }
-    return next.handle(intentMessage);
   }
 }
 
