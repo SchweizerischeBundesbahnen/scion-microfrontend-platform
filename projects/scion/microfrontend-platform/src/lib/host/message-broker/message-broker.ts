@@ -35,6 +35,7 @@ import {MessageClient} from '../../client/messaging/message-client';
 import {Predicates} from './predicates.util';
 import {Topics} from '../../topics.util';
 import {Qualifiers} from '../../qualifiers.util';
+import {IntentParams} from './intent-params.util';
 
 /**
  * The broker is responsible for receiving all messages, filtering the messages, determining who is
@@ -354,12 +355,19 @@ export class MessageBroker implements Initializer, PreDestroy {
           const requestorReplySubscription = this.subscribeForRepliesIfRequest(message, client);
           // Ensure the message header 'ɵSUBSCRIBER_ID' to be removed; is set in request-response communication by the client gateway.
           message.headers.delete(MessageHeaders.ɵSubscriberId);
+
           // Dispatch the message.
-          const messagesPerCapability = await Promise.all(capabilities
+          await Promise.all(capabilities
+            // Associate capability with the intent.
             .map<IntentMessage>(capability => ({...message, capability}))
-            .map(message => this._intentPublisher.interceptAndPublish(message).then(() => message)));
-          // If a retained message or request, store it for late subscribers.
-          messagesPerCapability.forEach(message => this.storeIntentIfRetained(message, requestorReplySubscription));
+            .map(async message => {
+              // Validate intent params.
+              IntentParams.validateParams(message);
+              // Publish the intent.
+              await this._intentPublisher.interceptAndPublish(message);
+              // If a retained message or request, store it for late subscribers.
+              this.storeIntentIfRetained(message, requestorReplySubscription);
+            }));
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {

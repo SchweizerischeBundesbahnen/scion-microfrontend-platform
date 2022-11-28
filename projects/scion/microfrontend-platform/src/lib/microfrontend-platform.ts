@@ -53,7 +53,6 @@ import {MicrofrontendPlatformStopper, ɵMicrofrontendPlatformStopper} from './mi
 import {ɵClientRegistry} from './host/client-registry/ɵclient.registry';
 import {IntentInterceptor} from './host/message-broker/message-interception';
 import {MicrofrontendIntentNavigator} from './host/router/microfrontend-intent-navigator.interceptor';
-import {IntentParamValidator} from './host/message-broker/intent-param-validator.interceptor';
 import {IntentSubscriptionRegistry} from './host/message-broker/intent-subscription.registry';
 import {LivenessConfig} from './host/liveness-config';
 import {HostConfig} from './host/host-config';
@@ -185,7 +184,6 @@ export class MicrofrontendPlatform {
         Beans.register(PreferredSizeService, {eager: true});
         Beans.register(ManifestService);
         Beans.register(KeyboardEventDispatcher, {eager: true});
-        Beans.register(IntentInterceptor, {useClass: IntentParamValidator, multi: true});
         Beans.register(IntentInterceptor, {useClass: MicrofrontendIntentNavigator, multi: true});
 
         // Register liveness config.

@@ -22,5 +22,29 @@ describe('OutletRouter', () => {
       const navigate = Beans.get(OutletRouter).navigate({entity: 'person'}, {relativeTo: 'url'});
       await expectAsync(navigate).toBeRejectedWithError(/\[OutletRouterError]\[UnsupportedOptionError]/);
     });
+
+    it('should validate microfrontend params', async () => {
+      await MicrofrontendPlatform.startHost({
+        host: {
+          manifest: {
+            name: 'Host Application',
+            capabilities: [
+              {
+                type: 'microfrontend',
+                qualifier: {entity: 'person'},
+                params: [{name: 'id', required: true}],
+                properties: {
+                  path: 'microfrontend',
+                },
+              },
+            ],
+          },
+        },
+        applications: [],
+      });
+
+      const navigate = Beans.get(OutletRouter).navigate({entity: 'person'});
+      await expectAsync(navigate).toBeRejectedWithError(/IntentParamValidationError/);
+    });
   });
 });
