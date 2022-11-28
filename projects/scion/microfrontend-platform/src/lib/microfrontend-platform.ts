@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -17,7 +17,7 @@ import {MicrofrontendPlatformConfig} from './host/microfrontend-platform-config'
 import {PlatformPropertyService} from './platform-property-service';
 import {ConsoleLogger, Logger} from './logger';
 import {HttpClient} from './host/http-client';
-import {ManifestCollector} from './host/manifest-collector';
+import {ManifestFetcher} from './host/manifest-fetcher';
 import {MessageBroker} from './host/message-broker/message-broker';
 import {first, takeUntil} from 'rxjs/operators';
 import {OutletRouter} from './client/router-outlet/outlet-router';
@@ -26,7 +26,7 @@ import {FocusInEventDispatcher} from './client/focus/focus-in-event-dispatcher';
 import {FocusMonitor} from './client/focus/focus-monitor';
 import {ContextService} from './client/context/context-service';
 import {RouterOutletUrlAssigner} from './client/router-outlet/router-outlet-url-assigner';
-import {APP_IDENTITY, IS_PLATFORM_HOST, ɵAPP_CONFIG, ɵVERSION, ɵWINDOW_TOP} from './platform.model';
+import {APP_IDENTITY, IS_PLATFORM_HOST, ɵVERSION, ɵWINDOW_TOP} from './platform.model';
 import {RelativePathResolver} from './client/router-outlet/relative-path-resolver';
 import {ClientRegistry} from './host/client-registry/client.registry';
 import {FocusTracker} from './host/focus/focus-tracker';
@@ -46,9 +46,7 @@ import {MicrofrontendPlatformRef} from './microfrontend-platform-ref';
 import {ProgressMonitor} from './host/progress-monitor/progress-monitor';
 import {ActivatorLoadProgressMonitor, ManifestLoadProgressMonitor} from './host/progress-monitor/progress-monitors';
 import {PlatformTopics} from './ɵmessaging.model';
-import {createHostApplicationConfig} from './host/host-application-config-provider';
 import {HostManifestInterceptor, ɵHostManifestInterceptor} from './host/host-manifest-interceptor';
-import {ApplicationConfig} from './host/application-config';
 import {TopicSubscriptionRegistry} from './host/message-broker/topic-subscription.registry';
 import {CLIENT_PING_INTERVAL, CLIENT_PING_TIMEOUT} from './host/client-registry/client.constants';
 import {MicrofrontendPlatformStopper, ɵMicrofrontendPlatformStopper} from './microfrontend-platform-stopper';
@@ -58,6 +56,9 @@ import {MicrofrontendIntentNavigator} from './host/router/microfrontend-intent-n
 import {IntentParamValidator} from './host/message-broker/intent-param-validator.interceptor';
 import {IntentSubscriptionRegistry} from './host/message-broker/intent-subscription.registry';
 import {LivenessConfig} from './host/liveness-config';
+import {HostConfig} from './host/host-config';
+import {ApplicationConfig} from './host/application-config';
+import {AppInstaller} from './host/app-installer';
 
 /**
  * Current version of the SCION Microfrontend Platform.
@@ -147,14 +148,15 @@ export class MicrofrontendPlatform {
    * @return A Promise that resolves once platform startup completed.
    */
   public static startHost(config: MicrofrontendPlatformConfig): Promise<void> {
-    return MicrofrontendPlatform.startPlatform(async () => {
+    return MicrofrontendPlatform.startPlatform(() => {
         MicrofrontendPlatform.installHostStartupProgressMonitor();
 
         // Register platform beans.
+        const hostConfig = {...config.host, symbolicName: config.host?.symbolicName || 'host'};
         Beans.register(IS_PLATFORM_HOST, {useValue: true});
         Beans.registerIfAbsent(ɵWINDOW_TOP, {useValue: window.top});
         Beans.registerIfAbsent(ɵVERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
-        Beans.register(APP_IDENTITY, {useValue: config.host?.symbolicName || 'host'});
+        Beans.register(APP_IDENTITY, {useValue: hostConfig.symbolicName});
         Beans.register(MicrofrontendPlatformConfig, {useValue: config});
         Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
         Beans.register(HostManifestInterceptor, {useClass: ɵHostManifestInterceptor, multi: true});
@@ -170,6 +172,7 @@ export class MicrofrontendPlatform {
         Beans.register(MouseMoveEventDispatcher, {eager: true});
         Beans.register(MouseUpEventDispatcher, {eager: true});
         Beans.register(MessageBroker, {destroyOrder: BeanDestroyOrders.BROKER});
+        Beans.register(ManifestFetcher);
         Beans.register(TopicSubscriptionRegistry, {destroyOrder: BeanDestroyOrders.BROKER});
         Beans.register(IntentSubscriptionRegistry, {destroyOrder: BeanDestroyOrders.BROKER});
         Beans.registerIfAbsent(OutletRouter);
@@ -198,27 +201,27 @@ export class MicrofrontendPlatform {
         });
 
         // Register initializers.
-        registerRunlevel0Initializers();
+        registerRunlevel0Initializers(hostConfig, config.applications);
         registerRunlevel2Initializers();
         registerRunlevel3Initializers();
-
-        // Register app configs under the symbol `ɵAPP_CONFIG` in the bean manager.
-        new Array<ApplicationConfig>()
-          .concat(createHostApplicationConfig(config.host))
-          .concat(config.applications)
-          .filter(application => !application.exclude)
-          .forEach(application => Beans.register(ɵAPP_CONFIG, {useValue: application, multi: true}));
       },
     );
 
     /**
      * Registers initializers to run in runlevel 0.
      */
-    function registerRunlevel0Initializers(): void {
+    function registerRunlevel0Initializers(hostConfig: HostConfig & {symbolicName: string}, appConfigs: ApplicationConfig[]): void {
       // Construct the message broker to buffer connect requests of micro applications.
-      Beans.registerInitializer({useExisting: MessageBroker, runlevel: Runlevel.Zero});
-      // Fetch manifests.
-      Beans.registerInitializer({useClass: ManifestCollector, runlevel: Runlevel.Zero});
+      Beans.registerInitializer({
+        useExisting: MessageBroker,
+        runlevel: Runlevel.Zero,
+      });
+
+      // Install applications in the platform.
+      Beans.registerInitializer({
+        useFunction: () => new AppInstaller(hostConfig, appConfigs).install(),
+        runlevel: Runlevel.Zero,
+      });
     }
 
     /**
@@ -278,7 +281,7 @@ export class MicrofrontendPlatform {
    * @return A Promise that resolves once connected to the platform host, or that rejects otherwise.
    */
   public static connectToHost(symbolicName: string, connectOptions?: ConnectOptions): Promise<void> {
-    return MicrofrontendPlatform.startPlatform(async () => {
+    return MicrofrontendPlatform.startPlatform(() => {
         this.installClientStartupProgressMonitor();
 
         // Register platform beans.
@@ -362,17 +365,21 @@ export class MicrofrontendPlatform {
   }
 
   /** @internal */
-  public static async startPlatform(startupFn?: () => Promise<void>): Promise<void> {
-    await MicrofrontendPlatform.enterState(PlatformState.Starting);
+  public static async startPlatform(startupFn?: () => void): Promise<void> {
+    if (MicrofrontendPlatform.state === PlatformState.Started) {
+      return Promise.reject(Error('[MicrofrontendPlatformStartupError] Platform already started'));
+    }
+
     try {
-      await startupFn?.();
+      startupFn?.();
+      await MicrofrontendPlatform.enterState(PlatformState.Starting);
       await Beans.start({eagerBeanConstructRunlevel: Runlevel.One, initializerDefaultRunlevel: Runlevel.Two});
       await MicrofrontendPlatform.enterState(PlatformState.Started);
       return Promise.resolve();
     }
     catch (error) {
       await MicrofrontendPlatform.destroy();
-      return Promise.reject(`[MicrofrontendPlatformStartupError] Microfrontend platform failed to start: ${error}`);
+      return Promise.reject(Error(`[MicrofrontendPlatformStartupError] Microfrontend platform failed to start: ${error}`));
     }
   }
 

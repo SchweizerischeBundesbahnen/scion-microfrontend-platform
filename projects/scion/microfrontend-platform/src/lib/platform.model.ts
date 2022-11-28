@@ -442,13 +442,6 @@ export interface ParamDefinition {
 export const IS_PLATFORM_HOST = Symbol('IS_PLATFORM_HOST');
 
 /**
- * Multi-Symbol to look up registered application configs from the bean manager.
- *
- * @internal
- */
-export const ɵAPP_CONFIG = Symbol('ɵAPP_CONFIG');
-
-/**
  * Symbol to get the application's symbolic name from the bean manager.
  */
 export const APP_IDENTITY = Symbol('APP_IDENTITY');
