@@ -1,3 +1,224 @@
+# [1.0.0-rc.11](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.10...1.0.0-rc.11) (2022-12-06)
+
+
+### Bug Fixes
+
+* **platform/host:** add secondary origin to allowed origins ([61cddc0](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/61cddc09b2a1883c751a0ef0f987baadac3887a7)), closes [#197](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/197)
+* **platform/host:** validate params of intent before passing it to interceptors ([1f5f5e5](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/1f5f5e5f83b5ee1b10457b29816f68a7e888aadb))
+* **platform/host:** assert topic not to contain empty segments ([f8c47e3](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/f8c47e34f68a9ec203843056df49f03372247bbf))
+* **platform/client:** stop platform in `beforeunload` to avoid posting messages to disposed window ([3969c17](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/3969c17778024124440b6e2527061b2519749384)), closes [#168](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/168)
+* **platform:** do not break clients not supporting the ping liveness protocol ([6d4eb78](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/6d4eb7841eea6f90018cada314ed22de1db2c7b0)), closes [#178](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/178)
+* **platform:** do not unregister clients after resuming the computer from hibernation ([a210d4b](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/a210d4bb0b448610c2e3818056850e649e0d091d)), closes [#178](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/178)
+
+
+### Features
+
+* **platform/client:** provide API for microfrontend to monitor focus ([e5dc6c2](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/e5dc6c276d7db5b31f4ce9f11a0d5f9434e4b471))
+* **platform/host:** support for intercepting messages after platform-internal interceptors ([bbfac42](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/bbfac423b406db0899685718bc29e26049ba49dc))
+* **platform:** drop support for wildcard capability qualifiers and optional wildcard intention qualifiers ([9713cf0](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/9713cf0a4c018d8d2230e7dc65386be1a4c580b9)), closes [#163](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/163)
+* **platform/client:** provide hook to decorate observable emissions ([4e0e9b4](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/4e0e9b4f3060d9af0103ac0d07c69c1a4b78ef4b))
+
+
+### Performance Improvements
+
+* **platform:** optimize focus tracking and mouse event dispatching ([daff4f0](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/daff4f080e64047f6cd34d8b6ed4e3d24b3ccf11)), closes [#172](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/172)
+
+
+### BREAKING CHANGES
+
+* **platform/host:** Property for configuring a secondary origin has been renamed from `messageOrigin` to `secondaryOrigin`. This breaking change only refers to the host.
+
+  To migrate, configure the additional allowed origin via the `secondaryOrigin` property instead of `messageOrigin`, as following:
+
+  ```ts
+  await MicrofrontendPlatform.startHost({
+    applications: [
+      {symbolicName: 'client', manifestUrl: 'https://app/manifest.json', secondaryOrigin: 'https://secondary'},
+    ],
+  });
+  ```
+* **platform/host:** The host now performs liveness probes to detect and remove stale clients, instead of relying on the heartbeats emitted by the clients of previous versions.
+
+  The breaking change only refers to the host. The communication protocol between host and client has NOT changed. You can independently update host and clients to the new version.
+
+  To migrate setting of a custom probe configuration in the host, specify the `liveness` instead of `heartbeatInterval` property, as follows:
+
+  ```ts
+  MicrofrontendPlatform.startHost({
+    liveness: {interval: 60, timeout: 10},
+    // omitted rest of the config
+  });
+  ```
+* **platform:** Optimization of mouse event dispatching introduced a breaking change for Angular applications.
+ 
+  **IMPORTANT: For Angular applications, we strongly recommend replacing zone-specific decorators for `MessageClient` and `IntentClient` with an `ObservableDecorator`. Otherwise, you may experience performance degradation due to frequent change detection cycles.**
+
+  It turned out that Angular zone synchronization with decorators for `MessageClient` and `IntentClient` is not sufficient and that observables should emit in the same Angular zone in which the subscription was performed. Using the new `ObservableDecorator` API, Angular zone synchronization can now be performed in a single place for all observables exposed by the SCION Microfrontend Platform.
+
+  To migrate:
+  - Remove decorators for `MessageClient` and `IntentClient` including their registration in the bean manager (e.g., `NgZoneMessageClientDecorator` and `NgZoneIntentClientDecorator`).
+  - Provide a `NgZoneObservableDecorator` and register it in the bean manager before starting the platform. Note to register it as a bean, not as a decorator.
+
+  For a complete example and detailed instructions, see https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone.
+
+  #### Example of a decorator for synchronizing the Angular zone
+  ```ts
+  /**
+  * Mirrors the source, but ensures subscription and emission {@link NgZone} to be identical.
+  */
+  export class NgZoneObservableDecorator implements ObservableDecorator {
+  
+    constructor(private zone: NgZone) {
+    }
+  
+    public decorate$<T>(source$: Observable<T>): Observable<T> {
+      return new Observable<T>(observer => {
+        const insideAngular = NgZone.isInAngularZone();
+        const subscription = source$
+          .pipe(
+            subscribeInside(fn => this.zone.runOutsideAngular(fn)),
+            observeInside(fn => insideAngular ? this.zone.run(fn) : this.zone.runOutsideAngular(fn)),
+          )
+          .subscribe(observer);
+        return () => subscription.unsubscribe();
+      });
+    }
+  }
+  ```
+
+  #### Registration of the decorator in the bean manager
+  ```ts
+  const zone: NgZone = ...;
+  
+  // Register decorator
+  Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)});
+  // Connect to the host from a micro app
+  zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost(...));
+  // Start platform host in host app
+  zone.runOutsideAngular(() => MicrofrontendPlatform.startHost(...));
+  ```
+* **platform:** dropping support for wildcard capability qualifiers and optional wildcard intention qualifiers introduced a breaking change in the Intention API.
+
+  To migrate:
+  - Replace asterisk (`*`) wildcard capability qualifier entries with required params.
+  - Replace optional (`?`) wildcard capability qualifier entries with optional params.
+  - If using `QualifierMatcher` to match qualifiers, construct it without flags. The matcher now always evaluates asterisk wildcards in the pattern passed in the constructor.
+
+  ### The following snippets illustrate how a migration could look like:
+
+  #### Before migration
+
+  **Capability in Manifest of App 1**
+  ```json
+  {
+    "name": "App 1",
+    "capabilities": [
+      {
+        "type": "microfrontend",
+        "qualifier": {
+          "entity": "person",
+          "id": "*",
+          "readonly": "?"
+        },
+        "private": false,
+        "properties": {
+          "path": "person/:id?readonly=:readonly"
+        }
+      }
+    ]
+  }
+  ```
+
+  **Intention in Manifest of App 2**
+  ```json
+  {
+    "name": "App 2",
+    "intentions": [
+      {
+        "type": "microfrontend",
+        "qualifier": {
+          "entity": "person",
+          "id": "*",
+          "readonly": "?"
+        }
+      }
+    ]
+  }
+  ````
+
+  **Sending Intent in App 2**
+  ```ts
+  const intent: Intent = {
+    type: 'microfrontend',
+    qualifier: {
+      entity: 'person',
+      id: '123',
+      readonly: true
+    }
+  };
+  Beans.get(IntentClient).publish(intent);
+  ```
+
+  #### After migration
+
+  **Capability in Manifest of App 1**
+  ```json
+  {
+    "name": "App 1",
+    "capabilities": [
+      {
+        "type": "microfrontend",
+        "qualifier": {
+          "entity": "person"
+        },
+        "params": [
+          {
+            "name": "id",
+            "required": true
+          },
+          {
+            "name": "readonly",
+            "required": false
+          }
+        ],
+        "private": false,
+        "properties": {
+          "path": "person/:id?readonly=:readonly"
+        }
+      }
+    ]
+  }
+  ```
+
+  **Intention in Manifest of App 2**
+  ```json
+  {
+    "name": "App 2",
+    "intentions": [
+      {
+        "type": "microfrontend",
+        "qualifier": {
+          "entity": "person"
+        }
+      }
+    ]
+  }
+  ````
+
+  **Sending Intent in App 2**
+  ```ts
+  const intent: Intent = {
+    type: 'microfrontend',
+    qualifier: {
+      entity: 'person'
+    },
+    params: new Map().set('id', '123').set('readonly', true)
+  };
+  Beans.get(IntentClient).publish(intent);
+  ```
+
+
+
 # [1.0.0-rc.10](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.9...1.0.0-rc.10) (2022-11-08)
 
 
