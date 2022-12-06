@@ -14,7 +14,7 @@ import {FrameLocator, Locator} from '@playwright/test';
 import {ElementSelectors} from '../element-selectors';
 import {RouterOutletContextPO} from '../context/router-outlet-context.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
-import {Objects} from '../@scion/toolkit/util/objects.util';
+import {Objects} from '../@scion/toolkit/util';
 
 export class RouterOutletPagePO implements OutletPageObject {
 

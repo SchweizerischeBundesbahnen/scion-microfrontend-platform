@@ -12,9 +12,9 @@ import {Qualifier} from '@scion/microfrontend-platform';
 import {MessageListItemPO} from './message-list-item.po';
 import {FrameLocator, Locator} from '@playwright/test';
 import {isPresent} from '../testing.util';
-import {SciListPO} from '../@scion/components.internal/list.po/list.po';
-import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po/params-enter.po';
-import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po/checkbox.po';
+import {SciListPO} from '../@scion/components.internal/list.po';
+import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po';
+import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
 export enum MessagingFlavor {

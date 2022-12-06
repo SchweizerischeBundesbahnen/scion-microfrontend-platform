@@ -10,7 +10,7 @@
 
 import {ContextEntryListItemPO} from './context-entry-list-item.po';
 import {Locator} from '@playwright/test';
-import {SciListPO} from '../@scion/components.internal/list.po/list.po';
+import {SciListPO} from '../@scion/components.internal/list.po';
 import {waitUntilStable} from '../testing.util';
 
 export class ContextListPO {

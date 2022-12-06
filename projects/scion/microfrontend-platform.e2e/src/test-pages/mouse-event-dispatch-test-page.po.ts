@@ -11,7 +11,7 @@
 import {FrameLocator, Locator} from '@playwright/test';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 import {isPresent, waitUntilStable} from '../testing.util';
-import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po/checkbox.po';
+import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
 
 export class MouseEventDispatchTestPagePO implements OutletPageObject {
 

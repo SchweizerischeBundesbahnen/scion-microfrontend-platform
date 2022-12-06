@@ -12,8 +12,8 @@ import {FrameLocator, Locator} from '@playwright/test';
 import {MessagingFlavor} from './publish-message-page.po';
 import {Qualifier} from '@scion/microfrontend-platform';
 import {MessageListItemPO} from './message-list-item.po';
-import {SciListPO} from '../@scion/components.internal/list.po/list.po';
-import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po/params-enter.po';
+import {SciListPO} from '../@scion/components.internal/list.po';
+import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
 export class ReceiveMessagePagePO implements OutletPageObject {
