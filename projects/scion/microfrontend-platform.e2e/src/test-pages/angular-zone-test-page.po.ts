@@ -17,60 +17,60 @@ export class AngularZoneTestPagePO implements OutletPageObject {
 
   public readonly path = 'test-pages/angular-zone-test-page';
 
-  public messageClient: {
-    observe$PO: PanelPO;
-    request$PO: PanelPO;
-    subscriberCount$PO: PanelPO;
+  public readonly messageClient: {
+    observePO: PanelPO;
+    requestPO: PanelPO;
+    subscriberCountPO: PanelPO;
   };
 
-  public intentClient: {
-    observe$PO: PanelPO;
-    request$PO: PanelPO;
+  public readonly intentClient: {
+    observePO: PanelPO;
+    requestPO: PanelPO;
   };
 
-  public contextService: {
-    observe$PO: PanelPO;
-    names$PO: PanelPO;
+  public readonly contextService: {
+    observePO: PanelPO;
+    namesPO: PanelPO;
   };
 
-  public manifestService: {
-    lookupCapabilities$PO: PanelPO;
-    lookupIntentions$PO: PanelPO;
+  public readonly manifestService: {
+    lookupCapabilitiesPO: PanelPO;
+    lookupIntentionsPO: PanelPO;
   };
 
-  public focusMonitor: {
-    focusWithin$PO: PanelPO;
-    focus$PO: PanelPO;
+  public readonly focusMonitor: {
+    focusWithinPO: PanelPO;
+    focusPO: PanelPO;
   };
 
   constructor(frameLocator: FrameLocator) {
     const locator = frameLocator.locator('app-angular-zone-test-page');
     this.messageClient = {
-      observe$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-message-client.e2e-observe'),
-      request$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-message-client.e2e-request'),
-      subscriberCount$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-message-client.e2e-subscriber-count'),
+      observePO: new PanelPO(locator.locator('sci-accordion'), 'e2e-message-client.e2e-observe'),
+      requestPO: new PanelPO(locator.locator('sci-accordion'), 'e2e-message-client.e2e-request'),
+      subscriberCountPO: new PanelPO(locator.locator('sci-accordion'), 'e2e-message-client.e2e-subscriber-count'),
     };
     this.intentClient = {
-      observe$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-intent-client.e2e-observe'),
-      request$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-intent-client.e2e-request'),
+      observePO: new PanelPO(locator.locator('sci-accordion'), 'e2e-intent-client.e2e-observe'),
+      requestPO: new PanelPO(locator.locator('sci-accordion'), 'e2e-intent-client.e2e-request'),
     };
     this.contextService = {
-      observe$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-context-service.e2e-observe'),
-      names$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-context-service.e2e-names'),
+      observePO: new PanelPO(locator.locator('sci-accordion'), 'e2e-context-service.e2e-observe'),
+      namesPO: new PanelPO(locator.locator('sci-accordion'), 'e2e-context-service.e2e-names'),
     };
     this.manifestService = {
-      lookupCapabilities$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-manifest-service.e2e-lookup-capabilities'),
-      lookupIntentions$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-manifest-service.e2e-lookup-intentions'),
+      lookupCapabilitiesPO: new PanelPO(locator.locator('sci-accordion'), 'e2e-manifest-service.e2e-lookup-capabilities'),
+      lookupIntentionsPO: new PanelPO(locator.locator('sci-accordion'), 'e2e-manifest-service.e2e-lookup-intentions'),
     };
     this.focusMonitor = {
-      focusWithin$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-focus-monitor.e2e-focus-within'),
-      focus$PO: new PanelPO(locator.locator('sci-accordion'), 'e2e-focus-monitor.e2e-focus'),
+      focusWithinPO: new PanelPO(locator.locator('sci-accordion'), 'e2e-focus-monitor.e2e-focus-within'),
+      focusPO: new PanelPO(locator.locator('sci-accordion'), 'e2e-focus-monitor.e2e-focus'),
     };
   }
 }
 
 /**
- * Allows interacting with the specified accordion item.
+ * Allows interacting with the specified accordion panel.
  */
 export class PanelPO {
 
@@ -90,9 +90,9 @@ export class PanelPO {
     await locator.locator('button.e2e-subscribe').click();
   }
 
-  public async isReponseReceivedInAngularZone(responseSelector: 'response-1' | 'response-2' = 'response-1'): Promise<boolean> {
+  public async isEmissionReceivedInAngularZone(emission?: {nth?: number}): Promise<boolean> {
     const locator = this._accordionPO.itemLocator(this._accordionItemCssClass);
-    const zoneAttributeValue = await locator.locator(`output.e2e-${responseSelector}`).getAttribute('data-zone');
+    const zoneAttributeValue = await locator.locator('output.e2e-emission').nth(emission?.nth ?? 0).getAttribute('data-zone');
 
     switch (zoneAttributeValue) {
       case 'inside-angular':

@@ -13,7 +13,7 @@ import {expect} from '@playwright/test';
 import {AngularZoneTestPagePO} from '../test-pages/angular-zone-test-page.po';
 
 /**
- * Tests emitting in RxJS Observables in the correct Angular zone.
+ * Tests RxJS Observables to emit in the correct Angular zone.
  *
  * The SCION Microfrontend Platform is framework-agnostic with no dependency on Angular. But integration in Angular applications
  * requires Observables to emit in the correct zone. For that reason, an application can register a `ObservableDecorator` to control
@@ -28,16 +28,16 @@ test.describe('Angular Zone Synchronization', () => {
     });
 
     const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
-    const observe$PO = angularZonePage.messageClient.observe$PO;
-    await observe$PO.expand();
+    const observePO = angularZonePage.messageClient.observePO;
+    await observePO.expand();
 
     await test.step('subscribeInsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: true});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(true);
+      await observePO.subscribe({subscribeInAngularZone: true});
+      await expect(await observePO.isEmissionReceivedInAngularZone()).toBe(true);
     });
     await test.step('subscribeOutsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: false});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(false);
+      await observePO.subscribe({subscribeInAngularZone: false});
+      await expect(await observePO.isEmissionReceivedInAngularZone()).toBe(false);
     });
   });
 
@@ -47,16 +47,16 @@ test.describe('Angular Zone Synchronization', () => {
     });
 
     const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
-    const observe$PO = angularZonePage.messageClient.request$PO;
-    await observe$PO.expand();
+    const requestPO = angularZonePage.messageClient.requestPO;
+    await requestPO.expand();
 
     await test.step('subscribeInsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: true});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(true);
+      await requestPO.subscribe({subscribeInAngularZone: true});
+      await expect(await requestPO.isEmissionReceivedInAngularZone()).toBe(true);
     });
     await test.step('subscribeOutsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: false});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(false);
+      await requestPO.subscribe({subscribeInAngularZone: false});
+      await expect(await requestPO.isEmissionReceivedInAngularZone()).toBe(false);
     });
   });
 
@@ -66,16 +66,16 @@ test.describe('Angular Zone Synchronization', () => {
     });
 
     const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
-    const observe$PO = angularZonePage.messageClient.subscriberCount$PO;
-    await observe$PO.expand();
+    const subscriberCountPO = angularZonePage.messageClient.subscriberCountPO;
+    await subscriberCountPO.expand();
 
     await test.step('subscribeInsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: true});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(true);
+      await subscriberCountPO.subscribe({subscribeInAngularZone: true});
+      await expect(await subscriberCountPO.isEmissionReceivedInAngularZone()).toBe(true);
     });
     await test.step('subscribeOutsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: false});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(false);
+      await subscriberCountPO.subscribe({subscribeInAngularZone: false});
+      await expect(await subscriberCountPO.isEmissionReceivedInAngularZone()).toBe(false);
     });
   });
 
@@ -85,16 +85,16 @@ test.describe('Angular Zone Synchronization', () => {
     });
 
     const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
-    const observe$PO = angularZonePage.intentClient.observe$PO;
-    await observe$PO.expand();
+    const observePO = angularZonePage.intentClient.observePO;
+    await observePO.expand();
 
     await test.step('subscribeInsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: true});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(true);
+      await observePO.subscribe({subscribeInAngularZone: true});
+      await expect(await observePO.isEmissionReceivedInAngularZone()).toBe(true);
     });
     await test.step('subscribeOutsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: false});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(false);
+      await observePO.subscribe({subscribeInAngularZone: false});
+      await expect(await observePO.isEmissionReceivedInAngularZone()).toBe(false);
     });
   });
 
@@ -104,16 +104,16 @@ test.describe('Angular Zone Synchronization', () => {
     });
 
     const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
-    const observe$PO = angularZonePage.intentClient.request$PO;
-    await observe$PO.expand();
+    const requestPO = angularZonePage.intentClient.requestPO;
+    await requestPO.expand();
 
     await test.step('subscribeInsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: true});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(true);
+      await requestPO.subscribe({subscribeInAngularZone: true});
+      await expect(await requestPO.isEmissionReceivedInAngularZone()).toBe(true);
     });
     await test.step('subscribeOutsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: false});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(false);
+      await requestPO.subscribe({subscribeInAngularZone: false});
+      await expect(await requestPO.isEmissionReceivedInAngularZone()).toBe(false);
     });
   });
 
@@ -123,18 +123,18 @@ test.describe('Angular Zone Synchronization', () => {
     });
 
     const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
-    const observe$PO = angularZonePage.contextService.observe$PO;
-    await observe$PO.expand();
+    const observePO = angularZonePage.contextService.observePO;
+    await observePO.expand();
 
     await test.step('subscribeInsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: true});
-      await expect(await observe$PO.isReponseReceivedInAngularZone('response-1')).toBe(true);
-      await expect(await observe$PO.isReponseReceivedInAngularZone('response-2')).toBe(true);
+      await observePO.subscribe({subscribeInAngularZone: true});
+      await expect(await observePO.isEmissionReceivedInAngularZone({nth: 0})).toBe(true);
+      await expect(await observePO.isEmissionReceivedInAngularZone({nth: 1})).toBe(true);
     });
     await test.step('subscribeOutsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: false});
-      await expect(await observe$PO.isReponseReceivedInAngularZone('response-1')).toBe(false);
-      await expect(await observe$PO.isReponseReceivedInAngularZone('response-2')).toBe(false);
+      await observePO.subscribe({subscribeInAngularZone: false});
+      await expect(await observePO.isEmissionReceivedInAngularZone({nth: 0})).toBe(false);
+      await expect(await observePO.isEmissionReceivedInAngularZone({nth: 1})).toBe(false);
     });
   });
 
@@ -144,18 +144,18 @@ test.describe('Angular Zone Synchronization', () => {
     });
 
     const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
-    const observe$PO = angularZonePage.contextService.names$PO;
-    await observe$PO.expand();
+    const namesPO = angularZonePage.contextService.namesPO;
+    await namesPO.expand();
 
     await test.step('subscribeInsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: true});
-      await expect(await observe$PO.isReponseReceivedInAngularZone('response-1')).toBe(true);
-      await expect(await observe$PO.isReponseReceivedInAngularZone('response-2')).toBe(true);
+      await namesPO.subscribe({subscribeInAngularZone: true});
+      await expect(await namesPO.isEmissionReceivedInAngularZone({nth: 0})).toBe(true);
+      await expect(await namesPO.isEmissionReceivedInAngularZone({nth: 1})).toBe(true);
     });
     await test.step('subscribeOutsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: false});
-      await expect(await observe$PO.isReponseReceivedInAngularZone('response-1')).toBe(false);
-      await expect(await observe$PO.isReponseReceivedInAngularZone('response-2')).toBe(false);
+      await namesPO.subscribe({subscribeInAngularZone: false});
+      await expect(await namesPO.isEmissionReceivedInAngularZone({nth: 0})).toBe(false);
+      await expect(await namesPO.isEmissionReceivedInAngularZone({nth: 1})).toBe(false);
     });
   });
 
@@ -165,16 +165,16 @@ test.describe('Angular Zone Synchronization', () => {
     });
 
     const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
-    const observe$PO = angularZonePage.manifestService.lookupCapabilities$PO;
-    await observe$PO.expand();
+    const lookupCapabilitiesPO = angularZonePage.manifestService.lookupCapabilitiesPO;
+    await lookupCapabilitiesPO.expand();
 
     await test.step('subscribeInsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: true});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(true);
+      await lookupCapabilitiesPO.subscribe({subscribeInAngularZone: true});
+      await expect(await lookupCapabilitiesPO.isEmissionReceivedInAngularZone()).toBe(true);
     });
     await test.step('subscribeOutsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: false});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(false);
+      await lookupCapabilitiesPO.subscribe({subscribeInAngularZone: false});
+      await expect(await lookupCapabilitiesPO.isEmissionReceivedInAngularZone()).toBe(false);
     });
   });
 
@@ -184,16 +184,16 @@ test.describe('Angular Zone Synchronization', () => {
     });
 
     const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
-    const observe$PO = angularZonePage.manifestService.lookupIntentions$PO;
-    await observe$PO.expand();
+    const lookupIntentionsPO = angularZonePage.manifestService.lookupIntentionsPO;
+    await lookupIntentionsPO.expand();
 
     await test.step('subscribeInsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: true});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(true);
+      await lookupIntentionsPO.subscribe({subscribeInAngularZone: true});
+      await expect(await lookupIntentionsPO.isEmissionReceivedInAngularZone()).toBe(true);
     });
     await test.step('subscribeOutsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: false});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(false);
+      await lookupIntentionsPO.subscribe({subscribeInAngularZone: false});
+      await expect(await lookupIntentionsPO.isEmissionReceivedInAngularZone()).toBe(false);
     });
   });
 
@@ -203,16 +203,16 @@ test.describe('Angular Zone Synchronization', () => {
     });
 
     const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
-    const observe$PO = angularZonePage.focusMonitor.focusWithin$PO;
-    await observe$PO.expand();
+    const focusWithinPO = angularZonePage.focusMonitor.focusWithinPO;
+    await focusWithinPO.expand();
 
     await test.step('subscribeInsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: true});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(true);
+      await focusWithinPO.subscribe({subscribeInAngularZone: true});
+      await expect(await focusWithinPO.isEmissionReceivedInAngularZone()).toBe(true);
     });
     await test.step('subscribeOutsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: false});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(false);
+      await focusWithinPO.subscribe({subscribeInAngularZone: false});
+      await expect(await focusWithinPO.isEmissionReceivedInAngularZone()).toBe(false);
     });
   });
 
@@ -222,16 +222,16 @@ test.describe('Angular Zone Synchronization', () => {
     });
 
     const angularZonePage = pagePOs.get<AngularZoneTestPagePO>('angularZonePage');
-    const observe$PO = angularZonePage.focusMonitor.focus$PO;
-    await observe$PO.expand();
+    const focusPO = angularZonePage.focusMonitor.focusPO;
+    await focusPO.expand();
 
     await test.step('subscribeInsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: true});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(true);
+      await focusPO.subscribe({subscribeInAngularZone: true});
+      await expect(await focusPO.isEmissionReceivedInAngularZone()).toBe(true);
     });
     await test.step('subscribeOutsideAngularZone', async () => {
-      await observe$PO.subscribe({subscribeInAngularZone: false});
-      await expect(await observe$PO.isReponseReceivedInAngularZone()).toBe(false);
+      await focusPO.subscribe({subscribeInAngularZone: false});
+      await expect(await focusPO.isEmissionReceivedInAngularZone()).toBe(false);
     });
   });
 });

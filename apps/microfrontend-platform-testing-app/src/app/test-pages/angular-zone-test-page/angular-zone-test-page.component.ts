@@ -7,11 +7,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectorRef, Component, NgZone} from '@angular/core';
+import {Component, inject, NgZone} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
-import {finalize, skip, take} from 'rxjs/operators';
+import {finalize, take} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ContextService, FocusMonitor, IntentClient, ManifestService, MessageClient, MessageHeaders, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {SciCheckboxModule} from '@scion/components.internal/checkbox';
@@ -34,294 +34,190 @@ export class AngularZoneTestPageComponent {
 
   public tests = {
     messageClient: {
-      observe$: {runInAngular: true, response: {zone: null, label: null}},
-      request$: {runInAngular: true, response: {zone: null, label: null}},
-      subscriberCount$: {runInAngular: true, response: {zone: null, label: null}},
+      observe: new TestCaseModel(model => this.testMessageClientObserve(model)),
+      request: new TestCaseModel(model => this.testMessageClientRequest(model)),
+      subscriberCount: new TestCaseModel(model => this.testMessageClientSubscriberCount(model)),
     },
     intentClient: {
-      observe$: {runInAngular: true, response: {zone: null, label: null}},
-      request$: {runInAngular: true, response: {zone: null, label: null}},
+      observe: new TestCaseModel(model => this.testIntentClientObserve(model)),
+      request: new TestCaseModel(model => this.testIntentClientRequest(model)),
     },
     contextService: {
-      observe$: {runInAngular: true, response1: {zone: null, label: null}, response2: {zone: null, label: null}},
-      names$: {runInAngular: true, response1: {zone: null, label: null}, response2: {zone: null, label: null}},
+      observe: new TestCaseModel(model => this.testContextServiceObserve(model)),
+      names: new TestCaseModel(model => this.testContextServiceNames(model)),
     },
     manifestService: {
-      lookupCapabilities$: {runInAngular: true, response: {zone: null, label: null}},
-      lookupIntentions$: {runInAngular: true, response: {zone: null, label: null}},
+      lookupCapabilities: new TestCaseModel(model => this.testManifestServiceLookupCapabilities(model)),
+      lookupIntentions: new TestCaseModel(model => this.testManifestServiceLookupIntentions(model)),
     },
     focusMonitor: {
-      focusWithin$: {runInAngular: true, response: {zone: null, label: null}},
-      focus$: {runInAngular: true, response: {zone: null, label: null}},
+      focusWithin: new TestCaseModel(model => this.testFocusMonitorFocusWithin(model)),
+      focus: new TestCaseModel(model => this.testFocusMonitorFocus(model)),
     },
   };
 
-  constructor(private _zone: NgZone, private _cd: ChangeDetectorRef) {
+  private async testMessageClientObserve(model: TestCaseModel): Promise<void> {
+    const topic = UUID.randomUUID();
+
+    // Observe messages.
+    Beans.get(MessageClient).observe$(topic)
+      .pipe(take(1))
+      .subscribe(() => model.addEmission('Received message'));
+
+    // Publish retained message.
+    await Beans.get(MessageClient).publish(topic, null, {retain: true});
   }
 
-  public onMessageClientObserve(): void {
-    this.tests.messageClient.observe$.response = null;
-    this.runInZone(this.tests.messageClient.observe$.runInAngular, async (): Promise<void> => {
-      const topic = UUID.randomUUID();
+  private testMessageClientRequest(model: TestCaseModel): void {
+    const topic = UUID.randomUUID();
 
-      // Observe messages.
-      Beans.get(MessageClient).observe$(topic)
-        .pipe(take(1))
-        .subscribe(() => {
-          this.tests.messageClient.observe$.response = createZoneAwareResponse({
-            insideAngular: 'Received message INSIDE Angular zone',
-            outsideAngular: 'Received message OUTSIDE Angular zone',
-          });
-          this.detectChangesIfOutsideAngular();
-        });
+    // Request data.
+    Beans.get(MessageClient).request$(topic, undefined, {retain: true})
+      .pipe(take(1))
+      .subscribe(() => model.addEmission('Received response'));
 
-      // Publish retained message.
-      await Beans.get(MessageClient).publish(topic, null, {retain: true});
-    });
+    // Install replier.
+    Beans.get(MessageClient).observe$(topic)
+      .pipe((take(1)))
+      .subscribe(request => {
+        Beans.get(MessageClient).publish(request.headers.get(MessageHeaders.ReplyTo));
+      });
   }
 
-  public onMessageClientRequest(): void {
-    this.tests.messageClient.request$.response = null;
-    this.runInZone(this.tests.messageClient.request$.runInAngular, async (): Promise<void> => {
-      const topic = UUID.randomUUID();
-
-      // Request data.
-      Beans.get(MessageClient).request$(topic, undefined, {retain: true})
-        .pipe(take(1))
-        .subscribe(() => {
-          this.tests.messageClient.request$.response = createZoneAwareResponse({
-            insideAngular: 'Received response INSIDE Angular zone',
-            outsideAngular: 'Received response OUTSIDE Angular zone',
-          });
-          this.detectChangesIfOutsideAngular();
-        });
-
-      // Install replier.
-      Beans.get(MessageClient).observe$(topic)
-        .pipe((take(1)))
-        .subscribe(request => {
-          Beans.get(MessageClient).publish(request.headers.get(MessageHeaders.ReplyTo));
-        });
-    });
+  private testMessageClientSubscriberCount(model: TestCaseModel): void {
+    Beans.get(MessageClient).subscriberCount$(UUID.randomUUID())
+      .pipe(take(1))
+      .subscribe(() => model.addEmission('Received subscriber count'));
   }
 
-  public onMessageClientSubscriberCount(): void {
-    this.tests.messageClient.subscriberCount$.response = null;
-    this.runInZone(this.tests.messageClient.subscriberCount$.runInAngular, async (): Promise<void> => {
-      Beans.get(MessageClient).subscriberCount$(UUID.randomUUID())
-        .pipe(take(1))
-        .subscribe(() => {
-          this.tests.messageClient.subscriberCount$.response = createZoneAwareResponse({
-            insideAngular: 'Received response INSIDE Angular zone',
-            outsideAngular: 'Received response OUTSIDE Angular zone',
-          });
-          this.detectChangesIfOutsideAngular();
-        });
-    });
+  private async testIntentClientObserve(model: TestCaseModel): Promise<void> {
+    const type = UUID.randomUUID();
+
+    // Register capability.
+    await Beans.get(ManifestService).registerCapability({type});
+
+    // Publish retained intent.
+    await Beans.get(IntentClient).publish({type}, null, {retain: true});
+
+    // Observe intents.
+    Beans.get(IntentClient).observe$({type})
+      .pipe(
+        take(1),
+        finalize(() => Beans.get(ManifestService).unregisterCapabilities({type})),
+      )
+      .subscribe(() => model.addEmission('Received intent'));
   }
 
-  public onIntentClientObserve(): void {
-    this.tests.intentClient.observe$.response = null;
-    this.runInZone(this.tests.intentClient.observe$.runInAngular, async (): Promise<void> => {
-      const type = UUID.randomUUID();
+  private async testIntentClientRequest(model: TestCaseModel): Promise<void> {
+    const type = UUID.randomUUID();
 
-      // Register capability.
-      await Beans.get(ManifestService).registerCapability({type});
+    // Register capability.
+    await Beans.get(ManifestService).registerCapability({type});
 
-      // Publish retained intent.
-      await Beans.get(IntentClient).publish({type}, null, {retain: true});
+    // Send request.
+    Beans.get(IntentClient).request$({type}, undefined, {retain: true})
+      .pipe(
+        take(1),
+        finalize(() => Beans.get(ManifestService).unregisterCapabilities({type})),
+      )
+      .subscribe(() => model.addEmission('Received response'));
 
-      // Observe intents.
-      Beans.get(IntentClient).observe$({type})
-        .pipe(
-          take(1),
-          finalize(() => Beans.get(ManifestService).unregisterCapabilities({type})),
-        )
-        .subscribe(() => {
-          this.tests.intentClient.observe$.response = createZoneAwareResponse({
-            insideAngular: 'Received intent INSIDE Angular zone',
-            outsideAngular: 'Received intent OUTSIDE Angular zone',
-          });
-          this.detectChangesIfOutsideAngular();
-        });
-    });
+    // Install replier.
+    await Beans.get(IntentClient).observe$({type})
+      .pipe((take(1)))
+      .subscribe(request => {
+        Beans.get(MessageClient).publish(request.headers.get(MessageHeaders.ReplyTo));
+      });
   }
 
-  public onIntentClientRequest(): void {
-    this.tests.intentClient.request$.response = null;
-    this.runInZone(this.tests.intentClient.request$.runInAngular, async (): Promise<void> => {
-      const type = UUID.randomUUID();
+  private async testContextServiceObserve(model: TestCaseModel): Promise<void> {
+    const contextKey = UUID.randomUUID();
+    const outletContext = await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
 
-      // Register capability.
-      await Beans.get(ManifestService).registerCapability({type});
+    // Observbe context value.
+    Beans.get(ContextService).observe$(contextKey)
+      .pipe(take(2))
+      .subscribe(() => {
+        model.addEmission('Received context value');
 
-      // Send request.
-      Beans.get(IntentClient).request$({type}, undefined, {retain: true})
-        .pipe(
-          take(1),
-          finalize(() => Beans.get(ManifestService).unregisterCapabilities({type})),
-        )
-        .subscribe(() => {
-          this.tests.intentClient.request$.response = createZoneAwareResponse({
-            insideAngular: 'Received response INSIDE Angular zone',
-            outsideAngular: 'Received response OUTSIDE Angular zone',
-          });
-          this.detectChangesIfOutsideAngular();
-        });
-
-      // Install replier.
-      await Beans.get(IntentClient).observe$({type})
-        .pipe((take(1)))
-        .subscribe(request => {
-          Beans.get(MessageClient).publish(request.headers.get(MessageHeaders.ReplyTo));
-        });
-    });
+        // Trigger context value update.
+        Beans.get(MessageClient).publish(TestingAppTopics.routerOutletContextUpdateTopic(outletContext.name, contextKey), `value-${UUID.randomUUID()}`);
+      });
   }
 
-  public onContextServiceObserve(): void {
-    this.tests.contextService.observe$.response1 = null;
-    this.tests.contextService.observe$.response2 = null;
-    this.runInZone(this.tests.contextService.observe$.runInAngular, async (): Promise<void> => {
-      const contextKey = UUID.randomUUID();
-      const outletContext = await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
+  private async testContextServiceNames(model: TestCaseModel): Promise<void> {
+    const outletContext = await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
 
-      // Observbe context value.
-      Beans.get(ContextService).observe$(contextKey)
-        .pipe(take(1))
-        .subscribe(() => {
-          this.tests.contextService.observe$.response1 = createZoneAwareResponse({
-            insideAngular: 'Received context value INSIDE Angular zone (1st emission)',
-            outsideAngular: 'Received context value OUTSIDE Angular zone (1st emission)',
-          });
-          this.detectChangesIfOutsideAngular();
+    // Observe context names.
+    Beans.get(ContextService).names$()
+      .pipe(take(2))
+      .subscribe(() => {
+        model.addEmission('Received context names');
 
-          // Trigger context value update.
-          Beans.get(MessageClient).publish(TestingAppTopics.routerOutletContextUpdateTopic(outletContext.name, contextKey), `value-${UUID.randomUUID()}`);
-        });
-
-      // Receive context value updates.
-      Beans.get(ContextService).observe$(contextKey)
-        .pipe(skip(1), take(1))
-        .subscribe(() => {
-          this.tests.contextService.observe$.response2 = createZoneAwareResponse({
-            insideAngular: 'Received context value INSIDE Angular zone (2nd emission)',
-            outsideAngular: 'Received value OUTSIDE Angular zone (2nd emission)',
-          });
-          this.detectChangesIfOutsideAngular();
-        });
-    });
+        // Trigger context value update.
+        Beans.get(MessageClient).publish(TestingAppTopics.routerOutletContextUpdateTopic(outletContext.name, UUID.randomUUID()), `value-${UUID.randomUUID()}`);
+      });
   }
 
-  public onContextServiceNames(): void {
-    this.tests.contextService.names$.response1 = null;
-    this.tests.contextService.names$.response2 = null;
-    this.runInZone(this.tests.contextService.names$.runInAngular, async (): Promise<void> => {
-      const outletContext = await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
-
-      // Observe context names.
-      Beans.get(ContextService).names$()
-        .pipe(take(1))
-        .subscribe(() => {
-          this.tests.contextService.names$.response1 = createZoneAwareResponse({
-            insideAngular: 'Received context names INSIDE Angular zone (1st emission)',
-            outsideAngular: 'Received context names OUTSIDE Angular zone (1st emission)',
-          });
-          this.detectChangesIfOutsideAngular();
-
-          // Trigger context value update.
-          Beans.get(MessageClient).publish(TestingAppTopics.routerOutletContextUpdateTopic(outletContext.name, UUID.randomUUID()), `value-${UUID.randomUUID()}`);
-        });
-
-      // Receive context name updates.
-      Beans.get(ContextService).names$()
-        .pipe(skip(1), take(1))
-        .subscribe(() => {
-          this.tests.contextService.names$.response2 = createZoneAwareResponse({
-            insideAngular: 'Received context names INSIDE Angular zone (2nd emission)',
-            outsideAngular: 'Received names OUTSIDE Angular zone (2nd emission)',
-          });
-          this.detectChangesIfOutsideAngular();
-        });
-    });
+  private testManifestServiceLookupCapabilities(model: TestCaseModel): void {
+    Beans.get(ManifestService).lookupCapabilities$()
+      .pipe(take(1))
+      .subscribe(() => model.addEmission('Received capabilities'));
   }
 
-  public onManifestServiceLookupCapabilities(): void {
-    this.tests.manifestService.lookupCapabilities$.response = null;
-    this.runInZone(this.tests.manifestService.lookupCapabilities$.runInAngular, async (): Promise<void> => {
-      Beans.get(ManifestService).lookupCapabilities$()
-        .pipe(take(1))
-        .subscribe(() => {
-          this.tests.manifestService.lookupCapabilities$.response = createZoneAwareResponse({
-            insideAngular: 'Received response INSIDE Angular zone',
-            outsideAngular: 'Received response OUTSIDE Angular zone',
-          });
-          this.detectChangesIfOutsideAngular();
-        });
-    });
+  private testManifestServiceLookupIntentions(model: TestCaseModel): void {
+    Beans.get(ManifestService).lookupIntentions$()
+      .pipe(take(1))
+      .subscribe(() => model.addEmission('Received intentions'));
   }
 
-  public onManifestServiceLookupIntentions(): void {
-    this.tests.manifestService.lookupIntentions$.response = null;
-    this.runInZone(this.tests.manifestService.lookupIntentions$.runInAngular, async (): Promise<void> => {
-      Beans.get(ManifestService).lookupIntentions$()
-        .pipe(take(1))
-        .subscribe(() => {
-          this.tests.manifestService.lookupIntentions$.response = createZoneAwareResponse({
-            insideAngular: 'Received response INSIDE Angular zone',
-            outsideAngular: 'Received response OUTSIDE Angular zone',
-          });
-          this.detectChangesIfOutsideAngular();
-        });
-    });
+  private testFocusMonitorFocusWithin(model: TestCaseModel): void {
+    Beans.get(FocusMonitor).focusWithin$
+      .pipe(take(1))
+      .subscribe(() => model.addEmission('Received focus state'));
   }
 
-  public onFocusMonitorFocusWithin(): void {
-    this.tests.focusMonitor.focusWithin$.response = null;
-    this.runInZone(this.tests.focusMonitor.focusWithin$.runInAngular, async (): Promise<void> => {
-      Beans.get(FocusMonitor).focusWithin$
-        .pipe(take(1))
-        .subscribe(() => {
-          this.tests.focusMonitor.focusWithin$.response = createZoneAwareResponse({
-            insideAngular: 'Received response INSIDE Angular zone',
-            outsideAngular: 'Received response OUTSIDE Angular zone',
-          });
-          this.detectChangesIfOutsideAngular();
-        });
-    });
-  }
-
-  public onFocusMonitorFocus(): void {
-    this.tests.focusMonitor.focus$.response = null;
-    this.runInZone(this.tests.focusMonitor.focus$.runInAngular, async (): Promise<void> => {
-      Beans.get(FocusMonitor).focus$
-        .pipe(take(1))
-        .subscribe(() => {
-          this.tests.focusMonitor.focus$.response = createZoneAwareResponse({
-            insideAngular: 'Received response INSIDE Angular zone',
-            outsideAngular: 'Received response OUTSIDE Angular zone',
-          });
-          this.detectChangesIfOutsideAngular();
-        });
-    });
-  }
-
-  /**
-   * Runs given callback inside or outside Angular.
-   */
-  private runInZone(runInAngular: boolean, fn: () => void): void {
-    runInAngular ? this._zone.run(fn) : this._zone.runOutsideAngular(fn);
-  }
-
-  private detectChangesIfOutsideAngular(): void {
-    if (!NgZone.isInAngularZone()) {
-      this._cd.detectChanges();
-    }
+  private testFocusMonitorFocus(model: TestCaseModel): void {
+    Beans.get(FocusMonitor).focus$
+      .pipe(take(1))
+      .subscribe(() => model.addEmission('Received focus state'));
   }
 }
 
-function createZoneAwareResponse(messages: {insideAngular: string; outsideAngular: string}): {zone: string; label: string} {
-  return {
-    zone: NgZone.isInAngularZone() ? 'inside-angular' : 'outside-angular',
-    label: NgZone.isInAngularZone() ? messages.insideAngular : messages.outsideAngular,
-  };
+/**
+ * Model of a single test case.
+ */
+export class TestCaseModel {
+
+  public runInAngular = true;
+  public emissions = new Array<{insideAngular: boolean; label: string}>();
+  private _zone = inject(NgZone);
+
+  constructor(private _testFn: (model: TestCaseModel) => void) {
+  }
+
+  /**
+   * Invoke to register received emission.
+   */
+  public addEmission(emission: string): void {
+    if (NgZone.isInAngularZone()) {
+      this.emissions.push({insideAngular: true, label: `${emission} (INSIDE NgZone)`});
+    }
+    else {
+      this._zone.run(() => this.emissions.push({insideAngular: false, label: `${emission} (OUTSIDE NgZone)`}));
+    }
+  }
+
+  /**
+   * Invoke from the template to run this test.
+   */
+  public onTestClick(): void {
+    this.emissions.length = 0;
+    if (this.runInAngular) {
+      this._zone.run(() => this._testFn(this));
+    }
+    else {
+      this._zone.runOutsideAngular(() => this._testFn(this));
+    }
+  }
 }
