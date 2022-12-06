@@ -10,8 +10,8 @@
 
 import {FrameLocator, Locator} from '@playwright/test';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
-import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po/checkbox.po';
-import {SciAccordionPO} from '../@scion/components.internal/accordion.po/accordion.po';
+import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
+import {SciAccordionPO} from '../@scion/components.internal/accordion.po';
 
 export class AngularZoneTestPagePO implements OutletPageObject {
 

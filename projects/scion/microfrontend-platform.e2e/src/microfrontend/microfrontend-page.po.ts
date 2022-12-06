@@ -10,7 +10,7 @@
 
 import {isPresent} from '../testing.util';
 import {FrameLocator, Locator} from '@playwright/test';
-import {SciPropertyPO} from '../@scion/components.internal/property.po/property.po';
+import {SciPropertyPO} from '../@scion/components.internal/property.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
 export abstract class MicrofrontendPagePO implements OutletPageObject {

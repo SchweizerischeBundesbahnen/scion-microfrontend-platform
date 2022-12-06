@@ -10,8 +10,8 @@
 
 import {Qualifier} from '@scion/microfrontend-platform';
 import {FrameLocator, Locator} from '@playwright/test';
-import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po/checkbox.po';
-import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po/params-enter.po';
+import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
+import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 import {waitUntilNavigationStable} from '../testing.util';
 
