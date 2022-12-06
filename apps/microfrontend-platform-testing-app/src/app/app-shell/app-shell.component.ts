@@ -64,6 +64,7 @@ export class AppShellComponent implements OnDestroy {
     const outletName$ = Beans.get(ContextService).observe$<OutletContext>(OUTLET_CONTEXT)
       .pipe(mergeMap(context => context ? of(context.name) : EMPTY));
 
+    // TODO [#207]: Use API to get notified when keystrokes are installed: https://github.com/SchweizerischeBundesbahnen/scion-workbench/issues/207
     Beans.get(ContextService).names$()
       .pipe(
         mergeMap(contextKeys => from(Array.from(contextKeys).filter(key => key.startsWith('keystroke:')))),
