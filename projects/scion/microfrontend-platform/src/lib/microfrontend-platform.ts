@@ -290,7 +290,6 @@ export class MicrofrontendPlatform {
         Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
         Beans.register(PlatformPropertyService);
         Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: BeanDestroyOrders.CORE});
-        Beans.registerIfAbsent(HttpClient);
         Beans.registerIfAbsent(MessageClient, provideMessageClient());
         Beans.registerIfAbsent(IntentClient, provideIntentClient());
         Beans.registerIfAbsent(OutletRouter);
