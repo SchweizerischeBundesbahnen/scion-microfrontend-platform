@@ -18,6 +18,8 @@ import {take, takeUntil} from 'rxjs/operators';
  * By default, the platform initiates shutdown when the browser unloads the document, i.e., when `beforeunload` is triggered.
  * The main reason for `beforeunload` instead of `unload` is to avoid posting messages to disposed windows.
  * However, if `beforeunload` is not triggered, e.g., when an iframe is removed, we fall back to `unload`.
+ *
+ * @category Platform
  */
 export abstract class MicrofrontendPlatformStopper {
 }

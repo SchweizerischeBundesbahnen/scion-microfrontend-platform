@@ -169,6 +169,9 @@ export abstract class IntentClient {
 
 /**
  * Allows filtering intents.
+ *
+ * @category Messaging
+ * @category Intention API
  */
 export interface IntentSelector {
   /**

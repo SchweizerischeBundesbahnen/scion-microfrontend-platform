@@ -17,7 +17,7 @@ import {QualifierMatcher} from '../../qualifier-matcher';
 /**
  * Central point for managing intent subscriptions.
  *
- * @ignore
+ * @internal
  */
 export class IntentSubscriptionRegistry extends MessageSubscriptionRegistry<IntentSubscription> {
 
@@ -29,7 +29,7 @@ export class IntentSubscriptionRegistry extends MessageSubscriptionRegistry<Inte
 /**
  * Represents a subscription for intents matching the passed selector.
  *
- * @ignore
+ * @internal
  */
 export class IntentSubscription extends MessageSubscription {
 

@@ -22,7 +22,7 @@ import {Client} from '../client-registry/client';
  *
  * @see FocusInEventDispatcher
  * @see FocusMonitor
- * @ignore
+ * @internal
  */
 export class FocusTracker implements PreDestroy {
 

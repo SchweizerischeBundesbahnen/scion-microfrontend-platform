@@ -12,7 +12,8 @@ import {ParamDefinition} from '../../platform.model';
 
 /**
  * Allows testing whether params match the param definitions.
- * @ignore
+ *
+ * @internal
  */
 export class ParamMatcher {
 
@@ -90,7 +91,8 @@ export class ParamMatcher {
 
 /**
  * Represents the result of a params matcher test.
- * @ignore
+ *
+ * @internal
  */
 export interface ParamsMatcherResult {
   /**

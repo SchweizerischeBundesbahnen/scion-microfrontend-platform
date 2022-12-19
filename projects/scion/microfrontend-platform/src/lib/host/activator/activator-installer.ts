@@ -31,7 +31,7 @@ import {MessageClient} from '../../client/messaging/message-client';
  * Activators enable micro applications to interact with the platform for the entire platform lifecycle.
  * Activators can signal when ready for operation, causing this initializer to wait until received respective readiness messages.
  *
- * @ignore
+ * @internal
  */
 export class ActivatorInstaller implements Initializer {
 

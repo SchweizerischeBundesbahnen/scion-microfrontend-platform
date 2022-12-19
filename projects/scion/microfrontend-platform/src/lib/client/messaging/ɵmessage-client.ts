@@ -17,6 +17,9 @@ import {MessageHandler} from './message-handler';
 import {takeUntil} from 'rxjs/operators';
 import {PublishOptions, RequestOptions} from './publish-options';
 
+/**
+ * @internal
+ */
 export class ɵMessageClient implements MessageClient {
 
   private readonly _brokerGateway = Beans.get(BrokerGateway);

@@ -21,6 +21,9 @@ import {ɵApplication, ɵVERSION} from '../../ɵplatform.model';
 import {IntentSubscription, IntentSubscriptionRegistry} from '../message-broker/intent-subscription.registry';
 import {UUID} from '@scion/toolkit/uuid';
 
+/**
+ * @internal
+ */
 export class ɵClient implements Client {
 
   public readonly version: string;

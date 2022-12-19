@@ -15,6 +15,7 @@
  * its intentions and capabilities in its manifest file. The manifest needs to be registered in the host application.
  *
  * @category Platform
+ * @category Intention API
  */
 export interface Manifest {
   /**
@@ -45,7 +46,7 @@ export interface Manifest {
  * See {@link Intention}, {@link Capability} or {@link Intent} for the usage of wildcards
  * in qualifier properties.
  *
- * @category Platform
+ * @category Intention API
  */
 export interface Qualifier {
   [key: string]: string | number | boolean;
@@ -124,7 +125,6 @@ export interface Application {
  * Metadata can be associated with a capability in its properties section. For example, if providing a microfrontend, the URL to the
  * microfrontend can be added as property, or if the capability contributes an item to a menu, its label to be displayed.
  *
- * @category Platform
  * @category Intention API
  */
 export interface Capability {
@@ -202,7 +202,6 @@ export interface Capability {
  * Intentions are declared in the application’s manifest and are formulated in an abstract way, consisting of a type
  * and optionally a qualifier. The qualifier is used to differentiate capabilities of the same type.
  *
- * @category Platform
  * @category Intention API
  */
 export interface Intention {
@@ -244,6 +243,8 @@ export interface Intention {
 
 /**
  * Built in capability types.
+ *
+ * @category Intention API
  */
 export enum PlatformCapabilityTypes {
   /**
@@ -316,6 +317,7 @@ export enum PlatformCapabilityTypes {
  * to request data via client-side messaging.
  *
  * @category Platform
+ * @category Intention API
  */
 export interface ActivatorCapability extends Capability {
   type: PlatformCapabilityTypes.Activator;
@@ -342,6 +344,8 @@ export interface ActivatorCapability extends Capability {
 
 /**
  * Represents a microfrontend that can be loaded into a <sci-router-outlet> using the {@link OutletRouter}.
+ *
+ * @category Intention API
  */
 export interface MicrofrontendCapability extends Capability {
   type: PlatformCapabilityTypes.Microfrontend;
@@ -400,6 +404,8 @@ export interface MicrofrontendCapability extends Capability {
 
 /**
  * Describes a parameter to be passed along with an intent.
+ *
+ * @category Intention API
  */
 export interface ParamDefinition {
   /**
@@ -443,6 +449,8 @@ export const IS_PLATFORM_HOST = Symbol('IS_PLATFORM_HOST');
 
 /**
  * Symbol to get the application's symbolic name from the bean manager.
+ *
+ * @category Platform
  */
 export const APP_IDENTITY = Symbol('APP_IDENTITY');
 
@@ -489,7 +497,7 @@ export interface ActivationContext {
  * All specified filter criteria are "AND"ed together. Unspecified filter criteria are ignored.
  * If no filter criterion is specified, no filtering takes place, thus all available objects are returned.
  *
- * @category Manifest
+ * @category Intention API
  */
 export interface ManifestObjectFilter {
   /**

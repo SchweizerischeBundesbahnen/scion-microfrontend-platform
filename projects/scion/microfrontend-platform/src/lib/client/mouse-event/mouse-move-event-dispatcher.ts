@@ -24,7 +24,7 @@ import {FocusMonitor} from '../focus/focus-monitor';
  * Mouse event dispatching is important if having non-focusable scrollbars which are positioned at the iframe border. It enables the user
  * to scroll seamlessly even when the mouse cursor leaves the iframe.
  *
- * @ignore
+ * @internal
  */
 export class MouseMoveEventDispatcher implements PreDestroy {
 
@@ -94,19 +94,13 @@ export class MouseMoveEventDispatcher implements PreDestroy {
 
 /**
  * Indicates that the primary mouse button is pressed (usually left).
- *
- * @ignore
  */
 const PRIMARY_MOUSE_BUTTON = 1;
 /**
  * Message header to pass the dispatcher's identity.
- *
- * @ignore
  */
 const DISPATCHER_ID_HEADER = 'ɵDISPATCHER_ID';
 /**
  * Topic to publish 'mousemove' events so that they can be consumed by dispatchers of other documents.
- *
- * @ignore
  */
 const MOUSEMOVE_EVENT_TOPIC = 'ɵMOUSEMOVE';

@@ -10,6 +10,8 @@
 
 /**
  * Provides utilities for working with predicates.
+ *
+ * @internal
  */
 export namespace Predicates {
 
@@ -28,5 +30,7 @@ export namespace Predicates {
 
 /**
  * Represents a predicate (boolean-valued function) of one argument.
+ *
+ * @internal
  */
 export type Predicate<T> = (value: T) => boolean;

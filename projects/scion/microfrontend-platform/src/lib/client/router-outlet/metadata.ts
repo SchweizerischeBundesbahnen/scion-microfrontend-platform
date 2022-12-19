@@ -32,12 +32,14 @@ export interface NavigationOptions {
 /**
  * Routing message header to control if to push a state to the browser's session history stack.
  *
- * @ignore
+ * @internal
  */
 export const PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER = 'ɵPUSH_STATE_TO_SESSION_HISTORY_STACK';
 
 /**
  * Represents a navigation.
+ *
+ * @category Routing
  */
 export interface Navigation {
   /**

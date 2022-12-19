@@ -26,6 +26,9 @@ import {UUID} from '@scion/toolkit/uuid';
 import {Qualifiers} from '../../qualifiers.util';
 import {PlatformTopics} from '../../ɵmessaging.model';
 
+/**
+ * @internal
+ */
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
   private _capabilityStore: ManifestObjectStore<Capability>;

@@ -36,6 +36,8 @@ export enum PlatformState {
  * Runlevels are used to control in which startup phase to execute initializers when starting the platform.
  *
  * The platform reports that it has started after all initializers have completed successfully.
+ *
+ * @internal
  */
 export enum Runlevel {
   /**

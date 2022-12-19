@@ -16,7 +16,7 @@ import {Observable} from 'rxjs';
  *
  * Use this bean from within a class which is itself referenced in the {@link MicrofrontendPlatform}, in order to avoid ES2015 import cycles.
  *
- * @ignore
+ * @internal
  */
 export abstract class MicrofrontendPlatformRef {
 

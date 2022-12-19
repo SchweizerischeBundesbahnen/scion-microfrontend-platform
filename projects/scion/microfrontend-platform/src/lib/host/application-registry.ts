@@ -21,7 +21,7 @@ import {ApplicationConfig} from './application-config';
 /**
  * Registry with all registered applications.
  *
- * @ignore
+ * @internal
  */
 export class ApplicationRegistry {
 

@@ -14,7 +14,7 @@ import {Logger} from '../../logger';
 /**
  * Describes a user interaction with the keyboard.
  *
- * @ignore
+ * @internal
  */
 export class Keystroke {
 
@@ -104,7 +104,6 @@ export class Keystroke {
   }
 }
 
-/** @ignore */
 function escapeKeyboardEventKey(key: string): string {
   switch (key) {
     case '.':
@@ -116,7 +115,6 @@ function escapeKeyboardEventKey(key: string): string {
   }
 }
 
-/** @ignore */
 function parseFlags(keystroke: string): KeystrokeFlags | undefined {
   const flagsStr = keystroke.match(/{(?<flagsDictionary>.*)}/)?.groups!['flagsDictionary'] ?? null;
   if (flagsStr === null) {
@@ -144,7 +142,7 @@ function parseFlags(keystroke: string): KeystrokeFlags | undefined {
 /**
  * Flags to control keystroke handling.
  *
- * @ignore
+ * @internal
  */
 export interface KeystrokeFlags {
   /**

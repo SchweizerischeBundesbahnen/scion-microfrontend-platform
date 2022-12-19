@@ -14,7 +14,7 @@ import {MessageHeaders, TopicMessage} from '../../messaging.model';
 /**
  * Context lookup options header to control if values should be collected.
  *
- * @ignore
+ * @internal
  */
 export const CONTEXT_LOOKUP_OPTIONS = 'ɵCONTEXT_LOOKUP_OPTIONS';
 
@@ -41,7 +41,7 @@ export interface ContextLookupOptions {
 /**
  * Provides the API to lookup context related information.
  *
- * @ignore
+ * @internal
  */
 export namespace Contexts {
 

@@ -19,7 +19,7 @@ import {Arrays, Maps} from '@scion/toolkit/util';
 /**
  * Central point for managing message subscriptions.
  *
- * @ignore
+ * @internal
  */
 export class MessageSubscriptionRegistry<T extends MessageSubscription = MessageSubscription> implements PreDestroy {
 
@@ -142,7 +142,7 @@ export class MessageSubscriptionRegistry<T extends MessageSubscription = Message
 /**
  * Represents a subscription for a given subscriber.
  *
- * @ignore
+ * @internal
  */
 export class MessageSubscription {
   /**

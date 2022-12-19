@@ -13,6 +13,9 @@ import {Client} from './client';
 import {Logger, LoggingContext} from '../../logger';
 import {ClientRegistry} from './client.registry';
 
+/**
+ * @internal
+ */
 export class ɵClientRegistry implements ClientRegistry, PreDestroy {
 
   private readonly _clientsById = new Map<string, Client>();

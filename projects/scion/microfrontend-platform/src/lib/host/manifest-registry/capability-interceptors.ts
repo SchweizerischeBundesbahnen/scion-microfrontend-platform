@@ -41,7 +41,7 @@ import {Capability} from '../../platform.model';
  * Beans.register(CapabilityInterceptor, {useClass: MicrofrontendCapabilityInterceptor, multi: true});
  * ```
  *
- * @category Capability
+ * @category Intention API
  */
 export abstract class CapabilityInterceptor {
 

@@ -12,7 +12,7 @@
  * Uses the native Web Fetch API to fetch a resource from the network.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
- * @ignore
+ * @internal
  */
 export class HttpClient {
 

@@ -20,7 +20,7 @@ import {ManifestLoadProgressMonitor} from './progress-monitor/progress-monitors'
 /**
  * Installs registered applications in the platform.
  *
- * @ignore
+ * @internal
  */
 export class AppInstaller {
 

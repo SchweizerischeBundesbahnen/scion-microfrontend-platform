@@ -18,7 +18,7 @@ import {ApplicationConfig} from './application-config';
 /**
  * Fetches the manifest of an application.
  *
- * @ignore
+ * @internal
  */
 export class ManifestFetcher {
 

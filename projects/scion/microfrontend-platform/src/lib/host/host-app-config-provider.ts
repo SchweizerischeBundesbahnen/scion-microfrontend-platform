@@ -18,6 +18,8 @@ import {PlatformState} from '../platform-state';
 
 /**
  * Provides the config for the host app.
+ *
+ * @internal
  */
 export namespace HostAppConfigProvider {
 

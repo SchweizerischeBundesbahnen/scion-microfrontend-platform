@@ -12,6 +12,8 @@ import {IntentSelector} from './client/messaging/intent-client';
 
 /**
  * Declares the message transports.
+ *
+ * @internal
  */
 export enum MessagingTransport {
   /**
@@ -30,6 +32,8 @@ export enum MessagingTransport {
 
 /**
  * Defines the channels to which messages can be sent.
+ *
+ * @internal
  */
 export enum MessagingChannel {
   /**
@@ -68,6 +72,8 @@ export enum MessagingChannel {
 
 /**
  * Envelope for all messages.
+ *
+ * @internal
  */
 export interface MessageEnvelope<MSG extends Message = Message> {
   transport: MessagingTransport;
@@ -77,6 +83,8 @@ export interface MessageEnvelope<MSG extends Message = Message> {
 
 /**
  * Declares internal platform topics.
+ *
+ * @internal
  */
 export namespace PlatformTopics {
   /**
@@ -145,6 +153,8 @@ export namespace PlatformTopics {
 
 /**
  * Sent by the broker in response to a connect request from a client gateway.
+ *
+ * @internal
  */
 export interface ConnackMessage {
   returnCode: 'accepted' | 'refused:bad-request' | 'refused:rejected' | 'refused:blocked';
@@ -159,6 +169,9 @@ export interface ConnackMessage {
   heartbeatInterval?: number;
 }
 
+/**
+ * @internal
+ */
 export interface SubscribeCommand extends Message {
   /**
    * Unique identify of the subscriber.
@@ -166,6 +179,9 @@ export interface SubscribeCommand extends Message {
   subscriberId: string;
 }
 
+/**
+ * @internal
+ */
 export interface TopicSubscribeCommand extends SubscribeCommand {
   /**
    * Topic to subscribe.
@@ -173,6 +189,9 @@ export interface TopicSubscribeCommand extends SubscribeCommand {
   topic: string;
 }
 
+/**
+ * @internal
+ */
 export interface IntentSubscribeCommand extends SubscribeCommand {
   /**
    * Selects intents that match the specified selector and for which the application provides a fulfilling capability.
@@ -180,6 +199,9 @@ export interface IntentSubscribeCommand extends SubscribeCommand {
   selector?: IntentSelector;
 }
 
+/**
+ * @internal
+ */
 export interface UnsubscribeCommand extends Message {
   /**
    * Unique identify of the subscriber.
@@ -187,6 +209,9 @@ export interface UnsubscribeCommand extends Message {
   subscriberId: string;
 }
 
+/**
+ * @internal
+ */
 export interface MessageDeliveryStatus {
   ok: boolean;
   details?: string;

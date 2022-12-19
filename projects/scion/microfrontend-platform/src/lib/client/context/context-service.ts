@@ -260,6 +260,7 @@ export class ContextService implements PreDestroy {
     });
   }
 
+  /** @ignore */
   public preDestroy(): void {
     this._destroy$.next();
   }
@@ -267,8 +268,6 @@ export class ContextService implements PreDestroy {
 
 /**
  * Resolves when subscribed to the given reply topic.
- *
- * @ignore
  */
 function whenSubscribedToReplyTopic(topic: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {

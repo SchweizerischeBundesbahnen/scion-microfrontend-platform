@@ -56,6 +56,9 @@ import {Beans} from '@scion/toolkit/bean-manager';
  *  }
  *
  * ```
+ *
+ * @category Platform
+ * @category Intention API
  */
 export abstract class HostManifestInterceptor {
 
