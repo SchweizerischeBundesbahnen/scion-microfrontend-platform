@@ -21,15 +21,10 @@ import {PreferredSize} from '../preferred-size/preferred-size';
 import {Navigation, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER} from './metadata';
 import {Beans} from '@scion/toolkit/bean-manager';
 
-/** @ignore */
 const ELEMENT_NAME = 'sci-router-outlet';
-/** @ignore */
 const ATTR_NAME = 'name';
-/** @ignore */
 const ATTR_SCROLLABLE = 'scrollable';
-/** @ignore */
 const ATTR_KEYSTROKES = 'keystrokes';
-/** @ignore */
 const HTML_TEMPLATE = `
   <style>
     :host {
@@ -413,8 +408,6 @@ export class SciRouterOutletElement extends HTMLElement {
    * For more information about trusted events
    * @see https://www.w3.org/TR/DOM-Level-3-Events/#trusted-events
    * @see https://www.chromestatus.com/features#istrusted
-   *
-   * @internal
    */
   private installKeyboardEventDispatcher(): void {
     Beans.get(MessageClient).observe$<KeyboardEventInit>(RouterOutlets.keyboardEventTopic(this._uid, ':eventType'))
@@ -555,7 +548,7 @@ export class SciRouterOutletElement extends HTMLElement {
  *
  * @see {@link OUTLET_CONTEXT}
  * @see {@link ContextService}
- * @category Routing
+ * @category Context
  */
 export interface OutletContext {
   name: string;
@@ -564,8 +557,6 @@ export interface OutletContext {
 
 /**
  * Coerces a data-bound value (typically a string) to a boolean.
- *
- * @ignore
  */
 function coerceBooleanProperty(value: any): boolean {
   return value !== null && value !== undefined && `${value}` !== 'false';
@@ -574,6 +565,7 @@ function coerceBooleanProperty(value: any): boolean {
 /**
  * Key for obtaining the current outlet context using {@link ContextService}.
  *
+ * @category Context
  * @see {@link OutletContext}
  * @see {@link ContextService}
  */
@@ -581,20 +573,19 @@ export const OUTLET_CONTEXT = 'ɵOUTLET';
 
 /**
  * Default name for an outlet if no explicit name is specified.
+ * @category Routing
  */
 export const PRIMARY_OUTLET = 'primary';
 
 /**
  * Defines constants for {@link SciRouterOutletElement} and {@link OutletRouter}.
  *
- * @category Routing
+ * @internal
  */
 export namespace RouterOutlets {
 
   /**
    * Computes the topic via which the URL for an outlet is exchanged as retained message.
-   *
-   * @internal
    */
   export function urlTopic(outletName: string): string {
     return `sci-router-outlets/${outletName}/url`;
@@ -602,8 +593,6 @@ export namespace RouterOutlets {
 
   /**
    * Computes the topic where to post keyboard events to be dispatched.
-   *
-   * @internal
    */
   export function keyboardEventTopic(outletUid: string, eventType: string): string {
     return `sci-router-outlets/${outletUid}/keyboard-events/${eventType}`;
@@ -611,8 +600,6 @@ export namespace RouterOutlets {
 
   /**
    * Computes the topic to which the preferred outlet size can be published to.
-   *
-   * @internal
    */
   export function preferredSizeTopic(outletUid: string): string {
     return `sci-router-outlets/${outletUid}/preferred-size`;
@@ -620,17 +607,12 @@ export namespace RouterOutlets {
 
   /**
    * Computes the topic to which the focus-within event can be published to.
-   *
-   * @internal
    */
   export function focusWithinOutletTopic(outletUid: string): string {
     return `sci-router-outlets/${outletUid}/focus-within`;
   }
 }
 
-/**
- * @ignore
- */
 namespace KeystrokesAttributeUtil {
 
   const delimiter = ',';
@@ -646,13 +628,13 @@ namespace KeystrokesAttributeUtil {
 
 /**
  * Keystroke bindings are prefixed with `keystroke:` when registered in the outlet context.
+ *
  * @internal
  */
 export const KEYSTROKE_CONTEXT_NAME_PREFIX = 'keystroke:';
 
 /**
  * Emits when a navigation for the given outlet occurs.
- * @ignore
  */
 function outletNavigate$(outlet: string): Observable<Navigation> {
   const outletNavigationTopic = RouterOutlets.urlTopic(outlet);
@@ -670,8 +652,6 @@ function outletNavigate$(outlet: string): Observable<Navigation> {
  *
  * Specify styles to be modified by passing a dictionary containing CSS property names (hyphen case).
  * To remove a style, set its value to `null`.
- *
- * @ignore
  */
 function setStyle(element: HTMLElement, style: {[style: string]: any | null}): void {
   Object.keys(style).forEach(key => element.style.setProperty(key, style[key]));

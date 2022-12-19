@@ -15,7 +15,7 @@ import {PlatformState} from '../../platform-state';
  * the handler terminates the communication, completing the requestor's Observable. If the callback errors, the error is
  * transported to the requestor, erroring the requestor's Observable.
  *
- * @ignore
+ * @internal
  */
 export class MessageHandler<MSG extends Message, REPLY> {
 

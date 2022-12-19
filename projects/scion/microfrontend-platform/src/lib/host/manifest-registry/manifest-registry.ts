@@ -15,7 +15,7 @@ import {Observable} from 'rxjs';
 /**
  * Central point for looking up or managing capabilities or intentions available in the platform.
  *
- * @ignore
+ * @internal
  */
 export abstract class ManifestRegistry {
 

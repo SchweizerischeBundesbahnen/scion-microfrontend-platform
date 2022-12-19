@@ -84,7 +84,7 @@ export class ConsoleLogger implements Logger {
 /**
  * Logger that does nothing.
  *
- * @ignore
+ * @internal
  */
 export const NULL_LOGGER = new class extends Logger {
 
@@ -109,6 +109,8 @@ export const NULL_LOGGER = new class extends Logger {
  * Contextual information to add to the log message.
  *
  * Pass an instance of this class as the first argument to the logger when logging a message.
+ *
+ * @internal
  */
 export class LoggingContext {
 

@@ -12,7 +12,7 @@ import {ɵApplication} from '../../ɵplatform.model';
 /**
  * Represents a client which is connected to the message broker.
  *
- * @ignore
+ * @internal
  */
 export interface Client {
 

@@ -15,6 +15,8 @@ import {Topics} from './topics.util';
  * Allows testing whether an exact topic matches a pattern topic. The pattern topic may contain wildcard segments.
  *
  * Topics are case-sensitive and consist of one or more segments, each separated by a forward slash.
+ *
+ * @category Messaging
  */
 export class TopicMatcher {
 
@@ -80,6 +82,8 @@ export class TopicMatcher {
 
 /**
  * Represents the result of a topic matcher test.
+ *
+ * @category Messaging
  */
 export interface MatcherResult {
   /**

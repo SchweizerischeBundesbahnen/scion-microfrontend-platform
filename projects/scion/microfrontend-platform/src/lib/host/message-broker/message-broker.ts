@@ -53,7 +53,7 @@ import {IntentParams} from './intent-params.util';
  * The broker processes client connect requests in runlevel 1 or higher. Message dispatching is enabled in runlevel 2.
  * Prior requests are buffered until entering the respective runlevel.
  *
- * @ignore
+ * @internal
  */
 export class MessageBroker implements Initializer, PreDestroy {
 
@@ -654,8 +654,6 @@ export class MessageBroker implements Initializer, PreDestroy {
  * Resolves to the client that sent the passed message.
  *
  * Throws an error if the client could not be resolved.
- *
- * @ignore
  */
 function getSendingClient(event: MessageEvent<MessageEnvelope>): Client {
   const clientId = event.data.message.headers.get(MessageHeaders.ClientId);
@@ -668,8 +666,6 @@ function getSendingClient(event: MessageEvent<MessageEnvelope>): Client {
 
 /**
  * Passes only messages originating from trusted and registered clients.
- *
- * @ignore
  */
 function checkOriginTrusted<T extends Message>(): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
   return mergeMap((event: MessageEvent<MessageEnvelope<T>>): Observable<MessageEvent<MessageEnvelope<T>>> => {
@@ -711,7 +707,6 @@ function checkOriginTrusted<T extends Message>(): MonoTypeOperatorFunction<Messa
   });
 }
 
-/** @ignore */
 function sendDeliveryStatusSuccess(target: MessageTarget | Client, topic: string): void {
   sendTopicMessage<MessageDeliveryStatus>(target, {
     topic: topic,
@@ -720,7 +715,6 @@ function sendDeliveryStatusSuccess(target: MessageTarget | Client, topic: string
   });
 }
 
-/** @ignore */
 function sendDeliveryStatusError(target: MessageTarget | Client, topic: string, error: string | Error | unknown): void {
   sendTopicMessage<MessageDeliveryStatus>(target, {
     topic: topic,
@@ -729,7 +723,6 @@ function sendDeliveryStatusError(target: MessageTarget | Client, topic: string, 
   });
 }
 
-/** @ignore */
 function sendTopicMessage<T>(target: MessageTarget | Client | TopicSubscription, message: TopicMessage<T>): void {
   const envelope: MessageEnvelope<TopicMessage<T>> = {
     transport: MessagingTransport.BrokerToClient,
@@ -758,7 +751,6 @@ function sendTopicMessage<T>(target: MessageTarget | Client | TopicSubscription,
   }
 }
 
-/** @ignore */
 function sendIntentMessage(subscription: IntentSubscription, message: IntentMessage): void {
   const envelope: MessageEnvelope<IntentMessage> = {
     transport: MessagingTransport.BrokerToClient,
@@ -777,8 +769,6 @@ function sendIntentMessage(subscription: IntentSubscription, message: IntentMess
 
 /**
  * Catches and logs errors, and resubscribes to the source observable.
- *
- * @ignore
  */
 function catchErrorAndRetry<T>(): MonoTypeOperatorFunction<T> {
   return catchError((error, caught) => {
@@ -797,8 +787,6 @@ function isRequest(message: Message): boolean {
 
 /**
  * Represents the target where to send a message.
- *
- * @ignore
  */
 class MessageTarget {
 

@@ -27,7 +27,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
  * in a context, the lookup is retried on the parent, repeating until either a value is found or the root of the tree has
  * been reached.
  *
- * @ignore
+ * @internal
  */
 export class RouterOutletContextProvider {
 

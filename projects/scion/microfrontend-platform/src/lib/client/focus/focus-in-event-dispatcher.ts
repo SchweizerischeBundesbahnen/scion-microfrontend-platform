@@ -21,7 +21,7 @@ import {ACTIVATION_CONTEXT} from '../../platform.model';
  * Sends a 'focusin' event to the topic {@link PlatformTopics.FocusIn} when this document gains focus.
  *
  * @see FocusTracker
- * @ignore
+ * @internal
  */
 export class FocusInEventDispatcher implements PreDestroy {
 

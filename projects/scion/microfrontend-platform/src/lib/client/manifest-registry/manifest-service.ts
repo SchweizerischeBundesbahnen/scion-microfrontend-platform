@@ -29,7 +29,6 @@ import {ɵApplication} from '../../ɵplatform.model';
  * for the app, the app can also manage its intentions, which, however, is strongly discouraged. Instead, apps should
  * declare the required functionality in their manifests using wildcard intentions.
  *
- * @category Manifest
  * @category Intention API
  */
 export class ManifestService implements Initializer {

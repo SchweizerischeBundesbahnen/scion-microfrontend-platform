@@ -14,7 +14,7 @@ import {Message, TopicMessage} from './messaging.model';
 import {TopicMatcher} from './topic-matcher.util';
 import {Arrays} from '@scion/toolkit/util';
 
-/** @ignore */
+/** @internal */
 export function filterByTransport(transport: MessagingTransport): OperatorFunction<MessageEvent, MessageEvent<MessageEnvelope>> {
   return filter((event: MessageEvent): event is MessageEvent<MessageEnvelope> => {
     const envelope: MessageEnvelope | undefined = event.data;
@@ -22,7 +22,7 @@ export function filterByTransport(transport: MessagingTransport): OperatorFuncti
   });
 }
 
-/** @ignore */
+/** @internal */
 export function filterByChannel<T extends Message>(...channel: MessagingChannel[]): OperatorFunction<MessageEvent<MessageEnvelope>, MessageEvent<MessageEnvelope<T>>> {
   const channels = new Set(Arrays.coerce(channel));
   return filter((event: MessageEvent<MessageEnvelope>): event is MessageEvent<MessageEnvelope<T>> => {
@@ -30,7 +30,7 @@ export function filterByChannel<T extends Message>(...channel: MessagingChannel[
   });
 }
 
-/** @ignore */
+/** @internal */
 export function filterByTopicChannel<T>(topic: string): OperatorFunction<MessageEvent<MessageEnvelope>, MessageEvent<MessageEnvelope<TopicMessage<T>>>> {
   return pipe(
     filterByChannel<TopicMessage<T>>(MessagingChannel.Topic),
@@ -41,21 +41,21 @@ export function filterByTopicChannel<T>(topic: string): OperatorFunction<Message
   );
 }
 
-/** @ignore */
+/** @internal */
 export function filterByOrigin(origin: string): MonoTypeOperatorFunction<MessageEvent> {
   return filter((event: MessageEvent): boolean => {
     return event.origin === origin;
   });
 }
 
-/** @ignore */
+/** @internal */
 export function filterByWindow(window: Window): MonoTypeOperatorFunction<MessageEvent> {
   return filter((event: MessageEvent): boolean => {
     return event.source === window;
   });
 }
 
-/** @ignore */
+/** @internal */
 export function filterByMessageHeader<T extends Message>(header: {name: string; value: any}): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
   return filter((event: MessageEvent<MessageEnvelope<T>>): boolean => {
     const messageHeaders = event.data.message.headers;
@@ -63,7 +63,7 @@ export function filterByMessageHeader<T extends Message>(header: {name: string; 
   });
 }
 
-/** @ignore */
+/** @internal */
 export function pluckMessage<T extends Message>(): OperatorFunction<MessageEvent<MessageEnvelope<T>>, T> {
   return map((messageEvent: MessageEvent<MessageEnvelope<T>>): T => {
     return messageEvent.data.message;

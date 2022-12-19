@@ -16,7 +16,7 @@ import {distinctUntilChanged, map, takeUntil, takeWhile} from 'rxjs/operators';
  * A monitor can be split into child monitors, allowing the work to be broken down into smaller units,
  * with each child monitor contributing to the overall progress of the parent monitor.
  *
- * @ignore
+ * @internal
  */
 export class ProgressMonitor {
 

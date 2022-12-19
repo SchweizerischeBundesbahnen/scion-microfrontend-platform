@@ -12,6 +12,8 @@ import {Qualifier} from './platform.model';
 
 /**
  * Allows testing whether a qualifier matches a qualifier pattern.
+ *
+ * @category Intention API
  */
 export class QualifierMatcher {
 

@@ -16,5 +16,5 @@ export * from './host-config';
 export * from './application-config';
 export * from './manifest-registry/public_api';
 export * from './message-broker/public_api';
-export {HostManifestInterceptor} from './host-manifest-interceptor';
-export {LivenessConfig} from './liveness-config';
+export * from './host-manifest-interceptor';
+export * from './liveness-config';

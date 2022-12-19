@@ -33,7 +33,7 @@ import {decorateObservable} from '../../observable-decorator';
  * receives the CONNECT message, the broker responds with a CONNACK message. If no CONNACK message is received within the discovery
  * timeout, the gateway errors. When the gateway is being disposed, it sends a DISCONNECT message to the broker.
  *
- * @ignore
+ * @internal
  */
 export abstract class BrokerGateway {
 
@@ -66,7 +66,7 @@ export abstract class BrokerGateway {
  *
  * Use this gateway in tests to not connect to the platform host.
  *
- * @ignore
+ * @internal
  */
 export class NullBrokerGateway implements BrokerGateway {
 
@@ -96,7 +96,7 @@ export class NullBrokerGateway implements BrokerGateway {
 }
 
 /**
- * @ignore
+ * @internal
  */
 export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
 
@@ -454,7 +454,6 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
  * @see http://man.hubwiz.com/docset/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm.html
- * @internal
  */
 function fixMapObjects<T extends Message>(): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
   return map((event: MessageEvent<MessageEnvelope<T>>): MessageEvent<MessageEnvelope<T>> => {
@@ -490,8 +489,6 @@ function isPlatformStopped(): boolean {
 
 /**
  * Session created after successful connection with the broker.
- *
- * @ignore
  */
 interface Session {
   clientId: string;
@@ -501,7 +498,6 @@ interface Session {
   };
 }
 
-/** @ignore*/
 namespace GatewayErrors {
 
   export const PLATFORM_STOPPED_ERROR = Error('[GatewayError] Platform is stopped. Messages cannot be published or received.');
@@ -518,7 +514,7 @@ namespace GatewayErrors {
 /**
  * Describes how to subscribe for messages.
  *
- * @ignore
+ * @internal
  */
 export interface SubscriptionDescriptor {
   /**

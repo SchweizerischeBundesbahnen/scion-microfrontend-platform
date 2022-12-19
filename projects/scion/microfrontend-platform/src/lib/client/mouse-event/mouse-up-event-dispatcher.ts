@@ -23,7 +23,7 @@ import {ContextService} from '../context/context-service';
  * Mouse event dispatching is important if having non-focusable scrollbars which are positioned at the iframe border. It enables the user
  * to scroll seamlessly even when the mouse cursor leaves the iframe.
  *
- * @ignore
+ * @internal
  */
 export class MouseUpEventDispatcher implements PreDestroy {
 
@@ -86,13 +86,9 @@ export class MouseUpEventDispatcher implements PreDestroy {
 
 /**
  * Message header to pass the dispatcher's identity.
- *
- * @ignore
  */
 const DISPATCHER_ID_HEADER = 'ɵDISPATCHER_ID';
 /**
  * Topic to publish 'mouseup' events so that they can be consumed by dispatchers of other documents.
- *
- * @ignore
  */
 const MOUSEUP_EVENT_TOPIC = 'ɵMOUSEUP';

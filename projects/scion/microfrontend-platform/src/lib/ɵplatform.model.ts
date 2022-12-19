@@ -15,7 +15,7 @@ import {Application} from './platform.model';
  *
  * The version is omitted because not known at the time of registration, but only when first connecting to the host, e.g., in an activator.
  *
- * @ignore
+ * @internal
  */
 export interface ɵApplication extends Omit<Application, 'platformVersion'> { // eslint-disable-line @typescript-eslint/no-empty-interface
   /**

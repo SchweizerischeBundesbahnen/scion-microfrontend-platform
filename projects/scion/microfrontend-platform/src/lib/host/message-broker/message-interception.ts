@@ -99,6 +99,7 @@ export abstract class MessageInterceptor implements Interceptor<TopicMessage, Ha
  * The platform passes all intents to the interceptors. The interceptor must filter intents of interest.
  *
  * @category Messaging
+ * @category Intention API
  */
 export abstract class IntentInterceptor implements Interceptor<IntentMessage, Handler<IntentMessage>> {
 
@@ -171,6 +172,7 @@ export function chainInterceptors<T>(interceptors: Interceptor<T, Handler<T>>[],
  *
  * @see {@link MessageInterceptor}
  * @see {@link IntentInterceptor}
+ * @category Messaging
  */
 export interface Interceptor<T, H extends Handler<T>> {
 

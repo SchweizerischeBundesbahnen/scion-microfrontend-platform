@@ -10,6 +10,8 @@
 
 /**
  * Returns the error message if given an error object, or the `toString` representation otherwise.
+ *
+ * @internal
  */
 export function stringifyError(error: string | Error | unknown): string {
   if (error instanceof Error) {

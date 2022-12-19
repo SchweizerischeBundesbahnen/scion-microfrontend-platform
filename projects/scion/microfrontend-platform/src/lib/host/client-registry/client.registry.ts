@@ -13,7 +13,7 @@ import {Client} from './client';
 /**
  * Central point for managing client registrations.
  *
- * @ignore
+ * @internal
  */
 export abstract class ClientRegistry {
 

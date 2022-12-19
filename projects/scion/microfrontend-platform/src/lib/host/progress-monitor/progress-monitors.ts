@@ -12,7 +12,7 @@ import {ProgressMonitor} from './progress-monitor';
 /**
  * Tracks the progress of loading application manifests.
  *
- * @ignore
+ * @internal
  */
 export abstract class ManifestLoadProgressMonitor extends ProgressMonitor {
 }
@@ -20,7 +20,7 @@ export abstract class ManifestLoadProgressMonitor extends ProgressMonitor {
 /**
  * Tracks the progress of loading application activators.
  *
- * @ignore
+ * @internal
  */
 export abstract class ActivatorLoadProgressMonitor extends ProgressMonitor {
 }

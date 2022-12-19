@@ -17,6 +17,9 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageHandler} from './message-handler';
 import {PublishOptions, RequestOptions} from './publish-options';
 
+/**
+ * @internal
+ */
 export class ɵIntentClient implements IntentClient {
 
   private readonly _brokerGateway = Beans.get(BrokerGateway);

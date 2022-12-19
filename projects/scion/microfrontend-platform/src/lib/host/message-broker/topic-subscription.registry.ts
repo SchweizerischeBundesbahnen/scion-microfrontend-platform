@@ -22,7 +22,7 @@ const ASTERISK = ':ɵANY';
 /**
  * Central point for managing topic subscriptions.
  *
- * @ignore
+ * @internal
  */
 export class TopicSubscriptionRegistry extends MessageSubscriptionRegistry<TopicSubscription> {
 
@@ -115,7 +115,7 @@ export class TopicSubscriptionRegistry extends MessageSubscriptionRegistry<Topic
 /**
  * Represents a subscription on a topic. The topic may contain wildcard segments.
  *
- * @ignore
+ * @internal
  */
 export class TopicSubscription extends MessageSubscription {
 

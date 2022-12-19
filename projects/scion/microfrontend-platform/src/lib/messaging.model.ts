@@ -35,6 +35,7 @@ export interface Message {
  * The intent is transported to applications that provide a fulfilling capability visible to the sending application.
  *
  * @category Messaging
+ * @category Intention API
  */
 export interface IntentMessage<BODY = any> extends Message {
   /**
@@ -312,6 +313,8 @@ export function mapToBody<T>(): OperatorFunction<TopicMessage<T> | IntentMessage
 
 /**
  * Indicates that the request handler responded with an error response.
+ *
+ * @category Messaging
  */
 export class RequestError extends Error {
 

@@ -15,7 +15,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
  *
  * If producing a Promise, returns that Promise, but with a catch handler installed.
  *
- * @ignore
+ * @internal
  */
 export function runSafe<T = void>(runnable: () => T): T {
   let result: T;

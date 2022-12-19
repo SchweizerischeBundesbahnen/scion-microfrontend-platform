@@ -18,7 +18,7 @@ import {Predicate} from '../message-broker/predicates.util';
 /**
  * Provides an in-memory store for provided capabilities and registered intentions.
  *
- * @ignore
+ * @internal
  */
 export class ManifestObjectStore<T extends ManifestObject> {
 
@@ -120,7 +120,7 @@ export class ManifestObjectStore<T extends ManifestObject> {
 /**
  * Represents an object in the manifest registry like a capability or an intention.
  *
- * @ignore
+ * @internal
  */
 export interface ManifestObject {
   type: string;

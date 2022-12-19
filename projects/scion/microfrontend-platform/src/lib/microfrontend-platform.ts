@@ -474,7 +474,6 @@ export class MicrofrontendPlatform {
   }
 }
 
-/** @ignore */
 function provideLivenessConfig(config?: LivenessConfig): {interval: number; timeout: number} {
   const defaults = {interval: 60, timeout: 10};
 
@@ -487,7 +486,6 @@ function provideLivenessConfig(config?: LivenessConfig): {interval: number; time
   return {interval, timeout};
 }
 
-/** @ignore */
 function registerBrokerGateway(connectOptions: ConnectOptions & {connectRunlevel: number}): void {
   if (connectOptions.connect ?? true) {
     Beans.register(ɵBrokerGateway, {
@@ -502,7 +500,6 @@ function registerBrokerGateway(connectOptions: ConnectOptions & {connectRunlevel
   }
 }
 
-/** @ignore */
 function provideMessageClient(): BeanInstanceConstructInstructions {
   return {
     useClass: ɵMessageClient,
@@ -511,7 +508,6 @@ function provideMessageClient(): BeanInstanceConstructInstructions {
   };
 }
 
-/** @ignore */
 function provideIntentClient(): BeanInstanceConstructInstructions {
   return {
     useClass: ɵIntentClient,
@@ -522,8 +518,6 @@ function provideIntentClient(): BeanInstanceConstructInstructions {
 
 /**
  * Specifies destroy orders of platform-specific beans, enabling controlled termination of the platform.
- *
- * @ignore
  */
 enum BeanDestroyOrders {
   /**

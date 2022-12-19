@@ -24,7 +24,7 @@ import {ACTIVATION_CONTEXT} from '../../platform.model';
  * This dispatcher listens to keyboard events for keystrokes registered in parent contexts and publishes
  * them as {@link KeyboardEventInit} events to the topic {@link RouterOutlets.keyboardEventTopic}.
  *
- * @ignore
+ * @internal
  */
 export class KeyboardEventDispatcher implements PreDestroy {
 
@@ -100,8 +100,6 @@ export class KeyboardEventDispatcher implements PreDestroy {
  * For more information about trusted events
  * @see https://www.w3.org/TR/DOM-Level-3-Events/#trusted-events
  * @see https://www.chromestatus.com/features#istrusted
- *
- * @internal
  */
 function applyKeystrokeFlags(flags: KeystrokeFlags | undefined): MonoTypeOperatorFunction<KeyboardEvent> {
   return tap(keystrokeEvent => {
