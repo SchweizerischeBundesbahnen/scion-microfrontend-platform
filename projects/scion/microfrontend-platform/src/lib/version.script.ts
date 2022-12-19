@@ -10,7 +10,7 @@
 
 import {MicrofrontendPlatform} from './microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {ɵVERSION} from './platform.model';
+import {ɵVERSION} from './ɵplatform.model';
 
 export async function connectToHost({symbolicName, version = undefined}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   if (version !== undefined) {

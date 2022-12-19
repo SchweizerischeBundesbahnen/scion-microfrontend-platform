@@ -10,16 +10,14 @@
 
 import {firstValueFrom, lastValueFrom, Observable, OperatorFunction} from 'rxjs';
 import {MessageClient} from '../messaging/message-client';
-import {Application, Capability, Intention} from '../../platform.model';
+import {Application, Capability, Intention, ManifestObjectFilter} from '../../platform.model';
 import {take} from 'rxjs/operators';
 import {PlatformTopics} from '../../ɵmessaging.model';
-import {ManifestRegistryTopics} from '../../host/manifest-registry/ɵmanifest-registry';
 import {mapToBody} from '../../messaging.model';
 import {Beans, Initializer} from '@scion/toolkit/bean-manager';
 import {BrokerGateway, NullBrokerGateway} from '../messaging/broker-gateway';
-import {ManifestObjectFilter} from '../../host/manifest-registry/manifest-object.model';
 import {mapArray} from '@scion/toolkit/operators';
-import {ɵApplication} from '../../host/application-registry';
+import {ɵApplication} from '../../ɵplatform.model';
 
 /**
  * Allows browsing the catalog of capabilities and managing the capabilities of the application.
@@ -89,7 +87,7 @@ export class ManifestService implements Initializer {
    *         It never completes and emits continuously when fulfilling capabilities are registered or unregistered.
    */
   public lookupCapabilities$<T extends Capability>(filter?: ManifestObjectFilter): Observable<T[]> {
-    return Beans.get(MessageClient).request$<T[]>(ManifestRegistryTopics.LookupCapabilities, filter)
+    return Beans.get(MessageClient).request$<T[]>(PlatformTopics.LookupCapabilities, filter)
       .pipe(mapToBody());
   }
 
@@ -106,7 +104,7 @@ export class ManifestService implements Initializer {
    *         It never completes and emits continuously when matching intentions are registered or unregistered.
    */
   public lookupIntentions$(filter?: ManifestObjectFilter): Observable<Intention[]> {
-    return Beans.get(MessageClient).request$<Intention[]>(ManifestRegistryTopics.LookupIntentions, filter)
+    return Beans.get(MessageClient).request$<Intention[]>(PlatformTopics.LookupIntentions, filter)
       .pipe(mapToBody());
   }
 
@@ -117,7 +115,7 @@ export class ManifestService implements Initializer {
    *         or that rejects if the registration failed.
    */
   public registerCapability<T extends Capability>(capability: T): Promise<string> {
-    const register$ = Beans.get(MessageClient).request$<string>(ManifestRegistryTopics.RegisterCapability, capability);
+    const register$ = Beans.get(MessageClient).request$<string>(PlatformTopics.RegisterCapability, capability);
     return lastValueFrom(register$.pipe(mapToBody()));
   }
 
@@ -138,7 +136,7 @@ export class ManifestService implements Initializer {
    */
   public unregisterCapabilities(filter?: ManifestObjectFilter): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      Beans.get(MessageClient).request$<void>(ManifestRegistryTopics.UnregisterCapabilities, filter).subscribe({
+      Beans.get(MessageClient).request$<void>(PlatformTopics.UnregisterCapabilities, filter).subscribe({
         error: reject,
         complete: resolve,
       });
@@ -156,7 +154,7 @@ export class ManifestService implements Initializer {
    *         or that rejects if the registration failed.
    */
   public registerIntention(intention: Intention): Promise<string> {
-    const register$ = Beans.get(MessageClient).request$<string>(ManifestRegistryTopics.RegisterIntention, intention);
+    const register$ = Beans.get(MessageClient).request$<string>(PlatformTopics.RegisterIntention, intention);
     return lastValueFrom(register$.pipe(mapToBody()));
   }
 
@@ -178,7 +176,7 @@ export class ManifestService implements Initializer {
    */
   public unregisterIntentions(filter?: ManifestObjectFilter): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      Beans.get(MessageClient).request$<void>(ManifestRegistryTopics.UnregisterIntentions, filter).subscribe({
+      Beans.get(MessageClient).request$<void>(PlatformTopics.UnregisterIntentions, filter).subscribe({
         error: reject,
         complete: resolve,
       });
@@ -190,7 +188,7 @@ function mapToApplication(): OperatorFunction<ɵApplication[], Application[]> {
   return mapArray(application => {
     return {
       ...application,
-      platformVersion: firstValueFrom(Beans.get(MessageClient).request$<string>(ManifestRegistryTopics.platformVersion(application.symbolicName)).pipe(mapToBody())),
+      platformVersion: firstValueFrom(Beans.get(MessageClient).request$<string>(PlatformTopics.platformVersion(application.symbolicName)).pipe(mapToBody())),
     };
   });
 }

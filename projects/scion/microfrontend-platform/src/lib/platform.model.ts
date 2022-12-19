@@ -447,23 +447,6 @@ export const IS_PLATFORM_HOST = Symbol('IS_PLATFORM_HOST');
 export const APP_IDENTITY = Symbol('APP_IDENTITY');
 
 /**
- * Symbol to get the version of the SCION Microfrontend Platform.
- *
- * @internal
- */
-export const ɵVERSION = Symbol('ɵVERSION');
-
-/**
- * Symbol to get the topmost window in the window hierarchy from the bean manager.
- *
- * Alias for `window.top` that can be overridden in tests, e.g., to simulate
- * the client to connect to a remote host.
- *
- * @internal
- */
-export const ɵWINDOW_TOP = Symbol('ɵWINDOW_TOP');
-
-/**
  * Key for obtaining the current activation context using {@link ContextService}.
  *
  * The activation context is only available to microfrontends loaded by an activator.
@@ -498,4 +481,31 @@ export interface ActivationContext {
    * Metadata about the activator that activated the microfrontend.
    */
   activator: ActivatorCapability;
+}
+
+/**
+ * Allows filtering manifest objects like capabilities or intentions.
+ *
+ * All specified filter criteria are "AND"ed together. Unspecified filter criteria are ignored.
+ * If no filter criterion is specified, no filtering takes place, thus all available objects are returned.
+ *
+ * @category Manifest
+ */
+export interface ManifestObjectFilter {
+  /**
+   * Manifest objects of the given identity.
+   */
+  id?: string;
+  /**
+   * Manifest objects of the given function type.
+   */
+  type?: string;
+  /**
+   * Manifest objects matching the given qualifier.
+   */
+  qualifier?: Qualifier;
+  /**
+   * Manifest objects provided by the given app.
+   */
+  appSymbolicName?: string;
 }

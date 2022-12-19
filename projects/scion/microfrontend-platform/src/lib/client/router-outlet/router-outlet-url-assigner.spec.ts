@@ -9,7 +9,7 @@
  */
 
 import {RouterOutletUrlAssigner} from './router-outlet-url-assigner';
-import {ɵWINDOW_TOP} from '../../platform.model';
+import {ɵWINDOW_TOP} from '../../ɵplatform.model';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 describe('RouterOutletUrlAssigner#patchUrl', () => {

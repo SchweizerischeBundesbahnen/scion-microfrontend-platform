@@ -16,7 +16,8 @@ import {IntentMessage, Message, MessageHeaders, ResponseStatusCodes, TopicMessag
 import {Logger, NULL_LOGGER} from '../../logger';
 import {Dictionaries} from '@scion/toolkit/util';
 import {Beans, Initializer, PreDestroy} from '@scion/toolkit/bean-manager';
-import {APP_IDENTITY, IS_PLATFORM_HOST, ɵVERSION, ɵWINDOW_TOP} from '../../platform.model';
+import {APP_IDENTITY, IS_PLATFORM_HOST} from '../../platform.model';
+import {ɵVERSION, ɵWINDOW_TOP} from '../../ɵplatform.model';
 import {PlatformState} from '../../platform-state';
 import {ConnectOptions} from '../connect-options';
 import {MicrofrontendPlatformRef} from '../../microfrontend-platform-ref';

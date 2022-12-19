@@ -12,8 +12,7 @@ import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ɵClient} from './ɵclient';
 import {Client} from './client';
-import {ɵApplication} from '../application-registry';
-import {ɵVERSION} from '../../platform.model';
+import {ɵApplication, ɵVERSION} from '../../ɵplatform.model';
 
 describe('ClientRegistry', () => {
 

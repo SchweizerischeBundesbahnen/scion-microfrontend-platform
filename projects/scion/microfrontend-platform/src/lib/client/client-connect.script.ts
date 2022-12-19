@@ -13,7 +13,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {fromEvent, mergeWith, Observer} from 'rxjs';
 import {ɵBrokerGateway} from './messaging/broker-gateway';
 import {MessagingTransport} from '../ɵmessaging.model';
-import {ɵWINDOW_TOP} from '../platform.model';
+import {ɵWINDOW_TOP} from '../ɵplatform.model';
 import {filterByTransport} from '../operators';
 
 export async function connectToHost({symbolicName, brokerDiscoverTimeout, connectCount}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef

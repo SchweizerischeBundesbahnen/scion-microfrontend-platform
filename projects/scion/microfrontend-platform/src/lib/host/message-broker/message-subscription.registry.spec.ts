@@ -15,7 +15,7 @@ import {UUID} from '@scion/toolkit/uuid';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {ɵClientRegistry} from '../client-registry/ɵclient.registry';
 import {MessageSubscription, MessageSubscriptionRegistry} from './message-subscription.registry';
-import {ɵApplication} from '../application-registry';
+import {ɵApplication} from '../../ɵplatform.model';
 
 describe('MessageSubscriptionRegistry', () => {
 

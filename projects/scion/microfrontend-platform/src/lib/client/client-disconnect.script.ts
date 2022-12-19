@@ -13,7 +13,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {Observer} from 'rxjs';
 import {MicrofrontendPlatformStopper} from '../microfrontend-platform-stopper';
 import {ɵBrokerGateway} from './messaging/broker-gateway';
-import {ɵVERSION} from '../platform.model';
+import {ɵVERSION} from '../ɵplatform.model';
 
 export async function connectToHost({symbolicName, disconnectOnUnloadDisabled = false, version = undefined}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   if (disconnectOnUnloadDisabled) {
