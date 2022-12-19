@@ -281,8 +281,6 @@ export class MicrofrontendPlatform {
    */
   public static connectToHost(symbolicName: string, connectOptions?: ConnectOptions): Promise<void> {
     return MicrofrontendPlatform.startPlatform(() => {
-        this.installClientStartupProgressMonitor();
-
         // Register platform beans.
         Beans.register(IS_PLATFORM_HOST, {useValue: false});
         Beans.registerIfAbsent(ɵWINDOW_TOP, {useValue: window.top});
@@ -449,20 +447,6 @@ export class MicrofrontendPlatform {
     Beans.register(ActivatorLoadProgressMonitor, {useValue: activatorLoadProgressMonitor});
     MicrofrontendPlatform.whenState(PlatformState.Started).then(() => {
       startupProgressMonitor.done();
-    });
-    MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => {
-      MicrofrontendPlatform._startupProgress$ = new Subject<number>();
-    });
-
-    monitor.progress$
-      .pipe(takeUntil(from(MicrofrontendPlatform.whenState(PlatformState.Started))))
-      .subscribe(MicrofrontendPlatform._startupProgress$);
-  }
-
-  private static installClientStartupProgressMonitor(): void {
-    const monitor = new ProgressMonitor();
-    MicrofrontendPlatform.whenState(PlatformState.Started).then(() => {
-      monitor.done();
     });
     MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => {
       MicrofrontendPlatform._startupProgress$ = new Subject<number>();
