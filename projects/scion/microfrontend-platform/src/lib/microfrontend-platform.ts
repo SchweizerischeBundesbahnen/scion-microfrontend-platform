@@ -49,7 +49,6 @@ import {ActivatorLoadProgressMonitor, ManifestLoadProgressMonitor} from './host/
 import {PlatformTopics} from './ɵmessaging.model';
 import {HostManifestInterceptor, ɵHostManifestInterceptor} from './host/host-manifest-interceptor';
 import {TopicSubscriptionRegistry} from './host/message-broker/topic-subscription.registry';
-import {CLIENT_PING_INTERVAL, CLIENT_PING_TIMEOUT} from './host/client-registry/client.constants';
 import {MicrofrontendPlatformStopper, ɵMicrofrontendPlatformStopper} from './microfrontend-platform-stopper';
 import {ɵClientRegistry} from './host/client-registry/ɵclient.registry';
 import {IntentInterceptor} from './host/message-broker/message-interception';
@@ -59,6 +58,7 @@ import {LivenessConfig} from './host/liveness-config';
 import {HostConfig} from './host/host-config';
 import {ApplicationConfig} from './host/application-config';
 import {AppInstaller} from './host/app-installer';
+import {CLIENT_PING_INTERVAL, CLIENT_PING_TIMEOUT} from './host/client-registry/client';
 
 /**
  * Current version of the SCION Microfrontend Platform.
