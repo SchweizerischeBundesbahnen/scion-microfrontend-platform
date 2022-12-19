@@ -9,7 +9,7 @@
  */
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
-import {Application, Capability, Intention, ManifestObject, ManifestObjectFilter, ManifestService, QualifierMatcher} from '@scion/microfrontend-platform';
+import {Application, Capability, Intention, ManifestObjectFilter, ManifestService, QualifierMatcher} from '@scion/microfrontend-platform';
 import {map} from 'rxjs/operators';
 import {combineArray, distinctArray, filterArray, mapArray, sortArray} from '@scion/toolkit/operators';
 
@@ -32,12 +32,12 @@ export class DevToolsManifestService {
 
   public intentions$(filter: ManifestObjectFilter): Observable<Intention[]> {
     return this._manifestService.lookupIntentions$(filter)
-      .pipe(sortArray(byType));
+      .pipe(sortArray((a, b) => a.type.localeCompare(b.type)));
   }
 
   public capabilities$(filter?: ManifestObjectFilter): Observable<Capability[]> {
     return this._manifestService.lookupCapabilities$(filter)
-      .pipe(sortArray(byType));
+      .pipe(sortArray((a, b) => a.type.localeCompare(b.type)));
   }
 
   /**
@@ -117,7 +117,3 @@ export class DevToolsManifestService {
     return !capability.private || this._appsBySymbolicName.get(appSymbolicName).scopeCheckDisabled || capability.metadata.appSymbolicName === appSymbolicName;
   }
 }
-
-const byType = (a: ManifestObject, b: ManifestObject): number => a.type.localeCompare(b.type);
-
-

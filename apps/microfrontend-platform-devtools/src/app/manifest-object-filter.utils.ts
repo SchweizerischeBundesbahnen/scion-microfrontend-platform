@@ -7,12 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ManifestObject} from '@scion/microfrontend-platform';
+import {Capability, Intention} from '@scion/microfrontend-platform';
 
 /**
  * Returns manifest objects that match given filter text in the type or qualifier.
  */
-export function filterManifestObjects<T extends ManifestObject>(manifestObjects: T[], filter: string): T[] {
+export function filterManifestObjects<T extends Capability | Intention>(manifestObjects: T[], filter: string): T[] {
   if (!manifestObjects) {
     return [];
   }
@@ -27,7 +27,7 @@ export function filterManifestObjects<T extends ManifestObject>(manifestObjects:
   });
 }
 
-function stringifyManifestObject(manifestObject: ManifestObject): string {
+function stringifyManifestObject(manifestObject: Capability | Intention): string {
   const keys = Object.keys(manifestObject.qualifier || {}).join('');
   const values = Object.values(manifestObject.qualifier || {}).join('');
   return `${manifestObject.type}${keys}${values}`;
