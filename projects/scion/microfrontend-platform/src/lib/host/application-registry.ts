@@ -8,7 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Application, Manifest} from '../platform.model';
+import {Manifest} from '../platform.model';
+import {ɵApplication} from '../ɵplatform.model';
 import {Arrays, Defined} from '@scion/toolkit/util';
 import {Urls} from '../url.util';
 import {MicrofrontendPlatformConfig} from './microfrontend-platform-config';
@@ -131,14 +132,3 @@ export class ApplicationRegistry {
   }
 }
 
-/**
- * Represents an application registered in the platform.
- *
- * The version is omitted because not known at the time of registration, but only when first connecting to the host, e.g., in an activator.
- */
-export interface ɵApplication extends Omit<Application, 'platformVersion'> { // eslint-disable-line @typescript-eslint/no-empty-interface
-  /**
-   * Specifies the origin(s) where message from this application must originate from. Messages of a different origin will be rejected.
-   */
-  allowedMessageOrigins: Set<string>;
-}

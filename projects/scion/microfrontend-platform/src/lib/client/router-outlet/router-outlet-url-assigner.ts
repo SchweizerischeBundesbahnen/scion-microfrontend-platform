@@ -11,7 +11,7 @@ import {runSafe} from '../../safe-runner';
 import {Navigation} from './metadata';
 import {Urls} from '../../url.util';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {ɵWINDOW_TOP} from '../../platform.model';
+import {ɵWINDOW_TOP} from '../../ɵplatform.model';
 
 /**
  * Assigns a URL to the iframe of a {@link SciRouterOutletElement `<sci-router-outlet>`}.

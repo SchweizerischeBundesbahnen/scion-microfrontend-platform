@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {interval, retry, Subscription, switchMap, timeout} from 'rxjs';
-import {APP_IDENTITY, ɵVERSION} from '../../platform.model';
+import {APP_IDENTITY} from '../../platform.model';
 import {semver} from '../semver';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageClient} from '../../client/messaging/message-client';
@@ -17,7 +17,7 @@ import {Logger, LoggingContext} from '../../logger';
 import {ClientRegistry} from './client.registry';
 import {CLIENT_PING_INTERVAL, CLIENT_PING_TIMEOUT} from './client.constants';
 import {Client} from './client';
-import {ɵApplication} from '../application-registry';
+import {ɵApplication, ɵVERSION} from '../../ɵplatform.model';
 import {IntentSubscription, IntentSubscriptionRegistry} from '../message-broker/intent-subscription.registry';
 import {UUID} from '@scion/toolkit/uuid';
 

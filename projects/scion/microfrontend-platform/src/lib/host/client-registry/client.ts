@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ɵApplication} from '../application-registry';
+import {ɵApplication} from '../../ɵplatform.model';
 
 /**
  * Represents a client which is connected to the message broker.

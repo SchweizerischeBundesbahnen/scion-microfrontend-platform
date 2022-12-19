@@ -11,8 +11,7 @@
 import {QualifierMatcher} from '../../qualifier-matcher';
 import {merge, Observable, Subject} from 'rxjs';
 import {Arrays, Maps} from '@scion/toolkit/util';
-import {Qualifier} from '../../platform.model';
-import {ManifestObject, ManifestObjectFilter} from './manifest-object.model';
+import {ManifestObjectFilter, Qualifier} from '../../platform.model';
 import {map} from 'rxjs/operators';
 import {Predicate} from '../message-broker/predicates.util';
 
@@ -56,7 +55,7 @@ export class ManifestObjectStore<T extends ManifestObject> {
    * @param filter - Control which manifest objects to return.
    *        Specified filter criteria are "AND"ed together. If no filter criteria are specified, all objects will be returned.
    */
-  public find(filter: ɵManifestObjectFilter): T[] {
+  public find(filter: Omit<ManifestObjectFilter, 'qualifier'> & {qualifier?: Qualifier | Predicate<Qualifier>}): T[] {
     const filterById = filter.id !== undefined;
     const filterByType = filter.type !== undefined;
     const filterByApp = filter.appSymbolicName !== undefined;
@@ -119,10 +118,15 @@ export class ManifestObjectStore<T extends ManifestObject> {
 }
 
 /**
- * Like {@link ManifestObjectFilter}, but allows passing a predicate as qualifier filter.
+ * Represents an object in the manifest registry like a capability or an intention.
  *
- * @internal
+ * @ignore
  */
-export interface ɵManifestObjectFilter extends Omit<ManifestObjectFilter, 'qualifier'> {
-  qualifier?: Qualifier | Predicate<Qualifier>;
+export interface ManifestObject {
+  type: string;
+  qualifier?: Qualifier;
+  metadata?: {
+    id: string;
+    appSymbolicName: string;
+  };
 }

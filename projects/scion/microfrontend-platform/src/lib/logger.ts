@@ -9,7 +9,8 @@
  */
 
 import {Beans} from '@scion/toolkit/bean-manager';
-import {APP_IDENTITY, ɵVERSION} from './platform.model';
+import {APP_IDENTITY} from './platform.model';
+import {ɵVERSION} from './ɵplatform.model';
 
 /**
  * Logger used by the platform to log to the console.

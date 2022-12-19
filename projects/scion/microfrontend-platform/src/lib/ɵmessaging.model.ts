@@ -80,31 +80,63 @@ export interface MessageEnvelope<MSG extends Message = Message> {
  */
 export namespace PlatformTopics {
   /**
-   * Allows requesting the subscription count on a topic.
+   * Topic to request the subscription count on a topic.
    */
   export const RequestSubscriberCount = 'ɵREQUEST_SUBSCRIBER_COUNT';
   /**
-   * When a client gains the focus it publishes a retained event to this topic.
+   * Topic to signal when gained the focus.
    */
   export const FocusIn = 'ɵFOCUS_IN';
   /**
-   * Allows testing whether the requester has received focus or contains embedded web content that has received focus.
+   * Topic to request whether the requesting client (or a microfrontend embedded in the client) has gained focus.
    */
   export const IsFocusWithin = 'ɵIS_FOCUS_WITHIN';
   /**
-   * Allows testing whether the requester has received focus.
+   * Topic to request whether the requesting client has gained focus.
    */
   export const HasFocus = 'ɵHAS_FOCUS';
   /**
-   * Allows reading the platform properties from this retained topic.
+   * Topic to read platform properties.
    */
   export const PlatformProperties = 'ɵPLATFORM_PROPERTIES';
   /**
-   * Allows reading the registered applications from this retained topic.
+   * Topic to read platform registered applications.
    */
   export const Applications = 'ɵAPPLICATIONS';
   /**
-   * Computes the topic where the host can ping clients.
+   * Topic to request capabilities.
+   */
+  export const LookupCapabilities = 'ɵLOOKUP_CAPABILITIES';
+  /**
+   * Topic to request intentions.
+   */
+  export const LookupIntentions = 'ɵLOOKUP_INTENTIONS';
+  /**
+   * Topic to register a capability.
+   */
+  export const RegisterCapability = 'ɵREGISTER_CAPABILITY';
+  /**
+   * Topic to unregister a capability.
+   */
+  export const UnregisterCapabilities = 'ɵUNREGISTER_CAPABILITIES';
+  /**
+   * Topic to register an intentions.
+   */
+  export const RegisterIntention = 'ɵREGISTER_INTENTION';
+  /**
+   * Topic to unregister an intention.
+   */
+  export const UnregisterIntentions = 'ɵUNREGISTER_INTENTIONS';
+
+  /**
+   * Topic to request the platform version of a specific application.
+   */
+  export function platformVersion(appSymbolicName: string): string {
+    return `ɵapplication/${appSymbolicName}/platform/version`;
+  }
+
+  /**
+   * Topic to ping a client for liveness.
    */
   export function ping(clientId: string): string {
     return `ɵclient/${clientId}/ping`;

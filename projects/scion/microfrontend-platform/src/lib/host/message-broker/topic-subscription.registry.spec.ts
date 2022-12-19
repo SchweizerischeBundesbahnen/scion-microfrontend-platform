@@ -17,7 +17,7 @@ import {firstValueFrom, noop} from 'rxjs';
 import {ɵClientRegistry} from '../client-registry/ɵclient.registry';
 import {UUID} from '@scion/toolkit/uuid';
 import {Logger, NULL_LOGGER} from '../../logger';
-import {ɵApplication} from '../application-registry';
+import {ɵApplication} from '../../ɵplatform.model';
 import {map} from 'rxjs/operators';
 
 describe('TopicSubscriptionRegistry', () => {

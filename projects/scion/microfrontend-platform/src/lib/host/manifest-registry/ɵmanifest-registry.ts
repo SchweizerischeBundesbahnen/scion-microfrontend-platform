@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Capability, Intention, ParamDefinition} from '../../platform.model';
-import {ManifestObjectStore, ɵManifestObjectFilter} from './manifest-object-store';
+import {Capability, Intention, ManifestObjectFilter, ParamDefinition} from '../../platform.model';
+import {ManifestObjectStore} from './manifest-object-store';
 import {concatWith, defer, EMPTY, filter, merge, Observable, of, Subscription} from 'rxjs';
 import {distinctUntilChanged, expand, mergeMap, take} from 'rxjs/operators';
 import {Intent, MessageHeaders, TopicMessage} from '../../messaging.model';
@@ -20,11 +20,11 @@ import {ManifestRegistry} from './manifest-registry';
 import {QualifierMatcher} from '../../qualifier-matcher';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {Logger, LoggingContext} from '../../logger';
-import {ManifestObjectFilter} from './manifest-object.model';
 import {ClientRegistry} from '../client-registry/client.registry';
 import {CapabilityInterceptor} from './capability-interceptors';
 import {UUID} from '@scion/toolkit/uuid';
 import {Qualifiers} from '../../qualifiers.util';
+import {PlatformTopics} from '../../ɵmessaging.model';
 
 export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
@@ -105,8 +105,11 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
    * Tests whether the given app has declared a matching intention for the given capability.
    */
   private hasIntentionForCapability(appSymbolicName: string, capability: Capability): boolean {
-    const filter: ɵManifestObjectFilter = {appSymbolicName, type: capability.type, qualifier: intentionQualifier => new QualifierMatcher(intentionQualifier).matches(capability.qualifier)};
-    return this._intentionStore.find(filter).length > 0;
+    return this._intentionStore.find({
+      appSymbolicName,
+      type: capability.type,
+      qualifier: intentionQualifier => new QualifierMatcher(intentionQualifier).matches(capability.qualifier),
+    }).length > 0;
   }
 
   public async registerCapability(capability: Capability, appSymbolicName: string): Promise<string> {
@@ -174,7 +177,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   private installCapabilityRegisterRequestHandler(): void {
-    this._subscriptions.add(Beans.get(MessageClient).onMessage<Capability, string>(ManifestRegistryTopics.RegisterCapability, (request: TopicMessage<Capability>) => {
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<Capability, string>(PlatformTopics.RegisterCapability, (request: TopicMessage<Capability>) => {
       const capability = request.body!;
       const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
       return this.registerCapability(capability, appSymbolicName);
@@ -182,7 +185,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   private installCapabilityUnregisterRequestHandler(): void {
-    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, void>(ManifestRegistryTopics.UnregisterCapabilities, (request: TopicMessage<ManifestObjectFilter>) => {
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, void>(PlatformTopics.UnregisterCapabilities, (request: TopicMessage<ManifestObjectFilter>) => {
       const capabilityFilter = request.body || {};
       const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
       this.unregisterCapabilities(appSymbolicName, capabilityFilter);
@@ -190,7 +193,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   private installIntentionRegisterRequestHandler(): void {
-    this._subscriptions.add(Beans.get(MessageClient).onMessage<Intention, string>(ManifestRegistryTopics.RegisterIntention, (request: TopicMessage<Intention>) => {
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<Intention, string>(PlatformTopics.RegisterIntention, (request: TopicMessage<Intention>) => {
       const intention = request.body!;
       const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
       assertIntentionRegisterApiEnabled(appSymbolicName);
@@ -199,7 +202,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   private installIntentionUnregisterRequestHandler(): void {
-    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, void>(ManifestRegistryTopics.UnregisterIntentions, (request: TopicMessage<ManifestObjectFilter>) => {
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, void>(PlatformTopics.UnregisterIntentions, (request: TopicMessage<ManifestObjectFilter>) => {
       const intentFilter = request.body || {};
       const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
       assertIntentionRegisterApiEnabled(appSymbolicName);
@@ -208,7 +211,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   private installCapabilitiesLookupRequestHandler(): void {
-    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, Capability[]>(ManifestRegistryTopics.LookupCapabilities, (request: TopicMessage<ManifestObjectFilter>) => {
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, Capability[]>(PlatformTopics.LookupCapabilities, (request: TopicMessage<ManifestObjectFilter>) => {
       const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
       const lookupFilter = request.body || {};
 
@@ -231,7 +234,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   private installIntentionsLookupRequestHandler(): void {
-    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, Intention[]>(ManifestRegistryTopics.LookupIntentions, (request: TopicMessage<ManifestObjectFilter>) => {
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, Intention[]>(PlatformTopics.LookupIntentions, (request: TopicMessage<ManifestObjectFilter>) => {
       const lookupFilter = request.body || {};
 
       const illegalQualifierError = Qualifiers.validateQualifier(lookupFilter.qualifier, {exactQualifier: false});
@@ -249,7 +252,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   private installVersionLookupHandler(): void {
-    this._subscriptions.add(Beans.get(MessageClient).onMessage<void, string>(ManifestRegistryTopics.platformVersion(':appSymbolicName'), message => {
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<void, string>(PlatformTopics.platformVersion(':appSymbolicName'), message => {
       const appSymbolicName = message.params!.get('appSymbolicName')!;
       const clientRegister$ = Beans.get(ClientRegistry).register$.pipe(filter(client => client.application.symbolicName === appSymbolicName));
       const platformVersion$ = defer(() => {
@@ -266,22 +269,6 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
   public preDestroy(): void {
     this._subscriptions.forEach(subscription => subscription.unsubscribe());
-  }
-}
-
-/**
- * Defines the topics to interact with the manifest registry from {@link ManifestService}.
- */
-export namespace ManifestRegistryTopics {
-  export const LookupCapabilities = 'ɵLOOKUP_CAPABILITIES';
-  export const LookupIntentions = 'ɵLOOKUP_INTENTIONS';
-  export const RegisterCapability = 'ɵREGISTER_CAPABILITY';
-  export const UnregisterCapabilities = 'ɵUNREGISTER_CAPABILITIES';
-  export const RegisterIntention = 'ɵREGISTER_INTENTION';
-  export const UnregisterIntentions = 'ɵUNREGISTER_INTENTIONS';
-
-  export function platformVersion(appSymbolicName: string): string {
-    return `ɵapplication/${appSymbolicName}/platform/version`;
   }
 }
 

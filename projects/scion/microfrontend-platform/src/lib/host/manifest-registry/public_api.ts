@@ -11,5 +11,5 @@
 /**
  * Entry point for all public APIs of this package.
  */
-export {ManifestObject, ManifestObjectFilter} from './manifest-object.model';
 export {CapabilityInterceptor} from './capability-interceptors';
+export {ManifestObject} from './manifest-object-store';

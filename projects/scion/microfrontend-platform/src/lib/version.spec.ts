@@ -12,7 +12,7 @@ import {MicrofrontendFixture} from './testing/microfrontend-fixture/microfronten
 import {ManifestFixture} from './testing/manifest-fixture/manifest-fixture';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {installLoggerSpies, readConsoleLog} from './testing/spec.util.spec';
-import {ɵVERSION} from './platform.model';
+import {ɵVERSION} from './ɵplatform.model';
 import {ManifestService} from './client/manifest-registry/manifest-service';
 
 describe('MicrofrontendPlatform', () => {

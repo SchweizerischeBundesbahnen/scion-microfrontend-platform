@@ -14,7 +14,7 @@ import {noop} from 'rxjs';
 import {ɵClientRegistry} from '../client-registry/ɵclient.registry';
 import {UUID} from '@scion/toolkit/uuid';
 import {IntentSubscription, IntentSubscriptionRegistry} from './intent-subscription.registry';
-import {ɵApplication} from '../application-registry';
+import {ɵApplication} from '../../ɵplatform.model';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {map} from 'rxjs/operators';
 

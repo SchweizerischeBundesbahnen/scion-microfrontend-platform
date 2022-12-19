@@ -9,5 +9,5 @@
  */
 
 export * from '../microfrontend-platform/src/lib/platform.model';
+export * from '../microfrontend-platform/src/lib/ɵplatform.model';
 export * from '../microfrontend-platform/src/lib/messaging.model';
-export * from '../microfrontend-platform/src/lib/host/manifest-registry/manifest-object.model';
