@@ -1,5 +1,5 @@
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
-import {MicrofrontendPlatform, MicrofrontendPlatformStopper, PlatformState} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatform, MicrofrontendPlatformHost, MicrofrontendPlatformStopper, PlatformState} from '@scion/microfrontend-platform';
 
 {
   // tag::platform-lifecycle:registerInitializer[]
@@ -62,7 +62,7 @@ import {MicrofrontendPlatform, MicrofrontendPlatformStopper, PlatformState} from
 {
   // tag::platform-lifecycle:startupProgress[]
   // Invoke just before starting the SCION Microfrontend Platform.
-  MicrofrontendPlatform.startupProgress$.subscribe((progress: number) => {
+  MicrofrontendPlatformHost.startupProgress$.subscribe((progress: number) => {
     // Update your progress indicator here.
     // The reported progress is a percentage number between `0` and `100`.
   });

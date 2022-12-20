@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {MicrofrontendPlatform} from './microfrontend-platform';
+import {MicrofrontendPlatformHost} from './host/microfrontend-platform-host';
 import {MicrofrontendFixture} from './testing/microfrontend-fixture/microfrontend-fixture';
 import {ManifestFixture} from './testing/manifest-fixture/manifest-fixture';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -31,7 +32,7 @@ describe('Deprecated APIs', () => {
   it('should warn if client does not support liveness probes introduced in version "1.0.0-rc.11"', async () => {
     Beans.register(ɵVERSION, {useValue: '1.0.0'});
 
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'app',
@@ -52,7 +53,7 @@ describe('Deprecated APIs', () => {
   it('should warn if client does not support intent subscription protocol introduced in version "1.0.0-rc.8"', async () => {
     Beans.register(ɵVERSION, {useValue: '1.0.0'});
 
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'app',
@@ -73,7 +74,7 @@ describe('Deprecated APIs', () => {
   it('should warn if client does not support request-response communication protocol introduced in version "1.0.0-rc.9"', async () => {
     Beans.register(ɵVERSION, {useValue: '1.0.0'});
 
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'app',

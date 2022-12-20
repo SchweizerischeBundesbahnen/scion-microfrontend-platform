@@ -9,6 +9,7 @@
  */
 
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../../host/microfrontend-platform-host';
 import {RouterOutlets} from './router-outlet.element';
 import {OutletRouter} from './outlet-router';
 import {NavigationOptions} from './metadata';
@@ -23,7 +24,7 @@ describe('OutletRouter', () => {
 
   describe('Named parameter substitution', () => {
 
-    beforeAll(async () => await MicrofrontendPlatform.startHost({applications: []}));
+    beforeAll(async () => await MicrofrontendPlatformHost.start({applications: []}));
     afterAll(async () => await MicrofrontendPlatform.destroy());
 
     describe('absolute URL (hash-based routing)', () => testSubstitution('http://localhost:4200/#/', {expectedBasePath: 'http://localhost:4200/#/'}));

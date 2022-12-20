@@ -89,15 +89,15 @@ export interface Application {
    */
   activatorLoadTimeout?: number;
   /**
-   * Indicates whether or not capability scope check is disabled for this application.
+   * Indicates whether this application can interact with private capabilities of other applications.
    */
   scopeCheckDisabled: boolean;
   /**
-   * Indicates whether or not this application can issue intents for which it has not declared a respective intention.
+   * Indicates whether this application can interact with capabilities of other applications without having to declare respective intentions.
    */
   intentionCheckDisabled: boolean;
   /**
-   * Indicates whether or not 'Intention Registration API' is disabled for this application.
+   * Indicates whether this application can register and unregister intentions dynamically at runtime.
    */
   intentionRegisterApiDisabled: boolean;
   /**
@@ -300,7 +300,7 @@ export enum PlatformCapabilityTypes {
  * A micro application can register multiple activators. Note, that each activator boots the micro
  * application on its own and runs in a separate browsing context. The platform nominates one activator
  * of each micro application as its primary activator. The nomination has no relevance to the platform but
- * can help code decide whether or not to install singleton functionality.
+ * can help code decide whether to install singleton functionality.
  *
  * You can test if running in the primary activation context as following.
  * ```ts

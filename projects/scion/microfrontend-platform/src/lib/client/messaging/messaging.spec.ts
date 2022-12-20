@@ -13,6 +13,7 @@ import {MessageClient, takeUntilUnsubscribe} from './message-client';
 import {IntentClient} from './intent-client';
 import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, Latch, readConsoleLog, resetLoggerSpy, waitFor, waitUntilStable, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../../host/microfrontend-platform-host';
 import {ClientRegistry} from '../../host/client-registry/client.registry';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestService} from '../manifest-registry/manifest-service';
@@ -42,7 +43,7 @@ describe('Messaging', () => {
   });
 
   it('should allow publishing messages to a topic', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const messageCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(messageCaptor);
@@ -55,7 +56,7 @@ describe('Messaging', () => {
   });
 
   it('should allow publishing a message in the platform\'s `whenState(PlatformState.Stopping)` hook', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -74,7 +75,7 @@ describe('Messaging', () => {
   });
 
   it('should allow publishing a message in a bean\'s `preDestroy` hook when the platform is stopping`', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -93,7 +94,7 @@ describe('Messaging', () => {
   });
 
   it('should allow publishing a message in `window.beforeunload` browser hook', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -115,7 +116,7 @@ describe('Messaging', () => {
   });
 
   it('should allow publishing a message in `window.unload` browser hook', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -135,7 +136,7 @@ describe('Messaging', () => {
   });
 
   it('should allow issuing an intent', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -156,7 +157,7 @@ describe('Messaging', () => {
   });
 
   it('should allow issuing an intent for which the app has not declared a respective intention, but only if \'intention check\' is disabled for that app', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {intentionCheckDisabled: true},
       applications: [
         {
@@ -170,7 +171,7 @@ describe('Messaging', () => {
   });
 
   it('should not allow issuing an intent for which the app has not declared a respective intention, if \'intention check\' is enabled or not specified for that app', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client-app',
@@ -183,7 +184,7 @@ describe('Messaging', () => {
   });
 
   it('should dispatch a message to subscribers with a wildcard subscription', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const messageCaptor = new ObserveCaptor();
 
@@ -221,7 +222,7 @@ describe('Messaging', () => {
   });
 
   it('should allow passing headers when publishing a message', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const headerCaptor = new ObserveCaptor(headersExtractFn);
     Beans.get(MessageClient).observe$('some-topic').subscribe(headerCaptor);
@@ -232,7 +233,7 @@ describe('Messaging', () => {
   });
 
   it('should allow passing headers when issuing an intent', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -251,7 +252,7 @@ describe('Messaging', () => {
   });
 
   it('should return an empty headers dictionary if no headers are set', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const headerCaptor = new ObserveCaptor(headersExtractFn);
     Beans.get(MessageClient).observe$('some-topic').subscribe(headerCaptor);
@@ -262,7 +263,7 @@ describe('Messaging', () => {
   });
 
   it('should allow passing headers when sending a request', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
@@ -276,7 +277,7 @@ describe('Messaging', () => {
   });
 
   it('should allow passing headers when sending an intent request', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -298,7 +299,7 @@ describe('Messaging', () => {
   });
 
   it('should allow receiving a reply for a request (by not replying with a status code)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
@@ -313,7 +314,7 @@ describe('Messaging', () => {
   });
 
   it('should allow receiving a reply for a request (by replying with the status code 200)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
@@ -328,7 +329,7 @@ describe('Messaging', () => {
   });
 
   it('should allow receiving multiple replies for a request', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
@@ -345,7 +346,7 @@ describe('Messaging', () => {
   });
 
   it('should complete the request when replying with the status code 250 (with the first reply)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
@@ -360,7 +361,7 @@ describe('Messaging', () => {
   });
 
   it('should complete the request when replying with the status code 250 (after multiple replies)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
@@ -377,7 +378,7 @@ describe('Messaging', () => {
   });
 
   it('should error the request when replying with the status code 500', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
@@ -394,7 +395,7 @@ describe('Messaging', () => {
   });
 
   it('should not complete the message Observable upon platform shutdown (as per API)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     // GIVEN
     const captor = new ObserveCaptor();
@@ -408,7 +409,7 @@ describe('Messaging', () => {
   });
 
   it('should not complete the request Observable upon platform shutdown (as per API)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     // GIVEN
     const captor = new ObserveCaptor();
@@ -424,7 +425,7 @@ describe('Messaging', () => {
   });
 
   it('should allow receiving a reply for an intent request (by not replying with a status code)', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -447,7 +448,7 @@ describe('Messaging', () => {
   });
 
   it('should allow receiving a reply for an intent request (by replying with the status code 200)', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -470,7 +471,7 @@ describe('Messaging', () => {
   });
 
   it('should allow receiving multiple replies for an intent request', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -495,7 +496,7 @@ describe('Messaging', () => {
   });
 
   it('should complete the intent request when replying with the status code 250 (with the first reply)', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -518,7 +519,7 @@ describe('Messaging', () => {
   });
 
   it('should complete the intent request when replying with the status code 250 (after multiple replies)', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -543,7 +544,7 @@ describe('Messaging', () => {
   });
 
   it('should error the intent request when replying with the status code 500', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -582,7 +583,7 @@ describe('Messaging', () => {
       }
     };
     Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -619,7 +620,7 @@ describe('Messaging', () => {
       }
     };
     Beans.register(MessageInterceptor, {useValue: interceptor, multi: true});
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
@@ -642,7 +643,7 @@ describe('Messaging', () => {
       runlevel: 0,
     });
 
-    const startup = MicrofrontendPlatform.startHost({host: {brokerDiscoverTimeout: 250}, applications: []});
+    const startup = MicrofrontendPlatformHost.start({host: {brokerDiscoverTimeout: 250}, applications: []});
 
     await expectPromise(startup).toResolve();
     expect(initializerCompleted).toBeTrue();
@@ -671,7 +672,7 @@ describe('Messaging', () => {
     });
 
     // Start the host
-    const startup = MicrofrontendPlatform.startHost({host: {brokerDiscoverTimeout: 250}, applications: []});
+    const startup = MicrofrontendPlatformHost.start({host: {brokerDiscoverTimeout: 250}, applications: []});
 
     // Expect the startup not to error
     await expectPromise(startup).toResolve();
@@ -685,7 +686,7 @@ describe('Messaging', () => {
   });
 
   it('should receive a message sent to a topic', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     // GIVEN
     const captor = new ObserveCaptor<TopicMessage, string>(message => message.body);
@@ -700,7 +701,7 @@ describe('Messaging', () => {
   });
 
   it('should receive multiple messages sent to a topic', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     // GIVEN
     const captor = new ObserveCaptor<TopicMessage, string>(message => message.body);
@@ -717,7 +718,7 @@ describe('Messaging', () => {
   });
 
   it('should allow multiple subscriptions to the same topic in the same client', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const captor1 = new ObserveCaptor(bodyExtractFn);
     const captor2 = new ObserveCaptor(bodyExtractFn);
@@ -786,7 +787,7 @@ describe('Messaging', () => {
   });
 
   it('should allow multiple subscriptions to the same intent in the same client', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -864,7 +865,7 @@ describe('Messaging', () => {
   });
 
   it('should receive a message once regardless of the number of subscribers in the same client', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     // Register two receivers
     Beans.get(MessageClient).observe$<string>('topic').subscribe();
@@ -884,7 +885,7 @@ describe('Messaging', () => {
   });
 
   it('should receive an intent once regardless of the number of subscribers in the same client', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -913,7 +914,7 @@ describe('Messaging', () => {
   });
 
   it(`should receive an intent for a capability having the qualifier {entity: 'person', mode: 'new'}`, async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     // Register capability
     const capabilityId = await Beans.get(ManifestService).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}});
@@ -930,7 +931,7 @@ describe('Messaging', () => {
   });
 
   it('should transport topic message to subscribed client(s) only', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -972,7 +973,7 @@ describe('Messaging', () => {
   });
 
   it('should transport intent message to subscribed client(s) only', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -1027,7 +1028,7 @@ describe('Messaging', () => {
   });
 
   it('should allow tracking the subscriptions on a topic', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     // Subscribe and wait until the initial subscription count, which is 0, is reported.
     const subscriberCountCaptor = new ObserveCaptor();
@@ -1058,7 +1059,7 @@ describe('Messaging', () => {
   });
 
   it('should not complete the "topic subscriber count" Observable upon platform shutdown (as per API)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     // GIVEN
     const captor = new ObserveCaptor();
@@ -1072,7 +1073,7 @@ describe('Messaging', () => {
   });
 
   it('should set message headers about the sender', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {symbolicName: 'host-app'},
       applications: [],
     });
@@ -1088,7 +1089,7 @@ describe('Messaging', () => {
   });
 
   it('should prevent overriding platform specific message headers [pub/sub]', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const headersCaptor = new ObserveCaptor(headersExtractFn);
     Beans.get(MessageClient).observe$('some-topic').subscribe(headersCaptor);
@@ -1110,7 +1111,7 @@ describe('Messaging', () => {
   });
 
   it('should prevent overriding platform specific message headers [request/reply]', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const headersCaptor = new ObserveCaptor(headersExtractFn);
     Beans.get(MessageClient).observe$('some-topic').subscribe(headersCaptor);
@@ -1132,7 +1133,7 @@ describe('Messaging', () => {
   });
 
   it('should prevent overriding platform specific intent message headers [pub/sub]', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -1161,7 +1162,7 @@ describe('Messaging', () => {
   });
 
   it('should prevent overriding platform specific intent message headers [request/reply]', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         manifest: {
           name: 'Host Application',
@@ -1192,7 +1193,7 @@ describe('Messaging', () => {
   describe('takeUntilUnsubscribe operator', () => {
 
     it('should complete the source observable when all subscribers unsubscribed', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const subscription1 = Beans.get(MessageClient).observe$('some-topic').subscribe();
       const subscription2 = Beans.get(MessageClient).observe$('some-topic').subscribe();
@@ -1219,7 +1220,7 @@ describe('Messaging', () => {
     });
 
     it('should complete the source observable immediately when no subscriber is subscribed', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const captor = new ObserveCaptor();
       new Subject<void>()
@@ -1232,7 +1233,7 @@ describe('Messaging', () => {
     });
 
     it('should not complete the source Observable upon platform shutdown (as per API)', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       // GIVEN
       const captor = new ObserveCaptor();
@@ -1253,7 +1254,7 @@ describe('Messaging', () => {
   describe('intents with params', () => {
 
     it('should allow issuing an intent with parameters', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host Application',
@@ -1277,7 +1278,7 @@ describe('Messaging', () => {
     });
 
     it('should preserve data type of passed intent parameters', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host Application',
@@ -1339,7 +1340,7 @@ describe('Messaging', () => {
     });
 
     it('should not remove params associated with the value `null`', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host Application',
@@ -1362,7 +1363,7 @@ describe('Messaging', () => {
     });
 
     it('should remove params associated with the value `undefined`', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host Application',
@@ -1385,7 +1386,7 @@ describe('Messaging', () => {
     });
 
     it('should allow issuing an intent without passing optional parameters', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host Application',
@@ -1409,7 +1410,7 @@ describe('Messaging', () => {
     });
 
     it('should reject an intent if parameters are missing', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host Application',
@@ -1432,7 +1433,7 @@ describe('Messaging', () => {
     });
 
     it('should reject an intent if it includes non-specified parameter', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host Application',
@@ -1452,7 +1453,7 @@ describe('Messaging', () => {
     });
 
     it('should map deprecated params to their substitutes, if declared', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           symbolicName: 'host-app',
           manifest: {
@@ -1483,7 +1484,7 @@ describe('Messaging', () => {
     });
 
     it('should make deprecated params optional', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host Application',
@@ -1523,7 +1524,7 @@ describe('Messaging', () => {
     });
 
     it('should log deprecation warning when passing deprecated params in an intent', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           symbolicName: 'host-app',
           manifest: {
@@ -1604,7 +1605,7 @@ describe('Messaging', () => {
       });
 
       // Start the platform
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host Application',
@@ -1628,7 +1629,7 @@ describe('Messaging', () => {
   describe('topic-based messaging', () => {
 
     it('should not error if no subscriber is found', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       // Send message.
       const whenPublished = Beans.get(MessageClient).publish('myhome/temperature/kitchen', '20°C');
@@ -1636,7 +1637,7 @@ describe('Messaging', () => {
     });
 
     it('should error if publish topic is "empty", "null" or "undefined"', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       await expectAsync(Beans.get(MessageClient).publish('')).toBeRejectedWithError(/IllegalTopicError/);
       await expectAsync(Beans.get(MessageClient).publish(null)).toBeRejectedWithError(/IllegalTopicError/);
@@ -1644,7 +1645,7 @@ describe('Messaging', () => {
     });
 
     it('should error if publish topic contains empty segments', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       await expectAsync(Beans.get(MessageClient).publish('/myhome/kitchen/')).toBeRejectedWithError(/IllegalTopicError/);
       await expectAsync(Beans.get(MessageClient).publish('/myhome/kitchen')).toBeRejectedWithError(/IllegalTopicError/);
@@ -1654,13 +1655,13 @@ describe('Messaging', () => {
     });
 
     it('should error if publish topic contains wildcard segments', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       await expectAsync(Beans.get(MessageClient).publish('myhome/:room/temperature')).toBeRejectedWithError(/IllegalTopicError/);
     });
 
     it('should error if observe topic is "empty", "null" or "undefined"', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const captor1 = new ObserveCaptor();
       Beans.get(MessageClient).observe$('').subscribe(captor1);
@@ -1679,7 +1680,7 @@ describe('Messaging', () => {
     });
 
     it('should error if observe topic contains empty segments', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const captor1 = new ObserveCaptor();
       Beans.get(MessageClient).observe$('/myhome/kitchen/').subscribe(captor1);
@@ -1708,7 +1709,7 @@ describe('Messaging', () => {
     });
 
     it('should error if subscriber count topic is empty', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const captor1 = new ObserveCaptor();
       Beans.get(MessageClient).subscriberCount$('').subscribe(captor1);
@@ -1727,7 +1728,7 @@ describe('Messaging', () => {
     });
 
     it('should error if subscriber count topic contains empty segments', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const captor1 = new ObserveCaptor();
       Beans.get(MessageClient).subscriberCount$('/myhome/kitchen/').subscribe(captor1);
@@ -1756,7 +1757,7 @@ describe('Messaging', () => {
     });
 
     it('should error if subscriber count topic contains wildcard segments', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const captor = new ObserveCaptor();
       Beans.get(MessageClient).subscriberCount$('myhome/:room/temperature').subscribe(captor);
@@ -1767,7 +1768,7 @@ describe('Messaging', () => {
     describe('request', () => {
 
       it('should error if request topic is empty', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         const captor1 = new ObserveCaptor();
         Beans.get(MessageClient).request$('').subscribe(captor1);
@@ -1786,7 +1787,7 @@ describe('Messaging', () => {
       });
 
       it('should error if request topic contains empty segments', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         const captor1 = new ObserveCaptor();
         Beans.get(MessageClient).request$('/myhome/kitchen/').subscribe(captor1);
@@ -1815,7 +1816,7 @@ describe('Messaging', () => {
       });
 
       it('should error if request topic contains wildcard segments', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         const captor = new ObserveCaptor();
         Beans.get(MessageClient).request$('myhome/:room/temperature').subscribe(captor);
@@ -1824,7 +1825,7 @@ describe('Messaging', () => {
       });
 
       it('should error if no replier is found', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Send request.
         const responseCaptor = new ObserveCaptor();
@@ -1840,7 +1841,7 @@ describe('Messaging', () => {
     describe('retained message', () => {
 
       it('should not error if no subscriber is found', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Send intent.
         const whenPublished = Beans.get(MessageClient).publish('myhome/temperature/kitchen', '20°C', {retain: true});
@@ -1848,7 +1849,7 @@ describe('Messaging', () => {
       });
 
       it('should receive retained messages matching an exact subscription', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Publish retained messages
         await Beans.get(MessageClient).publish('myhome/livingroom/temperature', '22°C', {retain: true});
@@ -1895,7 +1896,7 @@ describe('Messaging', () => {
       });
 
       it('should receive retained messages matching a wildcard subscription', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         const messageCaptor = new ObserveCaptor();
 
@@ -1929,7 +1930,7 @@ describe('Messaging', () => {
       });
 
       it('should delete retained message', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Publish retained message
         await Beans.get(MessageClient).publish('myhome/livingroom/temperature', '22°C', {retain: true});
@@ -1958,7 +1959,7 @@ describe('Messaging', () => {
       });
 
       it('should not delete retained message if sending `null` payload', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Publish retained message
         await Beans.get(MessageClient).publish('myhome/livingroom/temperature', '22°C', {retain: true});
@@ -1980,7 +1981,7 @@ describe('Messaging', () => {
       });
 
       it('should not delete retained message if sending `falsy` payload', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Publish retained message
         await Beans.get(MessageClient).publish('myhome/livingroom/temperature', '22°C', {retain: true});
@@ -2002,7 +2003,7 @@ describe('Messaging', () => {
       });
 
       it('should not dispatch retained message deletion event', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Publish retained message
         await Beans.get(MessageClient).publish('myhome/livingroom/temperature', '22°C', {retain: true});
@@ -2027,7 +2028,7 @@ describe('Messaging', () => {
       });
 
       it('should dispatch a retained message only to the newly subscribed subscriber', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         const messageCollector1 = new ObserveCaptor();
         const messageCollector2 = new ObserveCaptor();
@@ -2115,7 +2116,7 @@ describe('Messaging', () => {
       });
 
       it('should deliver headers in retained message', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {symbolicName: 'host-app'},
           applications: [],
         });
@@ -2146,7 +2147,7 @@ describe('Messaging', () => {
     describe('retained request', () => {
 
       it('should not error if no replier is found', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Send request.
         const responseCaptor = new ObserveCaptor();
@@ -2158,7 +2159,7 @@ describe('Messaging', () => {
       });
 
       it('should deliver retained request to late subscribers', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Send retained request.
         const responseCaptor = new ObserveCaptor(bodyExtractFn);
@@ -2176,7 +2177,7 @@ describe('Messaging', () => {
       });
 
       it('should not replace retained request by later retained request', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Send retained request.
         const responseCaptor1 = new ObserveCaptor(bodyExtractFn);
@@ -2229,7 +2230,7 @@ describe('Messaging', () => {
       });
 
       it('should not replace retained request by later retained message', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Send retained request.
         const responseCaptor = new ObserveCaptor(bodyExtractFn);
@@ -2250,7 +2251,7 @@ describe('Messaging', () => {
       });
 
       it('should delete retained request when the replier terminates the communication', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Send retained request
         const responseCaptor = new ObserveCaptor(bodyExtractFn);
@@ -2323,7 +2324,7 @@ describe('Messaging', () => {
       });
 
       it('should delete retained request when the requestor unsubscribes before receiving a reply', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Send retained request.
         const responseCaptor = new ObserveCaptor(bodyExtractFn);
@@ -2351,7 +2352,7 @@ describe('Messaging', () => {
       });
 
       it('should delete retained request when the requestor unsubscribes after received a reply', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Send retained request.
         const responseCaptor = new ObserveCaptor(bodyExtractFn);
@@ -2390,7 +2391,7 @@ describe('Messaging', () => {
       });
 
       it('should not delete previous retained request when sending a retained request without payload', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         // Send retained request
         const responseCaptor = new ObserveCaptor(bodyExtractFn);
@@ -2407,7 +2408,7 @@ describe('Messaging', () => {
       });
 
       it('should receive request by multiple subscribers', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -2450,7 +2451,7 @@ describe('Messaging', () => {
   describe('intent-based messaging', () => {
 
     it('should error if no application provides a fulfilling capability', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -2468,7 +2469,7 @@ describe('Messaging', () => {
     });
 
     it('should not error if no subscriber is found', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host Application',
@@ -2491,20 +2492,20 @@ describe('Messaging', () => {
     });
 
     it('should error if publish qualifier contains wildcards', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: '*'}})).toBeRejectedWithError(/IllegalQualifierError/);
       await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {'*': '*'}})).toBeRejectedWithError(/IllegalQualifierError/);
     });
 
     it('should error if publish qualifier contains entries with an illegal data type', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: {} as any}})).toBeRejectedWithError(/IllegalQualifierError/);
     });
 
     it('should error if publish qualifier contains empty entries', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: ''}})).toBeRejectedWithError(/IllegalQualifierError/);
       await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: null}})).toBeRejectedWithError(/IllegalQualifierError/);
@@ -2512,7 +2513,7 @@ describe('Messaging', () => {
     });
 
     it('should error if observe qualifier contains entries with an illegal data type', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const captor = new ObserveCaptor();
       Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: {} as any}}).subscribe(captor);
@@ -2521,7 +2522,7 @@ describe('Messaging', () => {
     });
 
     it('should error if observe qualifier contains empty entries', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const captor1 = new ObserveCaptor();
       Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: ''}}).subscribe(captor1);
@@ -2542,7 +2543,7 @@ describe('Messaging', () => {
     describe('intent request', () => {
 
       it('should error if request qualifier contains wildcards', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         const captor1 = new ObserveCaptor();
         Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: '*'}}).subscribe(captor1);
@@ -2556,7 +2557,7 @@ describe('Messaging', () => {
       });
 
       it('should error if request qualifier contains entries with an illegal data type', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         const captor = new ObserveCaptor();
         Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: {} as any}}).subscribe(captor);
@@ -2565,7 +2566,7 @@ describe('Messaging', () => {
       });
 
       it('should error if request qualifier contains empty entries', async () => {
-        await MicrofrontendPlatform.startHost({applications: []});
+        await MicrofrontendPlatformHost.start({applications: []});
 
         const captor1 = new ObserveCaptor();
         Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: ''}}).subscribe(captor1);
@@ -2584,7 +2585,7 @@ describe('Messaging', () => {
       });
 
       it('should error if no application provides a fulfilling capability', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host Application',
@@ -2607,7 +2608,7 @@ describe('Messaging', () => {
       });
 
       it('should error if no replier is found', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host Application',
@@ -2638,7 +2639,7 @@ describe('Messaging', () => {
     describe('retained intent', () => {
 
       it('should error if no application provides a fulfilling capability', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -2656,7 +2657,7 @@ describe('Messaging', () => {
       });
 
       it('should not error if no subscriber is found', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host Application',
@@ -2679,7 +2680,7 @@ describe('Messaging', () => {
       });
 
       it('should receive retained intents matching an exact subscription', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -2735,7 +2736,7 @@ describe('Messaging', () => {
       });
 
       it('should receive retained intents matching a wildcard subscription', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -2779,7 +2780,7 @@ describe('Messaging', () => {
       });
 
       it('should delete retained intent', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -2818,7 +2819,7 @@ describe('Messaging', () => {
       });
 
       it('should not delete retained intent if sending `null` payload', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -2849,7 +2850,7 @@ describe('Messaging', () => {
       });
 
       it('should not delete retained intent if sending `falsy` payload', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -2880,7 +2881,7 @@ describe('Messaging', () => {
       });
 
       it('should not dispatch retained intent deletion event', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -2915,7 +2916,7 @@ describe('Messaging', () => {
       });
 
       it('should delete retained intent(s) when unregistering associated capability', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -2943,7 +2944,7 @@ describe('Messaging', () => {
       });
 
       it('should dispatch a retained intent only to the newly subscribed subscriber', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -3025,7 +3026,7 @@ describe('Messaging', () => {
       });
 
       it('should deliver headers in retained intent', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             symbolicName: 'host-app',
             manifest: {
@@ -3061,7 +3062,7 @@ describe('Messaging', () => {
 
       it('should receive the latest intent per capability which the application is qualified to receive (1/4)', async () => {
         // Two applications provide both the same public capability but declare no intention.
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -3137,7 +3138,7 @@ describe('Messaging', () => {
 
       it('should receive the latest intent per capability which the application is qualified to receive (2/4)', async () => {
         // Two applications provide both the same public capability and declare an intention.
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -3219,7 +3220,7 @@ describe('Messaging', () => {
 
       it('should receive the latest intent per capability which the application is qualified to receive (3/4)', async () => {
         // Two applications provide both the same private capability and declare an intention.
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -3301,7 +3302,7 @@ describe('Messaging', () => {
 
       it('should receive the latest intent per capability which the application is qualified to receive (4/4)', async () => {
         // Two applications provide both the same capability, but with different visiblity.
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -3397,7 +3398,7 @@ describe('Messaging', () => {
 
       it('should delete retained intent per qualified capability (1/2)', async () => {
         // Two applications provide both the same capability with private visiblity
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -3474,7 +3475,7 @@ describe('Messaging', () => {
 
       it('should delete retained intent per qualified capability (2/2)', async () => {
         // Two applications provide both the same capability with public visiblity
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -3550,7 +3551,7 @@ describe('Messaging', () => {
       });
 
       it('should not receive retained intent if not qualified to receive', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -3610,7 +3611,7 @@ describe('Messaging', () => {
     describe('retained intent request', () => {
 
       it('should not error if no replier is found', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -3637,7 +3638,7 @@ describe('Messaging', () => {
       });
 
       it('should error if no application provides a fulfilling capability', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -3660,7 +3661,7 @@ describe('Messaging', () => {
       });
 
       it('should deliver retained intent request to late subscribers', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -3688,7 +3689,7 @@ describe('Messaging', () => {
       });
 
       it('should not replace retained intent request by later retained request', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -3749,7 +3750,7 @@ describe('Messaging', () => {
       });
 
       it('should not replace retained intent request by later retained intent', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -3780,7 +3781,7 @@ describe('Messaging', () => {
       });
 
       it('should delete retained intent request when the replier terminates the communication', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -3856,7 +3857,7 @@ describe('Messaging', () => {
       });
 
       it('should delete retained intent request when the requestor unsubscribes before receiving a reply', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -3898,7 +3899,7 @@ describe('Messaging', () => {
       });
 
       it('should delete retained intent request when the requestor unsubscribes after received a reply', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -3949,7 +3950,7 @@ describe('Messaging', () => {
       });
 
       it('should not delete previous retained intent request when sending a retained request without payload', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -3976,7 +3977,7 @@ describe('Messaging', () => {
       });
 
       it('should delete retained intent request(s) when unregistering associated capability', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -4004,7 +4005,7 @@ describe('Messaging', () => {
       });
 
       it('should receive intent request by multiple subscribers', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {
             manifest: {
               name: 'Host App',
@@ -4062,7 +4063,7 @@ describe('Messaging', () => {
 
       it('should receive intent requests per capability which the application is qualified to receive (1/4)', async () => {
         // Two applications provide both the same public capability but declare no intention.
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -4158,7 +4159,7 @@ describe('Messaging', () => {
 
       it('should receive intent requests per capability which the application is qualified to receive (2/4)', async () => {
         // Two applications provide both the same public capability and declare an intention.
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -4280,7 +4281,7 @@ describe('Messaging', () => {
 
       it('should receive intent requests per capability which the application is qualified to receive (3/4)', async () => {
         // Two applications provide both the same private capability and declare an intention.
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -4382,7 +4383,7 @@ describe('Messaging', () => {
 
       it('should receive intent requests per capability which the application is qualified to receive (4/4)', async () => {
         // Two applications provide both the same capability, but with different visiblity.
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',
@@ -4525,7 +4526,7 @@ describe('Messaging', () => {
       }, 10_000);
 
       it('should not receive retained intent request if not qualified to receive', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {
               symbolicName: 'app1',

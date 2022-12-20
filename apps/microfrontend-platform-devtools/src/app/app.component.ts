@@ -12,7 +12,7 @@ import {Observable, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {animate, style, transition, trigger} from '@angular/animations';
 import {ShellService} from './shell.service';
-import {MicrofrontendPlatform} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatformClient} from '@scion/microfrontend-platform';
 
 @Component({
   selector: 'devtools-root',
@@ -34,7 +34,7 @@ export class AppComponent implements OnDestroy {
   public showPrimaryOutlet = true;
   public showDetailsOutlet = false;
   public menuOpen = false;
-  public readonly connnectedToHost = MicrofrontendPlatform.isConnectedToHost();
+  public readonly connnectedToHost = MicrofrontendPlatformClient.isConnected();
 
   private _destroy$ = new Subject<void>();
 

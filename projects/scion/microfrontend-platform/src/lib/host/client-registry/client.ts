@@ -75,15 +75,19 @@ export interface Client {
  *
  * By default, if not set, a ping interval of 60s is used.
  *
+ * NOTE: Use pure inline comment to be tree shakable, i.e., to not be included in client app.
+ *
  * @internal
  */
-export const CLIENT_PING_INTERVAL = Symbol('CLIENT_PING_INTERVAL');
+export const CLIENT_PING_INTERVAL = /*@__PURE__*/Symbol('CLIENT_PING_INTERVAL');
 
 /**
  * Specifies the ping timeout (in milliseconds) for unregistering a client.
  *
  * By default, if not set, clients are unregistered if not answering the ping within 10 seconds.
  *
+ * NOTE: Use pure inline comment to be tree shakable, i.e., to not be included in client app.
+ *
  * @internal
  */
-export const CLIENT_PING_TIMEOUT = Symbol('CLIENT_PING_TIMEOUT');
+export const CLIENT_PING_TIMEOUT = /*@__PURE__*/Symbol('CLIENT_PING_TIMEOUT');

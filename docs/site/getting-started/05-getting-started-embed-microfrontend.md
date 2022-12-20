@@ -29,10 +29,10 @@ Open the HTML template `customers-app/src/customer/customer.html`. After the sec
    ```ts
          import {CustomerService} from '../customer.service';
          import {QueryParams} from '../query-params';
-   [+]   import {MicrofrontendPlatform} from '@scion/microfrontend-platform';
+   [+]   import {MicrofrontendPlatformClient} from '@scion/microfrontend-platform';
 
          public async init(): Promise<void> {
-   [+]     await MicrofrontendPlatform.connectToHost('customers-app');
+   [+]     await MicrofrontendPlatformClient.connect('customers-app');
            QueryParams.observe$.subscribe(queryParams => this.render(queryParams.get('id')));
          }
    ```
@@ -126,12 +126,12 @@ In this chapter, we learned that outlets can be nested, allowing a microfrontend
 import {CustomerService} from '../customer.service';
 import {QueryParams} from '../query-params';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatformClient, OutletRouter} from '@scion/microfrontend-platform';
 
 class CustomerController {
 
   public async init(): Promise<void> {
-    await MicrofrontendPlatform.connectToHost('customers-app');
+    await MicrofrontendPlatformClient.connect('customers-app');
     QueryParams.observe$.subscribe(queryParams => this.render(queryParams.get('id')));
   }
 

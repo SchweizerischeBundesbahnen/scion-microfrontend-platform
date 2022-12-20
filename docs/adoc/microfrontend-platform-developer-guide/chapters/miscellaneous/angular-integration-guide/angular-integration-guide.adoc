@@ -28,35 +28,25 @@ In this Chapter
 
 The platform should be started during the bootstrapping of the Angular application, that is, before displaying content to the user. Hence, we recommend starting the platform in an app initializer. See chapter <<chapter:angular-integration-guide:using-route-resolver-instead-app-initializer>> for an alternative approach.
 
-Angular allows hooking into the process of initialization by providing an initializer to Angular's `APP_INITIALIZER` injection token. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
+NOTE: Angular allows hooking into the process of initialization by providing an initializer to Angular's `APP_INITIALIZER` injection token. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
 
-NOTE: We recommend starting the platform outside of the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
+IMPORTANT: We recommend starting the platform outside of the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
 
-The following code snippet configures an Angular `APP_INITIALIZER` to start the platform. In the provider definition, we reference a higher order factory function and instruct Angular to inject the `PlatformInitializer` as function argument.
+The following listing illustrates how to configure an Angular `APP_INITIALIZER` to start the SCION Microfrontend Platform in the host application. Note that `APP_INITIALIZER` expects a higher order factory function to be specified.
 
 [source,typescript]
 ----
-include::start-platform-via-initializer.snippets.ts[tags=host-app:register-initializer]
+include::start-platform-via-initializer.snippets.ts[tags=host-app:startPlatformHost]
 ----
 <1> Provides an initializer to the `APP_INITIALIZER` injection token.
-<2> Instructs Angular to pass the `PlatformInitializer` to the higher order function.
-<3> Returns the initializer function. When Angular invokes the initializer function, we delegate platform startup to the `PlatformInitializer` service.
-
-IMPORTANT: Angular is very strict when compiling module definitions ahead-of-time (if enabled the AOT compilation). Therefore, you may need to replace the lambdas with the ES5 function syntax. Also, do not forget to export all functions that you reference in the module metadata definition.
-
-Next, we implement the `PlatformInitializer` to start the platform.
-
-[source,typescript]
-----
-include::start-platform-via-initializer.snippets.ts[tags=host-app:initializer]
-----
-<1> Injects the Angular `NgZone`.
-<2> Declares or loads the platform config, e.g., using `HttpClient`.
-<3> Starts the platform host. We recommend starting it outside of the Angular zone in order to avoid excessive change detection cycles.
+<2> Injects `NgZone` using Angular's `inject` function.
+<3> Registers a decorator to synchronize platform-specific RxJS Observables with the Angular Zone. See <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>> for more information.
+<4> Constructs the config object to configure the platform and list applications that are allowed to interact with the platform. Refer to <<chapter:configuration:configuring-the-platform>> for more information about configuring the platform.
+<5> Starts the platform host outside of the Angular zone.
 
 
 ====
-TIP: Refer to chapter <<chapter:configuration:starting-the-platform-in-host-application>> for detailed instructions on how to start the platform in the host and micro applications.
+TIP: Refer to chapter <<chapter:configuration:starting-the-platform-in-host-application>> for detailed instructions on how to start the platform in the host.
 ====
 
 [[chapter:angular-integration-guide:connecting-to-host-in-app-initializer]]
@@ -64,42 +54,44 @@ TIP: Refer to chapter <<chapter:configuration:starting-the-platform-in-host-appl
 === Connecting to the Host in an Angular App Initializer
 A micro application should connect to the platform host during the bootstrapping of the Angular application, that is, before displaying content to the user. Hence, we recommend connecting to the platform host in an app initializer. See chapter <<chapter:angular-integration-guide:using-route-resolver-instead-app-initializer>> for an alternative approach.
 
-NOTE: We recommend connecting to the platform host outside of the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
+NOTE: Angular allows hooking into the process of initialization by providing an initializer to Angular's `APP_INITIALIZER` injection token. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
+
+IMPORTANT: We recommend connecting to the platform host outside of the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
+
+The following listing illustrates how to configure an Angular `APP_INITIALIZER` to connect to the platform from a micro application.
 
 [source,typescript]
 ----
-include::start-platform-via-initializer.snippets.ts[tags=micro-app:initializer]
+include::start-platform-via-initializer.snippets.ts[tags=micro-app:connectToHost]
 ----
 <1> Provides an initializer to the `APP_INITIALIZER` injection token.
-<2> Instructs Angular to pass the `NgZone` to the higher order function. Alternatively, since Angular 14, you can inject the zone directly in the factory function with `inject(NgZone)`.
-<3> Returns the initializer function, which connects to the host. We recommend connecting to the host outside of the Angular zone in order to avoid excessive change detection cycles.
+<2> Injects `NgZone` using Angular’s `inject` function.
+<3> Registers a decorator to synchronize platform-specific RxJS Observables with the Angular Zone. See <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>> for more information.
+<4> Connects to the platform host outside of the Angular zone.
+
+====
+TIP: Refer to chapter <<chapter:configuration:connecting-to-the-host>> for detailed instructions on how to connect to the host from a microfrontend.
+====
 
 [[chapter:angular-integration-guide:using-route-resolver-instead-app-initializer]]
 [discrete]
 === Using a Route Resolver instead of an App Initializer
 If you cannot use an app initializer for starting the platform or connecting to the platform host, an alternative would be to use a route resolver. Angular allows installing resolvers on a route, allowing data to be resolved asynchronously before the route is finally activated.
 
-NOTE: We recommend connecting to the platform host outside of the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
-
-The following code snippet illustrates how to connect to the platform host using an Angular resolver. Similarly, you could start the platform in the host application.
-
-For a micro application, the resolver implementation could look as following:
+The following listing illustrates how to configure an Angular resolver to connect to the platform from a micro application. Similarly, you could start the platform in the host application.
 
 [source,typescript]
 ----
 include::start-platform-via-resolver.snippets.ts[tags=resolver]
 ----
-<1> Injects the Angular `NgZone`.
-<2> Connects to the platform host. We recommend connecting to the host outside of the Angular zone in order to avoid excessive change detection cycles.
+<1> Installs a resolver on a component-less, empty-path route, which is parent to the microfrontend routes.
+<2> Injects `NgZone` using Angular’s `inject` function.
+<3> Registers a decorator to synchronize platform-specific RxJS Observables with the Angular Zone. See <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>> for more information.
+<4> Connects to the platform host outside of the Angular zone.
+<5> Registers microfrontend routes as child routes.
 
-Ensure that a micro application instance connects to the host only once. Therefore, it is recommended to install the resolver in a parent route common to all microfrontend routes. When loading a microfrontend for the first time, Angular will wait activating the child route until the platform finished starting. When navigating to another microfrontend of the micro application, the resolver would not resolve anew.
+Ensure that a micro application instance connects to the host only once. Therefore, it is recommended to install the resolver in a parent route common to all microfrontend routes. When loading a microfrontend for the first time, Angular will wait activating the child route until the platform finished starting. When navigating to another microfrontend of the micro application, the resolver does not resolve anew.
 
-[source,typescript]
-----
-include::start-platform-via-resolver.snippets.ts[tags=resolver-registration]
-----
-<1> Installs the resolver on a component-less, empty-path route, which is parent to the microfrontend routes.
-<2> Registers microfrontend routes as child routes.
 
 [[chapter:angular-integration-guide:configuring-hash-based-routing]]
 [discrete]

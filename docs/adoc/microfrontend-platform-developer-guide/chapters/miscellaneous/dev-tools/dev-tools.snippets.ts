@@ -1,9 +1,9 @@
-import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatformHost, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 {
   // tag::dev-tools:register-dev-tools[]
-  MicrofrontendPlatform.startHost({
+  MicrofrontendPlatformHost.start({
     applications: [
       // register your micro application(s) here
 

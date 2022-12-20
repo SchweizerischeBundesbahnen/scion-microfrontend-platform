@@ -198,7 +198,7 @@ export class SciRouterOutletElement extends HTMLElement {
   private _empty$ = new BehaviorSubject<boolean>(true);
 
   /**
-   * Emits whether or not content is routed for display in this router outlet.
+   * Emits whether content is routed for display in this router outlet.
    * Upon subscription, the Observable emits the current empty state, and then continuously emits when it changes. It never completes.
    *
    * An outlet does not display content if no navigation has taken place yet, or if the outlet content has been cleared.

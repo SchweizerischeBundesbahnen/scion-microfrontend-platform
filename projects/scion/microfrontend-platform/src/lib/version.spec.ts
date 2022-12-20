@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {MicrofrontendPlatform} from './microfrontend-platform';
+import {MicrofrontendPlatformHost} from './host/microfrontend-platform-host';
 import {MicrofrontendFixture} from './testing/microfrontend-fixture/microfrontend-fixture';
 import {ManifestFixture} from './testing/manifest-fixture/manifest-fixture';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -32,7 +33,7 @@ describe('MicrofrontendPlatform', () => {
   it('should warn about client/host major version mismatch', async () => {
     Beans.register(ɵVERSION, {useValue: '2.0.0'});
 
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -53,7 +54,7 @@ describe('MicrofrontendPlatform', () => {
   it('should warn if clients connect without passing a version', async () => {
     Beans.register(ɵVERSION, {useValue: '1.0.0'});
 
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -72,7 +73,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should resolve the version of the SCION Microfronted Platform used by applications', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',

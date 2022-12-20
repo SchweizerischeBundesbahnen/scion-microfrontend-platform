@@ -9,6 +9,7 @@
  */
 
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../../host/microfrontend-platform-host';
 import {ContextService} from './context-service';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ObserveCaptor} from '@scion/toolkit/testing';
@@ -19,7 +20,7 @@ describe('Context', () => {
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
   it('should not complete the Observable when looking up context values from inside the host app (no context)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const captor = new ObserveCaptor();
     Beans.get(ContextService).observe$('some-context').subscribe(captor);
@@ -30,7 +31,7 @@ describe('Context', () => {
   });
 
   it('should not complete the Observable when looking up the names of context values from inside the host app (no context)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const captor = new ObserveCaptor();
     Beans.get(ContextService).names$().subscribe(captor);

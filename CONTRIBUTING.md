@@ -52,6 +52,9 @@ The following is a summary of commands useful for development of `scion-microfro
 
 - `npm run microfrontend-platform:test`\
   Runs unit tests of the microfrontend-platform library.
+ 
+- `npm run microfrontend-platform:analyze`\
+  Displays the content of the library if installed in a client app. Use to verify the library to be tree shaken correctly, i.e., that the host module is not included.
 
 ### Commands for running end-to-end tests
 

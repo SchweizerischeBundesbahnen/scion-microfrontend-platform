@@ -35,7 +35,7 @@ Micro apps which want to interact with the platform need to be registered in the
 
 ```ts
       public async init(): Promise<void> {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
 [+]         {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
 [+]         {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
@@ -81,10 +81,10 @@ Each micro app must be assigned a unique symbolic name. The micro app will use t
    ```ts
          import {ProductService} from '../product.service';
          import {QueryParams} from '../query-params';
-   [+]   import {MicrofrontendPlatform} from '@scion/microfrontend-platform';
+   [+]   import {MicrofrontendPlatformClient} from '@scion/microfrontend-platform';
 
          public async init(): Promise<void> {
-   [+]     await MicrofrontendPlatform.connectToHost('products-app');
+   [+]     await MicrofrontendPlatformClient.connect('products-app');
            QueryParams.observe$.subscribe(queryParams => {
              const productIds = queryParams.get('ids')?.split(',');
              this.render(productIds);
@@ -128,10 +128,10 @@ Each micro app must be assigned a unique symbolic name. The micro app will use t
  
    ```ts
          import {CustomerService} from '../customer.service';
-   [+]   import {MicrofrontendPlatform} from '@scion/microfrontend-platform';
+   [+]   import {MicrofrontendPlatformClient} from '@scion/microfrontend-platform';
 
          public async init(): Promise<void> {
-   [+]     await MicrofrontendPlatform.connectToHost('customers-app');
+   [+]     await MicrofrontendPlatformClient.connect('customers-app');
            this.render();
          }
    ```
@@ -200,13 +200,13 @@ In this chapter, we changed the navigation to the *Product Microfrontend* and *C
    <summary>The <code>host-app/src/host.ts</code> looks as following:</summary>
 
 ```ts
-import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatformHost, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 class HostController {
 
 public async init(): Promise<void> {
-  await MicrofrontendPlatform.startHost({
+  await MicrofrontendPlatformHost.start({
     applications: [
       {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
       {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
@@ -234,13 +234,13 @@ new HostController().init();
 ```ts
 import {ProductService} from '../product.service';
 import {QueryParams} from '../query-params';
-import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatformClient, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 class ProductListController {
 
   public async init(): Promise<void> {
-    await MicrofrontendPlatform.connectToHost('products-app');
+    await MicrofrontendPlatformClient.connect('products-app');
     QueryParams.observe$.subscribe(queryParams => {
       const productIds = queryParams.get('ids')?.split(',');
       this.render(productIds);
@@ -274,13 +274,13 @@ new ProductListController().init();
 
 ```ts
 import {CustomerService} from '../customer.service';
-import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatformClient, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 class CustomerListController {
 
   public async init(): Promise<void> {
-    await MicrofrontendPlatform.connectToHost('customers-app');
+    await MicrofrontendPlatformClient.connect('customers-app');
     this.render();
   }
 

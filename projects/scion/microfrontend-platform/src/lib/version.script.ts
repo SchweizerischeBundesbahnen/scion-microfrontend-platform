@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {MicrofrontendPlatform} from './microfrontend-platform';
+import {MicrofrontendPlatformClient} from './client/microfrontend-platform-client';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ɵVERSION} from './ɵplatform.model';
 
@@ -16,5 +16,5 @@ export async function connectToHost({symbolicName, version = undefined}): Promis
   if (version !== undefined) {
     Beans.register(ɵVERSION, {useValue: version});
   }
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
 }

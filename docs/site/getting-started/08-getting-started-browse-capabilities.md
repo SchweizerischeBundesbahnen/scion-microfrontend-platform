@@ -114,7 +114,7 @@ In order for the host app to browse and navigate to microfrontend capabilities, 
 1. Open the file `host-app/src/host.ts`.
 2. Declare a microfrontend wildcard intention, as follows:
    ```ts
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           applications: [
             {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
             {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
@@ -171,7 +171,7 @@ In order for the host app to browse and navigate to microfrontend capabilities, 
   [+]   import {filterArray} from '@scion/toolkit/operators';
 
         public async init(): Promise<void> {
-          await MicrofrontendPlatform.startHost({
+          await MicrofrontendPlatformHost.start({
             applications: [
               {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
               {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
@@ -350,14 +350,14 @@ In this chapter, we learned how to browse the catalog of capabilities to dynamic
    <summary>The <code>host-app/src/host.ts</code> looks as following:</summary>
 
 ```ts
-import {ManifestService, MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+import {ManifestService, MicrofrontendPlatformHost, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {filterArray} from '@scion/toolkit/operators';
 
 class HostController {
 
   public async init(): Promise<void> {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
         {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},

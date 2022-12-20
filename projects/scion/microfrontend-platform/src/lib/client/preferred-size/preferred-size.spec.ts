@@ -9,6 +9,7 @@
  */
 import {waitUntilStable} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../../host/microfrontend-platform-host';
 import {MicrofrontendFixture} from '../../testing/microfrontend-fixture/microfrontend-fixture';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageClient} from '../messaging/message-client';
@@ -28,7 +29,7 @@ describe('PreferredSize', () => {
   });
 
   it('should set the initial size of the router outlet', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const scriptPreferredSizeTopic = 'script/preferred-size';
     await Beans.get(MessageClient).publish(scriptPreferredSizeTopic, {width: '15px', height: '30px'}, {retain: true});
@@ -43,7 +44,7 @@ describe('PreferredSize', () => {
   });
 
   it('should change the size of the router outlet', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const scriptPreferredSizeTopic = 'script/preferred-size';
     const microfrontendFixture = registerFixture(new MicrofrontendFixture({useSciRouterOutlet: true}));

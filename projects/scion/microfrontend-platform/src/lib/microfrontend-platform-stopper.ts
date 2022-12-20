@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Swiss Federal Railways
+ * Copyright (c) 2018-2022 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -7,8 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
-import {MicrofrontendPlatformRef} from './microfrontend-platform-ref';
+import {PreDestroy} from '@scion/toolkit/bean-manager';
+import {MicrofrontendPlatform} from './microfrontend-platform';
 import {fromEvent, race, Subject} from 'rxjs';
 import {take, takeUntil} from 'rxjs/operators';
 
@@ -38,7 +38,7 @@ export class ɵMicrofrontendPlatformStopper implements MicrofrontendPlatformStop
         takeUntil(this._destroy$),
       )
       .subscribe(() => {
-        Beans.get(MicrofrontendPlatformRef).destroy();
+        MicrofrontendPlatform.destroy();
       });
   }
 

@@ -11,6 +11,7 @@
 /**
  * Entry point for all public APIs of this package.
  */
+export * from './microfrontend-platform-host';
 export * from './microfrontend-platform-config';
 export * from './host-config';
 export * from './application-config';

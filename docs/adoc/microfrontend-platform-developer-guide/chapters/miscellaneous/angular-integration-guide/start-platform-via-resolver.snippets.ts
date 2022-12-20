@@ -1,20 +1,14 @@
-import { Injectable, NgModule, NgZone } from '@angular/core';
-import { MicrofrontendPlatform } from '@scion/microfrontend-platform';
-import { ActivatedRouteSnapshot, Resolve, RouterModule, RouterStateSnapshot, Routes } from '@angular/router';
+import {inject, NgModule, NgZone} from '@angular/core';
+import {MicrofrontendPlatformClient, ObservableDecorator} from '@scion/microfrontend-platform';
+import {RouterModule, Routes} from '@angular/router';
+import {Beans} from '@scion/toolkit/bean-manager';
+import {Observable} from 'rxjs';
 
-// tag::resolver[]
-@Injectable({providedIn: 'root'})
-export class PlatformInitializer implements Resolve<void> {
-
-  constructor(private _zone: NgZone) { // <1>
-  }
-
-  public resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<void> {
-    return this._zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost('<SYMBOLIC NAME>')); // <2>
+class NgZoneObservableDecorator implements ObservableDecorator{
+  public decorate$<T>(source$: Observable<T>): Observable<T> {
+    return source$;
   }
 }
-
-// end::resolver[]
 
 class Microfrontend1Component {
 }
@@ -22,12 +16,18 @@ class Microfrontend1Component {
 class Microfrontend2Component {
 }
 
-// tag::resolver-registration[]
+// tag::resolver[]
 const routes: Routes = [
   {
     path: '',
-    resolve: {platform: PlatformInitializer}, // <1>
-    children: [ // <2>
+    resolve: { // <1>
+      platform: () => {
+        const zone = inject(NgZone); // <2>
+        Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)}); // <3>
+        return zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect('APP_SYMBOLIC_NAME')); // <4>
+      },
+    },
+    children: [ // <5>
       {
         path: 'microfrontend-1',
         loadChildren: () => import('./microfrontend-1.module').then(m => m.Microfrontend1Module),
@@ -47,4 +47,4 @@ const routes: Routes = [
 export class AppRoutingModule {
 }
 
-// end::resolver-registration[]
+// end::resolver[]

@@ -5,7 +5,7 @@
 
 ## [SCION Microfrontend Platform][menu-home] > [Getting Started][menu-getting-started] > Create Host Application
 
-The host app provides the top-level integration container for microfrontends. It is the web app which the user loads into his browser that provides the main application shell, defining areas to embed microfrontends.
+The host app provides the top-level integration container for microfrontends. It is the web app which the user loads into the browser that provides the main application shell, defining areas to embed microfrontends.
 
 ***
 - **Project directory:**\
@@ -57,10 +57,10 @@ Follow the following instructions to get the host app running.
 1. Open the TypeScript file `host-app/src/host.ts`.
 2. Start the platform by adding the following lines to the `init` method:
    ```ts
-         import { MicrofrontendPlatform } from '@scion/microfrontend-platform';   
+         import { MicrofrontendPlatformHost } from '@scion/microfrontend-platform';   
   
          public async init(): Promise<void> {
-   [+]     await MicrofrontendPlatform.startHost({
+   [+]     await MicrofrontendPlatformHost.start({
    [+]       applications: [],
    [+]     });
          }
@@ -100,11 +100,11 @@ Follow the following instructions to get the host app running.
 4. In the host controller `host-app/src/host.ts`, register a `click` event handler on the buttons and navigate the primary router outlet to the *ProductList Microfrontend* respectively to the *CustomerList Microfrontend*, as follows:
 
    ```ts
-   [+]   import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+   [+]   import {MicrofrontendPlatformHost, OutletRouter} from '@scion/microfrontend-platform';
    [+]   import {Beans} from '@scion/toolkit/bean-manager';        
 
          public async init(): Promise<void> {
-           await MicrofrontendPlatform.startHost({
+           await MicrofrontendPlatformHost.start({
              applications: [],
            });
 
@@ -172,13 +172,13 @@ We installed and started the SCION Microfrontend Platform and added router outle
    <summary>The <code>host-app/src/host.ts</code> looks as following:</summary>
 
 ```ts
-import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatformHost, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 class HostController {
 
   public async init(): Promise<void> {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [],
     });
 

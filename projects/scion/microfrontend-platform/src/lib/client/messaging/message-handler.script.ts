@@ -7,18 +7,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformClient} from '../microfrontend-platform-client';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MessageClient} from './message-client';
 import {concat, NEVER, of} from 'rxjs';
 import {IntentClient} from './intent-client';
 
 export async function connectToHostThenMessageClientOnMessage({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
   Beans.get(MessageClient).onMessage<void, never>('topic', () => NEVER);
 }
 
 export async function connectToHostThenIntentClientOnIntent({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
   Beans.get(IntentClient).onIntent<void>({type: 'capability'}, () => concat(of('initial'), NEVER));
 }

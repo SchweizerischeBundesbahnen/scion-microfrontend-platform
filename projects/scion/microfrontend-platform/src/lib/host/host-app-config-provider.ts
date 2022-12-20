@@ -12,21 +12,26 @@ import {Manifest} from '../platform.model';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ApplicationConfig} from './application-config';
 import {HostConfig} from './host-config';
-import {MicrofrontendPlatformRef} from '../microfrontend-platform-ref';
+import {MicrofrontendPlatform} from '../microfrontend-platform';
 import {HostManifestInterceptor} from './host-manifest-interceptor';
 import {PlatformState} from '../platform-state';
 
 /**
  * Provides the config for the host app.
  *
+ * NOTE: Use static class instead of namespace to be tree shakable, i.e., to not be included in client app.
+ *
  * @internal
  */
-export namespace HostAppConfigProvider {
+export class HostAppConfigProvider {
+
+  private constructor() {
+  }
 
   /**
    * Creates the {@link ApplicationConfig} for the host app.
    */
-  export function createAppConfig(hostConfig: HostConfig & {symbolicName: string}): ApplicationConfig {
+  public static createAppConfig(hostConfig: HostConfig & {symbolicName: string}): ApplicationConfig {
     return {
       symbolicName: hostConfig.symbolicName,
       manifestUrl: provideHostManifestUrl(hostConfig.manifest),
@@ -39,20 +44,20 @@ export namespace HostAppConfigProvider {
   /**
    * Intercepts the host manifest by registered interceptors.
    */
-  export function interceptManifest(manifest: Manifest): void {
+  public static interceptManifest(manifest: Manifest): void {
     Beans.all(HostManifestInterceptor).forEach(interceptor => interceptor.intercept(manifest));
   }
+}
 
-  function provideHostManifestUrl(hostManifest: string | Manifest | undefined): string {
-    if (typeof hostManifest === 'string') {
-      return hostManifest; // URL specified
-    }
-    return serveHostManifest(hostManifest || {name: 'Host Application'});
+function provideHostManifestUrl(hostManifest: string | Manifest | undefined): string {
+  if (typeof hostManifest === 'string') {
+    return hostManifest; // URL specified
   }
+  return serveHostManifest(hostManifest || {name: 'Host Application'});
+}
 
-  function serveHostManifest(manifest: Manifest): string {
-    const url = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
-    Beans.get(MicrofrontendPlatformRef).whenState(PlatformState.Stopped).then(() => URL.revokeObjectURL(url));
-    return url;
-  }
+function serveHostManifest(manifest: Manifest): string {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
+  MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => URL.revokeObjectURL(url));
+  return url;
 }

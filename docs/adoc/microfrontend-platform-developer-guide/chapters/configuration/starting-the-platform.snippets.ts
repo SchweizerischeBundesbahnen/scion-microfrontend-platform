@@ -1,8 +1,8 @@
-import {ApplicationConfig, MicrofrontendPlatform} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatformClient, MicrofrontendPlatformHost} from '@scion/microfrontend-platform';
 
-{
+async function startHost1() {
   // tag::startHost1[]
-  MicrofrontendPlatform.startHost({
+  await MicrofrontendPlatformHost.start({
     applications: [ // <1>
       {
         symbolicName: 'product-catalog-app',
@@ -14,9 +14,9 @@ import {ApplicationConfig, MicrofrontendPlatform} from '@scion/microfrontend-pla
   // end::startHost1[]
 }
 
-{
+async function startHost2() {
   // tag::startHost2[]
-  MicrofrontendPlatform.startHost({
+  await MicrofrontendPlatformHost.start({
     host: {
       manifest: { // <1>
         name: 'Web Shop (Host)',
@@ -39,8 +39,8 @@ import {ApplicationConfig, MicrofrontendPlatform} from '@scion/microfrontend-pla
   // end::startHost2[]
 }
 
-{
+async function connect() {
   // tag::connectToHost[]
-  MicrofrontendPlatform.connectToHost('product-catalog-app');
+  await MicrofrontendPlatformClient.connect('product-catalog-app');
   // end::connectToHost[]
 }

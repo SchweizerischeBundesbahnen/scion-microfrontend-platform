@@ -19,7 +19,7 @@ import {MessageHeaders} from '../../messaging.model';
 import {EMPTY, firstValueFrom, identity, Observable, timeout} from 'rxjs';
 import {PlatformState} from '../../platform-state';
 import {Beans, Initializer} from '@scion/toolkit/bean-manager';
-import {MicrofrontendPlatformRef} from '../../microfrontend-platform-ref';
+import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {ProgressMonitor} from '../progress-monitor/progress-monitor';
 import {ActivatorLoadProgressMonitor} from '../progress-monitor/progress-monitors';
 import {ManifestService} from '../../client/manifest-registry/manifest-service';
@@ -143,6 +143,6 @@ export class ActivatorInstaller implements Initializer {
     // Add the router outlet to the DOM
     document.body.appendChild(routerOutlet);
     // Unmount the router outlet on platform shutdown
-    Beans.get(MicrofrontendPlatformRef).whenState(PlatformState.Stopped).then(() => document.body.removeChild(routerOutlet));
+    MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => document.body.removeChild(routerOutlet));
   }
 }

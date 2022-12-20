@@ -17,7 +17,7 @@ Let us introduce you to the terminology of the Intention API.
   A capability is formulated in an abstract way consisting of a `type` and optionally a `qualifier`. The type categorizes a capability in terms of its functional semantics (e.g., `microfrontend` if providing a microfrontend). Multiple capabilities can be of the same type. In addition to the type, a capability can define a qualifier to differentiate the different capabilities of the same type.
 
 - **Intention** \
-  An intention refers to one or more capabilities that a micro app wants to interact with. A micro app declares its intentions in its manifest. Manifesting intentions allows us to see dependencies between applications down to the functional level.
+  An intention refers to one or more capabilities that a micro app wants to interact with. A micro app declares its intentions in its manifest. Manifesting intentions enables us to see dependencies between applications down to the functional level.
 
 - **Intent** \
   The intent is the message that a micro app sends to interact with functionality that is available in the form of a capability. If the application has not declared a respective intention in its manifest, the message will be rejected.
@@ -380,13 +380,13 @@ In this chapter, we learned about the Intention API to navigate without having t
 ```ts
 import {ProductService} from '../product.service';
 import {QueryParams} from '../query-params';
-import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatformClient, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 class ProductListController {
 
   public async init(): Promise<void> {
-    await MicrofrontendPlatform.connectToHost('products-app');
+    await MicrofrontendPlatformClient.connect('products-app');
     QueryParams.observe$.subscribe(queryParams => {
       const productIds = queryParams.get('ids')?.split(',');
       this.render(productIds);
@@ -456,13 +456,13 @@ new ProductListController().init();
 
 ```ts
 import {CustomerService} from '../customer.service';
-import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatformClient, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 class CustomerListController {
 
   public async init(): Promise<void> {
-    await MicrofrontendPlatform.connectToHost('customers-app');
+    await MicrofrontendPlatformClient.connect('customers-app');
     this.render();
   }
 

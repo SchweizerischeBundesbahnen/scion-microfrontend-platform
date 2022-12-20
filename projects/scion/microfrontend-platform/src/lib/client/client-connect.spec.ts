@@ -8,6 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {MicrofrontendPlatform} from '../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../host/microfrontend-platform-host';
+import {MicrofrontendPlatformClient} from './microfrontend-platform-client';
 import {MicrofrontendFixture} from '../testing/microfrontend-fixture/microfrontend-fixture';
 import {firstValueFrom, timer} from 'rxjs';
 import {ManifestFixture} from '../testing/manifest-fixture/manifest-fixture';
@@ -46,7 +48,7 @@ describe('MicrofrontendPlatform', () => {
     await firstValueFrom(timer(1000));
 
     // Start the  host.
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -66,7 +68,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should ignore duplicate connect request of the same client', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -89,7 +91,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should reject client connect attempt if the app is not registered', async () => {
-    await MicrofrontendPlatform.startHost({applications: []}); // no app is registered
+    await MicrofrontendPlatformHost.start({applications: []}); // no app is registered
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
     const script = microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'bad-client'});
@@ -98,7 +100,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should reject client connect attempt if the client\'s origin is different to the registered app origin', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -115,12 +117,12 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should accept client connect attempt if originating from the secondary origin', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
           manifestUrl: new ManifestFixture({name: 'Client', baseUrl: 'http://app-origin'}).serve(),
-          secondaryOrigin: location.origin
+          secondaryOrigin: location.origin,
         },
       ],
     });
@@ -135,7 +137,7 @@ describe('MicrofrontendPlatform', () => {
 
   it('should reject startup promise if the message broker cannot be discovered', async () => {
     const loggerSpy = getLoggerSpy('error');
-    const startup = MicrofrontendPlatform.connectToHost('client-app', {brokerDiscoverTimeout: 250});
+    const startup = MicrofrontendPlatformClient.connect('client-app', {brokerDiscoverTimeout: 250});
     await expectPromise(startup).toReject(/MicrofrontendPlatformStartupError/);
 
     await expect(loggerSpy).toHaveBeenCalledWith('[GatewayError] Message broker not discovered within 250ms. Messages cannot be published or received.');

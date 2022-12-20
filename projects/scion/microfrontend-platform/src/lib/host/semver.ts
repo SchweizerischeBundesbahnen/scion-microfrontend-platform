@@ -51,14 +51,19 @@ const SEMVER_REGEX = /(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(-(?<prerelease
  *   Example: 1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2 < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0.
  * ```
  *
+ * NOTE: Use static class instead of namespace to be tree shakable, i.e., to not be included in client app.
+ *
  * @internal
  */
-export namespace semver {
+export class semver {
+
+  private constructor() {
+  }
 
   /**
    * Return the major version number.
    */
-  export function major(version: string | undefined | null): number {
+  public static major(version: string | undefined | null): number {
     return parseVersion(version ?? '0.0.0').major;
   }
 
@@ -69,128 +74,128 @@ export namespace semver {
    *         The values `null` and `undefined` have lower precedence than a normal version.
    * @throws throws if passed version is not a valid semantic version.
    */
-  export function lt(version1: string | undefined | null, version2: string | undefined | null): boolean {
+  public static lt(version1: string | undefined | null, version2: string | undefined | null): boolean {
     return compare(version1, version2) < 0;
   }
+}
 
-  /**
-   * Compares given two versions.
-   *
-   * @return -1: if `v1` is lower than `v2`
-   *          0: if both version are identical
-   *         +1: if `v1` is greater than `v2`
-   */
-  function compare(v1: string | undefined | null, v2: string | undefined | null): number {
-    if (!v1 && v2) {
+/**
+ * Compares given two versions.
+ *
+ * @return -1: if `v1` is lower than `v2`
+ *          0: if both version are identical
+ *         +1: if `v1` is greater than `v2`
+ */
+function compare(v1: string | undefined | null, v2: string | undefined | null): number {
+  if (!v1 && v2) {
+    return -1;
+  }
+  if (!v1 && !v2) {
+    return 0;
+  }
+  if (v1 && !v2) {
+    return +1;
+  }
+
+  const semVer1 = parseVersion(v1!);
+  const semVer2 = parseVersion(v2!);
+
+  // Compare major version
+  const majorCompare = Math.sign(semVer1.major - semVer2.major);
+  if (majorCompare !== 0) {
+    return majorCompare;
+  }
+
+  // Compare minor version
+  const minorCompare = Math.sign(semVer1.minor - semVer2.minor);
+  if (minorCompare !== 0) {
+    return minorCompare;
+  }
+
+  // Compare patch version
+  const patchCompare = Math.sign(semVer1.patch - semVer2.patch);
+  if (patchCompare !== 0) {
+    return patchCompare;
+  }
+
+  // Compare pre-release portion.
+  return comparePreRelease(semVer1, semVer2);
+}
+
+/**
+ * Compares the prerelease portion of two versions.
+ *
+ * @return -1: if `version1` is lower than `version2`
+ *          0: if both version are identical
+ *         +1: if `version1` is greater than `version2`
+ */
+function comparePreRelease(v1: SemVer, v2: SemVer): number {
+  if (v1.preRelease && !v2.preRelease) {
+    return -1;
+  }
+  if (!v1.preRelease && !v2.preRelease) {
+    return 0;
+  }
+  if (!v1.preRelease && v2.preRelease) {
+    return 1;
+  }
+
+  for (let i = 0; i < Math.max(v1.preRelease!.length, v2.preRelease!.length); i++) {
+    const identifier1 = v1.preRelease![i];
+    const identifier2 = v2.preRelease![i];
+
+    if (identifier1 === undefined) {
       return -1;
     }
-    if (!v1 && !v2) {
-      return 0;
-    }
-    if (v1 && !v2) {
+    if (identifier2 === undefined) {
       return +1;
     }
 
-    const semVer1 = parseVersion(v1!);
-    const semVer2 = parseVersion(v2!);
-
-    // Compare major version
-    const majorCompare = Math.sign(semVer1.major - semVer2.major);
-    if (majorCompare !== 0) {
-      return majorCompare;
-    }
-
-    // Compare minor version
-    const minorCompare = Math.sign(semVer1.minor - semVer2.minor);
-    if (minorCompare !== 0) {
-      return minorCompare;
-    }
-
-    // Compare patch version
-    const patchCompare = Math.sign(semVer1.patch - semVer2.patch);
-    if (patchCompare !== 0) {
-      return patchCompare;
-    }
-
-    // Compare pre-release portion.
-    return comparePreRelease(semVer1, semVer2);
-  }
-
-  /**
-   * Compares the prerelease portion of two versions.
-   *
-   * @return -1: if `version1` is lower than `version2`
-   *          0: if both version are identical
-   *         +1: if `version1` is greater than `version2`
-   */
-  function comparePreRelease(v1: SemVer, v2: SemVer): number {
-    if (v1.preRelease && !v2.preRelease) {
+    if (typeof identifier1 === 'number' && typeof identifier2 === 'string') {
       return -1;
     }
-    if (!v1.preRelease && !v2.preRelease) {
-      return 0;
-    }
-    if (!v1.preRelease && v2.preRelease) {
-      return 1;
+    if (typeof identifier1 === 'string' && typeof identifier2 === 'number') {
+      return +1;
     }
 
-    for (let i = 0; i < Math.max(v1.preRelease!.length, v2.preRelease!.length); i++) {
-      const identifier1 = v1.preRelease![i];
-      const identifier2 = v2.preRelease![i];
-
-      if (identifier1 === undefined) {
-        return -1;
-      }
-      if (identifier2 === undefined) {
-        return +1;
-      }
-
-      if (typeof identifier1 === 'number' && typeof identifier2 === 'string') {
-        return -1;
-      }
-      if (typeof identifier1 === 'string' && typeof identifier2 === 'number') {
-        return +1;
-      }
-
-      if (identifier1 < identifier2) {
-        return -1;
-      }
-      if (identifier1 > identifier2) {
-        return +1;
-      }
+    if (identifier1 < identifier2) {
+      return -1;
     }
-    return 0;
+    if (identifier1 > identifier2) {
+      return +1;
+    }
+  }
+  return 0;
+}
+
+/**
+ * Parses given version into a {@link SemVer} instance.
+ *
+ * @throws throws if passed version is not a valid semantic version.
+ */
+function parseVersion(version: string): SemVer {
+  const match = version.match(SEMVER_REGEX);
+  if (!match) {
+    throw Error(`[SemVerError] Version '${version}' is not a valid semantic version (semver).`);
   }
 
-  /**
-   * Parses given version into a {@link SemVer} instance.
-   *
-   * @throws throws if passed version is not a valid semantic version.
-   */
-  function parseVersion(version: string): SemVer {
-    const match = version.match(SEMVER_REGEX);
-    if (!match) {
-      throw Error(`[SemVerError] Version '${version}' is not a valid semantic version (semver).`);
-    }
+  return {
+    major: +match.groups!['major']!,
+    minor: +match.groups!['minor']!,
+    patch: +match.groups!['patch']!,
+    preRelease: match.groups!['prerelease']?.split('.').map(identifier => {
+      const numericIdentifier = +identifier;
+      return Number.isNaN(numericIdentifier) ? identifier : numericIdentifier;
+    }),
+  };
+}
 
-    return {
-      major: +match.groups!['major']!,
-      minor: +match.groups!['minor']!,
-      patch: +match.groups!['patch']!,
-      preRelease: match.groups!['prerelease']?.split('.').map(identifier => {
-        const numericIdentifier = +identifier;
-        return Number.isNaN(numericIdentifier) ? identifier : numericIdentifier;
-      }),
-    };
-  }
-
-  /**
-   * Represents a parsed semantic version.
-   */
-  interface SemVer {
-    major: number;
-    minor: number;
-    patch: number;
-    preRelease?: Array<string | number>;
-  }
+/**
+ * Represents a parsed semantic version.
+ */
+interface SemVer {
+  major: number;
+  minor: number;
+  patch: number;
+  preRelease?: Array<string | number>;
 }

@@ -14,6 +14,7 @@ import {Observer} from 'rxjs';
 import {MicrofrontendPlatformStopper} from '../microfrontend-platform-stopper';
 import {ɵBrokerGateway} from './messaging/broker-gateway';
 import {ɵVERSION} from '../ɵplatform.model';
+import {MicrofrontendPlatformClient} from './microfrontend-platform-client';
 
 export async function connectToHost({symbolicName, disconnectOnUnloadDisabled = false, version = undefined}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   if (disconnectOnUnloadDisabled) {
@@ -22,18 +23,18 @@ export async function connectToHost({symbolicName, disconnectOnUnloadDisabled = 
   if (version) {
     Beans.register(ɵVERSION, {useValue: version});
   }
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
   observer.next(Beans.get(ɵBrokerGateway).session.clientId);
 }
 
 export async function connectToHostThenStopPlatform({symbolicName}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
   observer.next(Beans.get(ɵBrokerGateway).session.clientId);
   await MicrofrontendPlatform.destroy();
 }
 
 export async function connectToHostThenLocationHref({symbolicName, locationHref}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
   observer.next(Beans.get(ɵBrokerGateway).session.clientId);
   window.location.href = locationHref;
 }

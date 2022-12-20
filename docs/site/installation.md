@@ -22,12 +22,12 @@ This short manual helps to install the SCION Microfrontend Platform and describe
      <summary><strong>Start the platform in the host application</strong></summary>
      <br>
 
-     The host application provides the top-level integration container for microfrontends. Typically, it is the web app which the user loads into his browser that provides the main application shell, defining areas to embed microfrontends.
+     The host application provides the top-level integration container for microfrontends. Typically, it is the web app which the user loads into the browser that provides the main application shell, defining areas to embed microfrontends.
 
-     The host application starts the platform by invoking the method `MicrofrontendPlatform.startHost` and passing a config with the web applications to register as micro applications. Registered micro applications can interact with the platform and other micro applications.
+     The host application starts the platform by invoking the method `MicrofrontendPlatformHost.start` and passing a config with the web applications to register as micro applications. Registered micro applications can interact with the platform and other micro applications.
 
      ```ts
-     await MicrofrontendPlatform.startHost({
+     await MicrofrontendPlatformHost.start({
        applications: [
          {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
          {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
@@ -40,7 +40,7 @@ This short manual helps to install the SCION Microfrontend Platform and describe
      As with micro applications, the host can provide a manifest to contribute behavior, as following:
 
      ```ts
-     await MicrofrontendPlatform.startHost({
+     await MicrofrontendPlatformHost.start({
        host: {
          manifest: {
            name: 'Host Application',
@@ -76,10 +76,10 @@ This short manual helps to install the SCION Microfrontend Platform and describe
      }
      ```
 
-     A micro application connects to the platform host by invoking the method `MicrofrontendPlatform.connectToHost` and passing its identity as argument. The host checks whether the connecting micro application is qualified to connect, i.e., is registered in the host application under that origin; otherwise, the host will reject the connection attempt.
+     A micro application connects to the platform host by invoking the method `MicrofrontendPlatformClient.connect` and passing its identity as argument. The host checks whether the connecting micro application is qualified to connect, i.e., is registered in the host application under that origin; otherwise, the host will reject the connection attempt.
 
      ```ts
-     await MicrofrontendPlatform.connectToHost('products-app');
+     await MicrofrontendPlatformClient.connect('products-app');
      ```
 
      As the symbolic name, you must pass the exact same name under which you registered the micro application in the host application.

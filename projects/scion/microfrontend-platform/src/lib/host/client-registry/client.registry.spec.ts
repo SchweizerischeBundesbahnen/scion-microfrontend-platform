@@ -9,6 +9,7 @@
  */
 import {ClientRegistry} from './client.registry';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../microfrontend-platform-host';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ɵClient} from './ɵclient';
 import {Client} from './client';
@@ -20,7 +21,7 @@ describe('ClientRegistry', () => {
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
   it('should register a client by its id', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const client1 = newClient('1', 'app-1');
     const client2 = newClient('2', 'app-2');
@@ -32,7 +33,7 @@ describe('ClientRegistry', () => {
   });
 
   it('should register a client by its window', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const client1 = newClient('1', 'app-1');
     const client2 = newClient('2', 'app-2');
@@ -44,7 +45,7 @@ describe('ClientRegistry', () => {
   });
 
   it('should register a client by its application', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const client1 = newClient('1', 'app-1');
     const client2 = newClient('2', 'app-1');
@@ -62,7 +63,7 @@ describe('ClientRegistry', () => {
   });
 
   it('should unregister a client', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     const client = newClient('1', 'app-1');
     Beans.get(ClientRegistry).registerClient(client);

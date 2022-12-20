@@ -55,7 +55,7 @@ An intent is formulated in an abstract way, having assigned a _type_, and option
 Intention::
 The term `intention` refers to the <<terminology:intention-api,Intention API>> of the SCION Microfrontend Platform.
 +
-An intention refers to one or more <<terminology:capability,capabilities>> that a <<terminology:micro-application,micro application>> wants to interact with. Manifesting intentions allows us to see dependencies between applications down to the functional level.
+An intention refers to one or more <<terminology:capability,capabilities>> that a <<terminology:micro-application,micro application>> wants to interact with. Manifesting intentions enables us to see dependencies between applications down to the functional level.
 +
 Intentions are declared in the application's <<terminology:manifest,manifest>> and are formulated in an abstract way, consisting of a _type_ and optionally a qualifier. The qualifier is used to differentiate capabilities of the same type.
 
@@ -63,7 +63,7 @@ Intentions are declared in the application's <<terminology:manifest,manifest>> a
 Intention API::
 The Intention API enables controlled collaboration between <<terminology:micro-application,micro applications>>. It is inspired by the Android platform where an application can start an activity via an _Intent_ (such as sending an email).
 +
-To collaborate, an application must express an <<terminology:intention,intention>>. An intention refers to one or more <<terminology:capability,capabilities>>, or activity, in the Android platform. Capabilities can be browsed similar to a catalog and invoked by issuing an <<terminology:intent,intent>>. Manifesting intentions allows us to see dependencies between applications down to the functional level.
+To collaborate, an application must express an <<terminology:intention,intention>>. An intention refers to one or more <<terminology:capability,capabilities>>, or activity, in the Android platform. Capabilities can be browsed similar to a catalog and invoked by issuing an <<terminology:intent,intent>>. Manifesting intentions enables us to see dependencies between applications down to the functional level.
 
 [#terminology:manifest]
 Manifest::
@@ -91,7 +91,7 @@ The origin is defined by the scheme (protocol), host (domain), and port. Two obj
 
 [#terminology:platform]
 Platform::
-SCION Microfrontend Platform is a TypeScript-based open-source library that helps to implement a <<chapter:microfrontend-architecture,microfrontend architecture>> using iframes.
+SCION Microfrontend Platform is a TypeScript-based open source library that enables the implementation of a framework-agnostic <<chapter:microfrontend-architecture,microfrontend architecture>> using iframes.
 +
 The platform provides fundamental building blocks for implementing a microfrontend architecture. These include <<chapter:cross-application-communication,cross-microfrontend communication>>, <<chapter:router-outlet,embedding of microfrontends>>, and <<chapter:routing,routing between microfrontends>>. SCION Microfrontend Platform is a lightweight, web stack agnostic library but not a framework. It has no user-facing components, and does not dictate any form of application structure.
 +

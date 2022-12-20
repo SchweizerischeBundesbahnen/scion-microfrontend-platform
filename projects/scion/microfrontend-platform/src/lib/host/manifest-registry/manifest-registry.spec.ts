@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../microfrontend-platform-host';
 import {expectEmissions, installLoggerSpies, readConsoleLog} from '../../testing/spec.util.spec';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestRegistry} from './manifest-registry';
@@ -32,7 +33,7 @@ describe('ManifestRegistry', () => {
   describe('hasIntention', () => {
 
     it('should error if not passing an exact qualifier', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {symbolicName: 'host-app'},
         applications: [],
       });
@@ -41,7 +42,7 @@ describe('ManifestRegistry', () => {
     });
 
     it(`should have an implicit intention for a capability having the qualifier ({entity: 'person', mode: 'new'})`, async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {symbolicName: 'host-app'},
         applications: [
           {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
@@ -65,7 +66,7 @@ describe('ManifestRegistry', () => {
     });
 
     it(`should match an intention having an exact qualifier ({entity: 'person', mode: 'new'})`, async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {symbolicName: 'host-app'},
         applications: [
           {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
@@ -89,7 +90,7 @@ describe('ManifestRegistry', () => {
     });
 
     it(`should match an intention having an asterisk wildcard qualifier ({entity: 'person', mode: '*'})`, async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {symbolicName: 'host-app'},
         applications: [
           {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
@@ -112,7 +113,7 @@ describe('ManifestRegistry', () => {
     });
 
     it(`should match an intention having an any-more wildcard (**) qualifier ({entity: 'person', '*': '*'})`, async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {symbolicName: 'host-app'},
         applications: [
           {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
@@ -139,7 +140,7 @@ describe('ManifestRegistry', () => {
   describe('resolveCapabilitiesByIntent', () => {
 
     it('should error if not passing an exact qualifier', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {symbolicName: 'host-app'},
         applications: [],
       });
@@ -150,7 +151,7 @@ describe('ManifestRegistry', () => {
     describe('implicit intention', () => {
 
       it(`should resolve to own private capability having the qualifier ({entity: 'person', mode: 'new'})`, async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {symbolicName: 'host-app'},
           applications: [
             {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
@@ -171,7 +172,7 @@ describe('ManifestRegistry', () => {
       });
 
       it('should not resolve to private capabilities of other applications', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {symbolicName: 'host-app'},
           applications: [
             {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
@@ -195,7 +196,7 @@ describe('ManifestRegistry', () => {
       });
 
       it('should not resolve to public capabilities of other applications', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {symbolicName: 'host-app'},
           applications: [
             {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
@@ -222,7 +223,7 @@ describe('ManifestRegistry', () => {
     describe('explicit intention', () => {
 
       it(`should resolve to public foreign capability having the qualifier ({entity: 'person', mode: 'new'})`, async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {symbolicName: 'host-app'},
           applications: [
             {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
@@ -240,7 +241,7 @@ describe('ManifestRegistry', () => {
       });
 
       it('should resolve to public (but not private) capabilities of other apps', async () => {
-        await MicrofrontendPlatform.startHost({
+        await MicrofrontendPlatformHost.start({
           host: {symbolicName: 'host-app'},
           applications: [
             {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
@@ -266,7 +267,7 @@ describe('ManifestRegistry', () => {
   });
 
   it('should not allow registering a capability using the any-more wildcard (**) in its qualifier', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {symbolicName: 'host-app'},
       applications: [],
     });
@@ -275,7 +276,7 @@ describe('ManifestRegistry', () => {
   });
 
   it('should not allow registering a capability using the asterisk wildcard (*) in its qualifier', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {symbolicName: 'host-app'},
       applications: [],
     });
@@ -284,7 +285,7 @@ describe('ManifestRegistry', () => {
   });
 
   it('should not allow registering a capability using the optional wildcard (?) in its qualifier', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {symbolicName: 'host-app'},
       applications: [],
     });
@@ -293,7 +294,7 @@ describe('ManifestRegistry', () => {
   });
 
   it('should not allow registering an intention using the optional wildcard (?) in its qualifier', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {symbolicName: 'host-app'},
       applications: [],
     });
@@ -304,7 +305,7 @@ describe('ManifestRegistry', () => {
   describe('Capability Params', () => {
     it('should register params and support legacy param declaration (via manifest)', async () => {
       // Register capability via manifest
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           symbolicName: 'host-app',
           manifest: {
@@ -348,7 +349,7 @@ describe('ManifestRegistry', () => {
     });
 
     it('should register params and support legacy param declaration (via ManifestService)', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {symbolicName: 'host-app'},
         applications: [],
       });
@@ -387,7 +388,7 @@ describe('ManifestRegistry', () => {
     });
 
     it('should error if params forget to declare whether they are required or optional (via manifest)', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           symbolicName: 'host-app',
           manifest: {
@@ -411,7 +412,7 @@ describe('ManifestRegistry', () => {
     });
 
     it('should error if params forget to declare whether they are required or optional (via ManifestService)', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       // Register capability via ManifestServie
       await expectAsync(Beans.get(ManifestService).registerCapability({
@@ -423,7 +424,7 @@ describe('ManifestRegistry', () => {
 
     it('should error if deprecated params are required (via manifest)', async () => {
       // Register capability via manifest
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           symbolicName: 'host-app',
           manifest: {
@@ -448,7 +449,7 @@ describe('ManifestRegistry', () => {
 
     it('should error if deprecated params, which declare a substitute, are required (via manifest)', async () => {
       // Register capability via manifest
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           symbolicName: 'host-app',
           manifest: {
@@ -473,7 +474,7 @@ describe('ManifestRegistry', () => {
     });
 
     it('should error if deprecated params are required (via ManifestService)', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       // Register capability via ManifestServie
       await expectAsync(Beans.get(ManifestService).registerCapability({
@@ -484,7 +485,7 @@ describe('ManifestRegistry', () => {
     });
 
     it('should error if deprecated params, which declare a substitute, are required (via ManifestService)', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       // Register capability via ManifestServie
       await expectAsync(Beans.get(ManifestService).registerCapability({
@@ -499,7 +500,7 @@ describe('ManifestRegistry', () => {
 
     it('should error if deprecated params declare an invalid substitute (via manifest)', async () => {
       // Register capability via manifest
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           symbolicName: 'host-app',
           manifest: {
@@ -525,7 +526,7 @@ describe('ManifestRegistry', () => {
     });
 
     it('should error if deprecated params declare an invalid substitute (via ManifestService)', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       // Register capability via ManifestServie
       await expectAsync(Beans.get(ManifestService).registerCapability({
@@ -541,7 +542,7 @@ describe('ManifestRegistry', () => {
   });
 
   it('should allow intercepting capabilities', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {symbolicName: 'host-app'},
       applications: [],
     });
@@ -567,7 +568,7 @@ describe('ManifestRegistry', () => {
   });
 
   it('should use a unique identifier for capability ID', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {symbolicName: 'host-app'},
       applications: [],
     });
@@ -578,7 +579,7 @@ describe('ManifestRegistry', () => {
   });
 
   it('should use a unique identifier for intention ID', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {symbolicName: 'host-app'},
       applications: [],
     });

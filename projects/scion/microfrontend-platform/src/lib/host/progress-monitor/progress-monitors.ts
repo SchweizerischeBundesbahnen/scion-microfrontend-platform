@@ -24,3 +24,9 @@ export abstract class ManifestLoadProgressMonitor extends ProgressMonitor {
  */
 export abstract class ActivatorLoadProgressMonitor extends ProgressMonitor {
 }
+
+/**
+ * @internal
+ */
+export abstract class StartupProgressMonitor extends ProgressMonitor {
+}

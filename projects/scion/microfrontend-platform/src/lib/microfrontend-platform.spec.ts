@@ -9,11 +9,12 @@
  */
 
 import {MicrofrontendPlatform} from './microfrontend-platform';
+import {MicrofrontendPlatformHost} from './host/microfrontend-platform-host';
+import {MicrofrontendPlatformClient} from './client/microfrontend-platform-client';
 import {waitFor} from './testing/spec.util.spec';
 import {PlatformState} from './platform-state';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {PlatformPropertyService} from './platform-property-service';
-import {ObserveCaptor} from '@scion/toolkit/testing';
 
 describe('MicrofrontendPlatform', () => {
 
@@ -21,39 +22,39 @@ describe('MicrofrontendPlatform', () => {
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
   it('should report that the app is not connected to the platform host when the host platform is not found', async () => {
-    const startup = MicrofrontendPlatform.connectToHost('client-app', {brokerDiscoverTimeout: 250});
+    const startup = MicrofrontendPlatformClient.connect('client-app', {brokerDiscoverTimeout: 250});
     await expectAsync(startup).toBeRejected();
-    await expect(await MicrofrontendPlatform.isConnectedToHost()).toBeFalse();
+    await expect(await MicrofrontendPlatformClient.isConnected()).toBeFalse();
   });
 
   it('should report that the app is not connected to the platform host when the client platform is not started', async () => {
-    await expect(await MicrofrontendPlatform.isConnectedToHost()).toBeFalse();
+    await expect(await MicrofrontendPlatformClient.isConnected()).toBeFalse();
   });
 
   it('should report that the app is connected to the platform host when connected', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
-    await expect(await MicrofrontendPlatform.isConnectedToHost()).toBeTrue();
+    await MicrofrontendPlatformHost.start({applications: []});
+    await expect(await MicrofrontendPlatformClient.isConnected()).toBeTrue();
   });
 
   it('should enter state \'started\' when started', async () => {
-    const startup = MicrofrontendPlatform.connectToHost('A', {connect: false});
+    const startup = MicrofrontendPlatformClient.connect('A', {connect: false});
 
     await expectAsync(startup).toBeResolved();
     expect(MicrofrontendPlatform.state).toEqual(PlatformState.Started);
   });
 
   it('should reject starting the client platform multiple times', async () => {
-    const connect = MicrofrontendPlatform.connectToHost('A', {connect: false});
+    const connect = MicrofrontendPlatformClient.connect('A', {connect: false});
     await expectAsync(connect).toBeResolved();
     // Connect to the host again
-    await expectAsync(MicrofrontendPlatform.connectToHost('A')).toBeRejectedWithError(/\[MicrofrontendPlatformStartupError] Platform already started/);
+    await expectAsync(MicrofrontendPlatformClient.connect('A')).toBeRejectedWithError(/\[MicrofrontendPlatformStartupError] Platform already started/);
   });
 
   it('should reject starting the host platform multiple times', async () => {
-    const startup = MicrofrontendPlatform.startHost({applications: []});
+    const startup = MicrofrontendPlatformHost.start({applications: []});
     await expectAsync(startup).toBeResolved();
     // Start the platform again
-    await expectAsync(MicrofrontendPlatform.startHost({applications: []})).toBeRejectedWithError(/\[MicrofrontendPlatformStartupError] Platform already started/);
+    await expectAsync(MicrofrontendPlatformHost.start({applications: []})).toBeRejectedWithError(/\[MicrofrontendPlatformStartupError] Platform already started/);
   });
 
   it('should construct eager beans at platform startup', async () => {
@@ -218,7 +219,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should allow looking up platform properties from the host', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [],
       properties: {
         'prop1': 'PROP1',
@@ -232,33 +233,6 @@ describe('MicrofrontendPlatform', () => {
       .set('prop2', 'PROP2')
       .set('prop3', 'PROP3'),
     );
-  });
-
-  it('should not emit progress if not startet yet, report progress during startup, and complete after started', async () => {
-    const captor1 = new ObserveCaptor<number>();
-    const captor2 = new ObserveCaptor<number>();
-
-    // Expect no emission if the platform is not yet started
-    MicrofrontendPlatform.startupProgress$.subscribe(captor1);
-    expect(captor1.getValues()).toEqual([]); // no emission
-
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    // Expect the progress to be 100% after the platform is started and the Observable to be completed.
-    expect(captor1.getLastValue()).toEqual(100);
-    expect(captor1.hasCompleted()).toBeTrue();
-
-    await MicrofrontendPlatform.destroy();
-
-    // Expect no emission if the platform is not yet started
-    MicrofrontendPlatform.startupProgress$.subscribe(captor2);
-    expect(captor2.getValues()).toEqual([]); // no emission
-
-    await MicrofrontendPlatform.startHost({applications: []});
-
-    // Expect the progress to be 100% after the platform completed startup and the Observable to be completed.
-    expect(captor2.getLastValue()).toEqual(100);
-    expect(captor2.hasCompleted()).toBeTrue();
   });
 });
 

@@ -28,7 +28,7 @@ In this Chapter
 === Concepts and Usage
 The Intention API enables controlled collaboration between micro applications. It is inspired by the Android platform where an application can start an activity via an _Intent_ (such as sending an email).
 
-To collaborate, an application must express an <<terminology:intention,intention>>. An intention refers to one or more <<terminology:capability,capabilities>>, or activity, in the Android platform. Capabilities can be browsed similar to a catalog and invoked by issuing an <<terminology:intent,intent>>. Manifesting intentions allows us to see dependencies between applications down to the functional level.
+To collaborate, an application must express an <<terminology:intention,intention>>. An intention refers to one or more <<terminology:capability,capabilities>>, or activity, in the Android platform. Capabilities can be browsed similar to a catalog and invoked by issuing an <<terminology:intent,intent>>. Manifesting intentions enables us to see dependencies between applications down to the functional level.
 
 ====
 A micro application can make functionality available to micro applications in the form of capabilities. For a micro application to browse or invoke a capability, the micro application must declare an intention in its manifest. To invoke a capability, a micro application issues an intent.

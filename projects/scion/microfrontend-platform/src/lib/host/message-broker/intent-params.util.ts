@@ -16,16 +16,21 @@ import {ParamDefinition} from '../../platform.model';
 /**
  * Provides utilities for working with intent params.
  *
+ * NOTE: Use static class instead of namespace to be tree shakable, i.e., to not be included in client app.
+ *
  * @internal
  */
-export namespace IntentParams {
+export class IntentParams {
+
+  private constructor() {
+  }
 
   /**
    * Validates params of given intent.
    *
    * @throws if the message contains invalid params.
    */
-  export function validateParams(intentMessage: IntentMessage): void {
+  public static validateParams(intentMessage: IntentMessage): void {
     const {intent, capability} = intentMessage;
     const sender = intentMessage.headers.get(MessageHeaders.AppSymbolicName);
     intent.params = new Map(intent.params);

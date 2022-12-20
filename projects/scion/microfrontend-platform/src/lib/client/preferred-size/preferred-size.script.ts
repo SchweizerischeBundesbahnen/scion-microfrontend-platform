@@ -8,14 +8,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformClient} from '../microfrontend-platform-client';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {PreferredSizeService} from './preferred-size-service';
 import {MessageClient} from '../messaging/public_api';
 import {mapToBody} from '../../messaging.model';
 
 export async function reportPreferredSize({scriptPreferredSizeTopic}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost('host');
+  await MicrofrontendPlatformClient.connect('host');
   Beans.get(MessageClient).observe$(scriptPreferredSizeTopic)
     .pipe(mapToBody())
     .subscribe(preferredSize => {
