@@ -12,7 +12,7 @@ import {APP_INITIALIZER, inject, NgModule, NgZone} from '@angular/core';
 
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {IntentClient, ManifestService, MessageClient, MicrofrontendPlatform, ObservableDecorator, OutletRouter} from '@scion/microfrontend-platform';
+import {IntentClient, ManifestService, MessageClient, MicrofrontendPlatformClient, ObservableDecorator, OutletRouter} from '@scion/microfrontend-platform';
 import {NgZoneObservableDecorator} from './ng-zone-observable-decorator';
 import {AppDetailsComponent} from './app-details/app-details.component';
 import {AppListComponent} from './app-list/app-list.component';
@@ -102,6 +102,6 @@ export function providePlatformInitializerFn(): () => Promise<void> {
   const zone = inject(NgZone);
   return (): Promise<void> => {
     Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)});
-    return zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost('devtools').catch(() => null));
+    return zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect('devtools').catch(() => null));
   };
 }

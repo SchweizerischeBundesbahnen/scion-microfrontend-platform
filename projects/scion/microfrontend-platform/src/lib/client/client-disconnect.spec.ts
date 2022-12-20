@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {MicrofrontendPlatform} from '../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../host/microfrontend-platform-host';
 import {MicrofrontendFixture} from '../testing/microfrontend-fixture/microfrontend-fixture';
 import {ManifestFixture} from '../testing/manifest-fixture/manifest-fixture';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -31,7 +32,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should disconnect the client when loading a SCION micro application into its window', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client-1',
@@ -63,7 +64,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should disconnect the client when loading a non-SCION app into its window', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -89,7 +90,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should disconnect the client when it navigates to a SCION micro application', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client-1',
@@ -123,7 +124,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should disconnect the client when it navigates to a non-SCION app', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -144,7 +145,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should disconnect the client when removing its iframe', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -170,7 +171,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should disconnect the client when stopping its platform', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -191,7 +192,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should disconnect client if not receiving a "DISCONNECT" when loading a SCION micro application into its window (staleness)', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client-1',
@@ -226,7 +227,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should disconnect client if not receiving a "DISCONNECT" when loading a non-SCION app into its window (staleness)', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',
@@ -259,7 +260,7 @@ describe('MicrofrontendPlatform', () => {
   });
 
   it('should disconnect client if not receiving a "DISCONNECT" when removing its iframe (staleness)', async () => {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {
           symbolicName: 'client',

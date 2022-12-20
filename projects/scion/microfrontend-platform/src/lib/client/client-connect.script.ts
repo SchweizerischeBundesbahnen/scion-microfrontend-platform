@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {MicrofrontendPlatform} from '../microfrontend-platform';
+import {MicrofrontendPlatformClient} from './microfrontend-platform-client';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {fromEvent, mergeWith, Observer} from 'rxjs';
 import {ɵBrokerGateway} from './messaging/broker-gateway';
@@ -17,7 +17,7 @@ import {ɵWINDOW_TOP} from '../ɵplatform.model';
 import {filterByTransport} from '../operators';
 
 export async function connectToHost({symbolicName, brokerDiscoverTimeout, connectCount}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName, {brokerDiscoverTimeout});
+  await MicrofrontendPlatformClient.connect(symbolicName, {brokerDiscoverTimeout});
   observer.next(Beans.get(ɵBrokerGateway).session.clientId);
 
   for (let i = 1; i < connectCount; i++) {
@@ -28,7 +28,7 @@ export async function connectToHost({symbolicName, brokerDiscoverTimeout, connec
 
 export async function connectClientToRemoteHost({symbolicName, brokerDiscoverTimeout}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   Beans.register(ɵWINDOW_TOP, {useValue: window}); // simulate to be loaded into the top-level window
-  await MicrofrontendPlatform.connectToHost(symbolicName, {brokerDiscoverTimeout});
+  await MicrofrontendPlatformClient.connect(symbolicName, {brokerDiscoverTimeout});
   observer.next(Beans.get(ɵBrokerGateway).session.clientId);
 }
 

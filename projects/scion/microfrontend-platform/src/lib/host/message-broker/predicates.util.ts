@@ -11,21 +11,26 @@
 /**
  * Provides utilities for working with predicates.
  *
+ * NOTE: Use static class instead of namespace to be tree shakable, i.e., to not be included in client app.
+ *
  * @internal
  */
-export namespace Predicates {
+export class Predicates {
+
+  private constructor() {
+  }
 
   /**
    * Negates the given predicate.
    */
-  export function not<T>(predicate: Predicate<T>): Predicate<T> {
+  public static not<T>(predicate: Predicate<T>): Predicate<T> {
     return (value: T) => !predicate(value);
   }
 
   /**
    * Represents a predicate that always evaluates to `true`.
    */
-  export const alwaysTrue = (): true => true;
+  public static alwaysTrue = (): true => true;
 }
 
 /**

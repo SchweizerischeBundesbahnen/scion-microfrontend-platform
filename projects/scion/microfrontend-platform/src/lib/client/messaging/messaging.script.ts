@@ -19,13 +19,14 @@ import {MessagingChannel, MessagingTransport} from '../../ɵmessaging.model';
 import {ɵBrokerGateway} from './broker-gateway';
 import {map} from 'rxjs/operators';
 import {IntentMessage, TopicMessage} from '../../messaging.model';
+import {MicrofrontendPlatformClient} from '../microfrontend-platform-client';
 
 export async function connectToHost({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
 }
 
 export async function sendMessageWhenPlatformStateStopping({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
   MicrofrontendPlatform.whenState(PlatformState.Stopping).then(async () => {
     await Beans.get(MessageClient).publish(`${symbolicName}/whenPlatformStateStopping`, 'message from client');
   });
@@ -39,25 +40,25 @@ export async function sendMessageOnBeanPreDestroy({symbolicName}): Promise<void>
   }
 
   Beans.register(LifecycleHook, {eager: true});
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
 }
 
 export async function sendMessageInBeforeUnload({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
   fromEvent(window, 'beforeunload', {once: true}).subscribe(() => {
     Beans.get(MessageClient).publish(`${symbolicName}/beforeunload`, 'message from client');
   });
 }
 
 export async function sendMessageInUnload({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
   fromEvent(window, 'unload', {once: true}).subscribe(() => {
     Beans.get(MessageClient).publish(`${symbolicName}/unload`, 'message from client');
   });
 }
 
 export async function subscribeToTopic({symbolicName, topic, monitorTopicMessageChannel}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
 
   if (monitorTopicMessageChannel) {
     Beans.get(MessageClient).observe$(topic).subscribe();
@@ -79,17 +80,17 @@ export async function subscribeToTopic({symbolicName, topic, monitorTopicMessage
 }
 
 export async function publishIntent({symbolicName, intent, body, options}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
   await Beans.get(IntentClient).publish(intent, body, options);
 }
 
 export async function requestViaIntent({symbolicName, intent, body, options}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
   Beans.get(IntentClient).request$(intent, body, options).subscribe(observer);
 }
 
 export async function monitorTopicMessageChannel({symbolicName}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
 
   const session = Beans.get(ɵBrokerGateway).session;
   fromEvent<MessageEvent>(window, 'message')
@@ -104,7 +105,7 @@ export async function monitorTopicMessageChannel({symbolicName}, observer: Obser
 }
 
 export async function subscribeToIntent({symbolicName, intent, monitorIntentMessageChannel}, observer: Observer<TopicMessage | IntentMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
 
   if (monitorIntentMessageChannel) {
     Beans.get(IntentClient).observe$(intent).subscribe();
@@ -126,7 +127,7 @@ export async function subscribeToIntent({symbolicName, intent, monitorIntentMess
 }
 
 export async function monitorIntentMessageChannel({symbolicName}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatform.connectToHost(symbolicName);
+  await MicrofrontendPlatformClient.connect(symbolicName);
 
   const session = Beans.get(ɵBrokerGateway).session;
   fromEvent<MessageEvent>(window, 'message')

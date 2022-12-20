@@ -22,45 +22,48 @@ In this Chapter
 [discrete]
 === Starting the Platform in the Host Application
 
-The host application starts the platform by calling the `MicrofrontendPlatform.startHost` method and passing the platform's configuration, which contains at minimum the web applications to be registered as micro applications. Registered micro applications can connect to the platform and interact with each other. You can also specify various timeouts and control platform behavior. For a detailed overview of platform and application configuration, see chapter <<chapter:configuration:configuring-the-platform>>.
+In the host application the SCION Microfrontend Platform is configured and web applications that want to interact with the platform are registered. For a detailed overview of platform and application configuration properties, refer to chapter <<chapter:configuration:configuring-the-platform>>.
 
-The following code snippet illustrates how to start the platform in the host application.
+The host application starts the platform by calling the `MicrofrontendPlatformHost.start` method.
+
 [source,typescript]
 ----
 include::starting-the-platform.snippets.ts[tags=startHost1]
 ----
-<1> Lists the micro applications able to connect to the platform to interact with other micro applications.
+<1> Lists the applications allowed to interact with the platform.
 
-As with micro applications, you can provide a manifest for the host, allowing the host to contribute capabilities and declare intentions. The host manifest can be passed either as an object literal or specified as a URL to load it over the network.
+The platform should be started during the bootstrapping of the host application. In Angular, for example, the platform is typically started in an app initializer. Since starting the platform host may take some time, you should wait for the startup Promise to resolve before interacting with the platform.
+
+The host application can provide a manifest to declare intentions and contribute behavior to integrated applications via `MicrofrontendPlatformConfig.host.manifest`. The manifest can be specified either as an object literal or as a URL to load it over the network.
 
 [source,typescript]
 ----
 include::starting-the-platform.snippets.ts[tags=startHost2]
 ----
 <1> Specifies the host manifest. Alternatively, you can pass a URL to the manifest for loading it over the network.
-<2> Lists the micro applications able to connect to the platform to interact with other micro applications.
-
-When starting the platform, it loads the manifests of registered micro applications and installs activator microfrontends, if any. The method for starting the platform host returns a `Promise` that resolves once platform startup completed. You should wait for the Promise to resolve before interacting with the platform.
+<2> Lists the applications allowed to interact with the platform.
 
 [[chapter:configuration:connecting-to-the-host]]
 [discrete]
-=== Connecting to the Platform from a Micro Application
+=== Connecting to the Platform from a Microfrontend
 
-A micro application connects to the platform host by invoking the method `MicrofrontendPlatform.connectToHost` and passing its identity as argument. The host checks whether the connecting micro application is qualified to connect, i.e., is registered in the host application under that origin; otherwise, the host will reject the connection attempt.
+A microfrontend connects to the platform host by invoking the `connect` method on `MicrofrontendPlatformClient` and passing its application identity as the argument.
 
-The following code snippet illustrates how to connect to the platform in a micro application.
+The following code snippet illustrates how to connect to the platform from a microfrontend.
 
 [source,typescript]
 ----
 include::starting-the-platform.snippets.ts[tags=connectToHost]
 ----
 
-Optionally, you can pass an options object to control how to connect to the platform host. The method returns a `Promise` that resolves when connected to the platform host. You should wait for the Promise to resolve before interacting with the platform.
+A microfrontend should connect to the platform host during application bootstrapping. In Angular, for example, this is typically done in an app initializer. Since connecting to the platform host is an asynchronous operation, the microfrontend should wait for the Promise to resolve before interacting with the platform or other microfrontends.
+
+NOTE: The platform connects to the host through its window hierarchy. Therefore, the microfrontend must be embedded as direct or indirect child window of the host application window.
 
 [[chapter:configuration:configuring-the-platform]]
 [discrete]
 === Configuring the Platform
-You configure the platform by passing following <<objects::microfrontend-platform-config,config object>> when starting the host platform. Besides listing micro applications qualified to connect to the platform, you can specify the manifest of the host application, control platform behavior, declare user-specific properties available to micro applications, and more.
+You configure the platform by passing a config object when starting the platform host. Besides listing micro applications allowed to interact with the platform, you can specify the manifest of the host application, control platform behavior, declare common properties available to micro applications, and more.
 
 [[objects::microfrontend-platform-config]]
 .Properties of `MicrofrontendPlatformConfig`
@@ -72,7 +75,7 @@ You configure the platform by passing following <<objects::microfrontend-platfor
 a| `<<objects::application-config,ApplicationConfig>>[]`
 | yes
 |
-| Lists the micro applications able to connect to the platform to interact with other micro applications.
+| Lists the applications allowed to interact with the platform.
 
 See <<objects::application-config,ApplicationConfig>> for an overview of the properties.
 

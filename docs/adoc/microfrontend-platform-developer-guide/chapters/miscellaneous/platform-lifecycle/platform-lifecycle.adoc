@@ -66,11 +66,11 @@ include::platform-lifecycle.snippets.ts[tags=platform-lifecycle:registerInitiali
 
 [[chapter:platform-lifecycle:platform-startup-progress]]
 === Platform Startup Progress
-Starting the platform can take some time, especially in the host, as the host loads the manifests of the registered applications, among other things, and waits for the applications to signal their readiness.
+Starting the host may take some time. During startup, the manifests of the registered applications are fetched, activator microfrontends are installed, and the platform waits until all applications have signaled readiness.
 
-You can subscribe to the platform's startup progress to provide feedback to the user about the progress of the platform startup, e.g., in form of a progress bar or spinner.
+You can monitor the startup progress and provide feedback to the user like displaying a progress bar or a spinner. The platform reports the progress as a percentage number.
 
-The following code snippet illustrates how to subscribe to the startup progress:
+The following code snippet illustrates how to monitor the startup progress:
 [source,typescript]
 ----
 include::platform-lifecycle.snippets.ts[tags=platform-lifecycle:startupProgress]

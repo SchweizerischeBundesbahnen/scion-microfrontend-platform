@@ -9,7 +9,7 @@ This Getting Started Guide introduces you to the basics of the SCION Microfronte
 In the course of this tutorial, we will create two independent applications, also referred to as micro apps, the *Products App* and the *Customers App*, each providing two microfrontends. We will also create a host app to integrate the two micro apps.
 
 - **Host App**\
-  Provides the top-level integration container for microfrontends. It is the web app which the user loads into his browser that provides the main application shell, defining areas to embed microfrontends.
+  Provides the top-level integration container for microfrontends. It is the web app which the user loads into the browser that provides the main application shell, defining areas to embed microfrontends.
 
 - **Products App**\
   Provides the *ProductList Microfrontend* and *Product Microfrontend*, so that we can view our products.

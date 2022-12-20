@@ -89,21 +89,21 @@ export class ApplicationRegistry {
   }
 
   /**
-   * Returns whether or not capability 'scope check' is disabled for the given application.
+   * Returns whether the specified application can interact with private capabilities of other applications.
    */
   public isScopeCheckDisabled(appSymbolicName: string): boolean {
     return Defined.orElseThrow(this._applications.get(appSymbolicName), () => Error(`[NullApplicationError] No application registered under the symbolic name '${appSymbolicName}'.`)).scopeCheckDisabled;
   }
 
   /**
-   * Returns whether or not the 'Intention Registration API' is disabled for the given application.
+   * Returns whether the specified application can register and unregister intentions dynamically at runtime.
    */
   public isIntentionRegisterApiDisabled(appSymbolicName: string): boolean {
     return Defined.orElseThrow(this._applications.get(appSymbolicName), () => Error(`[NullApplicationError] No application registered under the symbolic name '${appSymbolicName}'.`)).intentionRegisterApiDisabled;
   }
 
   /**
-   * Returns whether or not 'intention check' is disabled for the given application.
+   * Returns whether the specified application can interact with capabilities of other applications without having to declare respective intentions.
    */
   public isIntentionCheckDisabled(appSymbolicName: string): boolean {
     return Defined.orElseThrow(this._applications.get(appSymbolicName), () => Error(`[NullApplicationError] No application registered under the symbolic name '${appSymbolicName}'.`)).intentionCheckDisabled;

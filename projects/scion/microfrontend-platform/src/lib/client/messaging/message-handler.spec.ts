@@ -10,6 +10,7 @@
 import {MessageClient} from '../../client/messaging/message-client';
 import {expectPromise, waitFor, waitForCondition, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../../host/microfrontend-platform-host';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {IntentMessage, TopicMessage} from '../../messaging.model';
 import {concat, Observable, of, ReplaySubject, throwError} from 'rxjs';
@@ -34,7 +35,7 @@ describe('Message Handler', () => {
   describe('pub/sub', () => {
 
     it('should receive messages published to a topic', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const collector = new Array<string>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -50,7 +51,7 @@ describe('Message Handler', () => {
     });
 
     it('should not unregister the callback on error', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const collector = new Array<string>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -67,7 +68,7 @@ describe('Message Handler', () => {
     });
 
     it('should not unregister the callback on async error', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const collector = new Array<string>();
       Beans.get(MessageClient).onMessage<string>('topic', async message => {
@@ -84,7 +85,7 @@ describe('Message Handler', () => {
     });
 
     it('should ignore values returned by the callback', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const collector = new Array<string>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -101,7 +102,7 @@ describe('Message Handler', () => {
     });
 
     it('should ignore async values returned by the callback', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const collector = new Array<string>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -118,7 +119,7 @@ describe('Message Handler', () => {
     });
 
     it('should unregister the handler when cancelling its subscription', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const collector = new Array<string>();
       const subscription = Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -140,7 +141,7 @@ describe('Message Handler', () => {
   describe('request/response', () => {
 
     it('should reply with a single response and then complete the requestor\'s Observable', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return message.body.toUpperCase();
@@ -155,7 +156,7 @@ describe('Message Handler', () => {
     });
 
     it('should reply with a single response (Promise) and then complete the requestor\'s Observable', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return Promise.resolve(message.body.toUpperCase());
@@ -170,7 +171,7 @@ describe('Message Handler', () => {
     });
 
     it('should reply with a single response (Observable) and then complete the requestor\'s Observable', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return of(message.body.toUpperCase());
@@ -185,7 +186,7 @@ describe('Message Handler', () => {
     });
 
     it('should reply with multiple responses and then complete the requestor\'s Observable', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         const body = message.body.toUpperCase();
@@ -201,7 +202,7 @@ describe('Message Handler', () => {
     });
 
     it('should reply with multiple responses without completing the requestor\'s Observable', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         const body = message.body.toUpperCase();
@@ -224,7 +225,7 @@ describe('Message Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when not returning a value', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         // not returning a value
@@ -239,7 +240,7 @@ describe('Message Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when returning `undefined`', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         return undefined;
@@ -254,7 +255,7 @@ describe('Message Handler', () => {
     });
 
     it('should treat `null` as valid reply', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         return null;
@@ -269,7 +270,7 @@ describe('Message Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when returning a Promise that resolves without value', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         return Promise.resolve();
@@ -284,7 +285,7 @@ describe('Message Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when returning a Promise that resolves with `undefined`', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         return Promise.resolve(undefined);
@@ -299,7 +300,7 @@ describe('Message Handler', () => {
     });
 
     it('should transport `undefined` and `null` values emitted by an Observable', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         const body = message.body.toUpperCase();
@@ -315,7 +316,7 @@ describe('Message Handler', () => {
     });
 
     it('should error the requestor\'s Observable when throwing an error', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         throw Error('some error');
@@ -332,7 +333,7 @@ describe('Message Handler', () => {
     });
 
     it('should error the requestor\'s Observable when returning a Promise that rejects', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         return Promise.reject('some error');
@@ -349,7 +350,7 @@ describe('Message Handler', () => {
     });
 
     it('should error the requestor\'s Observable when returning an Observable that errors', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', () => {
         return throwError(() => 'some error');
@@ -366,7 +367,7 @@ describe('Message Handler', () => {
     });
 
     it('should reply values until encountering an error', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return concat(
@@ -386,7 +387,7 @@ describe('Message Handler', () => {
     });
 
     it('should not unregister the handler if the replier Observable errors', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return concat(
@@ -415,7 +416,7 @@ describe('Message Handler', () => {
     });
 
     it('should not unregister the handler on error', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const collected = [];
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -443,7 +444,7 @@ describe('Message Handler', () => {
     });
 
     it('should not unregister the handler on async error', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const collected = [];
       Beans.get(MessageClient).onMessage<string>('topic', message => {
@@ -471,7 +472,7 @@ describe('Message Handler', () => {
     });
 
     it('should unsubscribe from the replier Observable when the requestor unsubscribes', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const replierCaptor = new ObservableCaptor();
 
@@ -490,7 +491,7 @@ describe('Message Handler', () => {
     });
 
     it('should unsubscribe the replier\'s and requestor\'s Observable when unregistering the handler', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
 
       const replierCaptor = new ObservableCaptor();
       const requestorCaptor = new ObservableCaptor();
@@ -518,7 +519,7 @@ describe('Message Handler', () => {
     });
 
     it('should complete the requestor\'s Observable when the replier\'s platform is shut down', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         applications: [
           {
             symbolicName: 'replier',
@@ -572,7 +573,7 @@ describe('Intent Handler', () => {
   describe('pub/sub', () => {
 
     it('should receive intents', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -596,7 +597,7 @@ describe('Intent Handler', () => {
     });
 
     it('should not unregister the callback on error', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -621,7 +622,7 @@ describe('Intent Handler', () => {
     });
 
     it('should not unregister the callback on async error', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -646,7 +647,7 @@ describe('Intent Handler', () => {
     });
 
     it('should ignore values returned by the callback', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -671,7 +672,7 @@ describe('Intent Handler', () => {
     });
 
     it('should ignore async values returned by the callback', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -696,7 +697,7 @@ describe('Intent Handler', () => {
     });
 
     it('should unregister the handler when cancelling its subscription', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -726,7 +727,7 @@ describe('Intent Handler', () => {
   describe('request/response', () => {
 
     it('should reply with a single response and then complete the requestor\'s Observable', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -749,7 +750,7 @@ describe('Intent Handler', () => {
     });
 
     it('should reply with a single response (Promise) and then complete the requestor\'s Observable', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -772,7 +773,7 @@ describe('Intent Handler', () => {
     });
 
     it('should reply with a single response (Observable) and then complete the requestor\'s Observable', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -795,7 +796,7 @@ describe('Intent Handler', () => {
     });
 
     it('should reply with multiple responses and then complete the requestor\'s Observable', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -819,7 +820,7 @@ describe('Intent Handler', () => {
     });
 
     it('should reply with multiple responses without completing the requestor\'s Observable', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -850,7 +851,7 @@ describe('Intent Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when not returning a value', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -873,7 +874,7 @@ describe('Intent Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when returning `undefined`', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -896,7 +897,7 @@ describe('Intent Handler', () => {
     });
 
     it('should treat `null` as valid reply', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -919,7 +920,7 @@ describe('Intent Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when returning a Promise that resolves without value', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -942,7 +943,7 @@ describe('Intent Handler', () => {
     });
 
     it('should immediately complete the requestor\'s Observable when returning a Promise that resolves with `undefined`', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -965,7 +966,7 @@ describe('Intent Handler', () => {
     });
 
     it('should transport `undefined` and `null` values emitted by an Observable', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -989,7 +990,7 @@ describe('Intent Handler', () => {
     });
 
     it('should error the requestor\'s Observable when throwing an error', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -1014,7 +1015,7 @@ describe('Intent Handler', () => {
     });
 
     it('should error the requestor\'s Observable when returning a Promise that rejects', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -1039,7 +1040,7 @@ describe('Intent Handler', () => {
     });
 
     it('should error the requestor\'s Observable when returning an Observable that errors', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -1064,7 +1065,7 @@ describe('Intent Handler', () => {
     });
 
     it('should reply values until encountering an error', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -1092,7 +1093,7 @@ describe('Intent Handler', () => {
     });
 
     it('should not unregister the handler if the replier Observable errors', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -1129,7 +1130,7 @@ describe('Intent Handler', () => {
     });
 
     it('should not unregister the handler on error', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -1165,7 +1166,7 @@ describe('Intent Handler', () => {
     });
 
     it('should not unregister the handler on async error', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -1201,7 +1202,7 @@ describe('Intent Handler', () => {
     });
 
     it('should unsubscribe from the replier Observable when the requestor unsubscribes', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -1229,7 +1230,7 @@ describe('Intent Handler', () => {
     });
 
     it('should unsubscribe the replier\'s and requestor\'s Observable when unregistering the handler', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host App',
@@ -1264,7 +1265,7 @@ describe('Intent Handler', () => {
     });
 
     it('should complete the requestor\'s Observable when the replier\'s platform is shut down', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {name: 'Host', intentions: [{type: 'capability'}]},
         },

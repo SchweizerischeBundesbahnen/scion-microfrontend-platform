@@ -1,4 +1,4 @@
-import {Handler, IntentInterceptor, IntentMessage, MessageInterceptor, MicrofrontendPlatform, PlatformState, TopicMatcher, TopicMessage} from '@scion/microfrontend-platform';
+import {Handler, IntentInterceptor, IntentMessage, MessageInterceptor, MicrofrontendPlatform, MicrofrontendPlatformHost, PlatformState, TopicMatcher, TopicMessage} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 {
@@ -32,7 +32,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
   Beans.register(IntentInterceptor, {useClass: IntentLoggerInterceptor, multi: true}); // <2>
 
   // Start the platform.
-  MicrofrontendPlatform.startHost(...); // <3>
+  MicrofrontendPlatformHost.start(...); // <3>
   // end::message-logger-interceptor-registration[]
 }
 

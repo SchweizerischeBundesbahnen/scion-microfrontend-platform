@@ -9,7 +9,7 @@
  */
 import {coerceBooleanProperty} from '@angular/cdk/coercion';
 import {Injectable, NgZone, OnDestroy} from '@angular/core';
-import {ApplicationConfig, Handler, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatform, ObservableDecorator, TopicMessage} from '@scion/microfrontend-platform';
+import {ApplicationConfig, Handler, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatformClient, MicrofrontendPlatformHost, ObservableDecorator, TopicMessage} from '@scion/microfrontend-platform';
 import {environment} from '../environments/environment';
 import {HashLocationStrategy, LocationStrategy} from '@angular/common';
 import {TestingAppTopics} from './testing-app.topics';
@@ -67,7 +67,7 @@ export class PlatformInitializer implements OnDestroy {
     }
 
     // Log the startup progress (startup-progress.e2e-spec.ts).
-    MicrofrontendPlatform.startupProgress$
+    MicrofrontendPlatformHost.startupProgress$
       .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: progress => {
@@ -83,7 +83,7 @@ export class PlatformInitializer implements OnDestroy {
 
     // Run the microfrontend platform as host app
     await this._zone.runOutsideAngular(() => {
-        return MicrofrontendPlatform.startHost({
+        return MicrofrontendPlatformHost.start({
           applications: testingAppConfigs,
           activatorLoadTimeout: environment.activatorLoadTimeout,
           activatorApiDisabled: activatorApiDisabled,
@@ -106,7 +106,7 @@ export class PlatformInitializer implements OnDestroy {
     // Make Observables to emit in the correct zone.
     Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(this._zone)});
     // Connect to the host.
-    return this._zone.runOutsideAngular(() => MicrofrontendPlatform.connectToHost(getCurrentTestingAppSymbolicName()));
+    return this._zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect(getCurrentTestingAppSymbolicName()));
   }
 
   private installMessageInterceptors(): void {

@@ -10,6 +10,7 @@
 
 import {Beans} from '@scion/toolkit/bean-manager';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../microfrontend-platform-host';
 import {Handler, MessageInterceptor} from './message-interception';
 import {TopicMessage} from '../../messaging.model';
 import {MessageClient} from '../../client/messaging/message-client';
@@ -55,7 +56,7 @@ describe('Message Interceptors', () => {
     Beans.register(MessageInterceptor, {useClass: Interceptor1, multi: true});
     Beans.register(MessageInterceptor, {useClass: Interceptor2, multi: true});
     Beans.register(MessageInterceptor, {useClass: Interceptor3, multi: true});
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     await Beans.get(MessageClient).publish('testee');
     expect(invocations).toEqual(['interceptor-1', 'interceptor-2', 'interceptor-3']);
@@ -134,18 +135,18 @@ describe('Message Interceptors', () => {
   });
 
   /**
-   * Invokes {@link MicrofrontendPlatform#startHost}, additionally invoking the specified function when starting the platform.
+   * Invokes {@link MicrofrontendPlatformHost#start}, additionally invoking the specified function when starting the platform.
    */
   async function startHost(config: MicrofrontendPlatformConfig, startupFn: () => void): Promise<void> {
     const originalStartPlatformFn = MicrofrontendPlatform.startPlatform;
     try {
       MicrofrontendPlatform.startPlatform = async (originalStartupFn: () => void) => {
-        return originalStartPlatformFn(() => {
+        return originalStartPlatformFn.bind(MicrofrontendPlatform)(() => {
           originalStartupFn();
           startupFn();
         });
       };
-      await MicrofrontendPlatform.startHost(config);
+      await MicrofrontendPlatformHost.start(config);
     }
     finally {
       MicrofrontendPlatform.startPlatform = originalStartPlatformFn;

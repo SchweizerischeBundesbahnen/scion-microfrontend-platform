@@ -1,0 +1,30 @@
+{
+  "extends": "../../../.eslintrc.json",
+  "ignorePatterns": [
+    "!**/*"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "*.ts"
+      ],
+      "parserOptions": {
+        "project": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/tsconfig.(app|spec).json"
+      },
+      "rules": {
+        "@typescript-eslint/ban-ts-comment": [
+          "error",
+          {
+            "ts-ignore": "allow-with-description"
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "*.html"
+      ],
+      "rules": {}
+    }
+  ]
+}

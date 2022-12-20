@@ -7,58 +7,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {MessageClient} from './client/messaging/message-client';
-import {IntentClient} from './client/messaging/intent-client';
-import {ManifestRegistry} from './host/manifest-registry/manifest-registry';
-import {ApplicationRegistry} from './host/application-registry';
-import {BehaviorSubject, from, Observable, Subject} from 'rxjs';
-import {ConnectOptions} from './client/connect-options';
-import {MicrofrontendPlatformConfig} from './host/microfrontend-platform-config';
-import {PlatformPropertyService} from './platform-property-service';
-import {ConsoleLogger, Logger} from './logger';
-import {HttpClient} from './host/http-client';
-import {ManifestFetcher} from './host/manifest-fetcher';
-import {MessageBroker} from './host/message-broker/message-broker';
-import {first, takeUntil} from 'rxjs/operators';
-import {OutletRouter} from './client/router-outlet/outlet-router';
-import {SciRouterOutletElement} from './client/router-outlet/router-outlet.element';
-import {FocusInEventDispatcher} from './client/focus/focus-in-event-dispatcher';
-import {FocusMonitor} from './client/focus/focus-monitor';
-import {ContextService} from './client/context/context-service';
-import {RouterOutletUrlAssigner} from './client/router-outlet/router-outlet-url-assigner';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {first} from 'rxjs/operators';
+import {PlatformState, Runlevel} from './platform-state';
+import {Beans} from '@scion/toolkit/bean-manager';
 import {APP_IDENTITY, IS_PLATFORM_HOST} from './platform.model';
 import {ɵVERSION, ɵWINDOW_TOP} from './ɵplatform.model';
-import {RelativePathResolver} from './client/router-outlet/relative-path-resolver';
-import {ClientRegistry} from './host/client-registry/client.registry';
-import {FocusTracker} from './host/focus/focus-tracker';
-import {PreferredSizeService} from './client/preferred-size/preferred-size-service';
-import {MouseMoveEventDispatcher} from './client/mouse-event/mouse-move-event-dispatcher';
-import {MouseUpEventDispatcher} from './client/mouse-event/mouse-up-event-dispatcher';
-import {KeyboardEventDispatcher} from './client/keyboard-event/keyboard-event-dispatcher';
-import {ManifestService} from './client/manifest-registry/manifest-service';
-import {ɵManifestRegistry} from './host/manifest-registry/ɵmanifest-registry';
-import {ActivatorInstaller} from './host/activator/activator-installer';
-import {BrokerGateway, NullBrokerGateway, ɵBrokerGateway} from './client/messaging/broker-gateway';
-import {PlatformState, Runlevel} from './platform-state';
-import {BeanInstanceConstructInstructions, Beans} from '@scion/toolkit/bean-manager';
-import {ɵIntentClient} from './client/messaging/ɵintent-client';
-import {ɵMessageClient} from './client/messaging/ɵmessage-client';
-import {MicrofrontendPlatformRef} from './microfrontend-platform-ref';
-import {ProgressMonitor} from './host/progress-monitor/progress-monitor';
-import {ActivatorLoadProgressMonitor, ManifestLoadProgressMonitor} from './host/progress-monitor/progress-monitors';
-import {PlatformTopics} from './ɵmessaging.model';
-import {HostManifestInterceptor, ɵHostManifestInterceptor} from './host/host-manifest-interceptor';
-import {TopicSubscriptionRegistry} from './host/message-broker/topic-subscription.registry';
 import {MicrofrontendPlatformStopper, ɵMicrofrontendPlatformStopper} from './microfrontend-platform-stopper';
-import {ɵClientRegistry} from './host/client-registry/ɵclient.registry';
-import {IntentInterceptor} from './host/message-broker/message-interception';
-import {MicrofrontendIntentNavigator} from './host/router/microfrontend-intent-navigator.interceptor';
-import {IntentSubscriptionRegistry} from './host/message-broker/intent-subscription.registry';
-import {LivenessConfig} from './host/liveness-config';
-import {HostConfig} from './host/host-config';
-import {ApplicationConfig} from './host/application-config';
-import {AppInstaller} from './host/app-installer';
-import {CLIENT_PING_INTERVAL, CLIENT_PING_TIMEOUT} from './host/client-registry/client';
+import {ConsoleLogger, Logger} from './logger';
 
 /**
  * Current version of the SCION Microfrontend Platform.
@@ -66,40 +22,51 @@ import {CLIENT_PING_INTERVAL, CLIENT_PING_TIMEOUT} from './host/client-registry/
 const version = '1.0.0-rc.11';
 
 /**
- * **SCION Microfrontend Platform is a TypeScript-based open-source library that helps to implement a microfrontend architecture.**
+ * The central class of the SCION Microfrontend Platform. This class cannot be instantiated. All functionality is provided by static methods.
  *
- * SCION Microfrontend Platform enables you to successfully implement a framework-agnostic microfrontend architecture using iframes.
- * It provides you fundamental APIs for microfrontends to communicate with each other across origin, allows embedding microfrontends
- * using a web component and enables routing between microfrontends. SCION Microfrontend Platform is a lightweight, web stack agnostic
- * library that has no user-facing components and does not dictate any form of application structure.
+ * To enable tree-shaking of the SCION Microfrontend Platform, the platform provides three separate entry points:
+ * - {@link MicrofrontendPlatformHost} to configure and start the platform in the host
+ * - {@link MicrofrontendPlatformClient} to connect to the platform from a microfrontend
+ * - {@link MicrofrontendPlatform} to react to platform lifecycle events and stop the platform
+ *
+ * ## SCION Microfrontend Platform
+ *
+ * SCION Microfrontend Platform is a TypeScript-based open source library that enables the implementation of a framework-agnostic
+ * microfrontend architecture using iframes. It provides fundamental APIs for microfrontends to communicate with each other across origins
+ * and facilitates embedding microfrontends using a web component and a router. SCION Microfrontend Platform is a lightweight, web stack
+ * agnostic library that has no user-facing components and does not dictate any form of application structure.
  *
  * You can continue using the frameworks you love since the platform integrates microfrontends via iframes. Iframes by nature provide
  * maximum isolation and allow the integration of any web application without complex adaptation. The platform aims to shield developers
  * from iframe specifics and the low-level messaging mechanism to focus instead on integrating microfrontends.
  *
  * #### Cross-microfrontend communication
- * The platform adds a pub/sub layer on top of the native `postMessage` mechanism to allow microfrontends to communicate with each other
- * easily across origins. Communication comes in two flavors: topic-based and intent-based. Both models feature the request-response message
- * exchange pattern, let you include message headers, and support message interception to implement cross-cutting messaging concerns.
+ * The platform adds a pub/sub layer on top of the native `postMessage` mechanism to enable microfrontends to communicate with each other
+ * easily across origins. Communication comes in two flavors: topic-based and intent-based. Both models feature request-response message
+ * exchange, support retained messages for late subscribers to receive the latest messages, and provide API to intercept messages to
+ * implement cross-cutting messaging concerns.
  *
  * Topic-based messaging enables you to publish messages to multiple subscribers via a common topic. Intent-based communication focuses on
- * controlled collaboration between applications. To collaborate, an application must express an intention. Manifesting intentions allows
+ * controlled collaboration between applications. To collaborate, an application must express an intention. Manifesting intentions enables
  * us to see dependencies between applications down to the functional level.
  *
  * #### Microfrontend Integration and Routing
  * The platform makes it easy to integrate microfrontends through its router-outlet. The router-outlet is a web component that wraps an iframe.
  * It solves many of the cumbersome quirks of iframes and helps to overcome iframe restrictions. For example, it can adapt its size to the
- * preferred size of embedded content, supports keyboard event propagation and allows you to pass contextual data to embedded content.
+ * preferred size of embedded content, supports keyboard event propagation and lets you pass contextual data to embedded content.
  * Using the router, you control which web content to display in an outlet. Multiple outlets can display different content, determined by
  * different outlet names, all at the same time. Routing works across application boundaries and enables features such as persistent navigation.
  *
  * ***
  *
- * A microfrontend architecture can be achieved in many different ways, each with its pros and cons. The SCION Microfrontend Platform uses
+ * A microfrontend architecture can be achieved in many ways, each with its pros and cons. The SCION Microfrontend Platform uses
  * the iframe approach primarily since iframes by nature provide the highest possible level of isolation through a separate browsing context.
  * The microfrontend design approach is very tempting and has obvious advantages, especially for large-scale and long-lasting projects, most
  * notably because we are observing an enormous dynamic in web frameworks. The SCION Microfrontend Platform provides you with the necessary
  * tools to best support you in implementing such an architecture.
+ *
+ * @see {@link MicrofrontendPlatformHost}
+ * @see {@link MicrofrontendPlatformClient}
  *
  * @see {@link MessageClient}
  * @see {@link IntentClient}
@@ -112,241 +79,34 @@ const version = '1.0.0-rc.11';
  * @see {@link ActivatorCapability}
  *
  * @category Platform
+ * @category Lifecycle
  */
-// @dynamic `ng-packagr` does not support lambdas in statics if `strictMetaDataEmit` is enabled. `ng-packagr` is used to build this library. See https://github.com/ng-packagr/ng-packagr/issues/696#issuecomment-373487183.
 export class MicrofrontendPlatform {
 
-  private static _state$ = new BehaviorSubject<PlatformState>(PlatformState.Stopped);
-  private static _startupProgress$ = new Subject<number>();
+  private static readonly _state$ = new BehaviorSubject<PlatformState>(PlatformState.Stopped);
 
-  /**
-   * Starts the platform in the host application.
-   *
-   * The host application, sometimes also called the container application, provides the top-level integration container for microfrontends. Typically, it is the web
-   * application which the user loads into his browser that provides the main application shell, defining areas to embed microfrontends.
-   *
-   * The platform should be started during bootstrapping of the host application. In Angular, for example, the platform is typically started in an app initializer.
-   *
-   * In the host, the web applications are registered as micro applications. Registered micro applications can interact with the platform and other micro applications.
-   * As with micro applications, the host can provide a manifest to contribute behavior. For more information, see {@link HostConfig.manifest} in {@link MicrofrontendPlatformConfig.host}.
-   * If you are integrating the platform in a library, you may want to add behavior to the host's manifest, which you can do with a {@link HostManifestInterceptor}.
-   *
-   * During platform startup, the platform loads the manifests of registered micro applications. Because starting the platform is an asynchronous operation, you should
-   * wait for the startup Promise to resolve before interacting with the platform. Optionally, you can subscribe to the platform’s startup progress to provide feedback
-   * to the user about the progress of the platform startup. See {@link MicrofrontendPlatform.startupProgress$} for more information.
-   *
-   * In the lifecycle of the platform, it traverses different lifecycle states that you can hook into by registering a callback to {@link MicrofrontendPlatform.whenState}.
-   * To hook into the startup of the platform, you can register an initializer using {@link @scion/toolkit!Beans.registerInitializer Beans.registerInitializer}, optionally passing a runlevel to control when the initializer
-   * will execute. The platform supports following runlevels:
-   *
-   * - In runlevel `0`, the platform fetches manifests of registered micro applications.
-   * - In runlevel `1`, the platform constructs eager beans and connects to the broker.
-   * - From runlevel `2` and above, messaging is enabled. This is the default runlevel at which initializers execute if not specifying any runlevel.
-   * - In runlevel `3`, the platform installs activator microfrontends. See https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:activator to learn more about activators.
-   *
-   * @param  config - Configures the platform and defines the micro applications running in the platform.
-   * @return A Promise that resolves once platform startup completed.
-   */
-  public static startHost(config: MicrofrontendPlatformConfig): Promise<void> {
-    return MicrofrontendPlatform.startPlatform(() => {
-        MicrofrontendPlatform.installHostStartupProgressMonitor();
-
-        // Register platform beans.
-        const hostConfig = {...config.host, symbolicName: config.host?.symbolicName || 'host'};
-        Beans.register(IS_PLATFORM_HOST, {useValue: true});
-        Beans.registerIfAbsent(ɵWINDOW_TOP, {useValue: window.top});
-        Beans.registerIfAbsent(ɵVERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
-        Beans.register(APP_IDENTITY, {useValue: hostConfig.symbolicName});
-        Beans.register(MicrofrontendPlatformConfig, {useValue: config});
-        Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
-        Beans.register(HostManifestInterceptor, {useClass: ɵHostManifestInterceptor, multi: true});
-        Beans.register(ClientRegistry, {useClass: ɵClientRegistry, destroyOrder: BeanDestroyOrders.CORE});
-        Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: BeanDestroyOrders.CORE});
-        Beans.register(PlatformPropertyService);
-        Beans.registerIfAbsent(HttpClient);
-        Beans.register(ManifestRegistry, {useClass: ɵManifestRegistry, eager: true});
-        Beans.register(ApplicationRegistry, {eager: true});
-        Beans.register(ContextService);
-        Beans.register(FocusTracker, {eager: true});
-        Beans.register(FocusInEventDispatcher, {eager: true});
-        Beans.register(MouseMoveEventDispatcher, {eager: true});
-        Beans.register(MouseUpEventDispatcher, {eager: true});
-        Beans.register(MessageBroker, {destroyOrder: BeanDestroyOrders.BROKER});
-        Beans.register(ManifestFetcher);
-        Beans.register(TopicSubscriptionRegistry, {destroyOrder: BeanDestroyOrders.BROKER});
-        Beans.register(IntentSubscriptionRegistry, {destroyOrder: BeanDestroyOrders.BROKER});
-        Beans.registerIfAbsent(OutletRouter);
-        Beans.registerIfAbsent(RelativePathResolver);
-        Beans.registerIfAbsent(RouterOutletUrlAssigner);
-        Beans.register(MicrofrontendPlatformRef, {useValue: MicrofrontendPlatform, destroyOrder: BeanDestroyOrders.CORE});
-        Beans.registerIfAbsent(MessageClient, provideMessageClient());
-        Beans.registerIfAbsent(IntentClient, provideIntentClient());
-        Beans.register(FocusMonitor);
-        Beans.register(PreferredSizeService, {eager: true});
-        Beans.register(ManifestService);
-        Beans.register(KeyboardEventDispatcher, {eager: true});
-        Beans.register(IntentInterceptor, {useClass: MicrofrontendIntentNavigator, multi: true});
-
-        // Register liveness config.
-        const {interval, timeout} = provideLivenessConfig(config.liveness);
-        Beans.registerIfAbsent(CLIENT_PING_INTERVAL, {useValue: interval * 1_000});
-        Beans.registerIfAbsent(CLIENT_PING_TIMEOUT, {useValue: timeout * 1_000});
-
-        // Register broker gateway.
-        registerBrokerGateway({
-          messageDeliveryTimeout: config.host?.messageDeliveryTimeout,
-          brokerDiscoverTimeout: config.host?.brokerDiscoverTimeout,
-          connectRunlevel: Runlevel.One, // Connect to the broker in runlevel 1, that is, after registration of the applications.
-        });
-
-        // Register initializers.
-        registerRunlevel0Initializers(hostConfig, config.applications);
-        registerRunlevel2Initializers();
-        registerRunlevel3Initializers();
-      },
-    );
-
-    /**
-     * Registers initializers to run in runlevel 0.
-     */
-    function registerRunlevel0Initializers(hostConfig: HostConfig & {symbolicName: string}, appConfigs: ApplicationConfig[]): void {
-      // Construct the message broker to buffer connect requests of micro applications.
-      Beans.registerInitializer({
-        useExisting: MessageBroker,
-        runlevel: Runlevel.Zero,
-      });
-
-      // Install applications in the platform.
-      Beans.registerInitializer({
-        useFunction: () => new AppInstaller(hostConfig, appConfigs).install(),
-        runlevel: Runlevel.Zero,
-      });
-    }
-
-    /**
-     * Registers initializers to run in runlevel 2.
-     */
-    function registerRunlevel2Initializers(): void {
-      // Make platform properties available to micro applications.
-      Beans.registerInitializer({
-        useFunction: () => Beans.get(MessageClient).publish(PlatformTopics.PlatformProperties, config.properties || {}, {retain: true}),
-        runlevel: Runlevel.Two,
-      });
-      // Make applications available to micro applications.
-      Beans.registerInitializer({
-        useFunction: () => Beans.get(MessageClient).publish(PlatformTopics.Applications, Beans.get(ApplicationRegistry).getApplications(), {retain: true}),
-        runlevel: Runlevel.Two,
-      });
-      // Register the router outlet after beans have been registered and messaging is enabled.
-      Beans.registerInitializer({
-        useFunction: () => SciRouterOutletElement.define(),
-        runlevel: Runlevel.Two,
-      });
-    }
-
-    /**
-     * Registers initializers to run in runlevel 3.
-     */
-    function registerRunlevel3Initializers(): void {
-      // Wait until obtained platform properties so that they can be accessed synchronously by the application via `PlatformPropertyService#properties`.
-      Beans.registerInitializer({
-        useExisting: PlatformPropertyService,
-        runlevel: Runlevel.Three,
-      });
-      // Wait until obtained registered applications so that they can be accessed synchronously by the application via `ManifestService#applications`.
-      Beans.registerInitializer({
-        useExisting: ManifestService,
-        runlevel: Runlevel.Three,
-      });
-      // Install activator microfrontends.
-      Beans.registerInitializer({useClass: ActivatorInstaller, runlevel: Runlevel.Three});
-    }
+  private constructor() {
   }
 
   /**
-   * Connects a micro application to the platform host.
-   *
-   * The platform host checks whether the connecting micro application is qualified to connect, i.e., is registered in the host application under that origin;
-   * otherwise, the host will reject the connection attempt. Note that the micro application needs to be embedded as a direct or indirect child window of the
-   * host application window.
-   *
-   * After the connection with the platform host is established, the micro application can interact with the host and other micro applications. Typically, the
-   * micro application connects to the platform host during bootstrapping. In Angular, for example, this can be done in an app initializer.
-   *
-   * In the lifecycle of the platform, it traverses different lifecycle states that you can hook into by registering a callback to {@link MicrofrontendPlatform.whenState}.
-   *
-   * @param  symbolicName - Specifies the symbolic name of this micro application. The micro application must be registered in the platform host under this symbol.
-   * @param  connectOptions - Controls how to connect to the platform host.
-   * @return A Promise that resolves once connected to the platform host, or that rejects otherwise.
+   * @internal
    */
-  public static connectToHost(symbolicName: string, connectOptions?: ConnectOptions): Promise<void> {
-    return MicrofrontendPlatform.startPlatform(() => {
-        // Register platform beans.
-        Beans.register(IS_PLATFORM_HOST, {useValue: false});
-        Beans.registerIfAbsent(ɵWINDOW_TOP, {useValue: window.top});
-        Beans.register(APP_IDENTITY, {useValue: symbolicName});
-        Beans.registerIfAbsent(ɵVERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
-        Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
-        Beans.register(PlatformPropertyService);
-        Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: BeanDestroyOrders.CORE});
-        Beans.registerIfAbsent(MessageClient, provideMessageClient());
-        Beans.registerIfAbsent(IntentClient, provideIntentClient());
-        Beans.registerIfAbsent(OutletRouter);
-        Beans.registerIfAbsent(RelativePathResolver);
-        Beans.registerIfAbsent(RouterOutletUrlAssigner);
-        Beans.register(FocusInEventDispatcher, {eager: true});
-        Beans.register(FocusMonitor);
-        Beans.register(MouseMoveEventDispatcher, {eager: true});
-        Beans.register(MouseUpEventDispatcher, {eager: true});
-        Beans.register(PreferredSizeService, {eager: true});
-        Beans.register(ContextService);
-        Beans.register(ManifestService);
-        Beans.register(KeyboardEventDispatcher, {eager: true});
-        Beans.register(MicrofrontendPlatformRef, {useValue: MicrofrontendPlatform, destroyOrder: BeanDestroyOrders.CORE});
-
-        // Register broker gateway.
-        registerBrokerGateway({...connectOptions, connectRunlevel: Runlevel.Zero});
-
-        // Register initializers.
-        registerRunlevel2Initializers();
-      },
-    );
-
-    /**
-     * Registers initializers to run in runlevel 2.
-     */
-    function registerRunlevel2Initializers(): void {
-      // Wait until obtained platform properties so that they can be accessed synchronously by the application via `PlatformPropertyService#properties`.
-      Beans.registerInitializer({
-        useExisting: PlatformPropertyService,
-        runlevel: Runlevel.Two,
-      });
-      // Wait until obtained registered applications so that they can be accessed synchronously by the application via `ManifestService#applications`.
-      Beans.registerInitializer({
-        useExisting: ManifestService,
-        runlevel: Runlevel.Two,
-      });
-      // Ensure the SciRouterOutlet to be instantiated after initialization of the platform.
-      // Otherwise, the router outlet construction may fail or result in unexpected behavior, for example, because beans are not yet registered.
-      Beans.registerInitializer({
-        useFunction: () => SciRouterOutletElement.define(),
-        runlevel: Runlevel.Two,
-      });
+  public static async startPlatform(startupFn?: () => void): Promise<void> {
+    if (this.state === PlatformState.Started) {
+      return Promise.reject(Error('[MicrofrontendPlatformStartupError] Platform already started'));
     }
-  }
 
-  /**
-   * Checks whether this micro application is connected to the platform host.
-   */
-  public static async isConnectedToHost(): Promise<boolean> {
-    if (MicrofrontendPlatform.state === PlatformState.Stopped) {
-      return false;
+    try {
+      startupFn?.();
+      await this.enterState(PlatformState.Starting);
+      await Beans.start({eagerBeanConstructRunlevel: Runlevel.One, initializerDefaultRunlevel: Runlevel.Two});
+      await this.enterState(PlatformState.Started);
+      return Promise.resolve();
     }
-    const brokerGateway = Beans.opt(BrokerGateway);
-    if (!brokerGateway) {
-      return false;
+    catch (error) {
+      await this.destroy();
+      return Promise.reject(Error(`[MicrofrontendPlatformStartupError] Microfrontend platform failed to start: ${error}`));
     }
-    return brokerGateway.isConnected();
   }
 
   /**
@@ -355,28 +115,9 @@ export class MicrofrontendPlatform {
    * @return a Promise that resolves once the platformed stopped.
    */
   public static async destroy(): Promise<void> {
-    await MicrofrontendPlatform.enterState(PlatformState.Stopping);
+    await this.enterState(PlatformState.Stopping);
     Beans.destroy();
-    await MicrofrontendPlatform.enterState(PlatformState.Stopped);
-  }
-
-  /** @internal */
-  public static async startPlatform(startupFn?: () => void): Promise<void> {
-    if (MicrofrontendPlatform.state === PlatformState.Started) {
-      return Promise.reject(Error('[MicrofrontendPlatformStartupError] Platform already started'));
-    }
-
-    try {
-      startupFn?.();
-      await MicrofrontendPlatform.enterState(PlatformState.Starting);
-      await Beans.start({eagerBeanConstructRunlevel: Runlevel.One, initializerDefaultRunlevel: Runlevel.Two});
-      await MicrofrontendPlatform.enterState(PlatformState.Started);
-      return Promise.resolve();
-    }
-    catch (error) {
-      await MicrofrontendPlatform.destroy();
-      return Promise.reject(Error(`[MicrofrontendPlatformStartupError] Microfrontend platform failed to start: ${error}`));
-    }
+    await this.enterState(PlatformState.Stopped);
   }
 
   /**
@@ -387,7 +128,16 @@ export class MicrofrontendPlatform {
   }
 
   /**
-   * Allows waiting for the platform to enter the specified {@link PlatformState}.
+   * Observable that, when subscribed, emits the current platform lifecycle state.
+   * It never completes and emits continuously when the platform enters
+   * another state.
+   */
+  public static get state$(): Observable<PlatformState> {
+    return this._state$;
+  }
+
+  /**
+   * Waits for the platform to enter the specified {@link PlatformState}.
    * If already in that state, the Promise resolves instantly.
    *
    * @param  state - the state to wait for.
@@ -405,15 +155,6 @@ export class MicrofrontendPlatform {
     });
   }
 
-  /**
-   * Observable that, when subscribed, emits the current platform lifecycle state.
-   * It never completes and emits continuously when the platform enters
-   * another state.
-   */
-  public static get state$(): Observable<PlatformState> {
-    return this._state$;
-  }
-
   private static async enterState(newState: PlatformState): Promise<void> {
     const currentState = (this.state === PlatformState.Stopped) ? -1 : this.state;
     if (currentState >= newState) {
@@ -425,85 +166,26 @@ export class MicrofrontendPlatform {
     // Let microtasks waiting for entering that state to resolve first.
     await this.whenState(newState);
   }
-
-  /**
-   * Allows listening to the startup progress of the platform.
-   *
-   * In the host, when the platform starts, it fetches the manifests of the registered applications, among other things,
-   * and waits for the applications to signal their readiness, which can take some time.
-   *
-   * You can subscribe to this Observable to provide feedback to the user about the progress of the platform startup.
-   * The Observable reports the progress as a percentage number. The Observable completes once the platform finished startup.
-   */
-  public static get startupProgress$(): Observable<number> {
-    return this._startupProgress$;
-  }
-
-  private static installHostStartupProgressMonitor(): void {
-    const monitor = new ProgressMonitor();
-
-    const [startupProgressMonitor, manifestLoadProgressMonitor, activatorLoadProgressMonitor] = monitor.split(1, 3, 5);
-    Beans.register(ManifestLoadProgressMonitor, {useValue: manifestLoadProgressMonitor});
-    Beans.register(ActivatorLoadProgressMonitor, {useValue: activatorLoadProgressMonitor});
-    MicrofrontendPlatform.whenState(PlatformState.Started).then(() => {
-      startupProgressMonitor.done();
-    });
-    MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => {
-      MicrofrontendPlatform._startupProgress$ = new Subject<number>();
-    });
-
-    monitor.progress$
-      .pipe(takeUntil(from(MicrofrontendPlatform.whenState(PlatformState.Started))))
-      .subscribe(MicrofrontendPlatform._startupProgress$);
-  }
 }
 
-function provideLivenessConfig(config?: LivenessConfig): {interval: number; timeout: number} {
-  const defaults = {interval: 60, timeout: 10};
-
-  const interval = config?.interval ?? defaults.interval;
-  const timeout = config?.timeout ?? defaults.timeout;
-  if (!interval || !timeout || interval <= 2 * timeout) {
-    Beans.get(Logger).warn(`[LivenessProbeConfig] Illegal config provided. The interval [${interval}s] must be greater than twice the timeout period [${timeout}s]. Using platform defaults instead: [interval=${defaults.interval}s, timeout=${defaults.timeout}s]`);
-    return {interval: defaults.interval, timeout: defaults.timeout};
-  }
-  return {interval, timeout};
-}
-
-function registerBrokerGateway(connectOptions: ConnectOptions & {connectRunlevel: number}): void {
-  if (connectOptions.connect ?? true) {
-    Beans.register(ɵBrokerGateway, {
-      useFactory: () => new ɵBrokerGateway(connectOptions),
-      destroyOrder: BeanDestroyOrders.MESSAGING,
-    });
-    Beans.register(BrokerGateway, {useExisting: ɵBrokerGateway});
-    Beans.registerInitializer({useExisting: ɵBrokerGateway, runlevel: connectOptions.connectRunlevel});
-  }
-  else {
-    Beans.register(BrokerGateway, {useClass: NullBrokerGateway});
-  }
-}
-
-function provideMessageClient(): BeanInstanceConstructInstructions {
-  return {
-    useClass: ɵMessageClient,
-    eager: true,
-    destroyOrder: BeanDestroyOrders.MESSAGING,
-  };
-}
-
-function provideIntentClient(): BeanInstanceConstructInstructions {
-  return {
-    useClass: ɵIntentClient,
-    eager: true,
-    destroyOrder: BeanDestroyOrders.MESSAGING,
-  };
+/**
+ * @internal
+ */
+export function providePlatformEnvironment(config: {symbolicName: string; isPlatformHost: boolean}): void {
+  Beans.register(IS_PLATFORM_HOST, {useValue: config.isPlatformHost});
+  Beans.register(APP_IDENTITY, {useValue: config.symbolicName});
+  Beans.registerIfAbsent(ɵWINDOW_TOP, {useValue: window.top});
+  Beans.registerIfAbsent(ɵVERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
+  Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
+  Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: BeanDestroyOrders.CORE});
 }
 
 /**
  * Specifies destroy orders of platform-specific beans, enabling controlled termination of the platform.
+ *
+ * @internal
  */
-enum BeanDestroyOrders {
+export enum BeanDestroyOrders {
   /**
    * Use for core platform beans which should be destroyed as the very last beans.
    */

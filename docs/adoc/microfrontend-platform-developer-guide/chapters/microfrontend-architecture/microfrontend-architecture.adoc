@@ -15,5 +15,5 @@ The microservice and microfrontend architecture design approach enables us to fo
 include::{terminologydir}/microfrontend.adoc[]
 ====
 
-For the end-user, however, it is still a single application that he loads into his browser. The composition of the microfrontends is entirely transparent to him. By striving for a uniform look and feel of the microfrontends, the user does not even notice that different micro applications are involved.
+For the user, however, it is still a single application. The composition of the microfrontends is transparent. A consistent look and feel across microfrontends further contribute to a coherent user experience.
 

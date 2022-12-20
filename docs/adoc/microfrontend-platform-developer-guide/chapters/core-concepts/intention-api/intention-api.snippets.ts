@@ -1,4 +1,4 @@
-import {Capability, CapabilityInterceptor, Intent, IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatform} from '@scion/microfrontend-platform';
+import {Capability, CapabilityInterceptor, Intent, IntentClient, IntentMessage, IntentSelector, ManifestObjectFilter, ManifestService, MicrofrontendPlatformHost} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 `
@@ -186,7 +186,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 
 {
   // tag::enable-intention-register-api[]
-  MicrofrontendPlatform.startHost({
+  MicrofrontendPlatformHost.start({
     applications: [
       {
         symbolicName: 'product-catalog-app',
@@ -222,6 +222,6 @@ function hash(capability: Capability): string {
   Beans.register(CapabilityInterceptor, {useClass: MicrofrontendCapabilityInterceptor}); // <1>
 
   // Start the platform.
-  MicrofrontendPlatform.startHost(...); // <2>
+  MicrofrontendPlatformHost.start(...); // <2>
   // end::register-capability-interceptor[]
 }

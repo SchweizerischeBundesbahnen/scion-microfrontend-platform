@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../../host/microfrontend-platform-host';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {OutletRouter} from './outlet-router';
 
@@ -18,13 +19,13 @@ describe('OutletRouter', () => {
 
   describe('intent-based-routing', () => {
     it('should reject navigation if passing "relativeTo" navigation option', async () => {
-      await MicrofrontendPlatform.startHost({applications: []});
+      await MicrofrontendPlatformHost.start({applications: []});
       const navigate = Beans.get(OutletRouter).navigate({entity: 'person'}, {relativeTo: 'url'});
       await expectAsync(navigate).toBeRejectedWithError(/\[OutletRouterError]\[UnsupportedOptionError]/);
     });
 
     it('should validate microfrontend params', async () => {
-      await MicrofrontendPlatform.startHost({
+      await MicrofrontendPlatformHost.start({
         host: {
           manifest: {
             name: 'Host Application',

@@ -58,6 +58,48 @@
         }
       }
     },
+    "@scion/microfrontend-platform.client-application-bundle-analyzer": {
+      "projectType": "application",
+      "root": "projects/scion/microfrontend-platform.client-application-bundle-analyzer",
+      "sourceRoot": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/microfrontend-platform-client-application-bundle-analyzer",
+            "index": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/index.html",
+            "main": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/main.ts",
+            "polyfills": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/polyfills.ts",
+            "tsConfig": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/tsconfig.app.json",
+            "outputHashing": "all",
+            "sourceMap": true,
+            "namedChunks": true,
+            "optimization": {
+              "styles": false,
+              "scripts": true,
+              "fonts": true
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/test.ts",
+            "tsConfig": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/tsconfig.spec.json",
+            "karmaConfig": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/scion/microfrontend-platform.client-application-bundle-analyzer/**/*.ts"
+              "projects/scion/microfrontend-platform.client-application-bundle-analyzer/**/*.html"
+            ]
+          }
+        }
+      }
+    },
     "microfrontend-platform-testing-app": {
       "projectType": "application",
       "schematics": {

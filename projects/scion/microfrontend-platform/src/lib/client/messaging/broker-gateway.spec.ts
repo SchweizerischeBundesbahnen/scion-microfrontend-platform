@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
+import {MicrofrontendPlatformHost} from '../../host/microfrontend-platform-host';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {TopicMessage} from '../../messaging.model';
 import {ObserveCaptor} from '@scion/toolkit/testing';
@@ -20,7 +21,7 @@ describe('BrokerGateway', () => {
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
   it('should not complete `requestReply$` Observable upon platform shutdown (as per API)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     // GIVEN
     const captor = new ObserveCaptor();
@@ -35,7 +36,7 @@ describe('BrokerGateway', () => {
   });
 
   it('should not complete `subscribeToTopic$` Observable upon platform shutdown (as per API)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     // GIVEN
     const captor = new ObserveCaptor();
@@ -55,7 +56,7 @@ describe('BrokerGateway', () => {
   });
 
   it('should not complete `subscribeToIntent$` Observable upon platform shutdown (as per API)', async () => {
-    await MicrofrontendPlatform.startHost({applications: []});
+    await MicrofrontendPlatformHost.start({applications: []});
 
     // GIVEN
     const captor = new ObserveCaptor();

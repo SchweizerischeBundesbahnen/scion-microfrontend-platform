@@ -20,7 +20,7 @@ Follow the steps below to register the *SCION DevTools* micro app.
 2. Register the *SCION DevTools* micro app, as follows:
    ```ts
          public async init(): Promise<void> {
-           await MicrofrontendPlatform.startHost({
+           await MicrofrontendPlatformHost.start({
              applications: [
                {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
                {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
@@ -57,7 +57,7 @@ Like any other micro app, the host app must declare its intentions in its manife
 2. Create a manifest for the host app and declare the intention to navigate to the SCION DevTools microfrontend. For the host, we can create an inline manifest, as follows:
    ```ts
          public async init(): Promise<void> {
-           await MicrofrontendPlatform.startHost({
+           await MicrofrontendPlatformHost.start({
              applications: [
                {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
                {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
@@ -99,7 +99,7 @@ In the [first chapter][link-getting-started:01:host-app] we added a router outle
 2. Route the outlet as follows:
    ```ts
          public async init(): Promise<void> {
-           await MicrofrontendPlatform.startHost({
+           await MicrofrontendPlatformHost.start({
              applications: [
                {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
                {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
@@ -155,13 +155,13 @@ In this chapter, we integrated SCION DevTools to inspect micro apps and their de
    <summary>The <code>host-app/src/host.ts</code> looks as following:</summary>
 
 ```ts
-import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+import {MicrofrontendPlatformHost, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 class HostController {
 
   public async init(): Promise<void> {
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {symbolicName: 'products-app', manifestUrl: 'http://localhost:4201/manifest.json'},
         {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},

@@ -24,8 +24,9 @@
     "microfrontend-platform:build": "ng build --configuration production @scion/microfrontend-platform",
     "microfrontend-platform:lint": "ng lint @scion/microfrontend-platform",
     "microfrontend-platform:test": "ng test @scion/microfrontend-platform",
+    "microfrontend-platform:analyze": "npm run microfrontend-platform:build && ng build @scion/microfrontend-platform.client-application-bundle-analyzer && source-map-explorer dist/microfrontend-platform-client-application-bundle-analyzer/main*.js",
+    "microfrontend-platform:analyze:assert": "npm run microfrontend-platform:build && ng build @scion/microfrontend-platform.client-application-bundle-analyzer && source-map-explorer dist/microfrontend-platform-client-application-bundle-analyzer/main*.js --json dist/microfrontend-platform-client-application-bundle-analyzer/stats.json && ng test @scion/microfrontend-platform.client-application-bundle-analyzer",
     "microfrontend-platform:typedoc": "typedoc --plugin typedoc-plugin-extras --tsconfig projects/scion/microfrontend-platform/tsconfig.lib.prod.typedoc.json --favicon resources/branding/favicon.ico",
-
     "microfrontend-platform:adoc": "run-s \"microfrontend-platform:adoc:generate -- {@}\" microfrontend-platform:adoc:copy:* --",
     "microfrontend-platform:adoc:generate": "asciidoctor -r ./docs/adoc/extensions/prism-extension --destination-dir dist/microfrontend-platform-developer-guide docs/adoc/microfrontend-platform-developer-guide/index.adoc",
     "microfrontend-platform:adoc:copy:images": "cp -r ./docs/adoc/microfrontend-platform-developer-guide/images dist/microfrontend-platform-developer-guide",
@@ -102,6 +103,7 @@
     "markdown-include": "0.4.3",
     "ng-packagr": "14.2.1",
     "npm-run-all": "4.1.5",
+    "source-map-explorer": "2.5.3",
     "typedoc": "0.23.17",
     "typedoc-plugin-extras": "2.3.0",
     "typescript": "4.8.4",

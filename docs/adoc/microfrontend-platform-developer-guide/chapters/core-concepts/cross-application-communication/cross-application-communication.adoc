@@ -8,7 +8,7 @@ This part explains how micro applications and microfrontends can communicate wit
 
 Cross-application communication is an integral part when implementing a microfrontend architecture. By using the browser's native `postMessage()` mechanism, you can send messages to applications loaded from different domains. For posting a message, however, you need a reference to the `Window` of the receiving application, which can quickly become complicated, also due to restrictions imposed by the <<terminology:same-origin-policy,Same-origin Policy>>.
 
-The SCION Microfrontend Platform provides a client-side Messaging API on top of the native `postMessage` mechanism to allow microfrontends to communicate with each other easily across origins. The Messaging API offers publish/subscribe messaging to microfrontends in two flavors: <<chapter:topic-based-messaging>> and <<chapter:intent-based-messaging>>.
+The SCION Microfrontend Platform provides a client-side Messaging API on top of the native `postMessage` mechanism to enable microfrontends to communicate with each other easily across origins. The Messaging API offers publish/subscribe messaging to microfrontends in two flavors: <<chapter:topic-based-messaging>> and <<chapter:intent-based-messaging>>.
 
 NOTE: Data sent from one JavaScript realm to another is serialized with the _Structured Clone Algorithm_. The algorithm supports structured objects such as nested objects, arrays, and maps.
 

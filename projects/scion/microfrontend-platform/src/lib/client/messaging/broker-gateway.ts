@@ -20,7 +20,7 @@ import {APP_IDENTITY, IS_PLATFORM_HOST} from '../../platform.model';
 import {ɵVERSION, ɵWINDOW_TOP} from '../../ɵplatform.model';
 import {PlatformState} from '../../platform-state';
 import {ConnectOptions} from '../connect-options';
-import {MicrofrontendPlatformRef} from '../../microfrontend-platform-ref';
+import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {MessageClient} from '../../client/messaging/message-client';
 import {runSafe} from '../../safe-runner';
 import {stringifyError} from '../../error.util';
@@ -480,11 +480,7 @@ function stringifyEnvelope(envelope: MessageEnvelope): string {
 }
 
 function isPlatformStopped(): boolean {
-  const platformState = Beans.opt(MicrofrontendPlatformRef);
-  if (!platformState) {
-    return true; // platform is destroyed
-  }
-  return platformState.state >= PlatformState.Stopped;
+  return MicrofrontendPlatform.state >= PlatformState.Stopped;
 }
 
 /**

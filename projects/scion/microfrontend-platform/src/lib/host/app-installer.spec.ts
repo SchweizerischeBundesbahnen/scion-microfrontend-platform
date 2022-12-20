@@ -9,6 +9,7 @@
  */
 import {HttpClient} from './http-client';
 import {MicrofrontendPlatform} from '../microfrontend-platform';
+import {MicrofrontendPlatformHost} from './microfrontend-platform-host';
 import {Manifest} from '../platform.model';
 import {ApplicationRegistry} from './application-registry';
 import {Logger} from '../logger';
@@ -35,7 +36,7 @@ describe('AppInstaller', () => {
     Beans.register(Logger, {useValue: loggerSpy});
 
     // start the platform
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       host: {
         symbolicName: 'host-app',
         manifest: new ManifestFixture({name: 'Host App'}).serve(),
@@ -76,7 +77,7 @@ describe('AppInstaller', () => {
     Beans.register(Logger, {useValue: loggerSpy});
 
     // start the platform
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {symbolicName: 'app-1', manifestUrl: 'http://www.app-1/manifest'},
         {symbolicName: 'app-2', manifestUrl: 'http://www.app-2/manifest'},
@@ -110,7 +111,7 @@ describe('AppInstaller', () => {
     Beans.register(Logger, {useValue: loggerSpy});
 
     // start the platform
-    await MicrofrontendPlatform.startHost({
+    await MicrofrontendPlatformHost.start({
       applications: [
         {symbolicName: 'app-1', manifestUrl: 'http://www.app-1/manifest', manifestLoadTimeout: 300}, // app-specific timeout
         {symbolicName: 'app-2', manifestUrl: 'http://www.app-2/manifest'},

@@ -32,7 +32,7 @@ import {OutletRouter} from '../../client/router-outlet/outlet-router';
  *
  * ```ts
  * // Start host-app
- * await MicrofrontendPlatform.startHost({
+ * await MicrofrontendPlatformHost.start({
  *   applications: [
  *     {
  *       symbolicName: 'client',
@@ -49,7 +49,7 @@ import {OutletRouter} from '../../client/router-outlet/outlet-router';
  * #### Script: "./lib/microfrontend.script.ts"
  * ```ts
  * export async function connectToHost(params: Dictionary): Promise<void> {
- *   await MicrofrontendPlatform.connectToHost(params['symbolicName']);
+ *   await MicrofrontendPlatformClient.connect(params['symbolicName']);
  * }
  * ```
  */
