@@ -19,7 +19,7 @@ A microfrontend is a term of the microfrontend architecture design approach to d
 
 ***
 
-For the user, however, it is still a single application. The composition of the microfrontends is transparent. A consistent look and feel across microfrontends further contribute to a coherent user experience.
+For the user, however, it is still a single application. The composition of the microfrontends is transparent. A consistent look and feel across microfrontends further contributes to a coherent user experience.
 
 [menu-home]: /README.md
 [menu-projects-overview]: /docs/site/projects-overview.md

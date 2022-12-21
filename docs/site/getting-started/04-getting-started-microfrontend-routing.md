@@ -96,7 +96,7 @@ Each micro app must be assigned a unique symbolic name. The micro app will use t
    ```ts
          import {ProductService} from '../product.service';
          import {QueryParams} from '../query-params';
-   [+]   import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+   [+]   import {MicrofrontendPlatformClient, OutletRouter} from '@scion/microfrontend-platform';
    [+]   import {Beans} from '@scion/toolkit/bean-manager';   
    
          public render(ids?: string[]): void {
@@ -139,7 +139,7 @@ Each micro app must be assigned a unique symbolic name. The micro app will use t
 
    ```ts
          import {CustomerService} from '../customer.service';
-   [+]   import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+   [+]   import {MicrofrontendPlatformClient, OutletRouter} from '@scion/microfrontend-platform';
    [+]   import {Beans} from '@scion/toolkit/bean-manager';
 
          public render(): void {

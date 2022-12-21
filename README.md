@@ -5,7 +5,7 @@
 
 ## SCION Microfrontend Platform
 
-SCION Microfrontend Platform enables you to successfully implement a framework-agnostic microfrontend architecture using iframes. It provides you fundamental APIs for microfrontends to communicate with each other across origin, allows embedding microfrontends using a web component and enables routing between microfrontends. SCION Microfrontend Platform is a lightweight, web stack agnostic library that has no user-facing components and does not dictate any form of application structure.
+SCION Microfrontend Platform enables you to successfully implement a framework-agnostic microfrontend architecture using iframes. It provides you fundamental APIs for microfrontends to communicate with each other across origins and facilitates embedding microfrontends using a web component and a router. SCION Microfrontend Platform is a lightweight, web stack agnostic library that has no user-facing components and does not dictate any form of application structure.
 
 ***
 
