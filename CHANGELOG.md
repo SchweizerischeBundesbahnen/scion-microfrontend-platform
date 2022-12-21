@@ -1,3 +1,50 @@
+# [1.0.0-rc.12](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.11...1.0.0-rc.12) (2022-12-21)
+
+
+### Bug Fixes
+
+* **platform/client:** do not provide `HttpClient` in client as only used in the host ([e47ed8b](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/e47ed8b37ae49f7e24fed3f3563cc2851cf23288))
+* **platform/client:** remove startup progress monitor from client ([755422e](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/755422e9841ccd9435d2a30e07fb3cbc40ca01a0))
+* **platform/host:** remove `ManifestObject` from public API since internal ([36f0dd8](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/36f0dd81aca7f167cfe9903dd2a2362d65b95c1d))
+
+
+### Performance Improvements
+
+* **platform:** reduce library bundle size in client application ([fff9953](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/fff9953cb4f67e05e3486f9d2819cabd57e3c58e)), closes [#174](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/174)
+
+
+### BREAKING CHANGES
+
+* **platform:** reducing the bundle size in client applications introduced a breaking change for host and client applications. The communication protocol between host and client has not changed, i.e., host and clients can be updated independently to the new version.
+
+  To enable tree-shaking of the SCION Microfrontend Platform, the platform was split into three separate entry points. This reduced the raw size of the library in a client application by more than 50%, from 120 KB to 40 KB.
+  
+  **Platform Entry Points:**
+  - `MicrofrontendPlatformHost` to configure and start the platform in the host application;
+  - `MicrofrontendPlatformClient` to connect to the platform from a microfrontend;
+  - `MicrofrontendPlatform` to react to platform lifecycle events and stop the platform;
+  
+  To migrate the host application:
+    - start the platform via `MicrofrontendPlatformHost.start` instead of `MicrofrontendPlatform.startHost`
+    - monitor startup progress via `MicrofrontendPlatformHost.startupProgress$ ` instead of `MicrofrontendPlatform.startupProgress$ `
+  
+  To migrate the client application:
+    - connect to the host via `MicrofrontendPlatformClient.connect` method instead of `MicrofrontendPlatform.connectToHost`
+    - test if connected to the host via `MicrofrontendPlatformClient.isConnected` method instead of `MicrofrontendPlatform.isConnectedToHost`
+
+* **platform/client:** removing client startup progress introduced a breaking change in the client.
+  
+  To reduce the size of the client bundle, the API for monitoring the startup progress in the client has been removed. This API is useful in the host, but not in the client, because the client only connects to the host and does not perform any long-running operation. There is no replacement.
+ 
+* **platform/host:** removing `ManifestObject` from public API introduced a breaking change.
+  
+  The `ManifestObject` interface is the internal representation of capabilities and intensions in the platform host. It was never intended to be public API.
+  
+  To migrate:
+  - In the unlikely event that you use this interface, replace it with the following union type: `Capability | Intention`.
+
+
+
 # [1.0.0-rc.11](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.10...1.0.0-rc.11) (2022-12-06)
 
 
