@@ -15,5 +15,5 @@ The microservice and microfrontend architecture design approach enables us to fo
 include::{terminologydir}/microfrontend.adoc[]
 ====
 
-For the user, however, it is still a single application. The composition of the microfrontends is transparent. A consistent look and feel across microfrontends further contribute to a coherent user experience.
+For the user, however, it is still a single application. The composition of the microfrontends is transparent. A consistent look and feel across microfrontends further contributes to a coherent user experience.
 

@@ -42,7 +42,7 @@ Open the HTML template `customers-app/src/customer/customer.html`. After the sec
          import {CustomerService} from '../customer.service';
          import {QueryParams} from '../query-params';
    [+]   import {Beans} from '@scion/toolkit/bean-manager';
-   [+]   import {MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+   [+]   import {MicrofrontendPlatformClient, OutletRouter} from '@scion/microfrontend-platform';
    
          public render(customerId: string): void {
            const customerSection = document.querySelector('section#customer');

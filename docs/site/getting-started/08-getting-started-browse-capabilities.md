@@ -166,7 +166,7 @@ In order for the host app to browse and navigate to microfrontend capabilities, 
 1. Open the file `host-app/src/host.ts` of the host app.
 2. Create a button for each of the microfrontend capabilities to be added to the navigation bar, as follows:
   ```ts
-  [+]   import {ManifestService, MicrofrontendPlatform, OutletRouter} from '@scion/microfrontend-platform';
+  [+]   import {ManifestService, MicrofrontendPlatformHost, OutletRouter} from '@scion/microfrontend-platform';
         import {Beans} from '@scion/toolkit/bean-manager';
   [+]   import {filterArray} from '@scion/toolkit/operators';
 
