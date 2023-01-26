@@ -35,7 +35,7 @@ describe('PreferredSize', () => {
     await Beans.get(MessageClient).publish(scriptPreferredSizeTopic, {width: '15px', height: '30px'}, {retain: true});
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture({useSciRouterOutlet: true}));
-    await microfrontendFixture.insertIframe().loadScript('./lib/client/preferred-size/preferred-size.script.ts', 'reportPreferredSize', {scriptPreferredSizeTopic});
+    await microfrontendFixture.insertIframe().loadScript('lib/client/preferred-size/preferred-size.script.ts', 'reportPreferredSize', {scriptPreferredSizeTopic});
     await waitUntilStable(() => microfrontendFixture.routerOutlet.preferredSize, {isStable: Objects.isEqual});
 
     expect(microfrontendFixture.routerOutlet.preferredSize).toEqual(jasmine.objectContaining({width: '15px', height: '30px'}));
@@ -48,7 +48,7 @@ describe('PreferredSize', () => {
 
     const scriptPreferredSizeTopic = 'script/preferred-size';
     const microfrontendFixture = registerFixture(new MicrofrontendFixture({useSciRouterOutlet: true}));
-    await microfrontendFixture.insertIframe().loadScript('./lib/client/preferred-size/preferred-size.script.ts', 'reportPreferredSize', {scriptPreferredSizeTopic});
+    await microfrontendFixture.insertIframe().loadScript('lib/client/preferred-size/preferred-size.script.ts', 'reportPreferredSize', {scriptPreferredSizeTopic});
 
     await waitUntilStable(() => microfrontendFixture.routerOutlet.preferredSize, {isStable: Objects.isEqual});
     expect(microfrontendFixture.routerOutlet.preferredSize).toBeUndefined();

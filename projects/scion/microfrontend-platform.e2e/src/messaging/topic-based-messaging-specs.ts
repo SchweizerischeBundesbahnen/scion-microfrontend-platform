@@ -21,7 +21,7 @@ import {ConsoleLogs} from '../console-logs';
 /**
  * Contains Specs for topic-based messaging.
  */
-export namespace TopicBasedMessagingSpecs {
+export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-related tests into separate files: https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/222
 
   export namespace RootOutlets {
 
@@ -92,7 +92,7 @@ export namespace TopicBasedMessagingSpecs {
   /**
    * Tests that messages can be published and received.
    */
-  async function testPublishInternal(testingAppPO: TestingAppPO, testSetup: Outlets): Promise<void> {
+  async function testPublishInternal(testingAppPO: TestingAppPO, testSetup: Outlets): Promise<void> { // eslint-disable-line no-inner-declarations
     const pagePOs = await testingAppPO.navigateTo(testSetup);
 
     const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
@@ -143,7 +143,7 @@ export namespace TopicBasedMessagingSpecs {
   /**
    * Tests that an application can reply to a message.
    */
-  async function testReplyInternal(testingAppPO: TestingAppPO, testSetup: Outlets): Promise<void> {
+  async function testReplyInternal(testingAppPO: TestingAppPO, testSetup: Outlets): Promise<void> { // eslint-disable-line no-inner-declarations
     const pagePOs = await testingAppPO.navigateTo(testSetup);
 
     const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');

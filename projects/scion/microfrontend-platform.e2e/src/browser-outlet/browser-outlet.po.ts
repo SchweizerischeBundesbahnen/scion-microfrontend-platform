@@ -146,7 +146,7 @@ export class BrowserOutletPO implements OutletPageObject {
       for (const keystroke of keystrokes) {
         await consoleLogs.get({
           severity: 'debug',
-          filter: new RegExp(`\\[AppShellComponent::keystroke:${parseKeystroke(keystroke).parts}.*?\].*\\[outlet=${this.outletName}\]`),
+          filter: new RegExp(`\\[AppShellComponent::keystroke:${parseKeystroke(keystroke).parts}.*?].*\\[outlet=${this.outletName}]`),
         });
       }
     }

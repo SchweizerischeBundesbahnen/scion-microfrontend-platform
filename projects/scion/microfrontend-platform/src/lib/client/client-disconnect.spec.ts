@@ -49,12 +49,12 @@ describe('MicrofrontendPlatform', () => {
     const clientRegistry = Beans.get(ClientRegistry);
 
     // Load client 1
-    await microfrontendFixture.loadScript('./lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-1'});
+    await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-1'});
     const client1Id = await getClientId(microfrontendFixture);
     expect(clientRegistry.getByClientId(client1Id)).withContext('expected "client-1" to be CONNECTED').toBeDefined();
 
     // Load client 2
-    await microfrontendFixture.loadScript('./lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-2'});
+    await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-2'});
     const client2Id = await getClientId(microfrontendFixture);
 
     // Expect client 1 to be disconnected
@@ -77,7 +77,7 @@ describe('MicrofrontendPlatform', () => {
     const clientRegistry = Beans.get(ClientRegistry);
 
     // Load client
-    await microfrontendFixture.loadScript('./lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client'});
+    await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client'});
     const clientId = await getClientId(microfrontendFixture);
     expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be CONNECTED').toBeDefined();
 
@@ -107,10 +107,10 @@ describe('MicrofrontendPlatform', () => {
     const clientRegistry = Beans.get(ClientRegistry);
 
     // Serve script of client 2. Client 1 will then navigate to that script via 'location.href'.
-    const client2ScriptHandle = microfrontendFixture.serveScript('./lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-2'});
+    const client2ScriptHandle = microfrontendFixture.serveScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-2'});
 
     // Load client 1
-    await microfrontendFixture.loadScript('./lib/client/client-disconnect.script.ts', 'connectToHostThenLocationHref', {symbolicName: 'client-1', locationHref: client2ScriptHandle.url});
+    await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHostThenLocationHref', {symbolicName: 'client-1', locationHref: client2ScriptHandle.url});
     const client1Id = await getClientId(microfrontendFixture);
 
     // Wait until script of client 2 completed loading.
@@ -137,7 +137,7 @@ describe('MicrofrontendPlatform', () => {
     const clientRegistry = Beans.get(ClientRegistry);
 
     // Load client
-    await microfrontendFixture.loadScript('./lib/client/client-disconnect.script.ts', 'connectToHostThenLocationHref', {symbolicName: 'client', locationHref: 'about:blank'});
+    await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHostThenLocationHref', {symbolicName: 'client', locationHref: 'about:blank'});
     const clientId = await getClientId(microfrontendFixture);
 
     await waitUntilClientUnregistered(clientId);
@@ -158,7 +158,7 @@ describe('MicrofrontendPlatform', () => {
     const clientRegistry = Beans.get(ClientRegistry);
 
     // Load client
-    await microfrontendFixture.loadScript('./lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client'});
+    await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client'});
     const clientId = await getClientId(microfrontendFixture);
     expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be CONNECTED').toBeDefined();
 
@@ -184,7 +184,7 @@ describe('MicrofrontendPlatform', () => {
     const clientRegistry = Beans.get(ClientRegistry);
 
     // Load client
-    await microfrontendFixture.loadScript('./lib/client/client-disconnect.script.ts', 'connectToHostThenStopPlatform', {symbolicName: 'client'});
+    await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHostThenStopPlatform', {symbolicName: 'client'});
     const clientId = await getClientId(microfrontendFixture);
 
     // Expect client to be disconnected
@@ -209,12 +209,12 @@ describe('MicrofrontendPlatform', () => {
     const clientRegistry = Beans.get(ClientRegistry);
 
     // Load client 1 (disconnectOnUnloadDisabled: true)
-    await microfrontendFixture.loadScript('./lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-1', disconnectOnUnloadDisabled: true});
+    await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-1', disconnectOnUnloadDisabled: true});
     const client1Id = await getClientId(microfrontendFixture);
     expect(clientRegistry.getByClientId(client1Id)).withContext('expected "client-1" to be CONNECTED').toBeDefined();
 
     // Load client 2
-    await microfrontendFixture.loadScript('./lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-2'});
+    await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-2'});
     const client2Id = await getClientId(microfrontendFixture);
 
     // Expect client 1 to be disconnected
@@ -244,7 +244,7 @@ describe('MicrofrontendPlatform', () => {
     const clientRegistry = Beans.get(ClientRegistry);
 
     // Load client (disconnectOnUnloadDisabled: true)
-    await microfrontendFixture.loadScript('./lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client', disconnectOnUnloadDisabled: true, version: '1.0.0-rc.11'});
+    await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client', disconnectOnUnloadDisabled: true, version: '1.0.0-rc.11'});
     const clientId = await getClientId(microfrontendFixture);
     expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be CONNECTED').toBeDefined();
 
@@ -277,7 +277,7 @@ describe('MicrofrontendPlatform', () => {
     const clientRegistry = Beans.get(ClientRegistry);
 
     // Load client (disconnectOnUnloadDisabled: true)
-    await microfrontendFixture.loadScript('./lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client', disconnectOnUnloadDisabled: true, version: '1.0.0-rc.11'});
+    await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client', disconnectOnUnloadDisabled: true, version: '1.0.0-rc.11'});
     const clientId = await getClientId(microfrontendFixture);
 
     // Expect client to be connected

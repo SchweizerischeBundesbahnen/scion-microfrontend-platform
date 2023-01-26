@@ -9,10 +9,7 @@
         "*.ts"
       ],
       "parserOptions": {
-        "project": [
-          "projects/scion/microfrontend-platform/tsconfig.lib.json",
-          "projects/scion/microfrontend-platform/tsconfig.spec.json"
-        ]
+        "project": "projects/scion/microfrontend-platform/tsconfig.(lib|spec|script.spec).json"
       },
       "rules": {
         "@angular-eslint/directive-selector": [

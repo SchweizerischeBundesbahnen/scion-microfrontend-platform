@@ -1,0 +1,16 @@
+/*
+  Separate TypeScript config for "*.script.ts" files used in unit tests.
+*/
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../out-tsc/microfrontend-platforms.script.spec"
+  },
+  "include": [
+    "**/*.script.ts"
+  ],
+  "exclude": [
+    "src/test.ts",
+    "**/*.spec.ts"
+  ]
+}

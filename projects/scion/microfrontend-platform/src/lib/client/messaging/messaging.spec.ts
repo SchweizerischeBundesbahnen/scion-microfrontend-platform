@@ -69,7 +69,7 @@ describe('Messaging', () => {
     Beans.get(MessageClient).observe$('client/whenPlatformStateStopping').subscribe(captor);
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-    await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'sendMessageWhenPlatformStateStopping', {symbolicName: 'client'});
+    await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageWhenPlatformStateStopping', {symbolicName: 'client'});
     microfrontendFixture.removeIframe();
     await expectEmissions(captor).toEqual(['message from client']);
   });
@@ -88,7 +88,7 @@ describe('Messaging', () => {
     Beans.get(MessageClient).observe$('client/beanPreDestroy').subscribe(captor);
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-    await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'sendMessageOnBeanPreDestroy', {symbolicName: 'client'});
+    await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageOnBeanPreDestroy', {symbolicName: 'client'});
     microfrontendFixture.removeIframe();
     await expectEmissions(captor).toEqual(['message from client']);
   });
@@ -107,7 +107,7 @@ describe('Messaging', () => {
     Beans.get(MessageClient).observe$('client/beforeunload').subscribe(captor);
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-    await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'sendMessageInBeforeUnload', {symbolicName: 'client'});
+    await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageInBeforeUnload', {symbolicName: 'client'});
 
     // The browser does not trigger the 'beforeunload' event when removing the iframe.
     // For that reason, we navigate to another side.
@@ -129,7 +129,7 @@ describe('Messaging', () => {
     Beans.get(MessageClient).observe$('client/unload').subscribe(captor);
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-    await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'sendMessageInUnload', {symbolicName: 'client'});
+    await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageInUnload', {symbolicName: 'client'});
 
     microfrontendFixture.removeIframe();
     await expectEmissions(captor).toEqual(['message from client']);
@@ -942,12 +942,12 @@ describe('Messaging', () => {
 
     // Mount client that monitors the topic message channel and subscribes to the test topic.
     const microfrontend1 = registerFixture(new MicrofrontendFixture());
-    await microfrontend1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'client', topic: 'test/topic', monitorTopicMessageChannel: true});
+    await microfrontend1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'client', topic: 'test/topic', monitorTopicMessageChannel: true});
     const microfrontend1TopicMessageChannel = new ObserveCaptor();
 
     // Mount client that monitors the topic message channel but DOES NOT subscribe to the test topic.
     const microfrontend2 = registerFixture(new MicrofrontendFixture());
-    await microfrontend2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'monitorTopicMessageChannel', {symbolicName: 'client'});
+    await microfrontend2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'monitorTopicMessageChannel', {symbolicName: 'client'});
     const microfrontend2TopicMessageChannel = new ObserveCaptor();
 
     // Publish message to the test topic.
@@ -997,12 +997,12 @@ describe('Messaging', () => {
 
     // Mount client that monitors the intent message channel and subscribes to the test intent.
     const microfrontend1 = registerFixture(new MicrofrontendFixture());
-    await microfrontend1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'client', intent: {type: 'testee'}, monitorIntentMessageChannel: true});
+    await microfrontend1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'client', intent: {type: 'testee'}, monitorIntentMessageChannel: true});
     const microfrontend1IntentMessageChannel = new ObserveCaptor();
 
     // Mount client that monitors the intent message channel but DOES NOT subscribe to the test intent.
     const microfrontend2 = registerFixture(new MicrofrontendFixture());
-    await microfrontend2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'monitorIntentMessageChannel', {symbolicName: 'client'});
+    await microfrontend2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'monitorIntentMessageChannel', {symbolicName: 'client'});
     const microfrontend2IntentMessageChannel = new ObserveCaptor();
 
     // Publish test intent.
@@ -2427,13 +2427,13 @@ describe('Messaging', () => {
 
         // Mount microfrontend of app 1.
         const microfrontendApp1 = registerFixture(new MicrofrontendFixture());
-        await microfrontendApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'app1', topic: 'myhome/kitchen/temperature'});
+        await microfrontendApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'app1', topic: 'myhome/kitchen/temperature'});
         const requestCaptorApp1 = new ObserveCaptor();
         microfrontendApp1.message$.subscribe(requestCaptorApp1);
 
         // Mount microfrontend of app 2.
         const microfrontendApp2 = registerFixture(new MicrofrontendFixture());
-        await microfrontendApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'app2', topic: 'myhome/kitchen/temperature'});
+        await microfrontendApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'app2', topic: 'myhome/kitchen/temperature'});
         const requestCaptorApp2 = new ObserveCaptor();
         microfrontendApp2.message$.subscribe(requestCaptorApp2);
 
@@ -3086,7 +3086,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '20°C',
@@ -3094,7 +3094,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '21°C',
@@ -3104,13 +3104,13 @@ describe('Messaging', () => {
         // Receive intents in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intents in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 to receive retained intent sent by app 1
@@ -3168,7 +3168,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '20°C',
@@ -3176,7 +3176,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '21°C',
@@ -3186,13 +3186,13 @@ describe('Messaging', () => {
         // Receive intents in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intents in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 to receive retained intent sent by app 2
@@ -3250,7 +3250,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '20°C',
@@ -3258,7 +3258,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '21°C',
@@ -3268,13 +3268,13 @@ describe('Messaging', () => {
         // Receive intents in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intents in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 to receive retained intent sent by app 1
@@ -3338,7 +3338,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '20°C',
@@ -3346,7 +3346,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '21°C',
@@ -3354,7 +3354,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app3
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app3',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '22°C',
@@ -3364,13 +3364,13 @@ describe('Messaging', () => {
         // Receive intents in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intents in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 to receive retained intent sent by app 1
@@ -3422,7 +3422,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '20°C',
@@ -3430,7 +3430,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '21°C',
@@ -3438,7 +3438,7 @@ describe('Messaging', () => {
         });
 
         // Delete intent in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: undefined,
@@ -3448,13 +3448,13 @@ describe('Messaging', () => {
         // Receive intents in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intents in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 not to receive retained intent because deleted
@@ -3499,7 +3499,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '20°C',
@@ -3507,7 +3507,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '21°C',
@@ -3515,7 +3515,7 @@ describe('Messaging', () => {
         });
 
         // Delete intent in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: undefined,
@@ -3525,13 +3525,13 @@ describe('Messaging', () => {
         // Receive intents in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intents in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 not to receive retained intent because deleted
@@ -3572,7 +3572,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'publishIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           body: '20°C',
@@ -3582,13 +3582,13 @@ describe('Messaging', () => {
         // Receive intents in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intents in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 to receive retained intent
@@ -4042,13 +4042,13 @@ describe('Messaging', () => {
 
         // Mount microfrontend of app 1.
         const microfrontendApp1 = registerFixture(new MicrofrontendFixture());
-        await microfrontendApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1', intent: {type: 'temperature', qualifier: {room: 'kitchen'}}});
+        await microfrontendApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1', intent: {type: 'temperature', qualifier: {room: 'kitchen'}}});
         const requestCaptorApp1 = new ObserveCaptor();
         microfrontendApp1.message$.subscribe(requestCaptorApp1);
 
         // Mount microfrontend of app 2.
         const microfrontendApp2 = registerFixture(new MicrofrontendFixture());
-        await microfrontendApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2', intent: {type: 'temperature', qualifier: {room: 'kitchen'}}});
+        await microfrontendApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2', intent: {type: 'temperature', qualifier: {room: 'kitchen'}}});
         const requestCaptorApp2 = new ObserveCaptor();
         microfrontendApp2.message$.subscribe(requestCaptorApp2);
 
@@ -4087,28 +4087,28 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent request in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
           options: {retain: true} as RequestOptions,
@@ -4117,13 +4117,13 @@ describe('Messaging', () => {
         // Receive intent requests in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intent requests in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 to receive retained intent requests
@@ -4189,28 +4189,28 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent request in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
           options: {retain: true} as RequestOptions,
@@ -4219,13 +4219,13 @@ describe('Messaging', () => {
         // Receive intents in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intents in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 to receive retained intent requests
@@ -4311,28 +4311,28 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent request in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
           options: {retain: true} as RequestOptions,
@@ -4341,13 +4341,13 @@ describe('Messaging', () => {
         // Receive intents in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intents in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 to receive retained intent requests
@@ -4419,49 +4419,49 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent request in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent request in app2
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
           intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent in app3
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app3',
           intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent in app3
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app3',
           intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
           options: {retain: true} as RequestOptions,
         });
 
         // Publish retained intent in app3
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app3',
           intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
           options: {retain: true} as RequestOptions,
@@ -4470,13 +4470,13 @@ describe('Messaging', () => {
         // Receive intents in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intents in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 to receive retained intent requests
@@ -4547,7 +4547,7 @@ describe('Messaging', () => {
         });
 
         // Publish retained intent request in app1
-        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
+        await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
           intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
           options: {retain: true} as PublishOptions,
@@ -4556,13 +4556,13 @@ describe('Messaging', () => {
         // Receive intents in app1
         const intentApp1Captor = new ObserveCaptor();
         const receiveIntentApp1 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp1.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
+        await receiveIntentApp1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app1'});
         receiveIntentApp1.message$.subscribe(intentApp1Captor);
 
         // Receive intents in app2
         const intentApp2Captor = new ObserveCaptor();
         const receiveIntentApp2 = registerFixture(new MicrofrontendFixture());
-        await receiveIntentApp2.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
+        await receiveIntentApp2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'app2'});
         receiveIntentApp2.message$.subscribe(intentApp2Captor);
 
         // Expect app1 to receive retained intent

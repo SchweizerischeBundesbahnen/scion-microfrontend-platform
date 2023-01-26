@@ -34,14 +34,14 @@ describe('MicrofrontendPlatform', () => {
 
   it('should throw if not connected to the host within the configured timeout', async () => {
     const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    const connectPromise = microfrontendFixture.loadScript('./lib/client/client-connect.script.ts', 'connectToHost', {symbolicName: 'client', brokerDiscoverTimeout: 250});
+    const connectPromise = microfrontendFixture.loadScript('lib/client/client-connect.script.ts', 'connectToHost', {symbolicName: 'client', brokerDiscoverTimeout: 250});
     await expectAsync(connectPromise).toBeRejectedWithError(/\[GatewayError] Message broker not discovered within 250ms/);
   });
 
   it('should repeatedly send a connect request when the client connects to a remote host', async () => {
     // Load the client.
     const clientFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    const connectPromise = clientFixture.loadScript('./lib/client/client-connect.script.ts', 'connectClientToRemoteHost', {symbolicName: 'client', brokerDiscoverTimeout: 2000});
+    const connectPromise = clientFixture.loadScript('lib/client/client-connect.script.ts', 'connectClientToRemoteHost', {symbolicName: 'client', brokerDiscoverTimeout: 2000});
     document['X-CLIENT-WINDOW'] = clientFixture.iframe.contentWindow;
 
     // Wait some time before installing the host and bridge so that the first connect request will get lost.
@@ -59,7 +59,7 @@ describe('MicrofrontendPlatform', () => {
 
     // Install the message bridge.
     const messageBridgeFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    await messageBridgeFixture.loadScript('./lib/client/client-connect.script.ts', 'bridgeMessages');
+    await messageBridgeFixture.loadScript('lib/client/client-connect.script.ts', 'bridgeMessages');
 
     // Expect the client to be connected.
     await expectAsync(connectPromise).toBeResolved();
@@ -78,7 +78,7 @@ describe('MicrofrontendPlatform', () => {
     });
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    await microfrontendFixture.loadScript('./lib/client/client-connect.script.ts', 'connectToHost', {symbolicName: 'client', connectCount: 3});
+    await microfrontendFixture.loadScript('lib/client/client-connect.script.ts', 'connectToHost', {symbolicName: 'client', connectCount: 3});
 
     const clients = Beans.get(ClientRegistry).getByApplication('client');
     expect(clients.length).toBe(1);
@@ -94,7 +94,7 @@ describe('MicrofrontendPlatform', () => {
     await MicrofrontendPlatformHost.start({applications: []}); // no app is registered
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-    const script = microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'bad-client'});
+    const script = microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'bad-client'});
 
     await expectAsync(script).toBeRejectedWithError(/\[ClientConnectError] Client connect attempt rejected: Unknown client./);
   });
@@ -111,7 +111,7 @@ describe('MicrofrontendPlatform', () => {
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
     // Client connects under karma test runner origin (location.origin), but is registered under `http://app-origin`.
-    const script = microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
+    const script = microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
 
     await expectAsync(script).toBeRejectedWithError(/\[ClientConnectError] Client connect attempt blocked: Wrong origin./);
   });
@@ -131,7 +131,7 @@ describe('MicrofrontendPlatform', () => {
     // - Client connects under karma test runner origin (location.origin)
     // - Base origin is 'app-origin'
     // - Application is configured to allow messages from secondary origin, which is karma test runner origin (location.origin)
-    const script = microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
+    const script = microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
     await expectAsync(script).toBeResolved();
   });
 

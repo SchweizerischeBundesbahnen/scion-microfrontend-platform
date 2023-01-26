@@ -35,8 +35,8 @@ export class ApplicationRegistry {
    * Throws an error if the application's symbolic name is not unique or contains illegal characters.
    */
   public async registerApplication(applicationConfig: ApplicationConfig, manifest: Manifest): Promise<void> {
-    Defined.orElseThrow(applicationConfig.symbolicName, () => Error(`[ApplicationRegistrationError] Invalid application config. Missing required property \'symbolicName\'. [appConfig="${JSON.stringify(applicationConfig)}", manifest="${JSON.stringify(manifest)}"]`));
-    Defined.orElseThrow(applicationConfig.manifestUrl, () => Error(`[ApplicationRegistrationError] Invalid application config. Missing required property \'manifestUrl\'. [appConfig="${JSON.stringify(applicationConfig)}", manifest="${JSON.stringify(manifest)}"]`));
+    Defined.orElseThrow(applicationConfig.symbolicName, () => Error(`[ApplicationRegistrationError] Invalid application config. Missing required property 'symbolicName'. [appConfig="${JSON.stringify(applicationConfig)}", manifest="${JSON.stringify(manifest)}"]`));
+    Defined.orElseThrow(applicationConfig.manifestUrl, () => Error(`[ApplicationRegistrationError] Invalid application config. Missing required property 'manifestUrl'. [appConfig="${JSON.stringify(applicationConfig)}", manifest="${JSON.stringify(manifest)}"]`));
 
     if (!ApplicationRegistry.SYMBOLIC_NAME_REGEXP.test(applicationConfig.symbolicName)) {
       throw Error(`[ApplicationRegistrationError] Symbolic name must be lowercase and contain alphanumeric and dash characters [symbolicName='${applicationConfig.symbolicName}'].`);
