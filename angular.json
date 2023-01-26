@@ -69,7 +69,9 @@
             "outputPath": "dist/microfrontend-platform-client-application-bundle-analyzer",
             "index": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/index.html",
             "main": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/main.ts",
-            "polyfills": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/polyfills.ts",
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/tsconfig.app.json",
             "outputHashing": "all",
             "sourceMap": true,
@@ -117,7 +119,9 @@
             "outputPath": "dist/microfrontend-platform-testing-app",
             "index": "apps/microfrontend-platform-testing-app/src/index.html",
             "main": "apps/microfrontend-platform-testing-app/src/main.ts",
-            "polyfills": "apps/microfrontend-platform-testing-app/src/polyfills.ts",
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "apps/microfrontend-platform-testing-app/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -234,7 +238,9 @@
             "outputPath": "dist/microfrontend-platform-devtools",
             "index": "apps/microfrontend-platform-devtools/src/index.html",
             "main": "apps/microfrontend-platform-devtools/src/main.ts",
-            "polyfills": "apps/microfrontend-platform-devtools/src/polyfills.ts",
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "apps/microfrontend-platform-devtools/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -311,6 +317,14 @@
           }
         }
       }
+    }
+  },
+  "schematics": {
+    "@angular-eslint/schematics:application": {
+      "setParserOptionsProject": true
+    },
+    "@angular-eslint/schematics:library": {
+      "setParserOptionsProject": true
     }
   }
 }

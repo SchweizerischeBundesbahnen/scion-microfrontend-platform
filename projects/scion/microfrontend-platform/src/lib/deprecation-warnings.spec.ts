@@ -42,7 +42,7 @@ describe('Deprecated APIs', () => {
     });
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    await microfrontendFixture.loadScript('./lib/version.script.ts', 'connectToHost', {symbolicName: 'app', version: '1.0.0-rc.10'});
+    await microfrontendFixture.loadScript('lib/version.script.ts', 'connectToHost', {symbolicName: 'app', version: '1.0.0-rc.10'});
 
     // Assert deprecation warning
     expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual(jasmine.arrayContaining([
@@ -63,7 +63,7 @@ describe('Deprecated APIs', () => {
     });
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    await microfrontendFixture.loadScript('./lib/version.script.ts', 'connectToHost', {symbolicName: 'app', version: '1.0.0-rc.7'});
+    await microfrontendFixture.loadScript('lib/version.script.ts', 'connectToHost', {symbolicName: 'app', version: '1.0.0-rc.7'});
 
     // Assert deprecation warning
     expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual(jasmine.arrayContaining([
@@ -84,7 +84,7 @@ describe('Deprecated APIs', () => {
     });
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    await microfrontendFixture.loadScript('./lib/version.script.ts', 'connectToHost', {symbolicName: 'app', version: '1.0.0-rc.7'});
+    await microfrontendFixture.loadScript('lib/version.script.ts', 'connectToHost', {symbolicName: 'app', version: '1.0.0-rc.7'});
 
     // Assert deprecation warning
     expect(readConsoleLog('warn', {filter: /\[DEPRECATION]/})).toEqual(jasmine.arrayContaining([

@@ -43,7 +43,7 @@ describe('MicrofrontendPlatform', () => {
     });
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    await microfrontendFixture.loadScript('./lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: '1.0.0'});
+    await microfrontendFixture.loadScript('lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: '1.0.0'});
 
     // Assert version mismatch warning
     expect(readConsoleLog('warn', {filter: /\[VersionMismatch]/})).toEqual(jasmine.arrayContaining([
@@ -64,7 +64,7 @@ describe('MicrofrontendPlatform', () => {
     });
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    await microfrontendFixture.loadScript('./lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: null /* do not pass a version when connecting to the host */});
+    await microfrontendFixture.loadScript('lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: null /* do not pass a version when connecting to the host */});
 
     // Assert version mismatch warning
     expect(readConsoleLog('warn', {filter: /\[VersionMismatch]/})).toEqual(jasmine.arrayContaining([
@@ -83,7 +83,7 @@ describe('MicrofrontendPlatform', () => {
     });
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
-    await microfrontendFixture.loadScript('./lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: '3.0.0'});
+    await microfrontendFixture.loadScript('lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: '3.0.0'});
 
     const application = Beans.get(ManifestService).applications.find(application => application.symbolicName === 'client');
     await expect(await application.platformVersion).toEqual('3.0.0');

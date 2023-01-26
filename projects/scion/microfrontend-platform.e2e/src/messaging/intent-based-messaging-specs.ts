@@ -20,7 +20,7 @@ import {expect} from '@playwright/test';
 /**
  * Contains Specs for intent-based messaging.
  */
-export namespace IntendBasedMessagingSpecs {
+export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-related tests into separate files: https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/222
 
   /**
    * Tests that an intent can only be issued if having declared a respective intention.

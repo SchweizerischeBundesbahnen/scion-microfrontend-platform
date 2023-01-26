@@ -132,7 +132,7 @@ function parseFlags(keystroke: string): KeystrokeFlags | undefined {
         case 'preventDefault':
           return {...flags, preventDefault: flagValue === 'true'};
         default: {
-          Beans.get(Logger).warn(`[KeystrokeParseError] Ignore unkown flag \'${keystroke}\'. Supported flags are: \'preventDefault\'.`);
+          Beans.get(Logger).warn(`[KeystrokeParseError] Ignore unkown flag '${keystroke}'. Supported flags are: 'preventDefault'.`);
           return flags;
         }
       }

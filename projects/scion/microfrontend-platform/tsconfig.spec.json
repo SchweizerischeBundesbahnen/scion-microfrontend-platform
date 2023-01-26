@@ -4,14 +4,16 @@
     "outDir": "../../../out-tsc/microfrontend-platform.spec",
     "types": [
       "jasmine"
-    ],
+    ]
   },
   "files": [
     "src/test.ts"
   ],
   "include": [
     "**/*.spec.ts",
-    "**/*.script.ts",
     "**/*.d.ts"
+  ],
+  "exclude": [
+    "**/*.script.ts" // "*.script.ts" files are included in a separate TypeScript config tsconfig.script.spec.json.
   ]
 }

@@ -11,16 +11,16 @@
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
-    // to correctly transpile ES2015 collections to ES5; crucial to run on ES5
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2020",
-    "module": "es2020",
+    "target": "ES2022",
+    "module": "ES2022",
     "noUnusedLocals": true,
+    "useDefineForClassFields": false,
     "lib": [
-      "es2020",
+      "ES2022",
       "dom"
     ],
     "paths": {
@@ -29,28 +29,30 @@
       ]
     }
     /*
-     * =======================================+
-     * |    PATH-OVERRIDE-FOR-DEVELOPMENT     |
-     * |   DO NOT ACTIVATE FOR PRODUCTION!    |
-     * |                                      |
-     * | To debug dependent modules, please   |
-     * | uncomment lines accordingly.         |
-     * | The most specific paths win, or the  |
-     * | latter with equal specificity.       |
-     * +======================================+
+     * =====================================================================+
+     * |                    PATH-OVERRIDE-FOR-DEVELOPMENT                   |
+     * |                   DO NOT ACTIVATE FOR PRODUCTION!                  |
+     * |                                                                    |
+     * | To debug dependent modules, please uncomment lines accordingly.    |
+     * | The most specific paths win, or the latter with equal specificity. |
+     * |                                                                    |
+     * | ESBuild specific: Since esbuild resolves symbols relative to the   |
+     * | containing module, paths to 'node_modules' must be prefixed with   |
+     * | '../scion-microfrontend-platform/node_module'.                     |
+     * =====================================================================+
      */
     //    "paths": {
     //      "@scion/microfrontend-platform": [
     //        "projects/scion/microfrontend-platform/src/public-api"
     //      ],
     //      "@scion/toolkit/*": [
-    //        "./node_modules/@scion/toolkit/*"
+    //        "../scion-microfrontend-platform/node_modules/@scion/toolkit/*"
     //      ],
     //      "@scion/components/*": [
-    //        "./node_modules/@scion/components/*"
+    //        "../scion-microfrontend-platform/node_modules/@scion/components/*"
     //      ],
     //      "@scion/components.internal/*": [
-    //        "./node_modules/@scion/components.internal/*"
+    //        "../scion-microfrontend-platform/node_modules/@scion/components.internal/*"
     //      ],
     //      //      "@scion/toolkit/bean-manager": [
     //      //        "../scion-toolkit/projects/scion/toolkit/bean-manager/src/public_api"
@@ -116,13 +118,13 @@
     //      //        "../scion-toolkit/projects/scion/components.internal/tabbar/src/public_api"
     //      //      ],
     //      "@angular/*": [
-    //        "./node_modules/@angular/*"
+    //        "../scion-microfrontend-platform/node_modules/@angular/*"
     //      ],
     //      "rxjs": [
-    //        "./node_modules/rxjs"
+    //        "../scion-microfrontend-platform/node_modules/rxjs"
     //      ],
     //      "rxjs/*": [
-    //        "./node_modules/rxjs/*"
+    //        "../scion-microfrontend-platform/node_modules/rxjs/*"
     //      ]
     //    }
   },

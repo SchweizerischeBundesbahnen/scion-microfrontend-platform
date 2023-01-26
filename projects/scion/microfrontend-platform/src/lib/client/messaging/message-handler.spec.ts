@@ -530,7 +530,7 @@ describe('Message Handler', () => {
 
       // Mount the replier microfrontend.
       const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-      await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/message-handler.script.ts', 'connectToHostThenMessageClientOnMessage', {symbolicName: 'replier'});
+      await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/message-handler.script.ts', 'connectToHostThenMessageClientOnMessage', {symbolicName: 'replier'});
 
       // Initiate request-reply communication.
       const replyCaptor = new ObserveCaptor();
@@ -1279,7 +1279,7 @@ describe('Intent Handler', () => {
 
       // Mount the replier microfrontend.
       const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-      await microfrontendFixture.insertIframe().loadScript('./lib/client/messaging/message-handler.script.ts', 'connectToHostThenIntentClientOnIntent', {symbolicName: 'replier'});
+      await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/message-handler.script.ts', 'connectToHostThenIntentClientOnIntent', {symbolicName: 'replier'});
 
       // Initiate request-reply communication.
       const replyCaptor = new ObserveCaptor();

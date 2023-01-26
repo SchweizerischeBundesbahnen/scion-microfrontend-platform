@@ -19,7 +19,7 @@ import {OutletRouter} from '../../client/router-outlet/outlet-router';
 /**
  * Fixture for creating an iframe and loading a script into the iframe.
  *
- * The script must be contained in a standalone typescript file with a filename ending with ".script.ts", e.g. "microfrontend.script.ts".
+ * The script must be contained in a standalone typescript file with a file name ending with ".script.ts", e.g. "microfrontend.script.ts".
  * In the script, you can reference project-specific types (types which are part of this project) and types which are available through
  * dependent NPM packages (e.g. `@scion/toolkit/bean-manager/Beans`).
  *
@@ -43,10 +43,10 @@ import {OutletRouter} from '../../client/router-outlet/outlet-router';
  *
  * // Mount micro application
  * const fixture = new MicrofrontendFixture();
- * await fixture.insertIframe().loadScript('./lib/microfrontend.script.ts', 'connectToHost', {symbolicName: 'client'});
+ * await fixture.insertIframe().loadScript('lib/microfrontend.script.ts', 'connectToHost', {symbolicName: 'client'});
  *```
  *
- * #### Script: "./lib/microfrontend.script.ts"
+ * #### Script: "lib/microfrontend.script.ts"
  * ```ts
  * export async function connectToHost(params: Dictionary): Promise<void> {
  *   await MicrofrontendPlatformClient.connect(params['symbolicName']);
@@ -117,12 +117,10 @@ export class MicrofrontendFixture {
   }
 
   /**
-   * Loads the specified script into the iframe.
+   * Loads the specified script into the iframe and invokes the specified method with specified arguments as the first parameter, and with
+   * an Observer as the second parameter for the script to send messages to the spec.
    *
-   * Transpiles the function in the specified TypeScript file to JavaScript, loads it into the iframe and invokes it,
-   * passing the function specified arguments and an Observer so that the script can send messages to the fixture.
-   *
-   * The script must be contained in a standalone typescript file with a filename ending with ".script.ts", e.g. "microfrontend.script.ts".
+   * The script must be contained in a separate TypeScript file with a file name ending with ".script.ts", e.g. "microfrontend.script.ts".
    * In the script, you can reference project-specific types (types which are part of this project) and types which are available through
    * dependent NPM packages (e.g. `@scion/toolkit/bean-manager/Beans`).
    *
@@ -158,7 +156,7 @@ export class MicrofrontendFixture {
    * @param args - Specifies optional arguments to be passed to the function. Arguments are passed as first argument in the form of a dictionary.
    * @return Handle to obtain the script's URL and notifier Promise that resolves when loaded the script.
    */
-  public serveScript(scriptPath: string, functionName: string, args?: Dictionary): {url: string; whenLoaded: Promise<void>} {
+  public serveScript(scriptPath: string, functionName: string, args?: Dictionary): { url: string; whenLoaded: Promise<void> } {
     if (!scriptPath.endsWith('.script.ts')) {
       throw Error(`[MicrofrontendFixtureError] Expected script file name to end with '.script.ts', but was ${scriptPath}.`);
     }
@@ -170,7 +168,7 @@ export class MicrofrontendFixture {
       complete: `oncomplete@${uuid}`,
       load: `onload@${uuid}`,
     };
-    const html = this.createHtmlToInvokeScript(scriptPath, functionName, args || {}, channels);
+    const html = this.createHtmlToInvokeScript(scriptPath.replace(/\.ts$/, '.js'), functionName, args || {}, channels);
     const url = URL.createObjectURL(new Blob([html], {type: 'text/html'}));
     this._disposables.add(() => URL.revokeObjectURL(url));
 
@@ -236,14 +234,8 @@ export class MicrofrontendFixture {
     return `
         <html>
           <head>
-            <!-- Set global flag to instruct "test.ts" to create a webpack context with only "*.script.ts" files (plus referenced files).  -->
-            <script>window['${WEBPACK_SCRIPT_CONTEXT_ACTIVE}'] = true;</script>
-            <!-- Load webpack runtime into the iframe. -->
-            <script src="${new URL('_karma_webpack_/runtime.js', window.parent.origin).href}"></script>
-            <!-- Load transpiled files of project dependencies into the iframe (e.g., SCION Toolkit).  -->
-            <script src="${new URL('_karma_webpack_/vendor.js', window.parent.origin).href}"></script>
-            <!-- Load transpiled files of the project into the iframe. -->
-            <script src="${new URL('_karma_webpack_/main.js', window.parent.origin).href}"></script>
+            <!-- Load the script file into the iframe. -->
+            <script src="${new URL('base/src/' + scriptPath, window.parent.origin).href}"></script>
             <!-- Execute the script, dispatching messages sent by the script to the fixture. -->
             <script type="module">
                 (async () => {
@@ -257,7 +249,7 @@ export class MicrofrontendFixture {
                     const args = fromJson('${toJson(args)}');
                     
                     // Execute the script.
-                    await window['${WEBPACK_SCRIPT_CONTEXT}']('${scriptPath}')['${scriptMethod}'](args, observer);
+                    await ${ESBUILD_SCRIPT_GLOBAL_VARIABLE}['${scriptMethod}'](args, observer);
                     // Signal script execution completed.
                     window.parent.postMessage({ channel: '${channels.load}'}, window.origin);
                   } 
@@ -328,13 +320,30 @@ interface MessageChannels {
 }
 
 /**
- * Global flag to instruct `projects/scion/microfrontend-platform/src/test.ts` to create a Webpack context of only "*.script.ts" files (plus referenced files).
+ * The name of the global variable which is used to store the exports of the script file.
+ *
+ * ### Example:
+ *
+ * #### Script: "microfrontend.script.ts"
+ * ```ts
+ * export async function connectToHost(): Promise<void> {
+ *   ...
+ * }
+ * ```
+ *
+ * #### Transpiled Script: "microfrontend.script.js"
+ * ```js
+ * var esbuild_script = (() => {
+ *  ...
+ *  function connectToHost() {
+ *    ...
+ *  }
+ *  ...
+ * }
+ * )();
+ * ```
+ * @see https://esbuild.github.io/api/#global-name
  */
-export const WEBPACK_SCRIPT_CONTEXT_ACTIVE = '__webpackScriptContextActive__';
-
-/**
- * Reference to the webpack context if {@link WEBPACK_SCRIPT_CONTEXT_ACTIVE} is active.
- */
-export const WEBPACK_SCRIPT_CONTEXT = '__WebpackScriptContext__';
+export const ESBUILD_SCRIPT_GLOBAL_VARIABLE = 'esbuild_script';
 
 type Disposable = () => void;
