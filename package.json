@@ -107,7 +107,7 @@
     "typedoc": "0.23.17",
     "typedoc-plugin-extras": "2.3.0",
     "typescript": "4.8.4",
-    "vercel": "28.4.11"
+    "vercel": "28.15.3"
   },
   "repository": {
     "type": "git",
