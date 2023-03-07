@@ -10,7 +10,7 @@
 import {AsyncSubject, EMPTY, firstValueFrom, fromEvent, lastValueFrom, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout, timer} from 'rxjs';
 import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, SubscribeCommand, UnsubscribeCommand} from '../../ɵmessaging.model';
 import {finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
-import {filterByChannel, filterByMessageHeader, filterByOrigin, filterByTopicChannel, filterByTransport, filterByWindow, pluckMessage} from '../../operators';
+import {filterByChannel, filterByOrigin, filterByTopicChannel, filterByTransport, filterByWindow, pluckMessage} from '../../operators';
 import {UUID} from '@scion/toolkit/uuid';
 import {IntentMessage, Message, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {Logger, NULL_LOGGER} from '../../logger';
@@ -21,10 +21,11 @@ import {ɵVERSION, ɵWINDOW_TOP} from '../../ɵplatform.model';
 import {PlatformState} from '../../platform-state';
 import {ConnectOptions} from '../connect-options';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
-import {MessageClient} from '../../client/messaging/message-client';
+import {MessageClient} from './message-client';
 import {runSafe} from '../../safe-runner';
 import {stringifyError} from '../../error.util';
 import {decorateObservable} from '../../observable-decorator';
+import {MessageSelector} from './message-selector';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.
@@ -113,6 +114,15 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   private _session$ = new AsyncSubject<Session>();
   private _message$ = new Subject<MessageEvent<MessageEnvelope>>();
 
+  private _selectMessagesByTopic = new MessageSelector({
+    source$: this._message$.pipe(filterByChannel<TopicMessage>(MessagingChannel.Topic)),
+    keySelector: event => event.data.message.topic,
+  });
+  private _selectMessagesBySubscriberIdHeader = new MessageSelector({
+    source$: this._message$,
+    keySelector: event => event.data.message.headers.get(MessageHeaders.ɵSubscriberId),
+  });
+
   constructor(connectOptions?: ConnectOptions) {
     this._appSymbolicName = Beans.get<string>(APP_IDENTITY);
     this._brokerDiscoverTimeout = connectOptions?.brokerDiscoverTimeout ?? 10_000;
@@ -166,9 +176,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     // Install Promise that resolves once the broker has acknowledged the message, or that rejects otherwise.
     const postError$ = new Subject<never>();
     const whenPosted = new Promise<void>((resolve, reject) => {
-      merge(this._message$, postError$)
+      merge(this._selectMessagesByTopic.select$<MessageEvent<MessageEnvelope<TopicMessage<MessageDeliveryStatus>>>>(messageId), postError$)
         .pipe(
-          filterByTopicChannel<MessageDeliveryStatus>(messageId),
           take(1),
           pluckMessage(),
           timeout({first: this._messageDeliveryTimeout, with: () => throwError(() => GatewayErrors.MESSAGE_DISPATCH_ERROR(this._messageDeliveryTimeout, envelope))}),
@@ -208,10 +217,9 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
         .set(MessageHeaders.ɵSubscriberId, subscriberId); // message header to subscribe for replies
 
       // Receive replies sent to the reply topic.
-      merge(this._message$, requestError$)
+      merge(this._selectMessagesBySubscriberIdHeader.select$<MessageEvent<MessageEnvelope<TopicMessage>>>(subscriberId), requestError$)
         .pipe(
           filterByChannel<TopicMessage<T>>(MessagingChannel.Topic),
-          filterByMessageHeader({name: MessageHeaders.ɵSubscriberId, value: subscriberId}),
           pluckMessage(),
           decorateObservable(),
           takeUntil(merge(this._platformStopping$, unsubscribe$)),
@@ -245,10 +253,9 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       const subscribeError$ = new Subject<never>();
 
       // Receive messages of given subscription.
-      merge(this._message$, subscribeError$)
+      merge(this._selectMessagesBySubscriberIdHeader.select$<MessageEvent<MessageEnvelope<T>>>(subscriberId), subscribeError$)
         .pipe(
           filterByChannel<T>(messageChannel),
-          filterByMessageHeader({name: MessageHeaders.ɵSubscriberId, value: subscriberId}),
           pluckMessage(),
           decorateObservable(),
           takeUntil(merge(this._platformStopping$, unsubscribe$)),
@@ -442,6 +449,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   public preDestroy(): void {
     this.disconnectFromBroker();
     this._platformStopping$.next();
+    this._selectMessagesByTopic.disconnect();
+    this._selectMessagesBySubscriberIdHeader.disconnect();
   }
 }
 
