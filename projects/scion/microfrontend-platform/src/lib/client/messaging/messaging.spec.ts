@@ -1190,6 +1190,17 @@ describe('Messaging', () => {
     expect(headersCaptor.getLastValue().get(MessageHeaders.AppSymbolicName)).not.toEqual('should-not-be-set');
   });
 
+  it('should process 10_000 messages under 5 seconds', async () => {
+    await MicrofrontendPlatformHost.start({applications: []});
+    const startTime = Date.now();
+    const acknowledgments = [];
+    for (let i = 0; i < 10_000; i++) {
+      acknowledgments.push(Beans.get(MessageClient).publish('topic'));
+    }
+    await Promise.all(acknowledgments);
+    expect(Date.now() - startTime).toBeLessThan(5000);
+  });
+
   describe('takeUntilUnsubscribe operator', () => {
 
     it('should complete the source observable when all subscribers unsubscribed', async () => {

@@ -56,14 +56,6 @@ export function filterByWindow(window: Window): MonoTypeOperatorFunction<Message
 }
 
 /** @internal */
-export function filterByMessageHeader<T extends Message>(header: {name: string; value: any}): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
-  return filter((event: MessageEvent<MessageEnvelope<T>>): boolean => {
-    const messageHeaders = event.data.message.headers;
-    return messageHeaders.has(header.name) && messageHeaders.get(header.name) === header.value;
-  });
-}
-
-/** @internal */
 export function pluckMessage<T extends Message>(): OperatorFunction<MessageEvent<MessageEnvelope<T>>, T> {
   return map((messageEvent: MessageEvent<MessageEnvelope<T>>): T => {
     return messageEvent.data.message;
