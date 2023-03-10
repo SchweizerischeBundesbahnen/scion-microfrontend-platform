@@ -1,3 +1,12 @@
+# [1.0.0-rc.13](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.12...1.0.0-rc.13) (2023-03-10)
+
+
+### Performance Improvements
+
+* **platform:** increase broker gateway message throughput ([579c125](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/579c125e8826990cdf3e86b498892992aa8027f7)), closes [#90](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/90)
+
+
+
 # [1.0.0-rc.12](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.11...1.0.0-rc.12) (2022-12-21)
 
 
