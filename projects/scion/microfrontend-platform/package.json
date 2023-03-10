@@ -1,6 +1,6 @@
 {
   "name": "@scion/microfrontend-platform",
-  "version": "1.0.0-rc.12",
+  "version": "1.0.0-rc.13",
   "description": "SCION Microfrontend Platform enables you to successfully implement a framework-agnostic microfrontend architecture using iframes. It provides you fundamental APIs for microfrontends to communicate with each other across origins and facilitates embedding microfrontends using a web component and a router. SCION Microfrontend Platform is a lightweight, web stack agnostic library that has no user-facing components and does not dictate any form of application structure.",
   "license": "EPL-2.0",
   "private": false,
