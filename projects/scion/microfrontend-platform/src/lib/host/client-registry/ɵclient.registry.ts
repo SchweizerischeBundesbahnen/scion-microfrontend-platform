@@ -7,10 +7,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
+import {PreDestroy} from '@scion/toolkit/bean-manager';
 import {Subject} from 'rxjs';
 import {Client} from './client';
-import {Logger, LoggingContext} from '../../logger';
 import {ClientRegistry} from './client.registry';
 
 /**
@@ -24,17 +23,6 @@ export class ɵClientRegistry implements ClientRegistry, PreDestroy {
   public readonly unregister$ = new Subject<Client>();
 
   public registerClient(client: Client): void {
-    const staleClient = this._clientsByWindow.get(client.window);
-    if (staleClient) {
-      Beans.get(Logger).warn(
-        `[StaleClient] Stale client registration detected when loading application '${client.application.symbolicName}'
-        into the window of '${staleClient.application.symbolicName}'. Removing stale registration. Most likely, the client could not disconnect
-        from the broker, for example, because the client was disposed without notice, i.e., without receiving the browser's "unload" event, or
-        because the browser discarded the 'DISCONNECT' message, maybe due to a high load on the client during unloading.`.replace(/\s+/g, ' '),
-        new LoggingContext(staleClient.application.symbolicName, staleClient.version),
-      );
-      this.unregisterClient(staleClient);
-    }
     this._clientsById.set(client.id, client);
     this._clientsByWindow.set(client.window, client);
     this.register$.next(client);

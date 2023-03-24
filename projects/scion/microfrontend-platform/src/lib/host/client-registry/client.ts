@@ -23,13 +23,21 @@ export interface Client {
 
   /**
    * The window this client is loaded into.
+   *
+   * TODO [MessageChannel]: I think we need this for backward compatiblity.
+   * @deprecated since version 1.0.0-rc.14; Legacy support will be removed in version 2.0.0.
    */
   readonly window: Window;
 
   /**
    * The origin of this client; is one of {@link ɵApplication.allowedMessageOrigins}.
+   *
+   * TODO [MessageChannel]: I think we need this for backward compatiblity.
+   * @deprecated since version 1.0.0-rc.14; Legacy support will be removed in version 2.0.0.
    */
   readonly origin: string;
+
+  readonly port: MessagePort;
 
   /**
    * The application this client belongs to.
@@ -40,11 +48,6 @@ export interface Client {
    * The version of the @scion/microfrontend-platform installed on the client.
    */
   readonly version: string;
-
-  /**
-   * Indicates whether this client is stale and no more messages can be transported to this client.
-   */
-  readonly stale: boolean;
 
   /**
    * Deprecated APIs used by the client.
@@ -62,7 +65,13 @@ export interface Client {
      * @deprecated since version 1.0.0-rc.11; Legacy support will be removed in version 2.0.0.
      */
     legacyHeartbeatLivenessProtocol: boolean;
+    /**
+     * @deprecated since version 1.0.0-rc.14; Legacy support will be removed in version 2.0.0.
+     */
+    legacyChannelProtocol: boolean;
   };
+
+  readonly whenDisposed: Promise<void>;
 
   /**
    * Releases resources allocated by this client.

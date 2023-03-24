@@ -26,6 +26,7 @@ import {UUID} from '@scion/toolkit/uuid';
 export class ɵClient implements Client {
 
   public readonly version: string;
+  public whenDisposed: Promise<void>;
   public readonly deprecations: {
     /** @deprecated **/
     legacyIntentSubscriptionProtocol: boolean;
@@ -33,10 +34,14 @@ export class ɵClient implements Client {
     legacyRequestResponseSubscriptionProtocol: boolean;
     /** @deprecated **/
     legacyHeartbeatLivenessProtocol: boolean;
+    /** @deprecated **/
+    legacyChannelProtocol: boolean;
   };
   private _livenessDetector: Subscription | undefined;
+  public dispose!: () => void;
 
   constructor(public readonly id: string,
+              public readonly port: MessagePort,
               public readonly window: Window,
               public readonly origin: string,
               public readonly application: ɵApplication,
@@ -46,6 +51,7 @@ export class ɵClient implements Client {
       legacyIntentSubscriptionProtocol: semver.lt(this.version, '1.0.0-rc.8'),
       legacyRequestResponseSubscriptionProtocol: semver.lt(this.version, '1.0.0-rc.9'),
       legacyHeartbeatLivenessProtocol: semver.lt(this.version, '1.0.0-rc.11'),
+      legacyChannelProtocol: semver.lt(this.version, '1.0.0-rc.14'),
     };
     if (this.deprecations.legacyIntentSubscriptionProtocol) {
       this.installLegacyClientIntentSubscription();
@@ -57,7 +63,18 @@ export class ɵClient implements Client {
     if (this.deprecations.legacyHeartbeatLivenessProtocol) {
       Beans.get(Logger).warn(`[DEPRECATION][CD981D7] Application "${application.symbolicName}" is using a legacy liveness probe protocol. Please update @scion/microfrontend-platform to version '${Beans.get(ɵVERSION)}'. Legacy support will be dropped in version '2.0.0'.`, new LoggingContext(application.symbolicName, this.version));
     }
+    if (this.deprecations.legacyChannelProtocol) {
+      Beans.get(Logger).warn(`[DEPRECATION][DC757D1] Application "${application.symbolicName}" is using a legacy messaging channel protocol. Please update @scion/microfrontend-platform to version '${Beans.get(ɵVERSION)}'. Legacy support will be dropped in version '2.0.0'.`, new LoggingContext(application.symbolicName, this.version));
+    }
     this.installLivenessDetector();
+    this.whenDisposed = new Promise(resolve => {
+      this.dispose = resolve;
+    });
+    this.whenDisposed.then(() => {
+      this._livenessDetector?.unsubscribe();
+      port?.close();
+    });
+    port?.start();
   }
 
   /**
@@ -98,14 +115,6 @@ export class ɵClient implements Client {
       });
   }
 
-  public get stale(): boolean {
-    return window.closed;
-  }
-
-  public dispose(): void {
-    this._livenessDetector?.unsubscribe();
-  }
-
   private logStaleClientWarning(): void {
     Beans.get(Logger).warn(
       `[StaleClient] Stale client registration of application '${this.application.symbolicName}' detected.
@@ -121,7 +130,7 @@ export class ɵClient implements Client {
    * Installs legacy intent subscription support for clients older than version 1.0.0-rc.8.
    */
   private installLegacyClientIntentSubscription(): void {
-    const legacyClientSubscription = new IntentSubscription({}, UUID.randomUUID(), this);
+    const legacyClientSubscription = new IntentSubscription({}, UUID.randomUUID(), this, this.port);
     Beans.get(IntentSubscriptionRegistry).register(legacyClientSubscription);
   }
 }

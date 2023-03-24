@@ -33,8 +33,8 @@ export class IntentSubscriptionRegistry extends MessageSubscriptionRegistry<Inte
  */
 export class IntentSubscription extends MessageSubscription {
 
-  constructor(public readonly selector: IntentSelector, subscriberId: string, client: Client) {
-    super(subscriberId, client);
+  constructor(public readonly selector: IntentSelector, subscriberId: string, client: Client, port: MessagePort) {
+    super(subscriberId, client, port);
   }
 
   /**

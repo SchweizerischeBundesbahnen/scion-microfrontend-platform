@@ -42,13 +42,13 @@ describe('TopicSubscriptionRegistry', () => {
 
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
-    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#1', client1));
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#1', client1, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(1);
 
-    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#2', client2));
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#2', client2, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
 
-    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#3', client3));
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#3', client3, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(3);
 
     testee.unregister({subscriberId: 'subscriber#1'});
@@ -71,13 +71,13 @@ describe('TopicSubscriptionRegistry', () => {
 
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
 
-    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#1', client));
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#1', client, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(1);
 
-    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#2', client));
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#2', client, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
 
-    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#3', client));
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#3', client, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(3);
 
     testee.unregister({subscriberId: 'subscriber#1'});
@@ -105,15 +105,15 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(0);
 
-    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#1', client));
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'subscriber#1', client, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(1);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(0);
 
-    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'subscriber#2', client));
+    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'subscriber#2', client, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(1);
 
-    testee.register(new TopicSubscription('myhome/livingroom/humidity', 'subscriber#3', client));
+    testee.register(new TopicSubscription('myhome/livingroom/humidity', 'subscriber#3', client, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
     await expectSubscriptionCount('myhome/livingroom/humidity').toBe(2);
 
@@ -138,7 +138,7 @@ describe('TopicSubscriptionRegistry', () => {
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
 
-    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#1', client1));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#1', client1, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(1);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -146,7 +146,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(1);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#2', client1));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#2', client1, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(2);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -154,7 +154,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(2);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#3', client2));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#3', client2, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(3);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -162,7 +162,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(3);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#4', client2));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'subscriber#4', client2, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(4);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -170,7 +170,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(4);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    testee.register(new TopicSubscription('myhome/:room/:measurement', 'subscriber#5', client1));
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'subscriber#5', client1, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(5);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -178,7 +178,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(5);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    testee.register(new TopicSubscription('myhome/:room/:measurement', 'subscriber#6', client2));
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'subscriber#6', client2, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(6);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(0);
@@ -186,7 +186,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(6);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(0);
 
-    testee.register(new TopicSubscription('myhome/:room/:measurement/:unit', 'subscriber#7', client1));
+    testee.register(new TopicSubscription('myhome/:room/:measurement/:unit', 'subscriber#7', client1, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(6);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(1);
@@ -194,7 +194,7 @@ describe('TopicSubscriptionRegistry', () => {
     await expectSubscriptionCount('myhome/kitchen/temperature').toBe(6);
     await expectSubscriptionCount('myhome/kitchen/temperature/celcius').toBe(1);
 
-    testee.register(new TopicSubscription('myhome/:room/:measurement/:unit', 'subscriber#8', client2));
+    testee.register(new TopicSubscription('myhome/:room/:measurement/:unit', 'subscriber#8', client2, newMessagePort()));
     await expectSubscriptionCount('myhome/livingroom').toBe(0);
     await expectSubscriptionCount('myhome/livingroom/temperature').toBe(6);
     await expectSubscriptionCount('myhome/livingroom/temperature/celcius').toBe(2);
@@ -208,19 +208,19 @@ describe('TopicSubscriptionRegistry', () => {
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
 
-    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#1;sub#1', client1));
-    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#1;sub#2', client1));
-    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#1;sub#3', client1));
-    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#1;sub#4', client1));
-    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#1;sub#5', client1));
-    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#1;sub#6', client1));
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#1;sub#1', client1, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#1;sub#2', client1, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#1;sub#3', client1, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#1;sub#4', client1, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#1;sub#5', client1, newMessagePort()));
+    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#1;sub#6', client1, newMessagePort()));
 
-    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#2;sub#1', client2));
-    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#2;sub#2', client2));
-    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#2;sub#3', client2));
-    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#2;sub#4', client2));
-    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#2;sub#5', client2));
-    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#2;sub#6', client2));
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#2;sub#1', client2, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#2;sub#2', client2, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#2;sub#3', client2, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#2;sub#4', client2, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#2;sub#5', client2, newMessagePort()));
+    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#2;sub#6', client2, newMessagePort()));
 
     // Resolve the subscribers which observe the topic 'myhome/livingroom/temperature'.
     const subscribers = testee.subscriptions({topic: 'myhome/livingroom/temperature'});
@@ -282,21 +282,21 @@ describe('TopicSubscriptionRegistry', () => {
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
 
-    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#1;sub#1', client1));
-    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#1;sub#2', client1));
-    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#1;sub#3', client1));
-    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#1;sub#4', client1));
-    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#1;sub#5', client1));
-    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#1;sub#6', client1));
-    testee.register(new TopicSubscription(':building/:room/:measurement', 'client#1;sub#7', client1));
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#1;sub#1', client1, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#1;sub#2', client1, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#1;sub#3', client1, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#1;sub#4', client1, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#1;sub#5', client1, newMessagePort()));
+    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#1;sub#6', client1, newMessagePort()));
+    testee.register(new TopicSubscription(':building/:room/:measurement', 'client#1;sub#7', client1, newMessagePort()));
 
-    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#2;sub#1', client2));
-    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#2;sub#2', client2));
-    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#2;sub#3', client2));
-    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#2;sub#4', client2));
-    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#2;sub#5', client2));
-    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#2;sub#6', client2));
-    testee.register(new TopicSubscription(':building/:room/:measurement', 'client#2;sub#7', client2));
+    testee.register(new TopicSubscription('myhome/livingroom/temperature', 'client#2;sub#1', client2, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/livingroom/:measurement', 'client#2;sub#2', client2, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/kitchen/:measurement', 'client#2;sub#3', client2, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/:room/temperature', 'client#2;sub#4', client2, newMessagePort()));
+    testee.register(new TopicSubscription('myhome/:room/:measurement', 'client#2;sub#5', client2, newMessagePort()));
+    testee.register(new TopicSubscription(':building/kitchen/:measurement', 'client#2;sub#6', client2, newMessagePort()));
+    testee.register(new TopicSubscription(':building/:room/:measurement', 'client#2;sub#7', client2, newMessagePort()));
 
     // Resolve the subscribers which observe the topic 'myhome/kitchen/temperature'.
     const subscribers = testee.subscriptions({topic: 'myhome/kitchen/temperature'});
@@ -374,7 +374,7 @@ describe('TopicSubscriptionRegistry', () => {
       .subscribe(existsCaptor);
 
     // WHEN registering a subscription
-    testee.register(new TopicSubscription('topic', 'subscriber', newClient({id: 'client#1'})));
+    testee.register(new TopicSubscription('topic', 'subscriber', newClient({id: 'client#1'}), newMessagePort()));
     // THEN expect subscription to be added when MessageSubscriptionRegistry#register$ emits
     expect(existsCaptor.getValues()).toEqual([true]);
   });
@@ -388,7 +388,7 @@ describe('TopicSubscriptionRegistry', () => {
       .subscribe(existsCaptor);
 
     // GIVEN
-    testee.register(new TopicSubscription('topic', 'subscriber', newClient({id: 'client#1'})));
+    testee.register(new TopicSubscription('topic', 'subscriber', newClient({id: 'client#1'}), newMessagePort()));
     // WHEN unregistering the subscription
     testee.unregister({subscriberId: 'subscriber'});
     // THEN expect subscription to be removed when MessageSubscriptionRegistry#unregister$ emits
@@ -410,4 +410,8 @@ function newClient(descriptor: {id: string; appSymbolicName?: string}): Client {
     public readonly id = descriptor.id ?? UUID.randomUUID();
     public readonly dispose = noop;
   } as Client;
+}
+
+function newMessagePort(): MessagePort {
+  return new MessageChannel().port1;
 }

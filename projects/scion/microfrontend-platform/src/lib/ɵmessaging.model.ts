@@ -11,6 +11,8 @@ import {Message} from './messaging.model';
 import {IntentSelector} from './client/messaging/intent-client';
 
 /**
+ * TODO [MessageChannel]: I think we do not need this anymore.
+ *
  * Declares the message transports.
  *
  * @internal
@@ -32,6 +34,8 @@ export enum MessagingTransport {
 
 /**
  * Defines the channels to which messages can be sent.
+ *
+ * TODO [MessageChannel]: I think we do not need this anymore.
  *
  * @internal
  */
@@ -72,6 +76,8 @@ export enum MessagingChannel {
 
 /**
  * Envelope for all messages.
+ *
+ * TODO [MessageChannel]: I think we do not need this anymore.
  *
  * @internal
  */

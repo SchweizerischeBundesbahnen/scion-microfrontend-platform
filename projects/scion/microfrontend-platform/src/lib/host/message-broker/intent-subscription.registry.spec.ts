@@ -32,7 +32,7 @@ describe('IntentSubscriptionRegistry', () => {
   it('should match all subscriptions', () => {
     const testee = Beans.get(IntentSubscriptionRegistry);
 
-    testee.register(new IntentSubscription({}, 'subscriber#id', newClient()));
+    testee.register(new IntentSubscription({}, 'subscriber#id', newClient(), newMessagePort()));
     expect(testee.subscriptions().length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'microfrontend'}}).length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'microfrontend', qualifier: {}}}).length).toBe(1);
@@ -47,7 +47,7 @@ describe('IntentSubscriptionRegistry', () => {
   it('should match subscription {type: \'microfrontend\'}', () => {
     const testee = Beans.get(IntentSubscriptionRegistry);
 
-    testee.register(new IntentSubscription({type: 'microfrontend'}, 'subscriber#id', newClient()));
+    testee.register(new IntentSubscription({type: 'microfrontend'}, 'subscriber#id', newClient(), newMessagePort()));
     expect(testee.subscriptions().length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'microfrontend'}}).length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'microfrontend', qualifier: {}}}).length).toBe(1);
@@ -62,7 +62,7 @@ describe('IntentSubscriptionRegistry', () => {
   it('should match subscription {type: \'microfrontend\', qualifier: {\'*\': \'*\'}}', () => {
     const testee = Beans.get(IntentSubscriptionRegistry);
 
-    testee.register(new IntentSubscription({type: 'microfrontend', qualifier: {'*': '*'}}, 'subscriber#id', newClient()));
+    testee.register(new IntentSubscription({type: 'microfrontend', qualifier: {'*': '*'}}, 'subscriber#id', newClient(), newMessagePort()));
     expect(testee.subscriptions().length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'microfrontend'}}).length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'microfrontend', qualifier: {}}}).length).toBe(1);
@@ -77,7 +77,7 @@ describe('IntentSubscriptionRegistry', () => {
   it('should match subscription {type: \'microfrontend\', qualifier: {}}', () => {
     const testee = Beans.get(IntentSubscriptionRegistry);
 
-    testee.register(new IntentSubscription({type: 'microfrontend', qualifier: {}}, 'subscriber#id', newClient()));
+    testee.register(new IntentSubscription({type: 'microfrontend', qualifier: {}}, 'subscriber#id', newClient(), newMessagePort()));
     expect(testee.subscriptions().length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'microfrontend'}}).length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'microfrontend', qualifier: {}}}).length).toBe(1);
@@ -92,7 +92,7 @@ describe('IntentSubscriptionRegistry', () => {
   it('should match subscription {type: \'microfrontend\', qualifier: {entity: \'product\'}}', () => {
     const testee = Beans.get(IntentSubscriptionRegistry);
 
-    testee.register(new IntentSubscription({type: 'microfrontend', qualifier: {entity: 'product'}}, 'subscriber#id', newClient()));
+    testee.register(new IntentSubscription({type: 'microfrontend', qualifier: {entity: 'product'}}, 'subscriber#id', newClient(), newMessagePort()));
     expect(testee.subscriptions().length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'microfrontend'}}).length).toBe(0);
     expect(testee.subscriptions({intent: {type: 'microfrontend', qualifier: {}}}).length).toBe(0);
@@ -107,7 +107,7 @@ describe('IntentSubscriptionRegistry', () => {
   it('should match subscription {qualifier: {entity: \'product\'}}', () => {
     const testee = Beans.get(IntentSubscriptionRegistry);
 
-    testee.register(new IntentSubscription({qualifier: {entity: 'product'}}, 'subscriber#id', newClient()));
+    testee.register(new IntentSubscription({qualifier: {entity: 'product'}}, 'subscriber#id', newClient(), newMessagePort()));
     expect(testee.subscriptions().length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'microfrontend'}}).length).toBe(0);
     expect(testee.subscriptions({intent: {type: 'microfrontend', qualifier: {}}}).length).toBe(0);
@@ -122,7 +122,7 @@ describe('IntentSubscriptionRegistry', () => {
   it('should match subscription {qualifier: {entity: \'*\'}}', () => {
     const testee = Beans.get(IntentSubscriptionRegistry);
 
-    testee.register(new IntentSubscription({qualifier: {entity: '*'}}, 'subscriber#id', newClient()));
+    testee.register(new IntentSubscription({qualifier: {entity: '*'}}, 'subscriber#id', newClient(), newMessagePort()));
     expect(testee.subscriptions().length).toBe(1);
     expect(testee.subscriptions({intent: {type: 'microfrontend'}}).length).toBe(0);
     expect(testee.subscriptions({intent: {type: 'microfrontend', qualifier: {}}}).length).toBe(0);
@@ -143,7 +143,7 @@ describe('IntentSubscriptionRegistry', () => {
       .subscribe(existsCaptor);
 
     // WHEN registering a subscription
-    testee.register(new IntentSubscription({type: 'microfrontend'}, 'subscriber', newClient()));
+    testee.register(new IntentSubscription({type: 'microfrontend'}, 'subscriber', newClient(), newMessagePort()));
     // THEN expect subscription to be added when MessageSubscriptionRegistry#register$ emits
     expect(existsCaptor.getValues()).toEqual([true]);
   });
@@ -157,7 +157,7 @@ describe('IntentSubscriptionRegistry', () => {
       .subscribe(existsCaptor);
 
     // GIVEN
-    testee.register(new IntentSubscription({type: 'microfrontend'}, 'subscriber', newClient()));
+    testee.register(new IntentSubscription({type: 'microfrontend'}, 'subscriber', newClient(), newMessagePort()));
     // WHEN unregistering the subscription
     testee.unregister({subscriberId: 'subscriber'});
     // THEN expect subscription to be removed when MessageSubscriptionRegistry#unregister$ emits
@@ -171,4 +171,8 @@ function newClient(): Client {
     public readonly application = {symbolicName: 'app'} as ɵApplication;
     public readonly dispose = noop;
   } as Client;
+}
+
+function newMessagePort(): MessagePort {
+  return new MessageChannel().port1;
 }

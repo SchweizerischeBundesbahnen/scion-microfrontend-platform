@@ -14,8 +14,8 @@ import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {MessageClient} from './message-client';
 import {IntentClient} from './intent-client';
 import {fromEvent, Observer} from 'rxjs';
-import {filterByChannel, filterByOrigin, filterByTransport, filterByWindow} from '../../operators';
-import {MessagingChannel, MessagingTransport} from '../../ɵmessaging.model';
+import {filterByChannel} from '../../operators';
+import {MessagingChannel} from '../../ɵmessaging.model';
 import {ɵBrokerGateway} from './broker-gateway';
 import {map} from 'rxjs/operators';
 import {IntentMessage, TopicMessage} from '../../messaging.model';
@@ -60,15 +60,13 @@ export async function sendMessageInUnload({symbolicName}): Promise<void> { // es
 export async function subscribeToTopic({symbolicName, topic, monitorTopicMessageChannel}, observer: Observer<TopicMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatformClient.connect(symbolicName);
 
+  // TODO [MessageChannel]: I think we do not need this anymore. It was to test that we did not receive messages from other app subscriptions.
   if (monitorTopicMessageChannel) {
     Beans.get(MessageClient).observe$(topic).subscribe();
 
     const session = Beans.get(ɵBrokerGateway).session;
-    fromEvent<MessageEvent>(window, 'message')
+    fromEvent<MessageEvent>(session.broker.port, 'message')
       .pipe(
-        filterByWindow(session.broker.window),
-        filterByOrigin(session.broker.origin),
-        filterByTransport(MessagingTransport.BrokerToClient),
         filterByChannel(MessagingChannel.Topic),
         map(envelope => envelope.data.message),
       )
@@ -93,11 +91,8 @@ export async function monitorTopicMessageChannel({symbolicName}, observer: Obser
   await MicrofrontendPlatformClient.connect(symbolicName);
 
   const session = Beans.get(ɵBrokerGateway).session;
-  fromEvent<MessageEvent>(window, 'message')
+  fromEvent<MessageEvent>(session.broker.port, 'message')
     .pipe(
-      filterByWindow(session.broker.window),
-      filterByOrigin(session.broker.origin),
-      filterByTransport(MessagingTransport.BrokerToClient),
       filterByChannel(MessagingChannel.Topic),
       map(envelope => envelope.data.message),
     )
@@ -107,15 +102,13 @@ export async function monitorTopicMessageChannel({symbolicName}, observer: Obser
 export async function subscribeToIntent({symbolicName, intent, monitorIntentMessageChannel}, observer: Observer<TopicMessage | IntentMessage>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
   await MicrofrontendPlatformClient.connect(symbolicName);
 
+  // TODO [MessageChannel]: I think we do not need this anymore. It was to test that we did not receive messages from other app subscriptions.
   if (monitorIntentMessageChannel) {
     Beans.get(IntentClient).observe$(intent).subscribe();
 
     const session = Beans.get(ɵBrokerGateway).session;
-    fromEvent<MessageEvent>(window, 'message')
+    fromEvent<MessageEvent>(session.broker.port, 'message')
       .pipe(
-        filterByWindow(session.broker.window),
-        filterByOrigin(session.broker.origin),
-        filterByTransport(MessagingTransport.BrokerToClient),
         filterByChannel(MessagingChannel.Intent),
         map(envelope => envelope.data.message),
       )
@@ -130,11 +123,8 @@ export async function monitorIntentMessageChannel({symbolicName}, observer: Obse
   await MicrofrontendPlatformClient.connect(symbolicName);
 
   const session = Beans.get(ɵBrokerGateway).session;
-  fromEvent<MessageEvent>(window, 'message')
+  fromEvent<MessageEvent>(session.broker.port, 'message')
     .pipe(
-      filterByWindow(session.broker.window),
-      filterByOrigin(session.broker.origin),
-      filterByTransport(MessagingTransport.BrokerToClient),
       filterByChannel(MessagingChannel.Intent),
       map(envelope => envelope.data.message),
     )

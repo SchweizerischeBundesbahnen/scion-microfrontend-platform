@@ -7,10 +7,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {AsyncSubject, EMPTY, firstValueFrom, fromEvent, lastValueFrom, merge, MonoTypeOperatorFunction, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout, timer} from 'rxjs';
+import {AsyncSubject, EMPTY, firstValueFrom, fromEvent, lastValueFrom, merge, NEVER, noop, Observable, Observer, of, ReplaySubject, Subject, TeardownLogic, throwError, timeout, timer} from 'rxjs';
 import {ConnackMessage, MessageDeliveryStatus, MessageEnvelope, MessagingChannel, MessagingTransport, PlatformTopics, SubscribeCommand, UnsubscribeCommand} from '../../ɵmessaging.model';
-import {finalize, map, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
-import {filterByChannel, filterByOrigin, filterByTopicChannel, filterByTransport, filterByWindow, pluckMessage} from '../../operators';
+import {finalize, mergeMap, take, takeUntil, tap} from 'rxjs/operators';
+import {pluckMessage} from '../../operators';
 import {UUID} from '@scion/toolkit/uuid';
 import {IntentMessage, Message, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {Logger, NULL_LOGGER} from '../../logger';
@@ -25,7 +25,6 @@ import {MessageClient} from './message-client';
 import {runSafe} from '../../safe-runner';
 import {stringifyError} from '../../error.util';
 import {decorateObservable} from '../../observable-decorator';
-import {MessageSelector} from './message-selector';
 
 /**
  * The gateway is responsible for dispatching messages between the client and the broker.
@@ -49,7 +48,7 @@ export abstract class BrokerGateway {
    *
    * @return a Promise that resolves when successfully posted the message to the broker, or that rejects otherwise.
    */
-  public abstract postMessage(channel: MessagingChannel, message: Message): Promise<void>;
+  public abstract postMessage(channel: MessagingChannel, message: Message, transfer?: Transferable[]): Promise<void>;
 
   /**
    * Posts a message to the message broker and receives replies. The Observable never completes.
@@ -112,16 +111,6 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   private _messageDeliveryTimeout: number;
   private _session: Session | null = null;
   private _session$ = new AsyncSubject<Session>();
-  private _message$ = new Subject<MessageEvent<MessageEnvelope>>();
-
-  private _selectMessagesByTopic = new MessageSelector({
-    source$: this._message$.pipe(filterByChannel<TopicMessage>(MessagingChannel.Topic)),
-    keySelector: event => event.data.message.topic,
-  });
-  private _selectMessagesBySubscriberIdHeader = new MessageSelector({
-    source$: this._message$,
-    keySelector: event => event.data.message.headers.get(MessageHeaders.ɵSubscriberId),
-  });
 
   constructor(connectOptions?: ConnectOptions) {
     this._appSymbolicName = Beans.get<string>(APP_IDENTITY);
@@ -132,7 +121,6 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   public async init(): Promise<void> {
     try {
       const session = await this.connectToBroker();
-      this.installBrokerMessageListener(session);
       this.installPingReplier(session);
       this._session = session;
       this._session$.next(session);
@@ -152,7 +140,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     return this._session;
   }
 
-  public async postMessage(channel: MessagingChannel, message: Message): Promise<void> {
+  public async postMessage(channel: MessagingChannel, message: Message, transfer?: Transferable[]): Promise<void> {
     if (isPlatformStopped()) {
       throw GatewayErrors.PLATFORM_STOPPED_ERROR;
     }
@@ -161,22 +149,30 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     // without spawning a microtask. Otherwise, messages cannot be published during platform shutdown.
     const session = this._session || await lastValueFrom(this._session$);
 
-    const messageId = UUID.randomUUID();
     const envelope: MessageEnvelope = {
       transport: MessagingTransport.ClientToBroker,
       channel: channel,
       message: message,
     };
     envelope.message.headers
-      .set(MessageHeaders.MessageId, messageId)
+      .set(MessageHeaders.MessageId, UUID.randomUUID())
       .set(MessageHeaders.Timestamp, Date.now())
       .set(MessageHeaders.AppSymbolicName, this._appSymbolicName)
       .set(MessageHeaders.ClientId, session.clientId);
 
+    const ackChannel = new MessageChannel();
+    const brokerAckPort = ackChannel.port1;
+    const clientAckPort = ackChannel.port2;
+    clientAckPort.start();
+
+    // TODO [MessageChannel]:
+    // - first publish, then subscribe (open port after subscription)
+    // - directly use payload instead of wrapping it in a TopicMessage
+
     // Install Promise that resolves once the broker has acknowledged the message, or that rejects otherwise.
     const postError$ = new Subject<never>();
     const whenPosted = new Promise<void>((resolve, reject) => {
-      merge(this._selectMessagesByTopic.select$<MessageEvent<MessageEnvelope<TopicMessage<MessageDeliveryStatus>>>>(messageId), postError$)
+      merge(fromEvent<MessageEvent<MessageEnvelope<TopicMessage<MessageDeliveryStatus>>>>(clientAckPort, 'message'), postError$)
         .pipe(
           take(1),
           pluckMessage(),
@@ -191,13 +187,13 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     });
 
     try {
-      session.broker.window.postMessage(envelope, session.broker.origin);
+      session.broker.port.postMessage(envelope, [brokerAckPort, ...(transfer ?? [])]);
     }
     catch (error) {
       postError$.error(error);
     }
 
-    await whenPosted;
+    await whenPosted.finally(() => clientAckPort.close());
   }
 
   public requestReply$<T = any>(channel: MessagingChannel, request: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
@@ -212,18 +208,25 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       const unsubscribe$ = new Subject<void>();
       const requestError$ = new Subject<never>();
 
+      const replyChannel = new MessageChannel();
+      const brokerReplyPort = replyChannel.port1;
+      const clientReplyPort = replyChannel.port2;
+      clientReplyPort.start();
+
       request.headers
         .set(MessageHeaders.ReplyTo, replyTo) // message header for the replier where to send replies to
         .set(MessageHeaders.ɵSubscriberId, subscriberId); // message header to subscribe for replies
 
       // Receive replies sent to the reply topic.
-      merge(this._selectMessagesBySubscriberIdHeader.select$<MessageEvent<MessageEnvelope<TopicMessage>>>(subscriberId), requestError$)
+      merge(fromEvent<MessageEvent<MessageEnvelope<TopicMessage>>>(clientReplyPort, 'message'), requestError$)
         .pipe(
-          filterByChannel<TopicMessage<T>>(MessagingChannel.Topic),
           pluckMessage(),
           decorateObservable(),
           takeUntil(merge(this._platformStopping$, unsubscribe$)),
-          finalize(() => this.unsubscribe({unsubscribeChannel: MessagingChannel.TopicUnsubscribe, subscriberId, logContext: `[subscriberId=${subscriberId}, topic=${replyTo}]`})),
+          finalize(() => {
+            this.unsubscribe({unsubscribeChannel: MessagingChannel.TopicUnsubscribe, subscriberId, logContext: `[subscriberId=${subscriberId}, topic=${replyTo}]`})
+            clientReplyPort.close();
+          }),
         )
         .subscribe({
           next: reply => observer.next(reply),
@@ -232,7 +235,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
         });
 
       // Post the request to the broker.
-      this.postMessage(channel, request)
+      this.postMessage(channel, request, [brokerReplyPort])
         .catch(error => requestError$.error(error));
 
       return (): void => unsubscribe$.next();
@@ -240,7 +243,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   }
 
   public subscribe$<T extends Message>(subscriptionDescriptor: SubscriptionDescriptor): Observable<T> {
-    const {messageChannel, subscribeChannel, unsubscribeChannel, newSubscribeCommand} = subscriptionDescriptor;
+    const {subscribeChannel, unsubscribeChannel, newSubscribeCommand} = subscriptionDescriptor;
 
     return new Observable((observer: Observer<T>): TeardownLogic => {
       if (isPlatformStopped()) {
@@ -252,14 +255,21 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       const unsubscribe$ = new Subject<void>();
       const subscribeError$ = new Subject<never>();
 
+      const subscribeMessageChannel = new MessageChannel();
+      const brokerSubscribePort = subscribeMessageChannel.port1;
+      const clientSubscribePort = subscribeMessageChannel.port2;
+      clientSubscribePort.start();
+
       // Receive messages of given subscription.
-      merge(this._selectMessagesBySubscriberIdHeader.select$<MessageEvent<MessageEnvelope<T>>>(subscriberId), subscribeError$)
+      merge(fromEvent<MessageEvent<MessageEnvelope<T>>>(clientSubscribePort, 'message'), subscribeError$)
         .pipe(
-          filterByChannel<T>(messageChannel),
           pluckMessage(),
           decorateObservable(),
           takeUntil(merge(this._platformStopping$, unsubscribe$)),
-          finalize(() => this.unsubscribe({unsubscribeChannel, subscriberId, logContext: JSON.stringify(newSubscribeCommand(subscriberId))})),
+          finalize(() => {
+            this.unsubscribe({unsubscribeChannel, subscriberId, logContext: JSON.stringify(newSubscribeCommand(subscriberId))})
+            clientSubscribePort.close();
+          }),
         )
         .subscribe({
           next: message => observer.next(message),
@@ -268,7 +278,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
         });
 
       // Post the subscription to the broker.
-      this.postMessage(subscribeChannel, newSubscribeCommand(subscriberId))
+      this.postMessage(subscribeChannel, newSubscribeCommand(subscriberId), [brokerSubscribePort])
         .catch(error => subscribeError$.error(error));
 
       return (): void => unsubscribe$.next();
@@ -291,22 +301,6 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     catch (error) {
       Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(`[UnsubscribeError] Failed to unsubscribe from destination: '${logContext}'. Caused by: ${error}`);  // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
     }
-  }
-
-  /**
-   * Subscribes to messages sent to this client.
-   * Messages are dispatched to {@link _message$}.
-   */
-  private installBrokerMessageListener(session: Session): void {
-    fromEvent<MessageEvent>(window, 'message')
-      .pipe(
-        filterByWindow(session.broker.window),
-        filterByOrigin(session.broker.origin),
-        filterByTransport(MessagingTransport.BrokerToClient),
-        fixMapObjects(),
-        takeUntil(this._platformStopping$),
-      )
-      .subscribe(this._message$);
   }
 
   /**
@@ -337,28 +331,39 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
    * failed, either because the broker could not be found or because the application is not allowed to connect.
    */
   public connectToBroker(): Promise<Session> {
-    const replyTo = UUID.randomUUID();
-    const connectPromise = firstValueFrom(fromEvent<MessageEvent>(window, 'message')
+    const connectRequests$ = new Array<Observable<Session>>();
+    const done$ = new Subject<void>();
+    if (Beans.get(IS_PLATFORM_HOST)) {
+      connectRequests$.push(this.connectToBrokerCandidate$(window, window.origin));
+    }
+    else if (window === Beans.get(ɵWINDOW_TOP)) {
+      // If loading the client into the topmost window it may be integrated into a rich client, with the host running in a different browser window (remote host).
+      // The rich client then bridges messages between the windows of the client and the remote host. Since the rich client may not be able to bridge messages
+      // right away when the client loads, the client repeatedly sends a connect request until acknowledged by the remote host.
+      const windowHierarchy = this.collectWindowHierarchy();
+      timer(0, 25)
+        .pipe(takeUntil(done$))
+        .subscribe(() => {
+          windowHierarchy.forEach(window => connectRequests$.push(this.connectToBrokerCandidate$(window)));
+        });
+    }
+    else {
+      this.collectWindowHierarchy().forEach(window => connectRequests$.push(this.connectToBrokerCandidate$(window)));
+    }
+
+    return firstValueFrom(merge(...connectRequests$)
       .pipe(
-        filterByTransport(MessagingTransport.BrokerToClient),
-        filterByTopicChannel<ConnackMessage>(replyTo),
-        mergeMap((messageEvent: MessageEvent<MessageEnvelope<TopicMessage<ConnackMessage>>>) => {
-          const response: ConnackMessage | undefined = messageEvent.data.message.body;
-          if (response?.returnCode !== 'accepted') {
-            return throwError(() => Error(`${response?.returnMessage ?? 'UNEXPECTED: Empty broker discovery response'} [code: '${response?.returnCode ?? 'n/a'}']`));
-          }
-          return of<Session>({
-            clientId: response.clientId!,
-            broker: {
-              window: messageEvent.source as Window,
-              origin: messageEvent.origin,
-            },
-          });
-        }),
         timeout({first: this._brokerDiscoverTimeout, with: () => throwError(() => GatewayErrors.BROKER_DISCOVER_ERROR(this._brokerDiscoverTimeout))}),
         tap({error: error => Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(stringifyError(error))}), // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
         takeUntil(this._platformStopping$),
+        finalize(() => done$.next()),
       ));
+  }
+
+  private connectToBrokerCandidate$(target: Window, origin?: string): Observable<Session> {
+    const channel = new MessageChannel();
+    const brokerPort = channel.port1;
+    const clientPort = channel.port2;
 
     const connectMessage: MessageEnvelope = {
       transport: MessagingTransport.ClientToBroker,
@@ -368,30 +373,36 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
           .set(MessageHeaders.MessageId, UUID.randomUUID())
           .set(MessageHeaders.Timestamp, Date.now())
           .set(MessageHeaders.AppSymbolicName, this._appSymbolicName)
-          .set(MessageHeaders.ReplyTo, replyTo)
           .set(MessageHeaders.Version, Beans.get(ɵVERSION)),
       },
     };
+    target.postMessage(connectMessage, origin ?? '*', [brokerPort]);
 
-    if (Beans.get(IS_PLATFORM_HOST)) {
-      window.postMessage(connectMessage, window.origin);
-    }
-    else if (window === Beans.get(ɵWINDOW_TOP)) {
-      // If loading the client into the topmost window it may be integrated into a rich client, with the host running in a different browser window (remote host).
-      // The rich client then bridges messages between the windows of the client and the remote host. Since the rich client may not be able to bridge messages
-      // right away when the client loads, the client repeatedly sends a connect request until acknowledged by the remote host.
-      const windowHierarchy = this.collectWindowHierarchy();
-      timer(0, 25)
-        .pipe(takeUntil(connectPromise.catch(() => null)))
-        .subscribe(() => {
-          windowHierarchy.forEach(window => window.postMessage(connectMessage, '*'));
-        });
-    }
-    else {
-      this.collectWindowHierarchy().forEach(window => window.postMessage(connectMessage, '*'));
-    }
+    const unsubscribe$ = new Subject<void>();
+    return new Observable<Session>(observer => {
+      fromEvent<MessageEvent<ConnackMessage>>(clientPort, 'message')
+        .pipe(
+          mergeMap((messageEvent: MessageEvent<ConnackMessage>) => {
+            const response: ConnackMessage | undefined = messageEvent.data;
+            if (response?.returnCode !== 'accepted') {
+              return throwError(() => Error(`${response?.returnMessage ?? 'UNEXPECTED: Empty broker discovery response'} [code: '${response?.returnCode ?? 'n/a'}']`));
+            }
+            return of<Session>({
+              clientId: response.clientId!,
+              broker: {
+                window: messageEvent.source as Window,
+                origin: messageEvent.origin,
+                port: clientPort,
+              },
+            });
+          }),
+          takeUntil(unsubscribe$),
+        )
+        .subscribe(observer);
 
-    return connectPromise;
+      clientPort.start();
+      return () => unsubscribe$.next();
+    });
   }
 
   /**
@@ -417,7 +428,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     };
 
     try {
-      this._session.broker.window.postMessage(disconnectMessage, this._session.broker.origin);
+      this._session.broker.port.postMessage(disconnectMessage);
+      this._session.broker.port.close();
     }
     catch (error) {
       Beans.get(Logger, {orElseGet: NULL_LOGGER}).warn(`[ClientDisconnectError] Failed to disconnect from the broker. Caused by: ${error}`);
@@ -449,36 +461,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   public preDestroy(): void {
     this.disconnectFromBroker();
     this._platformStopping$.next();
-    this._selectMessagesByTopic.disconnect();
-    this._selectMessagesBySubscriberIdHeader.disconnect();
   }
-}
-
-/**
- * Replaces `Map` objects contained in the message with a `Map` object of the current JavaScript realm.
- *
- * Data sent from one JavaScript realm to another is serialized with the structured clone algorithm.
- * Although the algorithm supports the `Map` data type, a deserialized map object cannot be checked to be instance of `Map`.
- * This is most likely because the serialization takes place in a different realm.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
- * @see http://man.hubwiz.com/docset/JavaScript.docset/Contents/Resources/Documents/developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm.html
- */
-function fixMapObjects<T extends Message>(): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
-  return map((event: MessageEvent<MessageEnvelope<T>>): MessageEvent<MessageEnvelope<T>> => {
-    const envelope: MessageEnvelope = event.data;
-    envelope.message.headers = new Map(envelope.message.headers || []);
-
-    if (envelope.channel === MessagingChannel.Intent) {
-      const intentMessage = envelope.message as IntentMessage;
-      intentMessage.intent.params = new Map(intentMessage.intent.params || []);
-    }
-    if (envelope.channel === MessagingChannel.Topic) {
-      const topicMessage = envelope.message as TopicMessage;
-      topicMessage.params = new Map(topicMessage.params || []);
-    }
-    return event;
-  });
 }
 
 /**
@@ -498,8 +481,14 @@ function isPlatformStopped(): boolean {
 interface Session {
   clientId: string;
   broker: {
+    // TODO [MessageChannel]: I think we need this for backward compatiblity.
+    // @deprecated since version 1.0.0-rc.14; Legacy support will be removed in version 2.0.0.
     origin: string;
+    // TODO [MessageChannel]: I think we need this for backward compatiblity.
+    // @deprecated since version 1.0.0-rc.14; Legacy support will be removed in version 2.0.0.
     window: Window;
+    // TODO [MessageChannel]: I think, this should only be the connect port and must not be stored on the session
+    port: MessagePort;
   };
 }
 
@@ -524,14 +513,20 @@ namespace GatewayErrors {
 export interface SubscriptionDescriptor {
   /**
    * Channel for receiving subscribed messages.
+   *
+   * TODO [MessageChannel]: I think we do not need this anymore.
    */
   messageChannel: MessagingChannel;
   /**
    * Channel to send the subscribe request.
+   *
+   * TODO [MessageChannel]: I think we do not need this anymore.
    */
   subscribeChannel: MessagingChannel;
   /**
    * Channel to send the unsubscribe request.
+   *
+   * TODO [MessageChannel]: I think we do not need this anymore.
    */
   unsubscribeChannel: MessagingChannel;
   /**

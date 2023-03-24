@@ -119,8 +119,8 @@ export class TopicSubscriptionRegistry extends MessageSubscriptionRegistry<Topic
  */
 export class TopicSubscription extends MessageSubscription {
 
-  constructor(public readonly topic: string, subscriberId: string, client: Client) {
-    super(subscriberId, client);
+  constructor(public readonly topic: string, subscriberId: string, client: Client, port: MessagePort) {
+    super(subscriberId, client, port);
   }
 
   /**

@@ -33,10 +33,10 @@ describe('MessageSubscriptionRegistry', () => {
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
 
-    const subscription1 = new MessageSubscription('subscriber#1', client1);
-    const subscription2 = new MessageSubscription('subscriber#2', client1);
-    const subscription3 = new MessageSubscription('subscriber#3', client2);
-    const subscription4 = new MessageSubscription('subscriber#4', client2);
+    const subscription1 = new MessageSubscription('subscriber#1', client1, newMessagePort());
+    const subscription2 = new MessageSubscription('subscriber#2', client1, newMessagePort());
+    const subscription3 = new MessageSubscription('subscriber#3', client2, newMessagePort());
+    const subscription4 = new MessageSubscription('subscriber#4', client2, newMessagePort());
 
     testee.register(subscription1);
     testee.register(subscription2);
@@ -68,10 +68,10 @@ describe('MessageSubscriptionRegistry', () => {
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
 
-    const subscription1 = new MessageSubscription('subscriber#1', client1);
-    const subscription2 = new MessageSubscription('subscriber#2', client1);
-    const subscription3 = new MessageSubscription('subscriber#3', client2);
-    const subscription4 = new MessageSubscription('subscriber#4', client2);
+    const subscription1 = new MessageSubscription('subscriber#1', client1, newMessagePort());
+    const subscription2 = new MessageSubscription('subscriber#2', client1, newMessagePort());
+    const subscription3 = new MessageSubscription('subscriber#3', client2, newMessagePort());
+    const subscription4 = new MessageSubscription('subscriber#4', client2, newMessagePort());
 
     testee.register(subscription1);
     testee.register(subscription2);
@@ -103,9 +103,9 @@ describe('MessageSubscriptionRegistry', () => {
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
 
-    const subscription1 = new MessageSubscription('subscriber#1', client1);
-    const subscription2 = new MessageSubscription('subscriber#2', client1);
-    const subscription3 = new MessageSubscription('subscriber#3', client2);
+    const subscription1 = new MessageSubscription('subscriber#1', client1, newMessagePort());
+    const subscription2 = new MessageSubscription('subscriber#2', client1, newMessagePort());
+    const subscription3 = new MessageSubscription('subscriber#3', client2, newMessagePort());
 
     testee.register(subscription1);
     testee.register(subscription2);
@@ -149,14 +149,14 @@ describe('MessageSubscriptionRegistry', () => {
     testee.register$.subscribe(registerCaptor);
 
     // WHEN registering a subscription
-    testee.register(new MessageSubscription('subscriber#1', client));
+    testee.register(new MessageSubscription('subscriber#1', client, newMessagePort()));
     expect(registerCaptor.getValues()).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
     ]);
     registerCaptor.reset();
 
     // WHEN registering a subscription
-    testee.register(new MessageSubscription('subscriber#2', client));
+    testee.register(new MessageSubscription('subscriber#2', client, newMessagePort()));
     expect(registerCaptor.getValues()).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#2'}),
     ]);
@@ -171,10 +171,10 @@ describe('MessageSubscriptionRegistry', () => {
     const unregisterCaptor = new ObserveCaptor();
     testee.unregister$.subscribe(unregisterCaptor);
 
-    const subscription1 = new MessageSubscription('subscriber#1', client1);
-    const subscription2 = new MessageSubscription('subscriber#2', client1);
-    const subscription3 = new MessageSubscription('subscriber#3', client2);
-    const subscription4 = new MessageSubscription('subscriber#4', client2);
+    const subscription1 = new MessageSubscription('subscriber#1', client1, newMessagePort());
+    const subscription2 = new MessageSubscription('subscriber#2', client1, newMessagePort());
+    const subscription3 = new MessageSubscription('subscriber#3', client2, newMessagePort());
+    const subscription4 = new MessageSubscription('subscriber#4', client2, newMessagePort());
 
     testee.register(subscription1);
     testee.register(subscription2);
@@ -213,8 +213,8 @@ describe('MessageSubscriptionRegistry', () => {
     const testee = Beans.get(MessageSubscriptionRegistry);
     const client = newClient({id: 'client#1'});
 
-    testee.register(new MessageSubscription('subscriber#1', client));
-    testee.register(new MessageSubscription('subscriber#2', client));
+    testee.register(new MessageSubscription('subscriber#1', client, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#2', client, newMessagePort()));
 
     expect(testee.subscriptions()).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
@@ -226,8 +226,8 @@ describe('MessageSubscriptionRegistry', () => {
     const testee = Beans.get(MessageSubscriptionRegistry);
     const client = newClient({id: 'client#1'});
 
-    testee.register(new MessageSubscription('subscriber#1', client));
-    testee.register(new MessageSubscription('subscriber#2', client));
+    testee.register(new MessageSubscription('subscriber#1', client, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#2', client, newMessagePort()));
 
     expect(testee.subscriptions({subscriberId: 'subscriber#1'})).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
@@ -242,10 +242,10 @@ describe('MessageSubscriptionRegistry', () => {
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
 
-    testee.register(new MessageSubscription('subscriber#1', client1));
-    testee.register(new MessageSubscription('subscriber#2', client1));
-    testee.register(new MessageSubscription('subscriber#3', client2));
-    testee.register(new MessageSubscription('subscriber#4', client2));
+    testee.register(new MessageSubscription('subscriber#1', client1, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#2', client1, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#3', client2, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#4', client2, newMessagePort()));
 
     expect(testee.subscriptions({clientId: client1.id})).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
@@ -264,14 +264,14 @@ describe('MessageSubscriptionRegistry', () => {
     const client3 = newClient({id: 'client#3', appSymbolicName: 'app2'});
     const client4 = newClient({id: 'client#4', appSymbolicName: 'app2'});
 
-    testee.register(new MessageSubscription('subscriber#1', client1));
-    testee.register(new MessageSubscription('subscriber#2', client1));
-    testee.register(new MessageSubscription('subscriber#3', client2));
-    testee.register(new MessageSubscription('subscriber#4', client2));
-    testee.register(new MessageSubscription('subscriber#5', client3));
-    testee.register(new MessageSubscription('subscriber#6', client3));
-    testee.register(new MessageSubscription('subscriber#7', client4));
-    testee.register(new MessageSubscription('subscriber#8', client4));
+    testee.register(new MessageSubscription('subscriber#1', client1, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#2', client1, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#3', client2, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#4', client2, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#5', client3, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#6', client3, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#7', client4, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#8', client4, newMessagePort()));
 
     expect(testee.subscriptions({appSymbolicName: 'app1'})).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
@@ -294,14 +294,14 @@ describe('MessageSubscriptionRegistry', () => {
     const client3 = newClient({id: 'client#3', appSymbolicName: 'app2'});
     const client4 = newClient({id: 'client#4', appSymbolicName: 'app2'});
 
-    testee.register(new MessageSubscription('subscriber#1', client1));
-    testee.register(new MessageSubscription('subscriber#2', client1));
-    testee.register(new MessageSubscription('subscriber#3', client2));
-    testee.register(new MessageSubscription('subscriber#4', client2));
-    testee.register(new MessageSubscription('subscriber#5', client3));
-    testee.register(new MessageSubscription('subscriber#6', client3));
-    testee.register(new MessageSubscription('subscriber#7', client4));
-    testee.register(new MessageSubscription('subscriber#8', client4));
+    testee.register(new MessageSubscription('subscriber#1', client1, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#2', client1, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#3', client2, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#4', client2, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#5', client3, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#6', client3, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#7', client4, newMessagePort()));
+    testee.register(new MessageSubscription('subscriber#8', client4, newMessagePort()));
 
     expect(testee.subscriptions({clientId: client1.id, appSymbolicName: 'app1'})).toEqual([
       jasmine.objectContaining({subscriberId: 'subscriber#1'}),
@@ -331,3 +331,6 @@ function newClient(descriptor: {id: string; appSymbolicName?: string}): Client {
   } as Client;
 }
 
+function newMessagePort(): MessagePort {
+  return new MessageChannel().port1;
+}

@@ -176,6 +176,8 @@ export enum MessageHeaders {
   /**
    * Unique identity of a message or intent subscriber.
    *
+   * TODO [MessageChannel]: I think we do not need this anymore.
+   *
    * @internal
    */
   ɵSubscriberId = 'ɵSUBSCRIBER_ID',

@@ -155,6 +155,6 @@ export class MessageSubscription {
    */
   public notifyUnsubscribe!: () => void;
 
-  constructor(public readonly subscriberId: string, public readonly client: Client) {
+  constructor(public readonly subscriberId: string, public readonly client: Client, public readonly port: MessagePort) {
   }
 }
