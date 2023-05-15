@@ -212,7 +212,7 @@ To migrate:
   <summary><strong>Deprecation Policy</strong></summary>
   <br>
 
-You can deprecate API in any version. However, it will still be present in the next major release. Removal of deprecated API will occur only in a major release.
+You can deprecate an API in any version. Deprecated APIs are only removed in a major release.
 
 When deprecating API, mark it with the `@deprecated` JSDoc comment tag and include the current library version. Optionally, you can also specify which API to use instead, as following: 
 

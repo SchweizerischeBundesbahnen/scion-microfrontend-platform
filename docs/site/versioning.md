@@ -20,7 +20,9 @@ Patch versions fix bugs or optimize existing features without breaking changes.
   <img src="/docs/adoc/microfrontend-platform-developer-guide/images/semver.svg" alt="Versioning">
 </p>
 
-We are aware that you need stability from the SCION Microfrontend Platform, primarily because microfrontends with potential different lifecycles are involved. Therefore, you can expect a decent release cycle of one or two major releases per year. Changes in the communication protocol between the host and micro applications are backward compatible with the previous major version. When deprecating API, which can occur in any release, it will still be present in the next major release. Removal of deprecated API will occur only in a major release.
+We are aware that you need stability from the SCION Microfrontend Platform, primarily because microfrontends with potential different lifecycles are involved. Therefore, you can expect a decent release cycle of one or two major releases per year with strict [semantic versioning](https://semver.org) policy. Changes to the communication protocol between the host and micro applications are backward compatible in the same major release. This allows for the host and its clients to update independently.
+
+Deprecation of APIs can occur in any release. Deprecated APIs are only removed in a major release.
 
 [menu-home]: /README.md
 [menu-projects-overview]: /docs/site/projects-overview.md
