@@ -1273,7 +1273,6 @@ describe('Messaging', () => {
               {
                 type: 'capability',
                 params: [{name: 'param1', required: true}],
-                requiredParams: ['param2'], // legacy notation
               },
             ],
           },
@@ -1284,8 +1283,8 @@ describe('Messaging', () => {
       // publish
       const observeCaptor = new ObserveCaptor(paramsExtractFn);
       Beans.get(IntentClient).observe$<string>({type: 'capability'}).subscribe(observeCaptor);
-      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1').set('param2', 'value2')});
-      await expectEmissions(observeCaptor).toEqual(new Map().set('param1', 'value1').set('param2', 'value2'));
+      await Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')});
+      await expectEmissions(observeCaptor).toEqual(new Map().set('param1', 'value1'));
     });
 
     it('should preserve data type of passed intent parameters', async () => {
@@ -1405,7 +1404,6 @@ describe('Messaging', () => {
               {
                 type: 'capability',
                 params: [{name: 'param1', required: false}],
-                optionalParams: ['param2'], // legacy notation
               },
             ],
           },
@@ -1429,7 +1427,6 @@ describe('Messaging', () => {
               {
                 type: 'capability',
                 params: [{name: 'param1', required: true}],
-                requiredParams: ['param2'], // legacy notation
               },
             ],
           },
@@ -1438,9 +1435,8 @@ describe('Messaging', () => {
       });
 
       // publish
-      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')})).toReject(/\[IntentParamValidationError].*missingParams=\[param2]/);
-      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param2', 'value2')})).toReject(/\[IntentParamValidationError].*missingParams=\[param1]/);
-      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1').set('param2', 'value2')})).toResolve();
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability'})).toReject(/\[IntentParamValidationError].*missingParams=\[param1]/);
+      await expectPromise(Beans.get(IntentClient).publish({type: 'capability', params: new Map().set('param1', 'value1')})).toResolve();
     });
 
     it('should reject an intent if it includes non-specified parameter', async () => {

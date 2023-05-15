@@ -19,7 +19,6 @@ import {filterArray} from '@scion/toolkit/operators';
 import {ManifestRegistry} from './manifest-registry';
 import {QualifierMatcher} from '../../qualifier-matcher';
 import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
-import {Logger, LoggingContext} from '../../logger';
 import {ClientRegistry} from '../client-registry/client.registry';
 import {CapabilityInterceptor} from './capability-interceptors';
 import {UUID} from '@scion/toolkit/uuid';
@@ -122,18 +121,18 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     if (!capability.type) {
       throw Error('[CapabilityRegisterError] Missing capability property: type');
     }
-    const illegalQualifierError = Qualifiers.validateLegacyCapabilityQualifier(capability.qualifier) || Qualifiers.validateQualifier(capability.qualifier, {exactQualifier: true});
+    const illegalQualifierError = Qualifiers.validateQualifier(capability.qualifier, {exactQualifier: true});
     if (illegalQualifierError) {
       throw illegalQualifierError;
     }
+
+    assertCapabilityParamDefinitions(capability.params);
 
     // Let the host app intercept the capability to register.
     const capabilityToRegister = await interceptCapability({
       ...capability,
       qualifier: capability.qualifier ?? {},
-      params: coerceCapabilityParamDefinitions(capability, appSymbolicName),
-      requiredParams: undefined,
-      optionalParams: undefined,
+      params: capability.params ?? [],
       private: capability.private ?? true,
       metadata: {
         id: UUID.randomUUID(),
@@ -157,7 +156,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     if (!intention.type) {
       throw Error('[IntentionRegisterError] Missing intention property: type');
     }
-    const illegalQualifierError = Qualifiers.validateLegacyIntentionQualifier(intention.qualifier) || Qualifiers.validateQualifier(intention.qualifier, {exactQualifier: false});
+    const illegalQualifierError = Qualifiers.validateQualifier(intention.qualifier, {exactQualifier: false});
     if (illegalQualifierError) {
       throw illegalQualifierError;
     }
@@ -284,31 +283,14 @@ function assertIntentionRegisterApiEnabled(appSymbolicName: string): void {
   }
 }
 
-function coerceCapabilityParamDefinitions(capability: Capability, appSymbolicName: string): ParamDefinition[] {
-  const params: ParamDefinition[] = [];
-
-  capability.requiredParams?.forEach(name => { // eslint-disable-line deprecation/deprecation
-    params.push({name, required: true});
-    const migration = `{ params: [{name: '${name}', required: true}] }`;
-    Beans.get(Logger).warn(`[DEPRECATION][AC3A912] The '${appSymbolicName}' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, new LoggingContext(appSymbolicName), capability);
-  });
-  capability.optionalParams?.forEach(name => { // eslint-disable-line deprecation/deprecation
-    params.push({name, required: false});
-    const migration = `{ params: [{name: '${name}', required: false}] }`;
-    Beans.get(Logger).warn(`[DEPRECATION][97C70E9] The '${appSymbolicName}' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: ${migration}`, new LoggingContext(appSymbolicName), capability);
-  });
-  capability.params?.forEach(param => {
-    params.push(param);
-  });
-
-  assertCapabilityParamDefinitions(params);
-  return params;
-}
-
 /**
  * Asserts given parameter definitions to be valid.
  */
-function assertCapabilityParamDefinitions(params: ParamDefinition[]): void {
+function assertCapabilityParamDefinitions(params: ParamDefinition[] | undefined): void {
+  if (!params?.length) {
+    return;
+  }
+
   const validSubstitutes = params.filter(param => !param.deprecated).map(param => param.name);
 
   params.forEach(param => {

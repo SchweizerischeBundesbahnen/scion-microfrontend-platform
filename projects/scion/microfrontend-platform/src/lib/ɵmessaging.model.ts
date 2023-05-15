@@ -163,10 +163,6 @@ export interface ConnackMessage {
    * Unique id assigned to the client by the broker. Is only set on success.
    */
   clientId?: string;
-  /**
-   * @deprecated since version 1.0.0-rc.11; Legacy support will be removed in version 2.0.0.
-   */
-  heartbeatInterval?: number;
 }
 
 /**

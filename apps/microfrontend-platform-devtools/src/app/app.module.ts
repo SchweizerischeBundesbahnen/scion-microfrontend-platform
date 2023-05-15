@@ -44,6 +44,9 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {A11yModule} from '@angular/cdk/a11y';
 import {AppNamePipe} from './app-name.pipe';
 import {CustomParamMetadataPipe} from './custom-param-metadata.pipe';
+import {ParamsFilterPipe} from './params-filter.pipe';
+import {NullIfEmptyPipe} from './null-if-empty.pipe';
+import {JoinPipe} from './join.pipe';
 
 @NgModule({
   declarations: [
@@ -64,6 +67,9 @@ import {CustomParamMetadataPipe} from './custom-param-metadata.pipe';
     QualifierChipListComponent,
     AppNamePipe,
     CustomParamMetadataPipe,
+    ParamsFilterPipe,
+    NullIfEmptyPipe,
+    JoinPipe,
   ],
   imports: [
     BrowserModule,
