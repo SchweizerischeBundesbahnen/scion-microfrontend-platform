@@ -1,3 +1,23 @@
+# [1.0.0](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.13...1.0.0) (2023-05-15)
+
+
+### chore
+
+* **platform:** drop deprecated API and backward compatibility ([ccae819](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/ccae819726aeb3401c7dde31ac8d805d2183fdf1)), closes [#196](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/196)
+
+
+### BREAKING CHANGES
+
+* **platform:** dropping deprecated API and backward compatibility introduced a breaking change for host and client applications.
+
+  To migrate:
+  - Update host and clients to version `1.0.0-rc.13` or higher.
+  - Deprecated property `ManifestService.lookupApplications$ ` has been removed; use `ManifestService.applications` instead.
+  - Deprecated property `Capability.requiredParams` has been removed; declare required parameters via `Capability.params` instead and mark it as required.
+  - Deprecated property `Capability.optionalParams` has been removed; declare optional parameters via `Capability.params` instead and mark it as non-required.
+
+
+
 # [1.0.0-rc.13](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.12...1.0.0-rc.13) (2023-03-10)
 
 
