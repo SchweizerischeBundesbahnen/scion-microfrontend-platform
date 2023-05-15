@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {Capability} from '@scion/microfrontend-platform';
+import {Capability, ParamDefinition} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
 import {Observable, ReplaySubject} from 'rxjs';
 import {expand, map, switchMap, take} from 'rxjs/operators';
@@ -76,4 +76,6 @@ export class RequiredCapabilitiesComponent implements OnChanges {
   public trackByCapabilityFn(index: number, capability: Capability): string {
     return capability.metadata.id;
   }
+
+  public paramNameFn = (param: ParamDefinition): string => param.name;
 }

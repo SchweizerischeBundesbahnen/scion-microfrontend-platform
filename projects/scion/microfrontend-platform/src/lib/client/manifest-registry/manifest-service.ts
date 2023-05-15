@@ -11,7 +11,6 @@
 import {firstValueFrom, lastValueFrom, Observable, OperatorFunction} from 'rxjs';
 import {MessageClient} from '../messaging/message-client';
 import {Application, Capability, Intention, ManifestObjectFilter} from '../../platform.model';
-import {take} from 'rxjs/operators';
 import {PlatformTopics} from '../../ɵmessaging.model';
 import {mapToBody} from '../../messaging.model';
 import {Beans, Initializer} from '@scion/toolkit/bean-manager';
@@ -51,21 +50,6 @@ export class ManifestService implements Initializer {
    */
   public get applications(): ReadonlyArray<Application> {
     return this._applications;
-  }
-
-  /**
-   * Allows to lookup the applications installed in the platform.
-   *
-   * @return an Observable that emits the applications in the platform and then completes.
-   * @deprecated since version 1.0.0-beta.8. Use {@link applications} instead.
-   */
-  public lookupApplications$(): Observable<Application[]> {
-    return Beans.get(MessageClient).observe$<ɵApplication[]>(PlatformTopics.Applications)
-      .pipe(
-        take(1),
-        mapToBody(),
-        mapToApplication(),
-      );
   }
 
   /**

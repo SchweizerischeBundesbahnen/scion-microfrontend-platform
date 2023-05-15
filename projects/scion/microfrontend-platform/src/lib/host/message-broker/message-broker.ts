@@ -181,9 +181,6 @@ export class MessageBroker implements Initializer, PreDestroy {
             body: {
               returnCode: 'accepted',
               clientId: currentClient.id,
-              // Clients older than version `1.0.0-rc.11` expect the host to include the heartbeat interval in the connect acknowledgment.
-              // If not, they would send a heartbeat constantly, thus overloading the message bus.
-              ...(currentClient.deprecations.legacyHeartbeatLivenessProtocol ? {heartbeatInterval: 24 * 60 * 60 * 1000} as Partial<ConnackMessage> : {}),
             },
             headers: new Map(),
           });
@@ -203,9 +200,6 @@ export class MessageBroker implements Initializer, PreDestroy {
           body: {
             returnCode: 'accepted',
             clientId: client.id,
-            // Clients older than version `1.0.0-rc.11` expect the host to include the heartbeat interval in the connect acknowledgment.
-            // If not, they would send a heartbeat constantly, thus overloading the message bus.
-            ...(client.deprecations.legacyHeartbeatLivenessProtocol ? {heartbeatInterval: 24 * 60 * 60 * 1000} as Partial<ConnackMessage> : {}),
           },
           headers: new Map(),
         });
@@ -585,9 +579,6 @@ export class MessageBroker implements Initializer, PreDestroy {
     if (!isRequest(message)) {
       return null;
     }
-    if (sender.deprecations.legacyRequestResponseSubscriptionProtocol) {
-      return null;
-    }
 
     const subscriberId = Defined.orElseThrow(message.headers.get(MessageHeaders.ɵSubscriberId), () => Error('[MessagingError] Missing message header: subscriberId'));
     const replyTo = message.headers.get(MessageHeaders.ReplyTo);
@@ -742,7 +733,7 @@ function sendTopicMessage<T>(target: MessageTarget | Client | TopicSubscription,
   else if (target instanceof TopicSubscription) {
     const subscription = target;
     const client = subscription.client;
-    envelope.message.headers.set(client.deprecations.legacyIntentSubscriptionProtocol ? 'ɵTOPIC_SUBSCRIBER_ID' : MessageHeaders.ɵSubscriberId, target.subscriberId);
+    envelope.message.headers.set(MessageHeaders.ɵSubscriberId, target.subscriberId);
     envelope.message.params = new TopicMatcher(subscription.topic).match(message.topic).params;
     !client.stale && client.window.postMessage(envelope, client.origin);
   }

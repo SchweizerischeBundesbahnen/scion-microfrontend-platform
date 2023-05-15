@@ -39,39 +39,4 @@ export namespace Qualifiers {
     }
     return null;
   }
-
-  /**
-   * Validates given intention qualifier. If it contains legacy wildcard entries, returns an error with instructions on how to migrate.
-   *
-   * @deprecated TODO [#196]: Remove this assertion in a future release.
-   */
-  export function validateLegacyIntentionQualifier(qualifier: Qualifier | null | undefined): Error | null {
-    if (!qualifier || Object.keys(qualifier).length === 0) {
-      return null;
-    }
-    if (Object.values(qualifier).some(value => value === '?')) {
-      return Error('[IllegalQualifierError] Optional wildcard (\'?\') not allowed in the intention qualifier anymore. To migrate, define optional params in the capability instead.');
-    }
-    return null;
-  }
-  /**
-   * Validates given capability qualifier. If it contains legacy wildcard entries, returns an error with instructions on how to migrate.
-   *
-   * @deprecated TODO [#196]: Remove this assertion in a future release.
-   */
-  export function validateLegacyCapabilityQualifier(qualifier: Qualifier | null | undefined): Error | null {
-    if (!qualifier || Object.keys(qualifier).length === 0) {
-      return null;
-    }
-    if (Object.keys(qualifier).some(key => key === '*')) {
-      return Error('[IllegalQualifierError] Asterisk wildcard (\'*\') not allowed in the capability qualifier anymore. To migrate, use required or optional params instead.');
-    }
-    if (Object.values(qualifier).some(value => value === '?')) {
-      return Error('[IllegalQualifierError] Optional wildcard (\'?\') not allowed in the capability qualifier anymore. To migrate, use optional params instead.');
-    }
-    if (Object.values(qualifier).some(value => value === '*')) {
-      return Error('[IllegalQualifierError] Asterisk wildcard (\'*\') not allowed in the capability qualifier anymore. To migrate, use required params instead.');
-    }
-    return null;
-  }
 }

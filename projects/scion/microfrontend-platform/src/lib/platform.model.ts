@@ -141,22 +141,6 @@ export interface Capability {
    */
   qualifier?: Qualifier;
   /**
-   * Specifies parameters which the intent issuer must pass along with the intent.
-   * Parameters are part of the contract between the intent publisher and the capability provider.
-   * They do not affect the intent routing, unlike the qualifier.
-   *
-   * @deprecated This API will be removed in a future release. Instead, declare parameters via {@link Capability.params} property.
-   */
-  requiredParams?: string[];
-  /**
-   * Specifies parameters which the intent issuer optionally can pass along with the intent.
-   * Parameters are part of the contract between the intent publisher and the capability provider.
-   * They do not affect the intent routing, unlike the qualifier.
-   *
-   * @deprecated This API will be removed in a future release. Instead, declare parameters via {@link Capability.params} property.
-   */
-  optionalParams?: string[];
-  /**
    * Specifies parameters which the intent issuer can/must pass along with the intent.
    *
    * Parameters are part of the contract between the intent publisher and the capability provider.

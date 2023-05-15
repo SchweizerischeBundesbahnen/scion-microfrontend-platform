@@ -47,24 +47,6 @@ export interface Client {
   readonly stale: boolean;
 
   /**
-   * Deprecated APIs used by the client.
-   */
-  readonly deprecations: {
-    /**
-     * @deprecated since version 1.0.0-rc.8; Legacy support will be removed in version 2.0.0.
-     */
-    legacyIntentSubscriptionProtocol: boolean;
-    /**
-     * @deprecated since version 1.0.0-rc.9; Legacy support will be removed in version 2.0.0.
-     */
-    legacyRequestResponseSubscriptionProtocol: boolean;
-    /**
-     * @deprecated since version 1.0.0-rc.11; Legacy support will be removed in version 2.0.0.
-     */
-    legacyHeartbeatLivenessProtocol: boolean;
-  };
-
-  /**
    * Releases resources allocated by this client.
    */
   dispose(): void;

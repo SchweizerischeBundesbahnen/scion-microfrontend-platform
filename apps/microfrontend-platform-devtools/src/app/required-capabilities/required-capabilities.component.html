@@ -23,17 +23,17 @@
             <span>{{selectedCapability.description}}</span>
           </section>
 
-          <section class="required-params" *ngIf="selectedCapability.requiredParams && selectedCapability.requiredParams.length">
+          <section class="required-params" *ngIf="selectedCapability.params | devtoolsParamsFilter:'required' | devtoolsNullIfEmpty as requiredParams ">
             <header>Required Params:</header>
-            {{selectedCapability.requiredParams.join(', ')}}
+            {{requiredParams | devtoolsJoin:', ':paramNameFn}}
           </section>
 
-          <section class="optional-params" *ngIf="selectedCapability.optionalParams && selectedCapability.optionalParams.length">
+          <section class="optional-params" *ngIf="selectedCapability.params | devtoolsParamsFilter:'optional' | devtoolsNullIfEmpty as optionalParams">
             <header>Optional Params:</header>
-            {{selectedCapability.optionalParams.join(', ')}}
+            {{optionalParams | devtoolsJoin:', ':paramNameFn}}
           </section>
 
-          <section class="properties" *ngIf="selectedCapability.properties">
+          <section class="properties" *ngIf="selectedCapability.properties | devtoolsNullIfEmpty">
             <header>Properties:</header>
             <sci-property [properties]="selectedCapability.properties"></sci-property>
           </section>

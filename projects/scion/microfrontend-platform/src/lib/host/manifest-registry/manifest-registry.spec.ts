@@ -17,7 +17,7 @@ import {ManifestService} from '../../client/manifest-registry/manifest-service';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 import {firstValueFrom} from 'rxjs';
-import {CapabilityInterceptor} from '../manifest-registry/capability-interceptors';
+import {CapabilityInterceptor} from './capability-interceptors';
 import CallInfo = jasmine.CallInfo;
 
 const capabilityIdExtractFn = (capability: Capability): string => capability.metadata.id;
@@ -272,7 +272,7 @@ describe('ManifestRegistry', () => {
       applications: [],
     });
 
-    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'host-app')).toBeRejectedWithError('[IllegalQualifierError] Asterisk wildcard (\'*\') not allowed in the capability qualifier anymore. To migrate, use required or optional params instead.');
+    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'host-app')).toBeRejectedWithError('[IllegalQualifierError] Qualifier must be exact, i.e., not contain wildcards. [qualifier=\'{"entity":"person","*":"*"}\']');
   });
 
   it('should not allow registering a capability using the asterisk wildcard (*) in its qualifier', async () => {
@@ -281,29 +281,11 @@ describe('ManifestRegistry', () => {
       applications: [],
     });
 
-    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toBeRejectedWithError('[IllegalQualifierError] Asterisk wildcard (\'*\') not allowed in the capability qualifier anymore. To migrate, use required params instead.');
-  });
-
-  it('should not allow registering a capability using the optional wildcard (?) in its qualifier', async () => {
-    await MicrofrontendPlatformHost.start({
-      host: {symbolicName: 'host-app'},
-      applications: [],
-    });
-
-    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: '?'}}, 'host-app')).toBeRejectedWithError('[IllegalQualifierError] Optional wildcard (\'?\') not allowed in the capability qualifier anymore. To migrate, use optional params instead.');
-  });
-
-  it('should not allow registering an intention using the optional wildcard (?) in its qualifier', async () => {
-    await MicrofrontendPlatformHost.start({
-      host: {symbolicName: 'host-app'},
-      applications: [],
-    });
-
-    await expect(() => Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: '?'}}, 'host-app')).toThrowError('[IllegalQualifierError] Optional wildcard (\'?\') not allowed in the intention qualifier anymore. To migrate, define optional params in the capability instead.');
+    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toBeRejectedWithError('[IllegalQualifierError] Qualifier must be exact, i.e., not contain wildcards. [qualifier=\'{"entity":"person","mode":"*"}\']');
   });
 
   describe('Capability Params', () => {
-    it('should register params and support legacy param declaration (via manifest)', async () => {
+    it('should register params (via manifest)', async () => {
       // Register capability via manifest
       await MicrofrontendPlatformHost.start({
         host: {
@@ -317,20 +299,12 @@ describe('ManifestRegistry', () => {
                   {name: 'param1', required: true},
                   {name: 'param2', required: false},
                 ],
-                requiredParams: ['param3'], // deprecated; expect legacy support
-                optionalParams: ['param4'], // deprecated; expect legacy support
               },
             ],
           },
         },
         applications: [],
       });
-
-      // Assert deprecation warning
-      expect(readConsoleLog('warn')).toEqual(jasmine.arrayContaining([
-        `[DEPRECATION][AC3A912] The 'host-app' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param3', required: true}] }`,
-        `[DEPRECATION][97C70E9] The 'host-app' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param4', required: false}] }`,
-      ]));
 
       // Assert registration
       const captor = new ObserveCaptor();
@@ -340,15 +314,11 @@ describe('ManifestRegistry', () => {
         params: jasmine.arrayWithExactContents([
           {name: 'param1', required: true},
           {name: 'param2', required: false},
-          {name: 'param3', required: true},
-          {name: 'param4', required: false},
         ]),
-        optionalParams: undefined,
-        requiredParams: undefined,
       })]]);
     });
 
-    it('should register params and support legacy param declaration (via ManifestService)', async () => {
+    it('should register params (via ManifestService)', async () => {
       await MicrofrontendPlatformHost.start({
         host: {symbolicName: 'host-app'},
         applications: [],
@@ -361,15 +331,7 @@ describe('ManifestRegistry', () => {
           {name: 'param1', required: true},
           {name: 'param2', required: false},
         ],
-        requiredParams: ['param3'], // deprecated; expect legacy support
-        optionalParams: ['param4'], // deprecated; expect legacy support
       });
-
-      // Assert deprecation warning
-      expect(readConsoleLog('warn')).toEqual(jasmine.arrayContaining([
-        `[DEPRECATION][AC3A912] The 'host-app' application uses a deprecated API for declaring required parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param3', required: true}] }`,
-        `[DEPRECATION][97C70E9] The 'host-app' application uses a deprecated API for declaring optional parameters of a capability. The API will be removed in a future release. To migrate, declare parameters by using the 'Capability#params' property, as follows: { params: [{name: 'param4', required: false}] }`,
-      ]));
 
       // Assert registration
       const captor = new ObserveCaptor();
@@ -379,11 +341,7 @@ describe('ManifestRegistry', () => {
         params: jasmine.arrayWithExactContents([
           {name: 'param1', required: true},
           {name: 'param2', required: false},
-          {name: 'param3', required: true},
-          {name: 'param4', required: false},
         ]),
-        optionalParams: undefined,
-        requiredParams: undefined,
       })]]);
     });
 
