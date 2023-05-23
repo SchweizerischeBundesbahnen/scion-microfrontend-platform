@@ -20,14 +20,14 @@ export class NullIfEmptyPipe implements PipeTransform {
     if (value === null || value === undefined) {
       return null;
     }
-    else if ((value instanceof Map || value instanceof Set) && !value.size) {
-      return null;
+    else if (value instanceof Map || value instanceof Set) {
+      return value.size ? value : null;
     }
-    else if ((Array.isArray(value) || typeof value === 'string') && !value.length) {
-      return null;
+    else if (Array.isArray(value) || typeof value === 'string') {
+      return value.length ? value : null;
     }
-    else if (typeof value === 'object' && !Object.keys(value).length) {
-      return null;
+    else if (typeof value === 'object') {
+      return Object.keys(value).length ? value : null;
     }
     return value;
   }
