@@ -17,11 +17,6 @@ SCION provides fundamental building blocks for implementing a microfrontend arch
 - [**SCION Toolkit**][link-scion-toolkit]\
   SCION Toolkit is a collection of Angular components and utilities designed primarily for use in SCION libraries such as [@scion/workbench][link-scion-workbench] and [@scion/microfrontend-platform][link-scion-microfrontend-platform].
 
-- [<del>**SCION Application Platform**</del> <img src="/docs/logo/angular.svg" alt="Angular-specific" title="Angular-specific">][link-scion-application-platform] **(END-OF-LIFE)**\
-  SCION Workbench Application Platform is an extension of SCION Workbench to integrate content from multiple web applications in a coherent way, thus enabling a micro frontend architecture for allowing different front-end frameworks to co-exist and independent delivery.
-  
-  > The development of the SCION Application Platform was discontinued in favour of the new SCION Microfrontend Platform. SCION Microfrontend Platform is extremely lightweight and does not depend on SCION Workbench and Angular.
-   
 ***
 
 [menu-home]: /README.md
@@ -33,5 +28,3 @@ SCION provides fundamental building blocks for implementing a microfrontend arch
 [link-scion-microfrontend-platform]: /README.md
 [link-scion-workbench]: https://github.com/SchweizerischeBundesbahnen/scion-workbench/blob/master/README.md
 [link-scion-toolkit]: https://github.com/SchweizerischeBundesbahnen/scion-toolkit/blob/master/README.md
-[link-scion-application-platform]: https://github.com/SchweizerischeBundesbahnen/scion-workbench/blob/master/docs/site/application-platform/README.md
-
