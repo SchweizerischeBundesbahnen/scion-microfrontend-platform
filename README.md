@@ -46,8 +46,7 @@ SCION Microfrontend Platform enables you to successfully implement a framework-a
 ***
 
 
-[![Project version](https://img.shields.io/npm/v/@scion/microfrontend-platform.svg)][link-download]
-[![Project version](https://img.shields.io/npm/v/@scion/microfrontend-platform/next.svg)][link-download]
+[![@scion/microfrontend-platform version](https://img.shields.io/npm/v/@scion/microfrontend-platform/latest?label=%40scion%2Fmicrofrontend-platform)][link-download]
 [![Continuous Integration and Delivery][link-github-actions-workflow:status]][link-github-actions-workflow]
 
 
