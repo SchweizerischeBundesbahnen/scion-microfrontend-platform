@@ -9,12 +9,18 @@
  */
 import {Component, OnDestroy} from '@angular/core';
 import {IntentClient, MessageClient, Qualifier, TopicMessage} from '@scion/microfrontend-platform';
-import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {Subject, Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith, takeUntil} from 'rxjs/operators';
-import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
+import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {coerceBooleanProperty, coerceNumberProperty} from '@angular/cdk/coercion';
+import {AsyncPipe, NgFor, NgIf} from '@angular/common';
+import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {TopicSubscriberCountPipe} from '../topic-subscriber-count.pipe';
+import {SciListModule} from '@scion/components.internal/list';
+import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
 
 export const FLAVOR = 'flavor';
 export const DESTINATION = 'destination';
@@ -35,8 +41,21 @@ enum MessagingFlavor {
   selector: 'app-publish-message',
   templateUrl: './publish-message.component.html',
   styleUrls: ['./publish-message.component.scss'],
+  standalone: true,
+  imports: [
+    NgIf,
+    AsyncPipe,
+    NgFor,
+    ReactiveFormsModule,
+    SciFormFieldModule,
+    SciParamsEnterModule,
+    SciCheckboxModule,
+    SciListModule,
+    TopicSubscriberCountPipe,
+    MessageListItemComponent,
+  ],
 })
-export class PublishMessageComponent implements OnDestroy {
+export default class PublishMessageComponent implements OnDestroy {
 
   public FLAVOR = FLAVOR;
   public DESTINATION = DESTINATION;

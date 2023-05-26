@@ -12,14 +12,25 @@ import {ContextService} from '@scion/microfrontend-platform';
 import {Observable, OperatorFunction} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {SciListModule} from '@scion/components.internal/list';
+import {AsyncPipe, KeyValuePipe, NgFor} from '@angular/common';
+import {ContextEntryComponent} from '../../context-entry/context-entry.component';
 
 @Component({
   selector: 'app-context',
   templateUrl: './context.component.html',
   styleUrls: ['./context.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgFor,
+    AsyncPipe,
+    KeyValuePipe,
+    SciListModule,
+    ContextEntryComponent,
+  ],
 })
-export class ContextComponent {
+export default class ContextComponent {
 
   public context$: Observable<Map<string, Observable<any>>>;
 

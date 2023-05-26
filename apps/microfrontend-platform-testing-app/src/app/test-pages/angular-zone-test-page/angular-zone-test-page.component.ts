@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component, inject, NgZone} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {NgFor, NgTemplateOutlet} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
 import {finalize, take} from 'rxjs/operators';
@@ -24,13 +24,14 @@ import {TestingAppTopics} from '../../testing-app.topics';
   styleUrls: ['./angular-zone-test-page.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
+    NgFor,
+    NgTemplateOutlet,
     FormsModule,
     SciCheckboxModule,
     SciAccordionModule,
   ],
 })
-export class AngularZoneTestPageComponent {
+export default class AngularZoneTestPageComponent {
 
   public tests = {
     messageClient: {

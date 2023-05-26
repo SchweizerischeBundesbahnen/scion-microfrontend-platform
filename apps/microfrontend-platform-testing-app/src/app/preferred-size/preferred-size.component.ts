@@ -8,11 +8,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy} from '@angular/core';
-import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {PreferredSizeService} from '@scion/microfrontend-platform';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {NgIf} from '@angular/common';
+import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciCheckboxModule} from '@scion/components.internal/checkbox';
 
 export const CSS_SIZE = 'cssSize';
 export const PREFERRED_SIZE = 'preferredSize';
@@ -25,8 +28,15 @@ export const USE_ELEMENT_SIZE = 'useElementSize';
   templateUrl: './preferred-size.component.html',
   styleUrls: ['./preferred-size.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgIf,
+    ReactiveFormsModule,
+    SciFormFieldModule,
+    SciCheckboxModule,
+  ],
 })
-export class PreferredSizeComponent implements OnDestroy {
+export default class PreferredSizeComponent implements OnDestroy {
 
   public CSS_SIZE = CSS_SIZE;
   public PREFERRED_SIZE = PREFERRED_SIZE;

@@ -10,7 +10,6 @@
 
 import {NgModule} from '@angular/core';
 import {ACTIVATION_CONTEXT, ActivationContext, APP_IDENTITY, ContextService, MessageClient} from '@scion/microfrontend-platform';
-import {RouterModule} from '@angular/router';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
@@ -18,12 +17,8 @@ import {Beans} from '@scion/toolkit/bean-manager';
  *
  * Note: This module is loaded only if loading the host app with the query parameter 'manifestClassifier=activator-progress' into the browser.
  */
-@NgModule({
-  imports: [
-    RouterModule.forChild([]),
-  ],
-})
-export class ActivatorProgressModule {
+@NgModule({})
+export default class ActivatorProgressModule {
 
   constructor() {
     const symbolicName = Beans.get<string>(APP_IDENTITY);

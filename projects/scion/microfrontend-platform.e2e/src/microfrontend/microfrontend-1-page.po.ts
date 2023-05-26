@@ -13,7 +13,7 @@ import {FrameLocator} from '@playwright/test';
 
 export class Microfrontend1PagePO extends MicrofrontendPagePO {
 
-  public static readonly PATH = 'microfrontend-1';
+  public static readonly PATH = 'test-pages/microfrontend-1-test-page';
   public readonly path = Microfrontend1PagePO.PATH;
 
   constructor(frameLocator: FrameLocator) {

@@ -9,11 +9,15 @@
  */
 import {Component, OnDestroy} from '@angular/core';
 import {IntentClient, IntentMessage, MessageClient, MessageHeaders, Qualifier, TopicMessage} from '@scion/microfrontend-platform';
-import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {Subject, Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith, takeUntil} from 'rxjs/operators';
-import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
+import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {NgFor, NgIf} from '@angular/common';
+import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciListModule} from '@scion/components.internal/list';
+import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
 
 export const FLAVOR = 'flavor';
 export const DESTINATION = 'destination';
@@ -29,8 +33,18 @@ enum MessagingFlavor {
   selector: 'app-receive-message',
   templateUrl: './receive-message.component.html',
   styleUrls: ['./receive-message.component.scss'],
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    ReactiveFormsModule,
+    SciFormFieldModule,
+    SciParamsEnterModule,
+    SciListModule,
+    MessageListItemComponent,
+  ],
 })
-export class ReceiveMessageComponent implements OnDestroy {
+export default class ReceiveMessageComponent implements OnDestroy {
 
   public FLAVOR = FLAVOR;
   public DESTINATION = DESTINATION;

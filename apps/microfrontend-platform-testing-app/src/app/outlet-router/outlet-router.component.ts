@@ -8,10 +8,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
 import {NavigationOptions, OutletRouter} from '@scion/microfrontend-platform';
-import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
+import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {NgIf} from '@angular/common';
+import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciCheckboxModule} from '@scion/components.internal/checkbox';
 
 export const OUTLET = 'outlet';
 export const USE_INTENT = 'useIntent';
@@ -24,8 +27,16 @@ export const PUSH_SESSION_HISTORY_STATE = 'pushSessionHistoryState';
   selector: 'app-outlet-router',
   templateUrl: './outlet-router.component.html',
   styleUrls: ['./outlet-router.component.scss'],
+  standalone: true,
+  imports: [
+    NgIf,
+    ReactiveFormsModule,
+    SciFormFieldModule,
+    SciCheckboxModule,
+    SciParamsEnterModule,
+  ],
 })
-export class OutletRouterComponent {
+export default class OutletRouterComponent {
 
   public OUTLET = OUTLET;
   public USE_INTENT = USE_INTENT;

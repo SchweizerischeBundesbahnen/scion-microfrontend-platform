@@ -11,7 +11,6 @@
 import {NgModule} from '@angular/core';
 import {ACTIVATION_CONTEXT, ActivationContext, APP_IDENTITY, ContextService, MessageClient, MessageHeaders} from '@scion/microfrontend-platform';
 import {TestingAppTopics} from '../testing-app.topics';
-import {RouterModule} from '@angular/router';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
@@ -19,12 +18,8 @@ import {Beans} from '@scion/toolkit/bean-manager';
  *
  * Note: This module is loaded only if loading the host app with the query parameter 'manifestClassifier=activator-readiness' into the browser.
  */
-@NgModule({
-  imports: [
-    RouterModule.forChild([]),
-  ],
-})
-export class ActivatorReadinessModule {
+@NgModule({})
+export default class ActivatorReadinessModule {
 
   constructor() {
     const symbolicName = Beans.get<string>(APP_IDENTITY);

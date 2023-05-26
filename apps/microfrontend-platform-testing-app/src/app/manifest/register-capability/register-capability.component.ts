@@ -8,11 +8,16 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {APP_IDENTITY, Capability, ManifestObjectFilter, ManifestService, ParamDefinition} from '@scion/microfrontend-platform';
-import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
+import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Observable} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {AsyncPipe, JsonPipe, NgFor, NgIf} from '@angular/common';
+import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {SciListModule} from '@scion/components.internal/list';
+import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-chip-list';
 
 const TYPE = 'type';
 const QUALIFIER = 'qualifier';
@@ -27,8 +32,21 @@ const APP_SYMBOLIC_NAME = 'appSymbolicName';
   selector: 'app-register-capability',
   templateUrl: './register-capability.component.html',
   styleUrls: ['./register-capability.component.scss'],
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    JsonPipe,
+    ReactiveFormsModule,
+    SciFormFieldModule,
+    SciParamsEnterModule,
+    SciCheckboxModule,
+    SciListModule,
+    SciQualifierChipListModule,
+  ],
 })
-export class RegisterCapabilityComponent {
+export default class RegisterCapabilityComponent {
 
   public readonly TYPE = TYPE;
   public readonly QUALIFIER = QUALIFIER;

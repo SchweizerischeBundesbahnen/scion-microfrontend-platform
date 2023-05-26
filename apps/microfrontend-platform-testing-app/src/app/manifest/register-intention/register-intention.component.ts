@@ -8,11 +8,16 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {APP_IDENTITY, Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
-import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
+import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Observable} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {AsyncPipe, NgFor, NgIf} from '@angular/common';
+import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {SciListModule} from '@scion/components.internal/list';
+import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-chip-list';
 
 const TYPE = 'type';
 const QUALIFIER = 'qualifier';
@@ -24,8 +29,20 @@ const APP_SYMBOLIC_NAME = 'appSymbolicName';
   selector: 'app-register-intention',
   templateUrl: './register-intention.component.html',
   styleUrls: ['./register-intention.component.scss'],
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    ReactiveFormsModule,
+    SciFormFieldModule,
+    SciParamsEnterModule,
+    SciCheckboxModule,
+    SciListModule,
+    SciQualifierChipListModule,
+  ],
 })
-export class RegisterIntentionComponent {
+export default class RegisterIntentionComponent {
 
   public readonly TYPE = TYPE;
   public readonly QUALIFIER = QUALIFIER;

@@ -10,7 +10,6 @@
 
 import {NgModule} from '@angular/core';
 import {APP_IDENTITY, MessageClient, OutletRouter} from '@scion/microfrontend-platform';
-import {RouterModule} from '@angular/router';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
@@ -18,12 +17,8 @@ import {Beans} from '@scion/toolkit/bean-manager';
  *
  * Note: This module is loaded only if loading the host app with the query parameter 'manifestClassifier=activator-routing' into the browser.
  */
-@NgModule({
-  imports: [
-    RouterModule.forChild([]),
-  ],
-})
-export class ActivatorRoutingModule {
+@NgModule({})
+export default class ActivatorRoutingModule {
 
   constructor() {
     const symbolicName = Beans.get<string>(APP_IDENTITY);

@@ -21,9 +21,12 @@ export const TOPIC = 'topic';
   templateUrl: './clear-outlet-then-send-message-test-page.component.html',
   styleUrls: ['./clear-outlet-then-send-message-test-page.component.scss'],
   standalone: true,
-  imports: [ReactiveFormsModule, SciFormFieldModule],
+  imports: [
+    ReactiveFormsModule,
+    SciFormFieldModule,
+  ],
 })
-export class ClearOutletThenSendMessageTestPageComponent {
+export default class ClearOutletThenSendMessageTestPageComponent {
 
   public OUTLET = OUTLET;
   public TOPIC = TOPIC;
