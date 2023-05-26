@@ -8,13 +8,18 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
 import {Capability, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
-import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
+import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Observable} from 'rxjs';
 import {finalize} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Clipboard} from '@angular/cdk/clipboard';
+import {AsyncPipe, JsonPipe, NgFor, NgIf} from '@angular/common';
+import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {SciListModule} from '@scion/components.internal/list';
+import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-chip-list';
 
 const ID = 'id';
 const TYPE = 'type';
@@ -26,8 +31,21 @@ const APP_SYMBOLIC_NAME = 'appSymbolicName';
   selector: 'app-lookup-capability',
   templateUrl: './lookup-capability.component.html',
   styleUrls: ['./lookup-capability.component.scss'],
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    JsonPipe,
+    ReactiveFormsModule,
+    SciFormFieldModule,
+    SciParamsEnterModule,
+    SciCheckboxModule,
+    SciListModule,
+    SciQualifierChipListModule,
+  ],
 })
-export class LookupCapabilityComponent {
+export default class LookupCapabilityComponent {
 
   public readonly ID = ID;
   public readonly TYPE = TYPE;

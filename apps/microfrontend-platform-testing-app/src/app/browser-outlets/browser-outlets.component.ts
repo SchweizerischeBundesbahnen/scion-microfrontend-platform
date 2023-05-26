@@ -13,13 +13,23 @@ import {ActivatedRoute} from '@angular/router';
 import {map} from 'rxjs/operators';
 import {coerceNumberProperty} from '@angular/cdk/coercion';
 import {UUID} from '@scion/toolkit/uuid';
+import {SciSashboxModule} from '@scion/components/sashbox';
+import {BrowserOutletComponent} from '../browser-outlet/browser-outlet.component';
+import {AsyncPipe, NgFor} from '@angular/common';
 
 @Component({
   selector: 'app-browser-outlets',
   templateUrl: './browser-outlets.component.html',
   styleUrls: ['./browser-outlets.component.scss'],
+  standalone: true,
+  imports: [
+    NgFor,
+    AsyncPipe,
+    SciSashboxModule,
+    BrowserOutletComponent,
+  ],
 })
-export class BrowserOutletsComponent {
+export default class BrowserOutletsComponent {
 
   public outletNames$: Observable<string[]>;
 

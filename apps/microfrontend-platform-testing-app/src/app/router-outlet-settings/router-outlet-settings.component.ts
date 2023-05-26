@@ -13,6 +13,8 @@ import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cd
 import {ComponentPortal} from '@angular/cdk/portal';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
+import {JsonPipe, NgIf, NgTemplateOutlet} from '@angular/common';
+import {A11yModule} from '@angular/cdk/a11y';
 
 const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top'};
 
@@ -20,6 +22,13 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
   selector: 'app-router-outlet-settings',
   templateUrl: './router-outlet-settings.component.html',
   styleUrls: ['./router-outlet-settings.component.scss'],
+  standalone: true,
+  imports: [
+    NgIf,
+    JsonPipe,
+    NgTemplateOutlet,
+    A11yModule,
+  ],
 })
 export class RouterOutletSettingsComponent implements OnDestroy {
 

@@ -8,12 +8,17 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
 import {Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
-import {SciParamsEnterComponent} from '@scion/components.internal/params-enter';
+import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Observable} from 'rxjs';
 import {finalize} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {AsyncPipe, NgFor, NgIf} from '@angular/common';
+import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {SciListModule} from '@scion/components.internal/list';
+import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-chip-list';
 
 const ID = 'id';
 const TYPE = 'type';
@@ -25,8 +30,20 @@ const APP_SYMBOLIC_NAME = 'appSymbolicName';
   selector: 'app-lookup-intention',
   templateUrl: './lookup-intention.component.html',
   styleUrls: ['./lookup-intention.component.scss'],
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    ReactiveFormsModule,
+    SciFormFieldModule,
+    SciParamsEnterModule,
+    SciCheckboxModule,
+    SciListModule,
+    SciQualifierChipListModule,
+  ],
 })
-export class LookupIntentionComponent {
+export default class LookupIntentionComponent {
 
   public readonly ID = ID;
   public readonly TYPE = TYPE;

@@ -9,11 +9,20 @@
  */
 import {Component, HostBinding, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {IntentMessage, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
+import {NgIf} from '@angular/common';
+import {SciPropertyModule} from '@scion/components.internal/property';
+import {AppendParamDataTypePipe} from '../append-param-data-type.pipe';
 
 @Component({
   selector: 'app-message-list-item',
   templateUrl: './message-list-item.component.html',
   styleUrls: ['./message-list-item.component.scss'],
+  standalone: true,
+  imports: [
+    NgIf,
+    SciPropertyModule,
+    AppendParamDataTypePipe,
+  ],
 })
 export class MessageListItemComponent implements OnChanges {
 

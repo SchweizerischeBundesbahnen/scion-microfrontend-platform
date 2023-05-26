@@ -8,12 +8,15 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {SciViewportModule} from '@scion/components/viewport';
 
 @Component({
   selector: 'app-scrollable-microfrontend.component',
   templateUrl: './scrollable-microfrontend.component.html',
   styleUrls: ['./scrollable-microfrontend.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [SciViewportModule],
 })
-export class ScrollableMicrofrontendComponent {
+export default class ScrollableMicrofrontendComponent {
 }

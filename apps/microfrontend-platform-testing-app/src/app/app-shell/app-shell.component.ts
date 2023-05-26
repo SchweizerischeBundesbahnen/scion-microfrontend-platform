@@ -11,17 +11,30 @@ import {Component, ElementRef, HostBinding, NgZone, OnDestroy, ViewChild} from '
 import {asapScheduler, debounceTime, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {takeUntil, tap} from 'rxjs/operators';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, RouterOutlet} from '@angular/router';
 import {Defined} from '@scion/toolkit/util';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {environment} from '../../environments/environment';
+import {AsyncPipe, NgIf} from '@angular/common';
+import {SciSashboxModule} from '@scion/components/sashbox';
+import {SciViewportModule} from '@scion/components/viewport';
+import {DevToolsComponent} from '../devtools/devtools.component';
 
 @Component({
   selector: 'app-shell',
   templateUrl: './app-shell.component.html',
   styleUrls: ['./app-shell.component.scss'],
+  standalone: true,
+  imports: [
+    NgIf,
+    AsyncPipe,
+    RouterOutlet,
+    SciSashboxModule,
+    SciViewportModule,
+    DevToolsComponent,
+  ],
 })
-export class AppShellComponent implements OnDestroy {
+export default class AppShellComponent implements OnDestroy {
 
   private _destroy$ = new Subject<void>();
   private _routeActivate$ = new Subject<void>();

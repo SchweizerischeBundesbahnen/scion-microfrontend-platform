@@ -8,12 +8,16 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component, ElementRef, HostListener, Injector, OnDestroy} from '@angular/core';
-import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
+import {AsyncPipe, KeyValuePipe, NgFor} from '@angular/common';
+import {A11yModule} from '@angular/cdk/a11y';
+import {SciListModule} from '@scion/components.internal/list';
+import {ContextEntryComponent} from '../context-entry/context-entry.component';
 
 export const NAME = 'name';
 export const VALUE = 'value';
@@ -23,6 +27,16 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
   selector: 'app-router-outlet-context',
   templateUrl: './router-outlet-context.component.html',
   styleUrls: ['./router-outlet-context.component.scss'],
+  standalone: true,
+  imports: [
+    NgFor,
+    AsyncPipe,
+    KeyValuePipe,
+    A11yModule,
+    ReactiveFormsModule,
+    SciListModule,
+    ContextEntryComponent,
+  ],
 })
 export class RouterOutletContextComponent implements OnDestroy {
 

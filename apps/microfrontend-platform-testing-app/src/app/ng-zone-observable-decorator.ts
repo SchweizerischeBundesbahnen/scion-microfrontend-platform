@@ -15,12 +15,6 @@ import {observeInside, subscribeInside} from '@scion/toolkit/operators';
 
 /**
  * Mirrors the source, but ensures subscription and emission {@link NgZone} to be identical.
- *
- * Angular applications expect an RxJS Observable to emit in the same Angular zone in which the subscription was
- * performed. That is, if subscribing inside the Angular zone, emissions are expected to be received inside the
- * Angular zone. Otherwise, the UI may not be updated as expected but delayed until the next change detection cycle.
- * Similarly, if subscribing outside the Angular zone, emissions are expected to be received outside the Angular
- * zone. Otherwise, this would cause unnecessary change detection cycles resulting in potential performance degradation.
  */
 export class NgZoneObservableDecorator implements ObservableDecorator {
 

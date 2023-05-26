@@ -13,10 +13,13 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {fromEvent, merge, Subject, withLatestFrom} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {subscribeInside} from '@scion/toolkit/operators';
+import {RouterOutlet} from '@angular/router';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
+  standalone: true,
+  imports: [RouterOutlet],
 })
 export class AppComponent implements OnDestroy {
 

@@ -9,17 +9,26 @@
  */
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {UUID} from '@scion/toolkit/uuid';
-import {TestingAppService} from '../testing-app.service';
+import {TestingAppService} from '../../testing-app.service';
 import {ActivatedRoute, Params} from '@angular/router';
 import {Observable} from 'rxjs';
+import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciPropertyModule} from '@scion/components.internal/property';
+import {AsyncPipe} from '@angular/common';
 
 @Component({
   selector: 'app-microfrontend',
   templateUrl: './microfrontend.component.html',
   styleUrls: ['./microfrontend.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    AsyncPipe,
+    SciFormFieldModule,
+    SciPropertyModule,
+  ],
 })
-export class MicrofrontendComponent {
+export default class MicrofrontendComponent {
 
   public appInstanceId: string;
   public componentInstanceId: string;

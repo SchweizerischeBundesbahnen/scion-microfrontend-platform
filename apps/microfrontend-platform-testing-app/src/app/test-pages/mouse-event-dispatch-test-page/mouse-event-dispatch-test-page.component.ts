@@ -10,7 +10,7 @@
 import {ChangeDetectorRef, Component, OnDestroy, ViewChild} from '@angular/core';
 import {takeUntil} from 'rxjs/operators';
 import {fromEvent, merge, Subject} from 'rxjs';
-import {CommonModule} from '@angular/common';
+import {DatePipe, NgFor} from '@angular/common';
 import {SciViewportComponent, SciViewportModule} from '@scion/components/viewport';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {SciCheckboxModule} from '@scion/components.internal/checkbox';
@@ -21,13 +21,14 @@ import {SciCheckboxModule} from '@scion/components.internal/checkbox';
   styleUrls: ['./mouse-event-dispatch-test-page.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
+    NgFor,
+    DatePipe,
+    ReactiveFormsModule,
     SciViewportModule,
     SciCheckboxModule,
-    ReactiveFormsModule,
   ],
 })
-export class MouseEventDispatchTestPageComponent implements OnDestroy {
+export default class MouseEventDispatchTestPageComponent implements OnDestroy {
 
   private _destroy$ = new Subject<void>();
 

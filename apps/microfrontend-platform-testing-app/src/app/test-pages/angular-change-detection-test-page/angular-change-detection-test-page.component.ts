@@ -19,7 +19,7 @@ import {subscribeInside} from '@scion/toolkit/operators';
   styleUrls: ['./angular-change-detection-test-page.component.scss'],
   standalone: true,
 })
-export class AngularChangeDetectionTestPageComponent implements OnInit, OnDestroy {
+export default class AngularChangeDetectionTestPageComponent implements OnInit, OnDestroy {
 
   private _destroy$ = new Subject<void>();
   private _changeDetectionCycle$ = new Subject<void>();

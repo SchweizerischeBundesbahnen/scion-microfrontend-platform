@@ -7,9 +7,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, ElementRef, Injector, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Injector, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MessageClient, OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
-import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {Overlay} from '@angular/cdk/overlay';
 import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
 import {RouterOutletSettingsComponent} from '../router-outlet-settings/router-outlet-settings.component';
@@ -19,6 +19,7 @@ import {environment} from '../../environments/environment';
 import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {TestingAppTopics} from '../testing-app.topics';
+import {NgFor} from '@angular/common';
 
 export const URL = 'url';
 
@@ -30,6 +31,12 @@ export const URL = 'url';
   templateUrl: './browser-outlet.component.html',
   styleUrls: ['./browser-outlet.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgFor,
+    ReactiveFormsModule,
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
 })
 export class BrowserOutletComponent implements OnInit, OnDestroy {
 
