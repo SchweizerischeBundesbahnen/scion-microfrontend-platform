@@ -12,17 +12,41 @@ import {Capability, ParamDefinition} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
 import {Observable, ReplaySubject} from 'rxjs';
 import {expand, map, switchMap, take} from 'rxjs/operators';
-import {filterManifestObjects} from '../manifest-object-filter.utils';
+import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
-import {UntypedFormControl} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormControl} from '@angular/forms';
 import {Maps} from '@scion/toolkit/util';
-import {KeyValue} from '@angular/common';
+import {AsyncPipe, KeyValue, KeyValuePipe, NgFor, NgIf} from '@angular/common';
+import {SciFilterFieldModule} from '@scion/components.internal/filter-field';
+import {SciAccordionModule} from '@scion/components.internal/accordion';
+import {AppNamePipe} from '../common/app-name.pipe';
+import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-list.component';
+import {ParamsFilterPipe} from '../common/params-filter.pipe';
+import {NullIfEmptyPipe} from '../common/null-if-empty.pipe';
+import {JoinPipe} from '../common/join.pipe';
+import {SciPropertyModule} from '@scion/components.internal/property';
 
 @Component({
   selector: 'devtools-required-capabilities',
   templateUrl: './required-capabilities.component.html',
   styleUrls: ['./required-capabilities.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    KeyValuePipe,
+    ReactiveFormsModule,
+    SciFilterFieldModule,
+    SciAccordionModule,
+    SciPropertyModule,
+    AppNamePipe,
+    QualifierChipListComponent,
+    ParamsFilterPipe,
+    NullIfEmptyPipe,
+    JoinPipe,
+  ],
 })
 export class RequiredCapabilitiesComponent implements OnChanges {
 

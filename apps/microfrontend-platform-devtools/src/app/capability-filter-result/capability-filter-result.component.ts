@@ -12,17 +12,35 @@ import {Observable} from 'rxjs';
 import {Capability} from '@scion/microfrontend-platform';
 import {CapabilityFilterSession} from '../find-capabilities/capability-filter-session.service';
 import {ShellService} from '../shell.service';
-import {UntypedFormControl} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormControl} from '@angular/forms';
 import {expand, map, take} from 'rxjs/operators';
-import {filterManifestObjects} from '../manifest-object-filter.utils';
+import {filterManifestObjects} from '../common/manifest-object-filter.utils';
+import {AsyncPipe, NgFor, NgIf} from '@angular/common';
+import {SciFilterFieldModule} from '@scion/components.internal/filter-field';
+import {SciViewportModule} from '@scion/components/viewport';
+import {SciAccordionModule} from '@scion/components.internal/accordion';
+import {CapabilityAccordionPanelComponent} from '../capability-accordion-panel/capability-accordion-panel.component';
+import {CapabilityAccordionItemComponent} from '../capability-accordion-item/capability-accordion-item.component';
 
 @Component({
   selector: 'devtools-capability-filter-result',
   templateUrl: './capability-filter-result.component.html',
   styleUrls: ['./capability-filter-result.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    ReactiveFormsModule,
+    SciFilterFieldModule,
+    SciViewportModule,
+    SciAccordionModule,
+    CapabilityAccordionPanelComponent,
+    CapabilityAccordionItemComponent,
+  ],
 })
-export class CapabilityFilterResultComponent {
+export default class CapabilityFilterResultComponent {
 
   public capabilities$: Observable<Capability[]>;
   public filterFormControl = new UntypedFormControl();

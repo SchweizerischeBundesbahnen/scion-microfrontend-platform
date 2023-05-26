@@ -8,20 +8,29 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, NgZone, OnInit, Output, ViewChild} from '@angular/core';
-import {UntypedFormControl} from '@angular/forms';
+import {ReactiveFormsModule, UntypedFormControl} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
 import {KeyValuePair, LogicalOperator} from './filter-field';
-import {FocusOrigin} from '@angular/cdk/a11y';
+import {A11yModule, FocusOrigin} from '@angular/cdk/a11y';
+import {NgFor, NgIf} from '@angular/common';
 
 @Component({
   selector: 'devtools-filter-field',
   templateUrl: './filter-field.component.html',
   styleUrls: ['./filter-field.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    ReactiveFormsModule,
+    A11yModule,
+  ],
 })
 export class FilterFieldComponent implements OnInit {
-  public autocompleteKeysDatalistId = UUID.randomUUID();  // generate random id for autocomplete list in order to support multiple filter fields in the same document
-  public autocompleteValuesDatalistId = UUID.randomUUID();  // generate random id for autocomplete list in order to support multiple filter fields in the same document
+
+  public readonly autocompleteKeysDatalistId = UUID.randomUUID();  // generate random id for autocomplete list in order to support multiple filter fields in the same document
+  public readonly autocompleteValuesDatalistId = UUID.randomUUID();  // generate random id for autocomplete list in order to support multiple filter fields in the same document
   public readonly OR = 'or';
   public readonly AND = 'and';
 

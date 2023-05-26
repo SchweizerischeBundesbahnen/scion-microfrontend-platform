@@ -5,9 +5,7 @@ import {filter, map} from 'rxjs/operators';
 
 const BLANK_TITLE = '';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({providedIn: 'root'})
 export class ShellService {
 
   private _primaryTitle$ = new BehaviorSubject(BLANK_TITLE);

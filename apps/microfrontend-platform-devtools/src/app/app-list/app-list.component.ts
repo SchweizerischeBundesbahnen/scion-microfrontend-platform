@@ -14,12 +14,25 @@ import {map} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {sortArray} from '@scion/toolkit/operators';
 import {ShellService} from '../shell.service';
+import {AsyncPipe, NgFor} from '@angular/common';
+import {SciListModule} from '@scion/components.internal/list';
+import {RouterLink, RouterLinkActive} from '@angular/router';
+import {AppListItemComponent} from '../app-list-item/app-list-item.component';
 
 @Component({
   selector: 'devtools-app-list',
   templateUrl: './app-list.component.html',
   styleUrls: ['./app-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgFor,
+    AsyncPipe,
+    RouterLink,
+    RouterLinkActive,
+    SciListModule,
+    AppListItemComponent,
+  ],
 })
 export class AppListComponent {
 

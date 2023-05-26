@@ -10,27 +10,29 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy} from '@angular/core';
 import {Observable, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
-import {animate, style, transition, trigger} from '@angular/animations';
 import {ShellService} from './shell.service';
 import {MicrofrontendPlatformClient} from '@scion/microfrontend-platform';
+import {AsyncPipe, NgIf} from '@angular/common';
+import {RouterOutlet} from '@angular/router';
+import {SciSashboxModule} from '@scion/components/sashbox';
+import {AppMenuComponent} from './app-menu/app-menu.component';
 
 @Component({
   selector: 'devtools-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('openCloseMenu', [
-      transition(':enter', [
-        style({
-          width: '0',
-        }),
-        animate(100, style({width: '*'})),
-      ]),
-    ]),
+  standalone: true,
+  imports: [
+    NgIf,
+    AsyncPipe,
+    RouterOutlet,
+    SciSashboxModule,
+    AppMenuComponent,
   ],
 })
 export class AppComponent implements OnDestroy {
+
   public showPrimaryOutlet = true;
   public showDetailsOutlet = false;
   public menuOpen = false;

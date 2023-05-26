@@ -8,22 +8,23 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output} from '@angular/core';
-import {animate, style, transition, trigger} from '@angular/animations';
+import {animate, AnimationMetadata, style, transition, trigger} from '@angular/animations';
+import {RouterLink, RouterLinkActive} from '@angular/router';
+import {SciViewportModule} from '@scion/components/viewport';
 
 @Component({
   selector: 'devtools-app-menu',
   templateUrl: './app-menu.component.html',
   styleUrls: ['./app-menu.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    SciViewportModule,
+  ],
   animations: [
-    trigger('openCloseMenu', [
-      transition(':enter', [
-        style({
-          width: '0',
-        }),
-        animate(100, style({width: '*'})),
-      ]),
-    ]),
+    trigger('openCloseMenu', provideMenuAnimation()),
   ],
 })
 export class AppMenuComponent {
@@ -39,4 +40,15 @@ export class AppMenuComponent {
   public onMenuItemClick(): void {
     this.close.emit();
   }
+}
+
+function provideMenuAnimation(): AnimationMetadata[] {
+  return [
+    transition(':enter', [
+      style({
+        width: '0',
+      }),
+      animate(100, style({width: '*'})),
+    ]),
+  ];
 }

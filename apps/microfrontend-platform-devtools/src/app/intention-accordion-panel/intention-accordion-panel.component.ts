@@ -12,12 +12,18 @@ import {Observable} from 'rxjs';
 import {Application, Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router} from '@angular/router';
+import {AsyncPipe, NgFor} from '@angular/common';
 
 @Component({
   selector: 'devtools-intention-accordion-panel',
   templateUrl: './intention-accordion-panel.component.html',
   styleUrls: ['./intention-accordion-panel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    AsyncPipe,
+    NgFor,
+  ],
 })
 export class IntentionAccordionPanelComponent implements OnInit {
 

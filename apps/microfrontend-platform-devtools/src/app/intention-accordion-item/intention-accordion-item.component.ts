@@ -12,12 +12,20 @@ import {Observable} from 'rxjs';
 import {Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {map} from 'rxjs/operators';
+import {AsyncPipe, NgIf} from '@angular/common';
+import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-list.component';
 
 @Component({
   selector: 'devtools-intention-accordion-item',
   templateUrl: './intention-accordion-item.component.html',
   styleUrls: ['./intention-accordion-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgIf,
+    AsyncPipe,
+    QualifierChipListComponent,
+  ],
 })
 export class IntentionAccordionItemComponent implements OnChanges {
 

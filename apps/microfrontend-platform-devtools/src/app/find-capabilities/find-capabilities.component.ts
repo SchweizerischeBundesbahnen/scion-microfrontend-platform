@@ -15,14 +15,23 @@ import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {ShellService} from '../shell.service';
 import {map} from 'rxjs/operators';
 import {distinctArray, mapArray, sortArray} from '@scion/toolkit/operators';
+import {SciViewportModule} from '@scion/components/viewport';
+import {FilterFieldComponent} from './filter-field/filter-field.component';
+import {AsyncPipe} from '@angular/common';
 
 @Component({
   selector: 'devtools-find-capabilities',
   templateUrl: './find-capabilities.component.html',
   styleUrls: ['./find-capabilities.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    AsyncPipe,
+    SciViewportModule,
+    FilterFieldComponent,
+  ],
 })
-export class FindCapabilitiesComponent {
+export default class FindCapabilitiesComponent {
 
   public capabilityIds$: Observable<string[]>;
   public capabilityTypes$: Observable<string[]>;

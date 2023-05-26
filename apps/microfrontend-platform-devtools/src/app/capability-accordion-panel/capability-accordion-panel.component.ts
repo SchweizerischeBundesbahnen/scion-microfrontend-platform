@@ -11,13 +11,30 @@ import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Application, Capability} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
-import {Router} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
+import {AsyncPipe, JsonPipe, NgFor, NgIf} from '@angular/common';
+import {SciTabbarModule} from '@scion/components.internal/tabbar';
+import {SciPropertyModule} from '@scion/components.internal/property';
+import {CustomParamMetadataPipe} from '../common/custom-param-metadata.pipe';
+import {AppNamePipe} from '../common/app-name.pipe';
 
 @Component({
   selector: 'devtools-capability-accordion-panel',
   templateUrl: './capability-accordion-panel.component.html',
   styleUrls: ['./capability-accordion-panel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    JsonPipe,
+    RouterLink,
+    AppNamePipe,
+    CustomParamMetadataPipe,
+    SciTabbarModule,
+    SciPropertyModule,
+  ],
 })
 export class CapabilityAccordionPanelComponent implements OnInit {
 

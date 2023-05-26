@@ -9,7 +9,7 @@
  */
 
 import {ChangeDetectionStrategy, Component, HostBinding, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {KeyValue} from '@angular/common';
+import {KeyValue, KeyValuePipe, NgFor, NgIf} from '@angular/common';
 import {Qualifier} from '@scion/microfrontend-platform';
 
 @Component({
@@ -17,6 +17,12 @@ import {Qualifier} from '@scion/microfrontend-platform';
   templateUrl: './qualifier-chip-list.component.html',
   styleUrls: ['./qualifier-chip-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    KeyValuePipe,
+  ],
 })
 export class QualifierChipListComponent implements OnChanges {
 
