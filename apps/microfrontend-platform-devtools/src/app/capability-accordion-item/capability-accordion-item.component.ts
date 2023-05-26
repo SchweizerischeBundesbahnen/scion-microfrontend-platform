@@ -11,12 +11,19 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Clipboard} from '@angular/cdk/clipboard';
 import {Capability} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
+import {NgIf} from '@angular/common';
+import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-list.component';
 
 @Component({
   selector: 'devtools-capability-accordion-item',
   templateUrl: './capability-accordion-item.component.html',
   styleUrls: ['./capability-accordion-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgIf,
+    QualifierChipListComponent,
+  ],
 })
 export class CapabilityAccordionItemComponent {
 

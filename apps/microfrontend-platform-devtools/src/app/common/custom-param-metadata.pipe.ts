@@ -15,7 +15,7 @@ import {Dictionary} from '@scion/toolkit/util';
 /**
  * Extracts custom metadata associated with a param, if any, otherwise, returns `null`.
  */
-@Pipe({name: 'devtoolsCustomParamMetadata'})
+@Pipe({name: 'devtoolsCustomParamMetadata', standalone: true})
 export class CustomParamMetadataPipe implements PipeTransform {
 
   public readonly builtInProperties = new Set<string>()

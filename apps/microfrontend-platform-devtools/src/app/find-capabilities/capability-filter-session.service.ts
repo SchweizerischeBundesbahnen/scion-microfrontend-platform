@@ -15,9 +15,7 @@ import {KeyValuePair, LogicalOperator} from './filter-field/filter-field';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Arrays} from '@scion/toolkit/util';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({providedIn: 'root'})
 export class CapabilityFilterSession {
 
   private _idFilters = new Set<string>();

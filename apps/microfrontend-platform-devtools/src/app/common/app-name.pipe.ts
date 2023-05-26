@@ -9,12 +9,12 @@
  */
 
 import {Pipe, PipeTransform} from '@angular/core';
-import {DevToolsManifestService} from './dev-tools-manifest.service';
+import {DevToolsManifestService} from '../dev-tools-manifest.service';
 
 /**
  * Resolves to the name of an application's symbolic name.
  */
-@Pipe({name: 'devtoolsAppName'})
+@Pipe({name: 'devtoolsAppName', standalone: true})
 export class AppNamePipe implements PipeTransform {
 
   constructor(private _manifestService: DevToolsManifestService) {

@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component} from '@angular/core';
+import {Component, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 import {OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {environment} from '../../environments/environment';
@@ -16,6 +16,8 @@ import {environment} from '../../environments/environment';
   selector: 'app-devtools',
   templateUrl: './devtools.component.html',
   styleUrls: ['./devtools.component.scss'],
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
 })
 export class DevToolsComponent {
 

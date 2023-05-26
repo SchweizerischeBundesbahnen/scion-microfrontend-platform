@@ -13,4 +13,5 @@
  */
 export const environment = {
   production: false,
+  symbolicName: 'devtools',
 };

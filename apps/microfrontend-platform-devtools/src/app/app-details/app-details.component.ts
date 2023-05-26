@@ -13,16 +13,45 @@ import {Application, Capability, Intention} from '@scion/microfrontend-platform'
 import {distinctUntilChanged, expand, map, switchMap, take, takeUntil} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {ActivatedRoute, Router} from '@angular/router';
-import {filterManifestObjects} from '../manifest-object-filter.utils';
+import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {ShellService} from '../shell.service';
-import {UntypedFormControl} from '@angular/forms';
-import {SciTabbarComponent} from '@scion/components.internal/tabbar';
+import {ReactiveFormsModule, UntypedFormControl} from '@angular/forms';
+import {SciTabbarComponent, SciTabbarModule} from '@scion/components.internal/tabbar';
+import {AsyncPipe, NgFor, NgIf} from '@angular/common';
+import {SciFilterFieldModule} from '@scion/components.internal/filter-field';
+import {SciViewportModule} from '@scion/components/viewport';
+import {SciAccordionModule} from '@scion/components.internal/accordion';
+import {CapabilityAccordionItemComponent} from '../capability-accordion-item/capability-accordion-item.component';
+import {CapabilityAccordionPanelComponent} from '../capability-accordion-panel/capability-accordion-panel.component';
+import {IntentionAccordionItemComponent} from '../intention-accordion-item/intention-accordion-item.component';
+import {IntentionAccordionPanelComponent} from '../intention-accordion-panel/intention-accordion-panel.component';
+import {SciSashboxModule} from '@scion/components/sashbox';
+import {RequiredCapabilitiesComponent} from '../required-capabilities/required-capabilities.component';
+import {DependentIntentionsComponent} from '../dependent-intentions/dependent-intentions.component';
 
 @Component({
   selector: 'devtools-app-details',
   templateUrl: './app-details.component.html',
   styleUrls: ['./app-details.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    AsyncPipe,
+    ReactiveFormsModule,
+    SciTabbarModule,
+    SciFilterFieldModule,
+    SciViewportModule,
+    SciAccordionModule,
+    SciSashboxModule,
+    CapabilityAccordionItemComponent,
+    CapabilityAccordionPanelComponent,
+    IntentionAccordionItemComponent,
+    IntentionAccordionPanelComponent,
+    RequiredCapabilitiesComponent,
+    DependentIntentionsComponent,
+  ],
 })
 export class AppDetailsComponent implements OnDestroy {
 

@@ -13,12 +13,18 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router} from '@angular/router';
+import {AsyncPipe, NgIf} from '@angular/common';
 
 @Component({
   selector: 'devtools-app-list-item',
   templateUrl: './app-list-item.component.html',
   styleUrls: ['./app-list-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    NgIf,
+    AsyncPipe,
+  ],
 })
 export class AppListItemComponent implements OnInit {
 
