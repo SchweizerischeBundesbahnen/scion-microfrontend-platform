@@ -15,9 +15,9 @@ In this Chapter
 - <<chapter:angular-integration-guide:using-route-resolver-instead-app-initializer>>
 - <<chapter:angular-integration-guide:configuring-hash-based-routing>>
 - <<chapter:angular-integration-guide:activate-custom-elements-schema>>
-- <<chapter:angular-integration-guide:providing-activator-services>>
+- <<chapter:angular-integration-guide:providing-activator>>
 - <<chapter:angular-integration-guide:providing-platform-beans-for-dependency-injection>>
-- <<chapter:angular-integration-guide:providing-microfrontends-as-lazy-loaded-modules>>
+- <<chapter:angular-integration-guide:providing-microfrontends>>
 - <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>>
 ****
 '''
@@ -30,7 +30,7 @@ The platform should be started during the bootstrapping of the Angular applicati
 
 NOTE: Angular allows hooking into the process of initialization by providing an initializer to Angular's `APP_INITIALIZER` injection token. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
 
-IMPORTANT: We recommend starting the platform outside of the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
+IMPORTANT: We recommend starting the platform outside the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
 
 The following listing illustrates how to configure an Angular `APP_INITIALIZER` to start the SCION Microfrontend Platform in the host application. Note that `APP_INITIALIZER` expects a higher order factory function to be specified.
 
@@ -38,11 +38,12 @@ The following listing illustrates how to configure an Angular `APP_INITIALIZER` 
 ----
 include::start-platform-via-initializer.snippets.ts[tags=host-app:startPlatformHost]
 ----
-<1> Provides an initializer to the `APP_INITIALIZER` injection token.
-<2> Injects `NgZone` using Angular's `inject` function.
-<3> Registers a decorator to synchronize platform-specific RxJS Observables with the Angular Zone. See <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>> for more information.
-<4> Constructs the config object to configure the platform and list applications that are allowed to interact with the platform. Refer to <<chapter:configuration:configuring-the-platform>> for more information about configuring the platform.
-<5> Starts the platform host outside of the Angular zone.
+<1> Registers a set of DI providers to set up the SCION Microfrontend Platform in the host application.
+<2> Instruments Angular to start the SCION Microfrontend Platform during application startup.
+<3> Injects `NgZone` using Angular's `inject` function.
+<4> Registers a decorator to synchronize platform-specific RxJS Observables with the Angular Zone. See <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>> for more information.
+<5> Constructs the config object to configure the platform and list applications that are allowed to interact with the platform. Refer to <<chapter:configuration:configuring-the-platform>> for more information about configuring the platform.
+<6> Starts the platform host outside the Angular zone.
 
 
 ====
@@ -56,7 +57,7 @@ A micro application should connect to the platform host during the bootstrapping
 
 NOTE: Angular allows hooking into the process of initialization by providing an initializer to Angular's `APP_INITIALIZER` injection token. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
 
-IMPORTANT: We recommend connecting to the platform host outside of the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
+IMPORTANT: We recommend connecting to the platform host outside the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
 
 The following listing illustrates how to configure an Angular `APP_INITIALIZER` to connect to the platform from a micro application.
 
@@ -64,10 +65,11 @@ The following listing illustrates how to configure an Angular `APP_INITIALIZER` 
 ----
 include::start-platform-via-initializer.snippets.ts[tags=micro-app:connectToHost]
 ----
-<1> Provides an initializer to the `APP_INITIALIZER` injection token.
-<2> Injects `NgZone` using Angular’s `inject` function.
-<3> Registers a decorator to synchronize platform-specific RxJS Observables with the Angular Zone. See <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>> for more information.
-<4> Connects to the platform host outside of the Angular zone.
+<1> Registers a set of DI providers to set up the SCION Microfrontend Platform in a client application.
+<2> Instruments Angular to connect to the platform host during application startup.
+<3> Injects `NgZone` using Angular’s `inject` function.
+<4> Registers a decorator to synchronize platform-specific RxJS Observables with the Angular Zone. See <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>> for more information.
+<5> Connects to the platform host outside the Angular zone, passing the symbolic name of the application as argument.
 
 ====
 TIP: Refer to chapter <<chapter:configuration:connecting-to-the-host>> for detailed instructions on how to connect to the host from a microfrontend.
@@ -76,9 +78,9 @@ TIP: Refer to chapter <<chapter:configuration:connecting-to-the-host>> for detai
 [[chapter:angular-integration-guide:using-route-resolver-instead-app-initializer]]
 [discrete]
 === Using a Route Resolver instead of an App Initializer
-If you cannot use an app initializer for starting the platform or connecting to the platform host, an alternative would be to use a route resolver. Angular allows installing resolvers on a route, allowing data to be resolved asynchronously before the route is finally activated.
+If you cannot use an app initializer for starting the platform or connecting to the platform host, an alternative would be to use a route resolver. Resolvers can be used to resolve data or run code prior to route activation.
 
-The following listing illustrates how to configure an Angular resolver to connect to the platform from a micro application. Similarly, you could start the platform in the host application.
+The following listing illustrates how to configure an Angular resolver to connect to the platform from a client application. Similarly, you could start the platform in the host application.
 
 [source,typescript]
 ----
@@ -87,7 +89,7 @@ include::start-platform-via-resolver.snippets.ts[tags=resolver]
 <1> Installs a resolver on a component-less, empty-path route, which is parent to the microfrontend routes.
 <2> Injects `NgZone` using Angular’s `inject` function.
 <3> Registers a decorator to synchronize platform-specific RxJS Observables with the Angular Zone. See <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>> for more information.
-<4> Connects to the platform host outside of the Angular zone.
+<4> Connects to the platform host outside the Angular zone, passing the symbolic name of the application as argument.
 <5> Registers microfrontend routes as child routes.
 
 Ensure that a micro application instance connects to the host only once. Therefore, it is recommended to install the resolver in a parent route common to all microfrontend routes. When loading a microfrontend for the first time, Angular will wait activating the child route until the platform finished starting. When navigating to another microfrontend of the micro application, the resolver does not resolve anew.
@@ -96,7 +98,9 @@ Ensure that a micro application instance connects to the host only once. Therefo
 [[chapter:angular-integration-guide:configuring-hash-based-routing]]
 [discrete]
 === Configuring Hash-Based Routing
-We recommend using hash-based routing over HTML 5 push-state routing in micro applications. To enable hash-based routing in an Angular application, pass `{useHash: true}` when configuring the router in `AppRoutingModule`, as follows.
+For client applications, we recommend enabling hash-based routing for the reasons explained in <<chapter:miscellaneous:routing-in-micro-applications>>. For the host application, either strategy is fine.
+
+To enable hash-based routing, pass the `withHashLocation()` feature to the router, as follows:
 
 [source,typescript]
 ----
@@ -110,25 +114,23 @@ If you use hash-based routing, do not forget to set the base URL of the applicat
 include::angular-integration-guide.snippets.ts[tags=configure-hash-based-routing-set-baseurl]
 ----
 
-====
-TIP: Read chapter <<chapter:miscellaneous:routing-in-micro-applications>> to learn more about why to prefer hash-based routing.
-====
-
 [[chapter:angular-integration-guide:activate-custom-elements-schema]]
 [discrete]
 === Instruct Angular to allow Custom Elements in Templates
-The `<sci-router-outlet>` element for embedding microfrontends is a custom element according to the web component standard. We must tell Angular that we are using custom elements in our templates that are not registered Angular components. Otherwise, the Angular compiler would complain.
+The `<sci-router-outlet>` element for embedding microfrontends is a custom element according to the web component standard. For use in an Angular component, we need to tell the Angular compiler that we are using non-Angular elements. Otherwise, the compiler would complain that `<sci-router-outlet>` cannot be resolved to an Angular component.
 
-Doing this is straightforward. In your app module, add the `CUSTOM_ELEMENTS_SCHEMA` schema to allow the use of custom elements, as follows:
+For standalone components, set the `CUSTOM_ELEMENTS_SCHEMA` schema in the component metadata as follows:
 
 [source,typescript]
 ----
 include::angular-integration-guide.snippets.ts[tags=add-custom-elements-schema]
 ----
 
-[[chapter:angular-integration-guide:providing-activator-services]]
+The `schemas` property is only available for standalone components. For components declared in an `NgModule`, set the schema in the module metadata instead.
+
+[[chapter:angular-integration-guide:providing-activator]]
 [discrete]
-=== Providing Activator Services
+=== Providing an Activator
 ====
 TIP: Read chapter <<chapter:activator>> to learn more about activators.
 ====
@@ -143,74 +145,57 @@ include::activator.snippets.ts[tags=activator-capability]
 <2> Activators must have public visibility.
 <3> Path where the platform can load the activator microfrontend. The path is relative to the base URL of the micro application, as specified in the application manifest.
 
-We recommend creating a component-less, lazy-loaded activator module, that you register as routing target for the _activator_ path specified in the manifest.
+We recommend creating a component-less, lazy-loaded activator module and registering it under the _activator_ path as specified in the manifest.
 
 [source,typescript]
 ----
 include::activator.snippets.ts[tags=activator-route]
 ----
 
-The activator module declares a DI token under which you can register one or more activator services. By injecting the DI token into the module constructor, Angular constructs all registered activator services.
-
-The module implementation could look similar to the following:
+The module will be instantiated when the platform loads registered activators. In the module constructor, you can perform initialization tasks such as installing message handlers.
 
 [source,typescript]
 ----
 include::activator.snippets.ts[tags=activator-module]
 ----
-<1> Declares a DI token under which you can register activator services. If you use Angular 9 or later, you do not need to export the token.
-<2> By way of example, registers the `AuthenticatorService` as activator service, e.g., to obtain the user's access token and preemtively refresh it before its expected expiration.
-<3> By way of example, registers the `MicrofrontendRouter` as activator service, e.g., to handle microfrontend intents, instructing the router to navigate.
-<4> Installs an empty routes array. Do not omit the empty routes definition, as otherwise, route resolvers, if any, would be resolved multiple times.
-<5> Injects registered activator services in order to construct them.
+<1> Declares the activator `NgModule`. No further metadata is required.
+<2> Performs initialization tasks such as installing message handlers.
 
-It turned out that when using a route resolver to start the platform, Angular constructs the activator module instantly, that is, before the `PlatformInitializer` returns. For this reason, if you start the platform within a route resolver, and only then, you must wait to inject the activator services until the platform finished starting.
 
-The module constructor would then look as follows:
+[NOTE]
+====
+It turned out that when using a route resolver to start the platform, Angular constructs the activator module immediately, that is, before the resolver completes. For this reason, if you start the platform inside a route resolver, and only then, you must wait for the platform to complete startup before interacting with the platform, as follows:
 
 [source,typescript]
 ----
 include::activator.snippets.ts[tags=activator-module-using-resolver]
 ----
-<1> Waits until the platform started; only required if starting the platform in a resolver.
-<2> Injects registered activator services via Angular `Injector`.
-
-Activator can perform activation tasks in the constructor.
-
-[source,typescript]
-----
-include::activator.snippets.ts[tags=activator-services]
-----
+====
 
 [[chapter:angular-integration-guide:providing-platform-beans-for-dependency-injection]]
 [discrete]
 === Providing Platform Beans for Dependency Injection
-With Angular, it is easy to provide platform-specific beans for dependency injection using the factory provider definition, allowing objects managed by Angular to constructor-inject platform beans.
+Beans of the SCION Microfrontend Platform can be provided for dependency injection, allowing objects managed by Angular to inject platform beans.
 
 [source,typescript]
 ----
 include::angular-integration-guide.snippets.ts[tags=provide-platform-beans-for-dependency-injection]
 ----
 
-[[chapter:angular-integration-guide:providing-microfrontends-as-lazy-loaded-modules]]
+[[chapter:angular-integration-guide:providing-microfrontends]]
 [discrete]
-=== Providing Microfrontends as Lazy-Loaded Modules
-For good user experience, microfrontends should have a fast bootstrap time and load only the modules and data they need. Therefore, we recommend providing microfrontends as small, lazy-loaded modules grouped by functionality.
+=== Providing Microfrontends as Standalone Lazy-Loaded Components
+Microfrontends should have a fast startup time and therefore only load code and data that they need. Therefore, we recommend providing microfrontends as standalone, lazy-loaded components.
 
 [source,typescript]
 ----
-include::lazy-loaded-modules.snippets.ts[tags=routes]
+include::lazy-loaded-microfrontends.snippets.ts[tags=routes]
 ----
-<1> Registers the lazy-loaded route for the `microfrontend-1` microfrontend.
-<2> Registers the lazy-loaded route for the `microfrontend-2` microfrontend.
-<3> Registers the lazy-loaded route for the `activator` microfrontend.
+<1> Registers the lazy-loaded route for the `activator` microfrontend.
+<2> Registers the lazy-loaded route for the `microfrontend-1` microfrontend.
+<3> Registers the lazy-loaded route for the `microfrontend-2` microfrontend.
+<4> Registers the declared routes with Angular.
 
-A microfrontend module could look similar to the following:
-
-[source,typescript]
-----
-include::lazy-loaded-modules.snippets.ts[tags=microfrontend-1-module]
-----
 
 [[chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone]]
 [discrete]
@@ -234,6 +219,6 @@ Example of a decorator for synchronizing the Angular zone.
 include::angular-zone-observable-decorator.snippets.ts[tags=ng-zone-observable-decorator]
 ----
 <1> Captures the zone at the time of subscription to the Observable.
-<2> Subscribes to the source outside of the Angular zone.
+<2> Subscribes to the source outside the Angular zone.
 <3> Runs subscription handlers (`next`, `error`, `complete`) in the same zone in which subscribed to the Observable.
 

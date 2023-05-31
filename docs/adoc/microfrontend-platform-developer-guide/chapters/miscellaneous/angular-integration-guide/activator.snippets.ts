@@ -1,6 +1,6 @@
-import { Inject, Injectable, InjectionToken, Injector, NgModule, Optional } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { MicrofrontendPlatform, PlatformState } from '@scion/microfrontend-platform';
+import {NgModule} from '@angular/core';
+import {provideRouter, Routes, withHashLocation} from '@angular/router';
+import {MicrofrontendPlatform, PlatformState} from '@scion/microfrontend-platform';
 
 `
 // tag::activator-capability[]
@@ -16,61 +16,34 @@ import { MicrofrontendPlatform, PlatformState } from '@scion/microfrontend-platf
 // end::activator-capability[]
 `;
 
-// tag::activator-services[]
-@Injectable()
-export class AuthenticatorService {
-
-  constructor() {
-    // implement activator logic here
-  }
-}
-
-@Injectable()
-export class MicrofrontendRouter {
-
-  constructor() {
-    // implement activator logic here
-  }
-}
-
-// end::activator-services[]
-
 // tag::activator-module[]
-export const ACTIVATOR = new InjectionToken<any[]>('ACTIVATOR'); // <1>
-
-@NgModule({
-  providers: [
-    {provide: ACTIVATOR, useClass: AuthenticatorService, multi: true}, // <2>
-    {provide: ACTIVATOR, useClass: MicrofrontendRouter, multi: true}, // <3>
-  ],
-  imports: [
-    RouterModule.forChild([]), // <4>
-  ],
-})
+@NgModule({}) // <1>
 export class ActivatorModule {
 
-  constructor(@Optional() @Inject(ACTIVATOR) activators: any[]) { // <5>
+  constructor() { // <2>
+    // Perform initialization tasks such as installing message handlers.
   }
 }
 
 // end::activator-module[]
-
+@NgModule({})
 export class ActivatorModule {
 
   // tag::activator-module-using-resolver[]
-  constructor(injector: Injector) {
-    MicrofrontendPlatform.whenState(PlatformState.Started).then(() => { // <1>
-      injector.get(ACTIVATOR, []); // <2>
+  constructor() {
+    MicrofrontendPlatform.whenState(PlatformState.Started).then(() => {
+      // Perform initialization tasks such as installing message handlers.
     });
   }
+
   // end::activator-module-using-resolver[]
 }
 
 // tag::activator-route[]
-const routes: Routes = [
+const appRoutes: Routes = [
   {
     path: 'activator',
-    loadChildren: (): any => import('./activator/activator.module').then(m => m.ActivatorModule),
+    loadChildren: () => import('./activator/activator.module'),
   },
 ];
 // end::activator-route[]

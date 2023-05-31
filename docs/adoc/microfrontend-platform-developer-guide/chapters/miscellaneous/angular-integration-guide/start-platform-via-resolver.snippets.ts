@@ -1,23 +1,27 @@
-import {inject, NgModule, NgZone} from '@angular/core';
+import {Component, inject, NgZone} from '@angular/core';
 import {MicrofrontendPlatformClient, ObservableDecorator} from '@scion/microfrontend-platform';
-import {RouterModule, Routes} from '@angular/router';
+import {provideRouter, Routes, withHashLocation} from '@angular/router';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Observable} from 'rxjs';
+import {bootstrapApplication} from '@angular/platform-browser';
 
-class NgZoneObservableDecorator implements ObservableDecorator{
+@Component({selector: 'app-root', template: '', standalone: true})
+class AppComponent {
+}
+
+class NgZoneObservableDecorator implements ObservableDecorator {
+
+  constructor(zone: NgZone) {
+  }
   public decorate$<T>(source$: Observable<T>): Observable<T> {
     return source$;
   }
 }
 
-class Microfrontend1Component {
-}
-
-class Microfrontend2Component {
-}
-
 // tag::resolver[]
-const routes: Routes = [
+const appRoutes: Routes = [
+  // Declare a component-less, empty-path route that uses a resolver to connect to the host.
+  // Child routes are not loaded until connected to the host.
   {
     path: '',
     resolve: { // <1>
@@ -30,21 +34,24 @@ const routes: Routes = [
     children: [ // <5>
       {
         path: 'microfrontend-1',
-        loadChildren: () => import('./microfrontend-1.module').then(m => m.Microfrontend1Module),
+        loadComponent: () => import('./microfrontend-1/microfrontend-1.component'),
       },
       {
         path: 'microfrontend-2',
-        loadChildren: () => import('./microfrontend-2.module').then(m => m.Microfrontend1Module),
+        loadComponent: () => import('./microfrontend-2/microfrontend-2.component'),
       },
     ],
   },
 ];
 
-@NgModule({
-  imports: [RouterModule.forRoot(routes, {useHash: true})],
-  exports: [RouterModule],
-})
-export class AppRoutingModule {
-}
-
+// Register the routes in the router.
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideRouter(appRoutes, withHashLocation()),
+  ],
+});
 // end::resolver[]
+
+// If bootstrapping the Angular application using `NgModule`.
+// If bootstrapping the Angular application without `NgModule` by using a standalone application
+// root component (since Angular 14),
