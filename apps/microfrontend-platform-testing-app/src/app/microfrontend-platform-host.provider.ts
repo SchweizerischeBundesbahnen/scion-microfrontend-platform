@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {coerceBooleanProperty} from '@angular/cdk/coercion';
-import {APP_INITIALIZER, EnvironmentInjector, EnvironmentProviders, inject, makeEnvironmentProviders, NgZone, PlatformRef} from '@angular/core';
+import {APP_INITIALIZER, EnvironmentInjector, EnvironmentProviders, inject, makeEnvironmentProviders, NgZone, PlatformRef, runInInjectionContext} from '@angular/core';
 import {ApplicationConfig, Handler, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatformHost, ObservableDecorator, TopicMessage} from '@scion/microfrontend-platform';
 import {environment} from '../environments/environment';
 import {TestingAppTopics} from './testing-app.topics';
@@ -33,11 +33,11 @@ export function provideMicrofrontendPlatformHost(): EnvironmentProviders | [] {
   return makeEnvironmentProviders([
     {
       provide: APP_INITIALIZER,
-      useFactory: (environmentInjector: EnvironmentInjector) => {
-        return (): Promise<void> => environmentInjector.runInContext(startMicrofrontendPlatformHost);
+      useFactory: () => {
+        const environmentInjector = inject(EnvironmentInjector);
+        return (): Promise<void> => runInInjectionContext(environmentInjector, startMicrofrontendPlatformHost);
       },
       multi: true,
-      deps: [EnvironmentInjector],
     },
   ]);
 }
