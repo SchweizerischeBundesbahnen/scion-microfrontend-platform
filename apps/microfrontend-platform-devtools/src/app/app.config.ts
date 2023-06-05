@@ -1,4 +1,4 @@
-import {ApplicationConfig} from '@angular/platform-browser';
+import {ApplicationConfig} from '@angular/core';
 import {provideRouter, withHashLocation} from '@angular/router';
 import {routes} from './app.routes';
 import {provideMicrofrontendPlatformClient} from './microfrontend-platform-client/microfrontend-platform-client.provider';
