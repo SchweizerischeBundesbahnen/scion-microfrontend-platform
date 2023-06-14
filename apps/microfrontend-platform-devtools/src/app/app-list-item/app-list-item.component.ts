@@ -43,12 +43,14 @@ export class AppListItemComponent implements OnInit {
       .pipe(map(intentions => intentions.length));
   }
 
-  public onIntentionsClick(): boolean {
+  public onIntentionsClick(event: MouseEvent): boolean {
+    event.preventDefault(); // Prevent href navigation imposed by accessibility rules
     this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'intentions'}]}}]).then();
     return true;
   }
 
-  public onCapabilitiesClick(): boolean {
+  public onCapabilitiesClick(event: MouseEvent): boolean {
+    event.preventDefault(); // Prevent href navigation imposed by accessibility rules
     this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'capabilities'}]}}]).then();
     return true;
   }

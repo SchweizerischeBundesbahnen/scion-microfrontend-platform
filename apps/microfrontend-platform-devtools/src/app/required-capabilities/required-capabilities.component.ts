@@ -89,10 +89,6 @@ export class RequiredCapabilitiesComponent implements OnChanges {
     this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
   }
 
-  public onAccordionItemClick(): void {
-    this.selectedCapability = null;
-  }
-
   public trackByApplicationFn(index: number, entry: KeyValue<string, Capability[]>): string {
     return entry.key;
   }

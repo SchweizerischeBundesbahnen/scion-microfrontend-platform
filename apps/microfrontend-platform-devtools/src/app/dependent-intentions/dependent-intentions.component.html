@@ -4,7 +4,7 @@
     <ng-template sciAccordionItem [panel]="panel" [key]="intentionsByApp.key">
       <header>
         <strong>{{intentionsByApp.key | devtoolsAppName}}</strong>
-        <span class="material-icons" (click)="onOpenAppClick($event, intentionsByApp.key)" title="Navigate to details of {{intentionsByApp.key | devtoolsAppName}}.">exit_to_app</span>
+        <button class="material-icons" (click)="onOpenAppClick($event, intentionsByApp.key)" title="Navigate to details of {{intentionsByApp.key | devtoolsAppName}}.">exit_to_app</button>
       </header>
     </ng-template>
     <ng-template #panel>

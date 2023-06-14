@@ -37,7 +37,8 @@ export class AppMenuComponent {
     this.close.emit();
   }
 
-  public onMenuItemClick(): void {
+  public onMenuItemClick(event: MouseEvent): void {
+    event.preventDefault(); // Prevent href navigation imposed by accessibility rules
     this.close.emit();
   }
 }
