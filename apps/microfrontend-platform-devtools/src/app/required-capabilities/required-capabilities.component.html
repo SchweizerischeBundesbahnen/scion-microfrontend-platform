@@ -2,9 +2,9 @@
 <sci-accordion>
   <ng-container *ngFor="let capabilitiesByApp of capabilitiesByApp$ | async | keyvalue; trackBy: trackByApplicationFn">
     <ng-template sciAccordionItem [panel]="panel" [key]="capabilitiesByApp.key">
-      <header (click)="onAccordionItemClick()">
+      <header>
         <strong class="app-name">{{capabilitiesByApp.key | devtoolsAppName}}</strong>
-        <span class="material-icons" (click)="onOpenAppClick($event, capabilitiesByApp.key)" title="Navigate to details of {{capabilitiesByApp.key | devtoolsAppName}}.">exit_to_app</span>
+        <button class="material-icons" (click)="onOpenAppClick($event, capabilitiesByApp.key)" title="Navigate to details of {{capabilitiesByApp.key | devtoolsAppName}}.">exit_to_app</button>
       </header>
     </ng-template>
 

@@ -1,10 +1,10 @@
 <sci-sashbox *ngIf="connnectedToHost | async; else usageMessage">
   <ng-template sciSash *ngIf="showPrimaryOutlet" size="1">
     <section>
-      <header class="primary" (click)="onOpenMenuClick()">
-        <span class="menu material-icons" (click)="onOpenMenuClick()">menu</span>
-        <span class="title">{{primaryTitle$ | async}}</span>
-        <span class="collapse material-icons" *ngIf="showPrimaryOutlet && showDetailsOutlet" (click)="onCollapsePrimaryClick()">keyboard_arrow_left</span>
+      <header>
+        <button class="menu material-icons" (click)="onOpenMenuClick()">menu</button>
+        <button class="title" (click)="onOpenMenuClick()">{{primaryTitle$ | async}}</button>
+        <button class="collapse material-icons" *ngIf="showPrimaryOutlet && showDetailsOutlet" (click)="onCollapsePrimaryClick()">keyboard_arrow_left</button>
       </header>
       <router-outlet></router-outlet>
     </section>
@@ -13,8 +13,8 @@
   <ng-template sciSash *ngIf="showDetailsOutlet" size="4">
     <section>
       <header>
-        <span *ngIf="!showPrimaryOutlet" class="menu material-icons" (click)="onOpenMenuClick()">menu</span>
-        <span class="expand material-icons" *ngIf="!showPrimaryOutlet && showDetailsOutlet" (click)="onExpandPrimaryClick()">keyboard_arrow_right</span>
+        <button class="menu material-icons" *ngIf="!showPrimaryOutlet" (click)="onOpenMenuClick()">menu</button>
+        <button class="expand material-icons" *ngIf="!showPrimaryOutlet && showDetailsOutlet" (click)="onExpandPrimaryClick()">keyboard_arrow_right</button>
         <span class="title" (dblclick)="onDetailsDblClick()">{{detailsTitle$ | async}}</span>
       </header>
       <router-outlet name="details"></router-outlet>
@@ -29,8 +29,8 @@
     <header>Welcome to SCION Microfrontend Platform DevTools</header>
     <p>Embed SCION DevTools as microfrontend in your application to inspect micro applications and their dependencies.</p>
     <p>DevTools could not connect to the Microfrontend Platform Host.
-    Did you forget to register the DevTools application in the platform?
-    For more information, please visit our <a href="https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:dev-tools">Developer Guide</a>.
+      Did you forget to register the DevTools application in the platform?
+      For more information, please visit our <a href="https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:dev-tools">Developer Guide</a>.
     </p>
     <img src="assets/scion-microfrontend-platform-logo.svg" alt="SCION Microfrontend Platform" class="logo">
   </section>

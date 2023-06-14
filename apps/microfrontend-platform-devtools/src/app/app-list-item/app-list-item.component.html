@@ -5,13 +5,15 @@
 <section class="chips">
   <!-- Capabilities -->
   <a class="chip" *ngIf="capabilityCount$ | async as capabilityCount"
-     (click)="onCapabilitiesClick()">
+     (click)="onCapabilitiesClick($event)"
+     href="">
     {{capabilityCount}} {{capabilityCount === 1 ? 'capability' : 'capabilities'}}
   </a>
 
   <!-- Intentions -->
   <a class="chip" *ngIf="intentionCount$ | async as intentionCount"
-     (click)="onIntentionsClick()">
+     (click)="onIntentionsClick($event)"
+     href="">
     {{intentionCount}} {{intentionCount === 1 ? 'intention' : 'intentions'}}
   </a>
 

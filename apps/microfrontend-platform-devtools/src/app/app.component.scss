@@ -1,10 +1,7 @@
 :host {
   display: grid;
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  inset: 0;
 
   router-outlet {
     position: absolute; // take router outlet out of the document flow
@@ -24,11 +21,15 @@
         height: 2.5em;
         user-select: none;
 
-        &.primary {
+        > :where(button.title) { // Use the where selector to set the specificity to 0 to allow overrides.
+          all: unset;
+        }
+
+        > button {
           cursor: pointer;
         }
 
-        > span {
+        > button, > span.title {
           font-weight: bold;
           white-space: nowrap;
           color: var(--sci-color-accent);
@@ -50,10 +51,10 @@
               padding-left: .5em;
               font-weight: normal;
             }
+          }
 
-            &:hover {
-              color: var(--sci-color-A800);
-            }
+          &:hover {
+            color: var(--sci-color-A800);
           }
         }
       }

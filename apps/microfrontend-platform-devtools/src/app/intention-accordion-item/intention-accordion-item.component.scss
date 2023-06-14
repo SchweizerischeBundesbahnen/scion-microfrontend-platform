@@ -11,6 +11,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    place-content: center;
 
     > span.no-provider-found {
       font-weight: bold;

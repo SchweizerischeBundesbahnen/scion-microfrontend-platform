@@ -22,9 +22,11 @@
   </div>
 </ng-template>
 <ul class="chips">
-  <li *ngFor="let filter of filters" (click)="onRemoveFilterClick(filter)" title="Click to remove">
-    <span class="key">{{filter.key}}</span>
-    <span class="separator" *ngIf="filter.key && filter.value">&nbsp;:&nbsp;</span>
-    <span class="value">{{filter.value}}</span>
+  <li *ngFor="let filter of filters">
+    <button (click)="onRemoveFilterClick(filter)" title="Click to remove">
+      <span class="key">{{filter.key}}</span>
+      <span class="separator" *ngIf="filter.key && filter.value">&nbsp;:&nbsp;</span>
+      <span class="value">{{filter.value}}</span>
+    </button>
   </li>
 </ul>

@@ -11,30 +11,17 @@
   > div.qualifier, > div.actions {
     display: flex;
     align-items: center;
+    gap: .5em;
     color: var(--sci-color-accent);
 
-    &.qualifier {
-      > span {
-        margin-right: .5em;
-      }
-    }
-
     &.actions {
-      > span:not(:first-of-type) {
-        margin-left: .25em;
-      }
-
-      > span.app-symbolic-name {
+      > button.app-symbolic-name {
+        all: unset;
         @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
         font-weight: bold;
         display: flex;
+        gap: .5em;
         align-items: center;
-        margin: 0;
-
-        > span.material-icons {
-          margin-left: .25em;
-          font-size: 1.5em;
-        }
       }
     }
   }

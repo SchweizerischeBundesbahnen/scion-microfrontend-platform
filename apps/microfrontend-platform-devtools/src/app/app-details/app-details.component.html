@@ -1,18 +1,18 @@
 <ng-container *ngIf="application$ | async as application">
   <section class="properties">
-    <label>Name:</label>
+    <span>Name:</span>
     <span>{{application.name}} ({{application.symbolicName}})</span>
 
-    <label>URL:</label>
+    <span>URL:</span>
     <a class="app-url" [href]="application.baseUrl" target="_blank">{{application.baseUrl}}</a>
 
     <ng-container *ngIf="application.manifestUrl">
-      <label>Manifest:</label>
+      <span>Manifest:</span>
       <a [href]="application.manifestUrl" target="_blank">{{application.manifestUrl}}</a>
     </ng-container>
 
     <ng-container *ngIf="application.platformVersion | async as version">
-      <label>Version:</label>
+      <span>Version:</span>
       <a [href]="'https://www.npmjs.com/package/@scion/microfrontend-platform/v/' + version" target="_blank">
         @scion/microfrontend-platform@{{version}}
       </a>

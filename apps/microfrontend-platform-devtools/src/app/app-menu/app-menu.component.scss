@@ -3,10 +3,7 @@ $menu-width: 350px;
 :host {
   display: flex;
   position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
+  inset: 0;
 
   > sci-viewport {
     width: $menu-width;
@@ -15,90 +12,87 @@ $menu-width: 350px;
     box-shadow: 4px 0 13px 0 var(--sci-color-P900);
     box-sizing: content-box;
 
-    nav {
+    &::part(content) {
       display: flex;
+      flex-direction: column;
       justify-content: space-between;
+    }
+
+    > nav {
+      display: flex;
       flex-direction: column;
       width: $menu-width; // prevent content from shifting during animation
 
-      > ul {
-        display: flex;
-        flex-direction: column;
-        margin: 0;
-        padding: 0;
-
-        > li {
-          display: flex;
-          align-items: center;
-          list-style-type: none;
-          padding: 1em .5em;
-          background-color: var(--sci-color-accent);
-          color: var(--sci-color-P50);
-          border-bottom: 1px solid var(--sci-color-A900);
-          cursor: pointer;
-          outline: none;
-
-          &:hover > span.material-icons {
-            transform: scale(1.05);
-          }
-
-          &.active {
-            background-color: var(--sci-color-P50);
-            color: var(--sci-color-A700);
-          }
-
-          > span.material-icons {
-            font-size: 3em;
-            margin-left: .25em;
-            margin-right: .25em;
-            transition-timing-function: ease;
-            transition-duration: 150ms;
-            transition-property: transform;
-          }
-
-          > section {
-            flex: auto;
-            margin-left: 1em;
-
-            > header {
-              font-weight: bold;
-              font-size: 1.2em;
-              margin-bottom: .5em;
-            }
-
-            > span.description {
-              font-style: italic;
-            }
-          }
-        }
-      }
-
-      > section.about {
+      > a {
+        all: unset;
         display: flex;
         align-items: center;
-        margin: .5em 1em;
-        padding: 1em;
-        border-radius: 4px;
-        border: 1px solid var(--sci-color-A500);
-        background-color: var(--sci-color-A800);
-        box-shadow: 4px 0 13px 0 var(--sci-color-A500);
+        gap: 1em;
+        padding: 1em .5em;
+        background-color: var(--sci-color-accent);
+        color: var(--sci-color-P50);
+        border-bottom: 1px solid var(--sci-color-A900);
+        cursor: pointer;
 
-        > img.logo {
-          width: 42px;
+        &.active {
+          background-color: var(--sci-color-P50);
+          color: var(--sci-color-A700);
+        }
+
+        &:hover > span.material-icons {
+          transform: scale(1.05);
+        }
+
+        > span.material-icons {
           font-size: 3em;
           margin-left: .25em;
           margin-right: .25em;
+          transition-timing-function: ease;
+          transition-duration: 150ms;
+          transition-property: transform;
         }
 
-        > ul {
-          padding-left: 0;
-          margin: 0 0 0 1em;
-          list-style-type: none;
+        > section {
+          flex: auto;
 
-          > li > a {
-            color: var(--sci-color-P50);
-            line-height: 1.5;
+          > header {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: .5em;
           }
+
+          > span.description {
+            font-style: italic;
+          }
+        }
+      }
+    }
+
+    > section.about {
+      display: flex;
+      align-items: center;
+      margin: .5em 1em;
+      padding: 1em;
+      border-radius: 4px;
+      border: 1px solid var(--sci-color-A500);
+      background-color: var(--sci-color-A800);
+      box-shadow: 4px 0 13px 0 var(--sci-color-A500);
+
+      > img.logo {
+        width: 42px;
+        font-size: 3em;
+        margin-left: .25em;
+        margin-right: .25em;
+      }
+
+      > ul {
+        padding-left: 0;
+        margin: 0 0 0 1em;
+        list-style-type: none;
+
+        > li > a {
+          color: var(--sci-color-P50);
+          line-height: 1.5;
         }
       }
     }
