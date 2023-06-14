@@ -1,7 +1,7 @@
 <div class="e2e-element element" tabindex="0" (mousedown)="!preventdefault_on_mousedown.isChecked">Element</div>
 
-<label>
-  <sci-checkbox class="e2e-prevent-default-on-mousedown" #preventdefault_on_mousedown></sci-checkbox>
+<label class="prevent-default-on-mousedown-checkbox" for="prevent-default-on-mousedown">
+  <sci-checkbox class="e2e-prevent-default-on-mousedown" #preventdefault_on_mousedown id="prevent-default-on-mousedown"></sci-checkbox>
   <span>PreventDefault on Mousedown</span>
 </label>
 
@@ -12,8 +12,8 @@
       <span>{{dispatchedEvent.timestamp | date:'hh:mm:ss:SSS'}}</span><span class="e2e-type">{{dispatchedEvent.type}}</span>
     </div>
   </sci-viewport>
-  <label>
-    <sci-checkbox [formControl]="followTailFormControl"></sci-checkbox>
+  <label for="follow-tail">
+    <sci-checkbox [formControl]="followTailFormControl" id="follow-tail"></sci-checkbox>
     <span>Follow tail</span>
   </label>
   <button (click)="onClearDispatchedEvent()" class="e2e-clear">Clear</button>

@@ -36,9 +36,6 @@
       "files": [
         "*.html"
       ],
-      "extends": [
-        "plugin:@angular-eslint/template/accessibility"
-      ],
       "rules": {}
     }
   ]

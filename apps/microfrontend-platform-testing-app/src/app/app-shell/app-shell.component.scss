@@ -53,7 +53,7 @@
       }
     }
 
-    > span.chip {
+    > span.chip, > button.chip {
       flex: none;
 
       &.focus-within, &.focus {
@@ -70,6 +70,7 @@
       }
 
       &.devtools {
+        all: unset;
         @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
         padding: .1em 1em;
         font-size: 1rem;
@@ -78,7 +79,7 @@
         align-items: center;
         cursor: pointer;
 
-        > button.toggle {
+        > span.toggle {
           color: var(--sci-color-primary);
 
           &.enabled {
