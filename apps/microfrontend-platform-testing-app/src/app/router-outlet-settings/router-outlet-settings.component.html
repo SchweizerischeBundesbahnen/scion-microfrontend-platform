@@ -1,8 +1,8 @@
 <ul cdkTrapFocus cdkTrapFocusAutoCapture>
-  <li (click)="onPageScrollingToggle()">
+  <li>
     <span class="label">Page scrolling</span>
     <span class="description">Enables native page scrolling in the embedded document</span>
-    <ng-container *ngTemplateOutlet="toggle_button; context: {$implicit: pageScrollingEnabled}"></ng-container>
+    <button class="material-icons toggle" [class.enabled]="pageScrollingEnabled" (click)="onPageScrollingToggle()">{{ pageScrollingEnabled ? 'toggle_on' : 'toggle_off'}}</button>
   </li>
   <li class="e2e-preferred-size">
     <span class="label">Preferred size</span>
@@ -16,7 +16,3 @@
     <button type="button" class="e2e-reset" (click)="onPreferredSizeResetClick()" [disabled]="!preferredSize">reset</button>
   </li>
 </ul>
-
-<ng-template #toggle_button let-enabled>
-  <button type="button" class="material-icons toggle" [class.enabled]="enabled">{{ enabled ? 'toggle_on' : 'toggle_off'}}</button>
-</ng-template>
