@@ -197,7 +197,6 @@ jobs:
     needs: [release-guard, build-platform]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: 'Downloading platform and documentation (dist)'
         uses: actions/download-artifact@v2
         with:
@@ -213,11 +212,6 @@ jobs:
         with:
           name: microfrontend-platform-devtools-vercel
           path: dist/microfrontend-platform-devtools-vercel
-      - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
-        with:
-          path: ./node_modules
-          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - name: 'Deploying microfrontend-platform-testing-app to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
@@ -242,7 +236,7 @@ jobs:
           aliases: |
             scion-microfrontend-platform-devtools.vercel.app,
             scion-microfrontend-platform-devtools-v%v.vercel.app
-      - name: 'Deploying API Documentation (TypeDoc) to Vercel'
+      - name: 'Publishing API Documentation (TypeDoc) to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
           dist-folder: dist/microfrontend-platform-api
@@ -253,7 +247,7 @@ jobs:
           aliases: |
             scion-microfrontend-platform-api.vercel.app,
             scion-microfrontend-platform-api-v%v.vercel.app
-      - name: 'Deploying Reference Documentation (Developer Guide) to Vercel'
+      - name: 'Publishing Reference Documentation (Developer Guide) to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
           dist-folder: dist/microfrontend-platform-developer-guide
@@ -264,7 +258,7 @@ jobs:
           aliases: |
             scion-microfrontend-platform-developer-guide.vercel.app,
             scion-microfrontend-platform-developer-guide-v%v.vercel.app
-      - name: 'Publishing @scion/microfrontend-platform to NPM'
+      - name: 'Releasing @scion/microfrontend-platform to NPM'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/npm-publish@master
         with:
           dist-folder: dist/scion/microfrontend-platform
