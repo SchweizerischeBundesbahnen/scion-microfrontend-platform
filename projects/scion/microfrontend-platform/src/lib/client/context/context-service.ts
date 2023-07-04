@@ -130,7 +130,7 @@ export class ContextService implements PreDestroy {
    *         other words, values of child contexts precede values of parent contexts.
    */
   public lookup<T>(name: string, options: ContextLookupOptions & {collect: true}): Promise<T[]>;
-
+  public lookup<T>(name: string, options?: ContextLookupOptions): Promise<T | T[] | null>;
   public lookup<T>(name: string, options?: ContextLookupOptions): Promise<T | T[] | null> {
     return firstValueFrom(this.observe$<T>(name, options));
   }
