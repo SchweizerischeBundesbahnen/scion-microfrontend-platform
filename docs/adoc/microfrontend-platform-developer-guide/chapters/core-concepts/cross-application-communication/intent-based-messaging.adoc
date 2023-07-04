@@ -33,7 +33,7 @@ The advantage of this kind of communication becomes apparent when the number of 
 
 In topic-based communication, messages are published to a topic destination. In intent-based communication, on the other hand, the destination are capabilities, formulated in an abstract way, consisting of a a _type_, and optionally a _qualifier_. The _type_ categorizes a capability in terms of its functional semantics. A capability may also define a _qualifier_ to differentiate the different capabilities of the same type. The _type_ is a string literal and the qualifier a dictionary of key-value pairs. To better understand the concept of the qualifier, a bean manager can be used as an analogy. If there is more than one bean of the same type, a qualifier can be used to control which bean to inject.
 
-The terminology and concepts are explained in more detail in the <<chapter:intention-api>> chapter. This chapter focuses on communication and illustrates how to send and receive intents using the link:{typedoc-url}/classes/intentclient.html[IntentClient, window=\"_blank\"], which is available from the Platform's <<terminology:bean-manager,bean manager>>.
+The terminology and concepts are explained in more detail in the <<chapter:intention-api>> chapter. This chapter focuses on communication and illustrates how to send and receive intents using the link:{typedoc-url}/classes/IntentClient.html[IntentClient, window=\"_blank\"], which is available from the Platform's <<terminology:bean-manager,bean manager>>.
 
 [[chapter:intent-based-messaging:declaring-intention]]
 [discrete]
