@@ -28,7 +28,7 @@ In this Chapter
 === What is Topic-Based Messaging?
 Topic-based messaging allows publishing a message to a topic, which then is transported to consumers subscribed to the topic. Topics are case-sensitive and consist of one or more segments, each separated by a forward slash. Consumers can subscribe to multiple topics simultaneously by using wildcard segments in the topic.
 
-The platform provides the link:{typedoc-url}/classes/messageclient.html[MessageClient, window=\"_blank\"] service for sending and receiving messages on a common topic. You can obtain this service from the platform's bean manager as follows: `Beans.get(MessageClient)`.
+The platform provides the link:{typedoc-url}/classes/MessageClient.html[MessageClient, window=\"_blank\"] service for sending and receiving messages on a common topic. You can obtain this service from the platform's bean manager as follows: `Beans.get(MessageClient)`.
 
 
 [[chapter:topic-based-messaging:publishing-a-message]]

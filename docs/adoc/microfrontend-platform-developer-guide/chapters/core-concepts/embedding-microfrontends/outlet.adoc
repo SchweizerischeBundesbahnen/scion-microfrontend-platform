@@ -212,7 +212,7 @@ include::outlet.snippets.ts[tags=router-outlet:observe-context-value]
 [[chapter:router-outlet:router-outlet-api]]
 [discrete]
 === Router Outlet API
-You can find the full list of available properties and methods of `SciRouterOutletElement` in the  link:{typedoc-url}/classes/scirouteroutletelement.html[TypeDoc, window=\"_blank\"].
+You can find the full list of available properties and methods of `SciRouterOutletElement` in the  link:{typedoc-url}/classes/SciRouterOutletElement.html[TypeDoc, window=\"_blank\"].
 
 TIP: To hide inherited properties and methods of the `HTMLElement` in the TypeDoc, uncheck the `Inherited` checkbox in the upper right corner of the _TypeDoc_.
 
