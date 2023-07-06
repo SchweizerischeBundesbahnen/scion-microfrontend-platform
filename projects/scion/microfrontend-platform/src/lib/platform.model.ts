@@ -323,6 +323,10 @@ export interface ActivatorCapability extends Capability {
      * the startup of the platform host.
      */
     readinessTopics?: string | string[];
+    /**
+     * Arbitrary metadata to be associated with the capability.
+     */
+    [key: string]: any;
   };
 }
 
@@ -383,6 +387,10 @@ export interface MicrofrontendCapability extends Capability {
      * - {@link PRIMARY_OUTLET primary} outlet.
      */
     outlet?: string;
+    /**
+     * Arbitrary metadata to be associated with the capability.
+     */
+    [key: string]: any;
   };
 }
 
