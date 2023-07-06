@@ -89,6 +89,7 @@
           }
         ],
         "@typescript-eslint/semi": "error",
+        "@typescript-eslint/no-non-null-assertion": "off",
         "array-bracket-spacing": [
           "error"
         ],
