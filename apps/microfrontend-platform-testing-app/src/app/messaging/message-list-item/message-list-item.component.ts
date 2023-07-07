@@ -28,10 +28,10 @@ export class MessageListItemComponent implements OnChanges {
 
   public MessageHeaders = MessageHeaders;
 
-  @Input()
+  @Input({required: true})
   public isTopicMessage!: boolean;
 
-  @Input()
+  @Input({required: true})
   public message!: TopicMessage | IntentMessage;
 
   @HostBinding('attr.data-e2e-capability')

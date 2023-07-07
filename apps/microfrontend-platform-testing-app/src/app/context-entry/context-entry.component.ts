@@ -20,10 +20,10 @@ export class ContextEntryComponent {
 
   public value: any;
 
-  @Input()
+  @Input({required: true})
   public name!: string;
 
-  @Input('value')  // eslint-disable-line @angular-eslint/no-input-rename
+  @Input({alias: 'value', required: true})  // eslint-disable-line @angular-eslint/no-input-rename
   public set setValue(value: any) {
     if (typeof value === 'object') {
       this.value = JSON.stringify(value);
