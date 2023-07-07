@@ -31,7 +31,7 @@ export class IntentionAccordionItemComponent implements OnChanges {
 
   public nullProvider$!: Observable<boolean>;
 
-  @Input()
+  @Input({required: true})
   public intention!: Intention;
 
   constructor(private _manifestService: DevToolsManifestService) {

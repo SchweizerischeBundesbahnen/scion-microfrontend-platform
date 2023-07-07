@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {Intention} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
 import {Observable, ReplaySubject} from 'rxjs';
@@ -39,22 +39,25 @@ import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-
     QualifierChipListComponent,
   ],
 })
-export class DependentIntentionsComponent implements OnChanges {
+export class DependentIntentionsComponent implements OnInit, OnChanges {
 
   private _appChange$ = new ReplaySubject<void>(1);
 
-  @Input()
+  @Input({required: true})
   public appSymbolicName!: string;
 
-  public intentionsByApp$: Observable<Map<string, Intention[]>>;
+  public intentionsByApp$: Observable<Map<string, Intention[]>> | undefined;
   public filterFormControl = this._formBuilder.control('');
 
   constructor(private _router: Router,
               private _formBuilder: NonNullableFormBuilder,
-              manifestService: DevToolsManifestService) {
+              private _manifestService: DevToolsManifestService) {
+  }
+
+  public ngOnInit(): void {
     this.intentionsByApp$ = this._appChange$
       .pipe(
-        switchMap(() => manifestService.observeDependentIntentions$(this.appSymbolicName)),
+        switchMap(() => this._manifestService.observeDependentIntentions$(this.appSymbolicName)),
         expand(intentions => this.filterFormControl.valueChanges.pipe(take(1), map(() => intentions))),
         map(intentions => filterManifestObjects(intentions, this.filterFormControl.value)),
         map(intentions => intentions.reduce((acc, intention) => Maps.addListValue(acc, intention.metadata!.appSymbolicName, intention), new Map())),

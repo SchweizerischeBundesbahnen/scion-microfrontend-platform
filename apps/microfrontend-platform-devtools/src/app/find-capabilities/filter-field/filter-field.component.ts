@@ -34,7 +34,7 @@ export class FilterFieldComponent implements OnInit {
   public readonly OR = 'or';
   public readonly AND = 'and';
 
-  @Input()
+  @Input({required: true})
   public title!: string;
 
   @Input()

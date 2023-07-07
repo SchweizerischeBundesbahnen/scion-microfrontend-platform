@@ -52,7 +52,7 @@ export class RequiredCapabilitiesComponent implements OnChanges {
 
   private _appChange$ = new ReplaySubject<void>(1);
 
-  @Input()
+  @Input({required: true})
   public appSymbolicName!: string;
 
   public capabilitiesByApp$: Observable<Map<string, Capability[]>>;

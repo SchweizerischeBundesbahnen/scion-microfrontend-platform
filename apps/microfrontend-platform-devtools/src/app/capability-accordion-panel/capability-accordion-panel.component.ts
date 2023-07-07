@@ -40,7 +40,7 @@ export class CapabilityAccordionPanelComponent implements OnInit {
 
   public applications$!: Observable<Application[]>;
 
-  @Input()
+  @Input({required: true})
   public capability!: Capability;
 
   constructor(private _manifestService: DevToolsManifestService, private _router: Router) {
