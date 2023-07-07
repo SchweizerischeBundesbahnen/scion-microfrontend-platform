@@ -7,15 +7,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy} from '@angular/core';
-import {Observable, Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener} from '@angular/core';
+import {Observable} from 'rxjs';
 import {ShellService} from './shell.service';
 import {MicrofrontendPlatformClient} from '@scion/microfrontend-platform';
 import {AsyncPipe, NgIf} from '@angular/common';
 import {RouterOutlet} from '@angular/router';
 import {SciSashboxModule} from '@scion/components/sashbox';
 import {AppMenuComponent} from './app-menu/app-menu.component';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'devtools-root',
@@ -31,14 +31,12 @@ import {AppMenuComponent} from './app-menu/app-menu.component';
     AppMenuComponent,
   ],
 })
-export class AppComponent implements OnDestroy {
+export class AppComponent {
 
   public showPrimaryOutlet = true;
   public showDetailsOutlet = false;
   public menuOpen = false;
   public readonly connnectedToHost = MicrofrontendPlatformClient.isConnected();
-
-  private _destroy$ = new Subject<void>();
 
   constructor(private _shellService: ShellService, private _cdRef: ChangeDetectorRef) {
     this.installNavigationEndListener();
@@ -46,7 +44,7 @@ export class AppComponent implements OnDestroy {
 
   private installNavigationEndListener(): void {
     this._shellService.isDetailsOutletActive$()
-      .pipe(takeUntil(this._destroy$))
+      .pipe(takeUntilDestroyed())
       .subscribe(isDetailsOutletActive => {
         this.showDetailsOutlet = isDetailsOutletActive;
 
@@ -86,9 +84,5 @@ export class AppComponent implements OnDestroy {
   @HostListener('document:keydown.escape')
   public onMenuClose(): void {
     this.menuOpen = false;
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
   }
 }

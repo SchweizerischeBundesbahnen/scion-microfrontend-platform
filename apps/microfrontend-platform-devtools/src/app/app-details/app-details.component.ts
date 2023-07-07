@@ -7,10 +7,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild} from '@angular/core';
 import {combineLatestWith, Observable, Subject} from 'rxjs';
 import {Application, Capability, Intention} from '@scion/microfrontend-platform';
-import {distinctUntilChanged, expand, map, switchMap, take, takeUntil} from 'rxjs/operators';
+import {distinctUntilChanged, expand, map, switchMap, take} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {filterManifestObjects} from '../common/manifest-object-filter.utils';
@@ -28,6 +28,7 @@ import {IntentionAccordionPanelComponent} from '../intention-accordion-panel/int
 import {SciSashboxModule} from '@scion/components/sashbox';
 import {RequiredCapabilitiesComponent} from '../required-capabilities/required-capabilities.component';
 import {DependentIntentionsComponent} from '../dependent-intentions/dependent-intentions.component';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'devtools-app-details',
@@ -53,7 +54,7 @@ import {DependentIntentionsComponent} from '../dependent-intentions/dependent-in
     DependentIntentionsComponent,
   ],
 })
-export class AppDetailsComponent implements OnDestroy {
+export class AppDetailsComponent {
 
   public application$: Observable<Application>;
   public capabilities$: Observable<Capability[]>;
@@ -63,7 +64,6 @@ export class AppDetailsComponent implements OnDestroy {
   public intentionFilterFormControl = this._formBuilder.control('');
 
   private _tabbar$ = new Subject<SciTabbarComponent>();
-  private _destroy$ = new Subject<void>();
 
   constructor(private _shellService: ShellService,
               private _route: ActivatedRoute,
@@ -108,7 +108,7 @@ export class AppDetailsComponent implements OnDestroy {
 
   private installTitleProvider(): void {
     this.application$
-      .pipe(takeUntil(this._destroy$))
+      .pipe(takeUntilDestroyed())
       .subscribe(application => {
         this._shellService.detailsTitle = application.name;
         this._cd.markForCheck();
@@ -120,7 +120,7 @@ export class AppDetailsComponent implements OnDestroy {
       .pipe(
         map(params => params.get('activeTab')), // read 'activeTab' matrix param from URL
         combineLatestWith(this._tabbar$), // wait for tabbar
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(),
       )
       .subscribe(([tabToActivate, tabbar]) => {
         if (tabToActivate) {
@@ -137,9 +137,5 @@ export class AppDetailsComponent implements OnDestroy {
       this._tabbar$.next(tabbar);
       this._tabbar$.complete();
     }
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
   }
 }
