@@ -28,7 +28,7 @@ export class QualifierChipListComponent implements OnChanges {
 
   private _qualifierKeys: string[] = [];
 
-  @Input()
+  @Input({required: true})
   public type!: string;
 
   @Input()

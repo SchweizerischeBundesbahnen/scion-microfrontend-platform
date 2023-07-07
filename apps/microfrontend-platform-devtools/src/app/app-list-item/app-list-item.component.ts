@@ -28,7 +28,7 @@ import {AsyncPipe, NgIf} from '@angular/common';
 })
 export class AppListItemComponent implements OnInit {
 
-  @Input()
+  @Input({required: true})
   public application!: Application;
   public capabilityCount$!: Observable<number>;
   public intentionCount$!: Observable<number>;

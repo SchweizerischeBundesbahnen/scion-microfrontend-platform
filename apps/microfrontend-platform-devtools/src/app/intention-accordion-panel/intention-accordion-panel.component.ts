@@ -29,7 +29,7 @@ export class IntentionAccordionPanelComponent implements OnInit {
 
   public applications$!: Observable<Application[]>;
 
-  @Input()
+  @Input({required: true})
   public intention!: Intention;
 
   constructor(private _manifestService: DevToolsManifestService, private _router: Router) {

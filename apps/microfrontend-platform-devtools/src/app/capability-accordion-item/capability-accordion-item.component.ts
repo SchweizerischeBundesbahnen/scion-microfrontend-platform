@@ -30,7 +30,7 @@ export class CapabilityAccordionItemComponent {
   @Input()
   public appSymbolicName?: string | undefined;
 
-  @Input()
+  @Input({required: true})
   public capability!: Capability;
 
   constructor(private _router: Router, private _clipboard: Clipboard) {
