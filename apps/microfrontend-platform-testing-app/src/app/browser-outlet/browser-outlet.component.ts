@@ -45,7 +45,7 @@ export class BrowserOutletComponent implements OnInit, OnDestroy {
 
   private _destroy$ = new Subject<void>();
 
-  @Input()
+  @Input({required: true})
   public outletName!: string;
 
   @ViewChild('settings_button', {static: true})
