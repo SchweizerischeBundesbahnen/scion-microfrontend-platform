@@ -10,8 +10,8 @@
 import {Component, OnDestroy} from '@angular/core';
 import {IntentClient, IntentMessage, MessageClient, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Subject, Subscription} from 'rxjs';
-import {distinctUntilChanged, finalize, startWith, takeUntil} from 'rxjs/operators';
+import {Subscription} from 'rxjs';
+import {distinctUntilChanged, finalize, startWith} from 'rxjs/operators';
 import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {NgFor, NgIf} from '@angular/common';
@@ -20,6 +20,7 @@ import {SciListModule} from '@scion/components.internal/list';
 import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
 import {AppAsPipe} from '../../common/as.pipe';
 import {stringifyError} from '../../common/stringify-error.util';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-receive-message',
@@ -39,7 +40,6 @@ import {stringifyError} from '../../common/stringify-error.util';
 })
 export default class ReceiveMessageComponent implements OnDestroy {
 
-  private _destroy$ = new Subject<void>();
   private _messageClient: MessageClient;
   private _intentClient: IntentClient;
   private _subscription: Subscription | undefined;
@@ -66,7 +66,7 @@ export default class ReceiveMessageComponent implements OnDestroy {
       .pipe(
         startWith(this.form.controls.flavor.value),
         distinctUntilChanged(),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(),
       )
       .subscribe(flavor => {
         this.onFlavorChange(flavor);
@@ -158,7 +158,6 @@ export default class ReceiveMessageComponent implements OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this._destroy$.next();
     this._subscription?.unsubscribe();
   }
 }

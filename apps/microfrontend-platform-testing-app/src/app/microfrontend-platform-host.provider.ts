@@ -8,15 +8,14 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {coerceBooleanProperty} from '@angular/cdk/coercion';
-import {APP_INITIALIZER, EnvironmentInjector, EnvironmentProviders, inject, makeEnvironmentProviders, NgZone, PlatformRef, runInInjectionContext} from '@angular/core';
+import {APP_INITIALIZER, DestroyRef, EnvironmentInjector, EnvironmentProviders, inject, makeEnvironmentProviders, NgZone, PlatformRef, runInInjectionContext} from '@angular/core';
 import {ApplicationConfig, Handler, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatformHost, ObservableDecorator, TopicMessage} from '@scion/microfrontend-platform';
 import {environment} from '../environments/environment';
 import {TestingAppTopics} from './testing-app.topics';
-import {takeUntil} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {NgZoneObservableDecorator} from './ng-zone-observable-decorator';
-import {Observable} from 'rxjs';
 import {HashLocationStrategy, LocationStrategy} from '@angular/common';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 /**
  * Registers a set of DI providers to set up SCION Microfrontend Platform Host.
@@ -75,8 +74,7 @@ async function startMicrofrontendPlatformHost(): Promise<void> {
 
   // Log the startup progress (startup-progress.e2e-spec.ts).
   MicrofrontendPlatformHost.startupProgress$
-    // TODO [Angular 16] Replace with `takeUntilDestroyed` operator
-    .pipe(takeUntil(new Observable(observer => platformRef.onDestroy(() => observer.next()))))
+    .pipe(takeUntilDestroyed(platformRef.injector.get(DestroyRef)))
     .subscribe({
       next: progress => console.debug(`[PlatformInitializer::host:progress] ${progress}%`),
       complete: () => console.debug(`[PlatformInitializer::host:progress] startup completed`),
@@ -96,8 +94,7 @@ async function startMicrofrontendPlatformHost(): Promise<void> {
   // When starting the app with the manifest classifier `activator-readiness`, send a ping request to the activators to test their readiness. (activator-readiness.e2e-spec.ts).
   if (manifestClassifier === '-activator-readiness') {
     Beans.get(MessageClient).request$<string>(TestingAppTopics.ActivatorPing)
-      // TODO [Angular 16] Replace with `takeUntilDestroyed` operator
-      .pipe(takeUntil(new Observable(observer => platformRef.onDestroy(() => observer.next()))))
+      .pipe(takeUntilDestroyed(platformRef.injector.get(DestroyRef)))
       .subscribe(reply => console.debug(`[PlatformInitializer::activator:onactivate] [app=${reply.headers.get(MessageHeaders.AppSymbolicName)}, pingReply=${reply.body}]`));
   }
 }

@@ -10,10 +10,10 @@
 import {Component, HostListener, NgZone, OnDestroy} from '@angular/core';
 import {ContextService, MicrofrontendPlatform, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {fromEvent, merge, Subject, withLatestFrom} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
+import {fromEvent, merge, withLatestFrom} from 'rxjs';
 import {subscribeInside} from '@scion/toolkit/operators';
 import {RouterOutlet} from '@angular/router';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +23,6 @@ import {RouterOutlet} from '@angular/router';
 })
 export class AppComponent implements OnDestroy {
 
-  private _destroy$ = new Subject<void>();
   private _outletContext: Promise<OutletContext | null>;
 
   constructor(private _zone: NgZone) {
@@ -50,7 +49,7 @@ export class AppComponent implements OnDestroy {
       .pipe(
         withLatestFrom(this._outletContext),
         subscribeInside(fn => this._zone.runOutsideAngular(fn)),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(),
       )
       .subscribe(([event, outletContext]: [KeyboardEvent, OutletContext | null]) => {
         if (!event.isTrusted && (event.target as Element).tagName === 'SCI-ROUTER-OUTLET') {
@@ -61,6 +60,5 @@ export class AppComponent implements OnDestroy {
 
   public ngOnDestroy(): void {
     MicrofrontendPlatform.destroy().then(); // Platform is started in {@link PlatformInitializer}
-    this._destroy$.next();
   }
 }

@@ -7,11 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, ElementRef, Inject, LOCALE_ID, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, DestroyRef, ElementRef, Inject, LOCALE_ID, NgZone, OnInit, ViewChild} from '@angular/core';
 import {debounceTime, fromEvent, Subject} from 'rxjs';
-import {takeUntil, tap} from 'rxjs/operators';
+import {tap} from 'rxjs/operators';
 import {formatDate} from '@angular/common';
 import {subscribeInside} from '@scion/toolkit/operators';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-angular-change-detection-test-page',
@@ -19,9 +20,8 @@ import {subscribeInside} from '@scion/toolkit/operators';
   styleUrls: ['./angular-change-detection-test-page.component.scss'],
   standalone: true,
 })
-export default class AngularChangeDetectionTestPageComponent implements OnInit, OnDestroy {
+export default class AngularChangeDetectionTestPageComponent implements OnInit {
 
-  private _destroy$ = new Subject<void>();
   private _changeDetectionCycle$ = new Subject<void>();
 
   @ViewChild('angular_change_detection_indicator', {static: true})
@@ -39,7 +39,9 @@ export default class AngularChangeDetectionTestPageComponent implements OnInit, 
   @ViewChild('preventdefault_on_mousedown', {static: true})
   private _preventdefaultOnMousedownCheckbox!: ElementRef<HTMLInputElement>;
 
-  constructor(private _zone: NgZone, @Inject(LOCALE_ID) private locale: string) {
+  constructor(private _zone: NgZone,
+              private _destroyRef: DestroyRef,
+              @Inject(LOCALE_ID) private locale: string) {
     this.installChangeDetectionIndicator();
   }
 
@@ -48,7 +50,7 @@ export default class AngularChangeDetectionTestPageComponent implements OnInit, 
     fromEvent(this._element.nativeElement, 'mousedown')
       .pipe(
         subscribeInside(fn => this._zone.runOutsideAngular(fn)),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(this._destroyRef),
       )
       .subscribe(event => {
         if (this._preventdefaultOnMousedownCheckbox.nativeElement.checked) {
@@ -59,7 +61,7 @@ export default class AngularChangeDetectionTestPageComponent implements OnInit, 
     fromEvent(this._clearLogButton.nativeElement, 'click')
       .pipe(
         subscribeInside(fn => this._zone.runOutsideAngular(fn)),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(this._destroyRef),
       )
       .subscribe(() => {
         this._changeDetectionCyclesElement.nativeElement.value = '';
@@ -87,14 +89,10 @@ export default class AngularChangeDetectionTestPageComponent implements OnInit, 
             .join('\n');
         }),
         debounceTime(500),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(),
       )
       .subscribe(() => {
         this._changeDetectionIndicatorElement.nativeElement.classList.remove('active');
       });
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
   }
 }

@@ -10,8 +10,8 @@
 import {Component, OnDestroy} from '@angular/core';
 import {IntentClient, MessageClient, TopicMessage} from '@scion/microfrontend-platform';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {Subject, Subscription} from 'rxjs';
-import {distinctUntilChanged, finalize, startWith, takeUntil} from 'rxjs/operators';
+import {Subscription} from 'rxjs';
+import {distinctUntilChanged, finalize, startWith} from 'rxjs/operators';
 import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {coerceBooleanProperty, coerceNumberProperty} from '@angular/cdk/coercion';
@@ -23,6 +23,7 @@ import {SciListModule} from '@scion/components.internal/list';
 import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
 import {stringifyError} from '../../common/stringify-error.util';
 import {AppAsPipe} from '../../common/as.pipe';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-publish-message',
@@ -45,7 +46,6 @@ import {AppAsPipe} from '../../common/as.pipe';
 })
 export default class PublishMessageComponent implements OnDestroy {
 
-  private _destroy$ = new Subject<void>();
   private _messageClient: MessageClient;
   private _intentClient: IntentClient;
   private _requestResponseSubscription: Subscription | undefined;
@@ -76,7 +76,7 @@ export default class PublishMessageComponent implements OnDestroy {
       .pipe(
         startWith(this.form.controls.flavor.value),
         distinctUntilChanged(),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(),
       )
       .subscribe(flavor => {
         this.onFlavorChange(flavor);
@@ -207,7 +207,6 @@ export default class PublishMessageComponent implements OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this._destroy$.next();
     this.unsubscribe();
   }
 }

@@ -7,17 +7,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, ElementRef, HostListener, Injector, OnDestroy} from '@angular/core';
+import {Component, ElementRef, HostListener, Injector} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
-import {takeUntil} from 'rxjs/operators';
-import {Subject} from 'rxjs';
 import {AsyncPipe, KeyValuePipe, NgFor} from '@angular/common';
 import {A11yModule} from '@angular/cdk/a11y';
 import {SciListModule} from '@scion/components.internal/list';
 import {ContextEntryComponent} from '../context-entry/context-entry.component';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top'};
 
@@ -36,21 +35,19 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
     ContextEntryComponent,
   ],
 })
-export class RouterOutletContextComponent implements OnDestroy {
+export class RouterOutletContextComponent {
 
   public form = this._formBuilder.group({
     name: this._formBuilder.control('', Validators.required),
     value: this._formBuilder.control(''),
   });
 
-  private _destroy$ = new Subject<void>();
-
   constructor(host: ElementRef<HTMLElement>,
               private _formBuilder: NonNullableFormBuilder,
               private _overlay: OverlayRef,
               public routerOutlet: SciRouterOutletElement) {
     this._overlay.backdropClick()
-      .pipe(takeUntil(this._destroy$))
+      .pipe(takeUntilDestroyed())
       .subscribe(() => {
         this._overlay.dispose();
       });
@@ -80,10 +77,6 @@ export class RouterOutletContextComponent implements OnDestroy {
 
   public onRemoveClick(name: string): void {
     this.routerOutlet.removeContextValue(name);
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
   }
 
   public static openAsOverlay(config: {anchor: HTMLElement; routerOutlet: SciRouterOutletElement; overlay: Overlay; injector: Injector}): void {

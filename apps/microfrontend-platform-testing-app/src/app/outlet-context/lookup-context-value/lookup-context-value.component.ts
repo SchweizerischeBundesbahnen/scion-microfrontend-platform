@@ -11,8 +11,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy} from '
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ContextService} from '@scion/microfrontend-platform';
-import {Subject, Subscription} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
+import {Subscription} from 'rxjs';
 import {JsonPipe, NgIf} from '@angular/common';
 import {SciFormFieldModule} from '@scion/components.internal/form-field';
 import {SciCheckboxModule} from '@scion/components.internal/checkbox';
@@ -45,7 +44,6 @@ export default class LookupContextValueComponent implements OnDestroy {
 
   private _contextService: ContextService;
   private _subscription: Subscription | undefined;
-  private _destroy$ = new Subject<void>();
 
   constructor(private _formBuilder: NonNullableFormBuilder, private _cd: ChangeDetectorRef) {
     this._contextService = Beans.get(ContextService);
@@ -59,7 +57,6 @@ export default class LookupContextValueComponent implements OnDestroy {
 
     // Observe
     this._subscription = this._contextService.observe$(key, options)
-      .pipe(takeUntil(this._destroy$))
       .subscribe({
         next: next => {
           this.observeValue = next;
@@ -94,6 +91,5 @@ export default class LookupContextValueComponent implements OnDestroy {
 
   public ngOnDestroy(): void {
     this._subscription?.unsubscribe();
-    this._destroy$.next();
   }
 }

@@ -7,13 +7,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {takeUntil} from 'rxjs/operators';
-import {fromEvent, merge, Subject} from 'rxjs';
+import {ChangeDetectorRef, Component, DestroyRef, OnInit, ViewChild} from '@angular/core';
+import {fromEvent, merge} from 'rxjs';
 import {DatePipe, NgFor} from '@angular/common';
 import {SciViewportComponent, SciViewportModule} from '@scion/components/viewport';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-mouse-event-dispatch-test-page',
@@ -28,9 +28,7 @@ import {SciCheckboxModule} from '@scion/components.internal/checkbox';
     SciCheckboxModule,
   ],
 })
-export default class MouseEventDispatchTestPageComponent implements OnInit, OnDestroy {
-
-  private _destroy$ = new Subject<void>();
+export default class MouseEventDispatchTestPageComponent implements OnInit {
 
   public dispatchedEvents = new Array<DispatchedEvent>();
   public followTailFormControl = new FormControl<boolean>(true);
@@ -38,12 +36,12 @@ export default class MouseEventDispatchTestPageComponent implements OnInit, OnDe
   @ViewChild(SciViewportComponent, {static: true})
   private _viewport!: SciViewportComponent;
 
-  constructor(private _cd: ChangeDetectorRef) {
+  constructor(private _cd: ChangeDetectorRef, private _destroyRef: DestroyRef) {
   }
 
   public ngOnInit(): void {
     merge(fromEvent(document, 'sci-mousemove'), fromEvent(document, 'sci-mouseup'))
-      .pipe(takeUntil(this._destroy$))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe(event => {
         this.dispatchedEvents.push({type: event.type, timestamp: Date.now()});
         if (this.followTailFormControl.value) {
@@ -55,10 +53,6 @@ export default class MouseEventDispatchTestPageComponent implements OnInit, OnDe
 
   public onClearDispatchedEvent(): void {
     this.dispatchedEvents.length = 0;
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
   }
 }
 
