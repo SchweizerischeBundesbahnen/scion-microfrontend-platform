@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Injector, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, ElementRef, Injector, Input, OnInit, ViewChild} from '@angular/core';
 import {MessageClient, OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Overlay} from '@angular/cdk/overlay';
@@ -16,10 +16,9 @@ import {RouterOutletSettingsComponent} from '../router-outlet-settings/router-ou
 import {ActivatedRoute} from '@angular/router';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {environment} from '../../environments/environment';
-import {takeUntil} from 'rxjs/operators';
-import {Subject} from 'rxjs';
 import {TestingAppTopics} from '../testing-app.topics';
 import {NgFor} from '@angular/common';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 /**
  * Allows entering a URL and displaying the web content in an iframe.
@@ -36,14 +35,12 @@ import {NgFor} from '@angular/common';
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
 })
-export class BrowserOutletComponent implements OnInit, OnDestroy {
+export class BrowserOutletComponent implements OnInit {
 
   public form = this._formBuilder.group({
     url: this._formBuilder.control('', Validators.required),
   });
   public appEntryPoints: AppEndpoint[];
-
-  private _destroy$ = new Subject<void>();
 
   @Input({required: true})
   public outletName!: string;
@@ -61,7 +58,8 @@ export class BrowserOutletComponent implements OnInit, OnDestroy {
               private _formBuilder: NonNullableFormBuilder,
               private _activatedRoute: ActivatedRoute,
               private _overlay: Overlay,
-              private _injector: Injector) {
+              private _injector: Injector,
+              private _destroyRef: DestroyRef) {
     this.appEntryPoints = this.readAppEntryPoints();
   }
 
@@ -135,14 +133,10 @@ export class BrowserOutletComponent implements OnInit, OnDestroy {
    */
   private installOutletContextUpdateHandler(outletName: string): void {
     Beans.get(MessageClient).observe$(TestingAppTopics.routerOutletContextUpdateTopic(outletName, ':key'))
-      .pipe(takeUntil(this._destroy$))
+      .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe(message => {
         this.routerOutlet.nativeElement.setContextValue(message.params!.get('key')!, message.body);
       });
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
   }
 }
 

@@ -7,15 +7,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {PreferredSizeService} from '@scion/microfrontend-platform';
-import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {NgIf} from '@angular/common';
 import {SciFormFieldModule} from '@scion/components.internal/form-field';
 import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-preferred-size',
@@ -30,7 +29,7 @@ import {SciCheckboxModule} from '@scion/components.internal/checkbox';
     SciCheckboxModule,
   ],
 })
-export default class PreferredSizeComponent implements OnDestroy {
+export default class PreferredSizeComponent {
 
   public form = this._formBuilder.group({
     cssSize: this._formBuilder.group({
@@ -46,25 +45,23 @@ export default class PreferredSizeComponent implements OnDestroy {
 
   public elementDimensionObservableBound: boolean | undefined;
 
-  private _destroy$ = new Subject<void>();
-
   constructor(private _formBuilder: NonNullableFormBuilder, private _host: ElementRef<HTMLElement>) {
     this.form.controls.useElementSize.valueChanges
-      .pipe(takeUntil(this._destroy$))
+      .pipe(takeUntilDestroyed())
       .subscribe(checked => {
         this.reset();
         this.form.controls.useElementSize.setValue(checked, {onlySelf: true, emitEvent: false});
       });
 
     this.form.controls.cssSize.valueChanges
-      .pipe(takeUntil(this._destroy$))
+      .pipe(takeUntilDestroyed())
       .subscribe(() => {
         setCssVariable(this._host, '--width', this.form.controls.cssSize.controls.width.value);
         setCssVariable(this._host, '--height', this.form.controls.cssSize.controls.height.value);
       });
 
     this.form.controls.preferredSize.valueChanges
-      .pipe(takeUntil(this._destroy$))
+      .pipe(takeUntilDestroyed())
       .subscribe(() => {
         const width = this.form.controls.preferredSize.controls.width.value;
         const height = this.form.controls.preferredSize.controls.height.value;
@@ -108,10 +105,6 @@ export default class PreferredSizeComponent implements OnDestroy {
     Beans.get(PreferredSizeService).resetPreferredSize();
     this.elementDimensionObservableBound = false;
     this.form.reset(undefined, {emitEvent: false});
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
   }
 }
 

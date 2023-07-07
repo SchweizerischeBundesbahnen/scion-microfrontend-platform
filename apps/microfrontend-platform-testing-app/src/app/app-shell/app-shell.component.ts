@@ -7,10 +7,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, ElementRef, HostBinding, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, DestroyRef, ElementRef, HostBinding, NgZone, OnInit, ViewChild} from '@angular/core';
 import {asapScheduler, debounceTime, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
-import {takeUntil, tap} from 'rxjs/operators';
+import {tap} from 'rxjs/operators';
 import {ActivatedRoute, RouterOutlet} from '@angular/router';
 import {Defined} from '@scion/toolkit/util';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -19,6 +19,7 @@ import {AsyncPipe, NgIf} from '@angular/common';
 import {SciSashboxModule} from '@scion/components/sashbox';
 import {SciViewportModule} from '@scion/components/viewport';
 import {DevToolsComponent} from '../devtools/devtools.component';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-shell',
@@ -34,9 +35,8 @@ import {DevToolsComponent} from '../devtools/devtools.component';
     DevToolsComponent,
   ],
 })
-export default class AppShellComponent implements OnDestroy, OnInit {
+export default class AppShellComponent implements OnInit {
 
-  private _destroy$ = new Subject<void>();
   private _routeActivate$ = new Subject<void>();
   private _angularChangeDetectionCycle$ = new Subject<void>();
 
@@ -49,7 +49,7 @@ export default class AppShellComponent implements OnDestroy, OnInit {
   @ViewChild('angular_change_detection_indicator', {static: true})
   private _changeDetectionElement!: ElementRef<HTMLElement>;
 
-  constructor(private _zone: NgZone) {
+  constructor(private _zone: NgZone, private _destroyRef: DestroyRef) {
     this.appSymbolicName = Beans.get<string>(APP_IDENTITY);
     this.focusMonitor = Beans.get(FocusMonitor);
 
@@ -65,7 +65,7 @@ export default class AppShellComponent implements OnDestroy, OnInit {
     this._routeActivate$
       .pipe(
         switchMap(() => Beans.get(ContextService).observe$<OutletContext>(OUTLET_CONTEXT)),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(),
       )
       .subscribe(outletContext => {
         const context = outletContext?.name ?? 'n/a';
@@ -86,7 +86,7 @@ export default class AppShellComponent implements OnDestroy, OnInit {
         mergeMap(contextKeys => from(Array.from(contextKeys).filter(key => key.startsWith('keystroke:')))),
         delay(250), // Wait some time for the keystroke to be installed
         withLatestFrom(outletName$),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(),
       )
       .subscribe(([keystroke, outletName]) => {
         console.debug(`[AppShellComponent::${keystroke}][app=${this.appSymbolicName}][location=${window.location.href}][outlet=${outletName}]`);
@@ -99,7 +99,7 @@ export default class AppShellComponent implements OnDestroy, OnInit {
         tap(() => NgZone.assertNotInAngularZone()),
         tap(() => this._changeDetectionElement.nativeElement.classList.add('active')),
         debounceTime(500),
-        takeUntil(this._destroy$),
+        takeUntilDestroyed(this._destroyRef),
       )
       .subscribe(() => {
         this._changeDetectionElement.nativeElement.classList.remove('active');
@@ -144,9 +144,5 @@ export default class AppShellComponent implements OnDestroy, OnInit {
   public get onAngularChangeDetectionCycle(): void {
     this._zone.runOutsideAngular(() => this._angularChangeDetectionCycle$.next());
     return undefined as void;
-  }
-
-  public ngOnDestroy(): void {
-    this._destroy$.next();
   }
 }
