@@ -24,7 +24,7 @@ describe('ManifestObjectStore', () => {
 
     it('should find manifest objects by id', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app'}};
@@ -47,7 +47,7 @@ describe('ManifestObjectStore', () => {
 
     it('should find manifest objects by type', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app'}};
@@ -67,7 +67,7 @@ describe('ManifestObjectStore', () => {
 
     it('should find manifest objects by qualifier', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app'}};
@@ -81,7 +81,7 @@ describe('ManifestObjectStore', () => {
       store.add(anyQualifierManifestObject);
 
       expect(store.find({qualifier: undefined})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject, emptyQualifierManifestObject, asteriskQualifierManifestObject, exactQualifierManifestObject, anyQualifierManifestObject]);
-      expect(store.find({qualifier: null})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject, emptyQualifierManifestObject]);
+      expect(store.find({qualifier: null!})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject, emptyQualifierManifestObject]);
       expect(store.find({qualifier: {}})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject, emptyQualifierManifestObject]);
       expect(store.find({qualifier: {'*': '*'}})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject, emptyQualifierManifestObject, asteriskQualifierManifestObject, exactQualifierManifestObject, anyQualifierManifestObject]);
       expect(store.find({qualifier: {entity: '*'}})).toEqual([asteriskQualifierManifestObject, exactQualifierManifestObject]);
@@ -90,7 +90,7 @@ describe('ManifestObjectStore', () => {
 
     it('should find manifest objects by application', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app1'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app1'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app1'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app2'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app2'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app3'}};
@@ -110,7 +110,7 @@ describe('ManifestObjectStore', () => {
 
     it('should find manifest objects by id and other filter criteria', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app1'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app1'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app1'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app2'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app2'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app3'}};
@@ -128,7 +128,7 @@ describe('ManifestObjectStore', () => {
       expect(store.find({id: 'id_undefinedQualifierManifestObject', type: 'type1'})).toEqual([undefinedQualifierManifestObject]);
       expect(store.find({id: 'id_undefinedQualifierManifestObject', type: 'type2'})).toEqual([]);
       expect(store.find({id: 'id_undefinedQualifierManifestObject', qualifier: undefined})).toEqual([undefinedQualifierManifestObject]);
-      expect(store.find({id: 'id_undefinedQualifierManifestObject', qualifier: null})).toEqual([undefinedQualifierManifestObject]);
+      expect(store.find({id: 'id_undefinedQualifierManifestObject', qualifier: null!})).toEqual([undefinedQualifierManifestObject]);
       expect(store.find({id: 'id_undefinedQualifierManifestObject', qualifier: {}})).toEqual([undefinedQualifierManifestObject]);
       expect(store.find({id: 'id_undefinedQualifierManifestObject', qualifier: {'*': '*'}})).toEqual([undefinedQualifierManifestObject]);
       expect(store.find({id: 'id_undefinedQualifierManifestObject', qualifier: {entity: '*'}})).toEqual([]);
@@ -136,7 +136,7 @@ describe('ManifestObjectStore', () => {
 
     it('should find manifest objects by type and other filter criteria', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app1'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app1'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app1'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app2'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app2'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app3'}};
@@ -153,7 +153,7 @@ describe('ManifestObjectStore', () => {
       expect(store.find({type: 'type1', appSymbolicName: 'app2'})).toEqual([emptyQualifierManifestObject]);
       expect(store.find({type: 'type1', appSymbolicName: 'app3'})).toEqual([]);
       expect(store.find({type: 'type1', qualifier: undefined})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject, emptyQualifierManifestObject]);
-      expect(store.find({type: 'type1', qualifier: null})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject, emptyQualifierManifestObject]);
+      expect(store.find({type: 'type1', qualifier: null!})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject, emptyQualifierManifestObject]);
       expect(store.find({type: 'type1', qualifier: {}})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject, emptyQualifierManifestObject]);
       expect(store.find({type: 'type1', qualifier: {'*': '*'}})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject, emptyQualifierManifestObject]);
       expect(store.find({type: 'type1', qualifier: {entity: '*'}})).toEqual([]);
@@ -161,7 +161,7 @@ describe('ManifestObjectStore', () => {
       expect(store.find({type: 'type2', appSymbolicName: 'app2'})).toEqual([asteriskQualifierManifestObject]);
       expect(store.find({type: 'type2', appSymbolicName: 'app3'})).toEqual([]);
       expect(store.find({type: 'type2', qualifier: undefined})).toEqual([asteriskQualifierManifestObject]);
-      expect(store.find({type: 'type2', qualifier: null})).toEqual([]);
+      expect(store.find({type: 'type2', qualifier: null!})).toEqual([]);
       expect(store.find({type: 'type2', qualifier: {}})).toEqual([]);
       expect(store.find({type: 'type2', qualifier: {'*': '*'}})).toEqual([asteriskQualifierManifestObject]);
       expect(store.find({type: 'type2', qualifier: {entity: '*'}})).toEqual([asteriskQualifierManifestObject]);
@@ -169,7 +169,7 @@ describe('ManifestObjectStore', () => {
       expect(store.find({type: 'type3', appSymbolicName: 'app2'})).toEqual([]);
       expect(store.find({type: 'type3', appSymbolicName: 'app3'})).toEqual([exactQualifierManifestObject, anyQualifierManifestObject]);
       expect(store.find({type: 'type3', qualifier: undefined})).toEqual([exactQualifierManifestObject, anyQualifierManifestObject]);
-      expect(store.find({type: 'type3', qualifier: null})).toEqual([]);
+      expect(store.find({type: 'type3', qualifier: null!})).toEqual([]);
       expect(store.find({type: 'type3', qualifier: {}})).toEqual([]);
       expect(store.find({type: 'type3', qualifier: {'*': '*'}})).toEqual([exactQualifierManifestObject, anyQualifierManifestObject]);
       expect(store.find({type: 'type3', qualifier: {entity: '*'}})).toEqual([exactQualifierManifestObject]);
@@ -177,7 +177,7 @@ describe('ManifestObjectStore', () => {
 
     it('should find manifest objects by application and other filter criteria', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app1'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app1'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app1'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app2'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app2'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app3'}};
@@ -191,17 +191,17 @@ describe('ManifestObjectStore', () => {
       store.add(anyQualifierManifestObject);
 
       expect(store.find({appSymbolicName: 'app1', qualifier: undefined})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject]);
-      expect(store.find({appSymbolicName: 'app1', qualifier: null})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject]);
+      expect(store.find({appSymbolicName: 'app1', qualifier: null!})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject]);
       expect(store.find({appSymbolicName: 'app1', qualifier: {}})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject]);
       expect(store.find({appSymbolicName: 'app1', qualifier: {'*': '*'}})).toEqual([undefinedQualifierManifestObject, nullQualifierManifestObject]);
       expect(store.find({appSymbolicName: 'app1', qualifier: {entity: '*'}})).toEqual([]);
       expect(store.find({appSymbolicName: 'app2', qualifier: undefined})).toEqual([emptyQualifierManifestObject, asteriskQualifierManifestObject]);
-      expect(store.find({appSymbolicName: 'app2', qualifier: null})).toEqual([emptyQualifierManifestObject]);
+      expect(store.find({appSymbolicName: 'app2', qualifier: null!})).toEqual([emptyQualifierManifestObject]);
       expect(store.find({appSymbolicName: 'app2', qualifier: {}})).toEqual([emptyQualifierManifestObject]);
       expect(store.find({appSymbolicName: 'app2', qualifier: {'*': '*'}})).toEqual([emptyQualifierManifestObject, asteriskQualifierManifestObject]);
       expect(store.find({appSymbolicName: 'app2', qualifier: {entity: '*'}})).toEqual([asteriskQualifierManifestObject]);
       expect(store.find({appSymbolicName: 'app3', qualifier: undefined})).toEqual([exactQualifierManifestObject, anyQualifierManifestObject]);
-      expect(store.find({appSymbolicName: 'app3', qualifier: null})).toEqual([]);
+      expect(store.find({appSymbolicName: 'app3', qualifier: null!})).toEqual([]);
       expect(store.find({appSymbolicName: 'app3', qualifier: {}})).toEqual([]);
       expect(store.find({appSymbolicName: 'app3', qualifier: {'*': '*'}})).toEqual([exactQualifierManifestObject, anyQualifierManifestObject]);
       expect(store.find({appSymbolicName: 'app3', qualifier: {entity: '*'}})).toEqual([exactQualifierManifestObject]);
@@ -219,7 +219,7 @@ describe('ManifestObjectStore', () => {
 
     it('should remove manifest objects by id', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app'}};
@@ -244,7 +244,7 @@ describe('ManifestObjectStore', () => {
 
     it('should remove manifest objects matching the `undefined` qualifier', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app'}};
@@ -264,7 +264,7 @@ describe('ManifestObjectStore', () => {
 
     it('should remove manifest objects matching the `null` qualifier', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app'}};
@@ -277,14 +277,14 @@ describe('ManifestObjectStore', () => {
       store.add(exactQualifierManifestObject);
       store.add(anyQualifierManifestObject);
 
-      store.remove({qualifier: null});
+      store.remove({qualifier: null!});
 
       expect(store.find({})).toEqual([asteriskQualifierManifestObject, exactQualifierManifestObject, anyQualifierManifestObject]);
     });
 
     it('should remove manifest objects matching the empty qualifier', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app'}};
@@ -304,7 +304,7 @@ describe('ManifestObjectStore', () => {
 
     it('should remove manifest objects matching the asterisk wildcard qualifier', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app'}};
@@ -324,7 +324,7 @@ describe('ManifestObjectStore', () => {
 
     it('should remove manifest objects matching the exact qualifier', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app'}};
@@ -344,7 +344,7 @@ describe('ManifestObjectStore', () => {
 
     it('should remove manifest objects matching the any-more wildcard (**) qualifier', () => {
       const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
+      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
       const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app'}};
       const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app'}};
       const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app'}};

@@ -84,11 +84,11 @@ describe('Keystroke', () => {
     });
 
     it('should throw if parsing a `null` keystroke', () => {
-      expect(() => Keystroke.fromString(null)).toThrowError(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString(null!)).toThrowError(/KeystrokeParseError/);
     });
 
     it('should throw if parsing an `undefined` keystroke', () => {
-      expect(() => Keystroke.fromString(undefined)).toThrowError(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString(undefined!)).toThrowError(/KeystrokeParseError/);
     });
 
     it('should throw if parsing an empty keystroke', () => {

@@ -13,12 +13,12 @@ import {MessageClient} from './message-client';
 import {concat, NEVER, of} from 'rxjs';
 import {IntentClient} from './intent-client';
 
-export async function connectToHostThenMessageClientOnMessage({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatformClient.connect(symbolicName);
+export async function connectToHostThenMessageClientOnMessage(args: {symbolicName: string}): Promise<void> {
+  await MicrofrontendPlatformClient.connect(args.symbolicName);
   Beans.get(MessageClient).onMessage<void, never>('topic', () => NEVER);
 }
 
-export async function connectToHostThenIntentClientOnIntent({symbolicName}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatformClient.connect(symbolicName);
+export async function connectToHostThenIntentClientOnIntent(args: {symbolicName: string}): Promise<void> {
+  await MicrofrontendPlatformClient.connect(args.symbolicName);
   Beans.get(IntentClient).onIntent<void>({type: 'capability'}, () => concat(of('initial'), NEVER));
 }

@@ -82,8 +82,12 @@ describe('MicrofrontendPlatform', () => {
       }
     }
 
-    Beans.registerInitializer({useFunction: () => void (log.push('executing initializer [runlevel=0]')), runlevel: 0});
-    Beans.registerInitializer({useFunction: () => void (log.push('executing initializer [runlevel=2]')), runlevel: 2});
+    Beans.registerInitializer({useFunction: async () => {
+        log.push('executing initializer [runlevel=0]');
+      }, runlevel: 0});
+    Beans.registerInitializer({useFunction: async () => {
+        log.push('executing initializer [runlevel=2]');
+      }, runlevel: 2});
 
     await MicrofrontendPlatform.startPlatform(async () => {
       Beans.register(Bean, {eager: true});

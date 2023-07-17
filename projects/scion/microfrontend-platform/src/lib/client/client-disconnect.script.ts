@@ -16,27 +16,29 @@ import {ɵBrokerGateway} from './messaging/broker-gateway';
 import {ɵVERSION} from '../ɵplatform.model';
 import {MicrofrontendPlatformClient} from './microfrontend-platform-client';
 
-export async function connectToHost({symbolicName, disconnectOnUnloadDisabled = false, version = undefined}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+export async function connectToHost(args: {symbolicName: string; disconnectOnUnloadDisabled?: boolean; version?: string}, observer: Observer<string>): Promise<void> {
+  const disconnectOnUnloadDisabled = args.disconnectOnUnloadDisabled ?? false;
+
   if (disconnectOnUnloadDisabled) {
     Beans.register(MicrofrontendPlatformStopper, {useClass: NullMicrofrontendPlatformStopper});
   }
-  if (version) {
-    Beans.register(ɵVERSION, {useValue: version});
+  if (args.version) {
+    Beans.register(ɵVERSION, {useValue: args.version});
   }
-  await MicrofrontendPlatformClient.connect(symbolicName);
-  observer.next(Beans.get(ɵBrokerGateway).session.clientId);
+  await MicrofrontendPlatformClient.connect(args.symbolicName);
+  observer.next(Beans.get(ɵBrokerGateway).session!.clientId);
 }
 
-export async function connectToHostThenStopPlatform({symbolicName}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatformClient.connect(symbolicName);
-  observer.next(Beans.get(ɵBrokerGateway).session.clientId);
+export async function connectToHostThenStopPlatform(args: {symbolicName: string}, observer: Observer<string>): Promise<void> {
+  await MicrofrontendPlatformClient.connect(args.symbolicName);
+  observer.next(Beans.get(ɵBrokerGateway).session!.clientId);
   await MicrofrontendPlatform.destroy();
 }
 
-export async function connectToHostThenLocationHref({symbolicName, locationHref}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatformClient.connect(symbolicName);
-  observer.next(Beans.get(ɵBrokerGateway).session.clientId);
-  window.location.href = locationHref;
+export async function connectToHostThenLocationHref(args: {symbolicName: string; locationHref: string}, observer: Observer<string>): Promise<void> {
+  await MicrofrontendPlatformClient.connect(args.symbolicName);
+  observer.next(Beans.get(ɵBrokerGateway).session!.clientId);
+  window.location.href = args.locationHref;
 }
 
 class NullMicrofrontendPlatformStopper implements MicrofrontendPlatformStopper {

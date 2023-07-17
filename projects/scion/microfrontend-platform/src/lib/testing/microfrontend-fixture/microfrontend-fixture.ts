@@ -82,21 +82,24 @@ export class MicrofrontendFixture {
   /**
    * Iframe created by this fixture.
    */
-  public get iframe(): HTMLIFrameElement | null {
+  public get iframe(): HTMLIFrameElement {
     if (this._iframeOrRouterOutlet instanceof HTMLIFrameElement) {
       return this._iframeOrRouterOutlet;
     }
     if (this._iframeOrRouterOutlet instanceof SciRouterOutletElement) {
       return this._iframeOrRouterOutlet.iframe;
     }
-    return null;
+    throw Error('[MicrofrontendFixtureError] iframe not attached.');
   }
 
   /**
    * Router outlet created by this fixture; only set if instructed this fixture to use a router outlet.
    */
-  public get routerOutlet(): SciRouterOutletElement | null {
-    return this._iframeOrRouterOutlet instanceof SciRouterOutletElement ? this._iframeOrRouterOutlet : null;
+  public get routerOutlet(): SciRouterOutletElement {
+    if (this._iframeOrRouterOutlet instanceof SciRouterOutletElement) {
+      return this._iframeOrRouterOutlet;
+    }
+    throw Error('[MicrofrontendFixtureError] SciRouterOutletElement not attached.');
   }
 
   /**

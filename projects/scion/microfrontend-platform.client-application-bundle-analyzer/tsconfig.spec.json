@@ -3,6 +3,7 @@
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../../out-tsc/microfrontend-platform.client-application-bundle-analyzer.spec",
+    "strict" : true,
     "types": [
       "jasmine"
     ],

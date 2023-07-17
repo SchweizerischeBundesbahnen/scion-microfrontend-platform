@@ -161,7 +161,7 @@ export class BrowserOutletPO implements OutletPageObject {
     await this._locator.locator('input.e2e-url').fill(url);
     await Promise.all([
       this._locator.locator('button.e2e-go').click(),
-      outletFrame.waitForNavigation({url}),
+      outletFrame.waitForURL(url),
     ]);
   }
 

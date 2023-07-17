@@ -33,11 +33,11 @@ describe('Qualifiers', () => {
     expect(Qualifiers.validateQualifier({entity: 'person', '*': '_'}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
     expect(Qualifiers.validateQualifier({entity: 'person', '*': '_'}, {exactQualifier: false})).toBeNull();
 
-    expect(Qualifiers.validateQualifier({entity: null}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
-    expect(Qualifiers.validateQualifier({entity: null}, {exactQualifier: false})).toMatch(/IllegalQualifierError/);
+    expect(Qualifiers.validateQualifier({entity: null!}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
+    expect(Qualifiers.validateQualifier({entity: null!}, {exactQualifier: false})).toMatch(/IllegalQualifierError/);
 
-    expect(Qualifiers.validateQualifier({entity: undefined}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
-    expect(Qualifiers.validateQualifier({entity: undefined}, {exactQualifier: false})).toMatch(/IllegalQualifierError/);
+    expect(Qualifiers.validateQualifier({entity: undefined!}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
+    expect(Qualifiers.validateQualifier({entity: undefined!}, {exactQualifier: false})).toMatch(/IllegalQualifierError/);
 
     expect(Qualifiers.validateQualifier({entity: ''}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
     expect(Qualifiers.validateQualifier({entity: ''}, {exactQualifier: false})).toMatch(/IllegalQualifierError/);

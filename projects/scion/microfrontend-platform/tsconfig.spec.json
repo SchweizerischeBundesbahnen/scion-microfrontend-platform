@@ -2,6 +2,7 @@
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../../out-tsc/microfrontend-platform.spec",
+    "strict" : true,
     "types": [
       "jasmine"
     ]

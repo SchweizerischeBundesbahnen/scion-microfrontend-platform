@@ -23,10 +23,10 @@ import {MicrofrontendFixture} from '../../testing/microfrontend-fixture/microfro
 import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 import {PublishOptions, RequestOptions} from './publish-options';
 
-const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
+const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T | undefined => msg.body;
 const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<string, any> => msg.headers;
-const paramsExtractFn = <T>(msg: IntentMessage<T>): Map<string, any> => msg.intent.params;
-const capabilityIdExtractFn = <T>(msg: IntentMessage<T>): string => msg.capability.metadata.id;
+const paramsExtractFn = <T>(msg: IntentMessage<T>): Map<string, any> | undefined => msg.intent.params;
+const capabilityIdExtractFn = <T>(msg: IntentMessage<T>): string => msg.capability.metadata!.id;
 
 describe('Messaging', () => {
 
@@ -303,7 +303,7 @@ describe('Messaging', () => {
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -318,7 +318,7 @@ describe('Messaging', () => {
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -333,9 +333,9 @@ describe('Messaging', () => {
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, msg.body.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, msg.body.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -350,7 +350,7 @@ describe('Messaging', () => {
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -365,9 +365,9 @@ describe('Messaging', () => {
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, msg.body.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, msg.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -382,7 +382,7 @@ describe('Messaging', () => {
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
       const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -437,7 +437,7 @@ describe('Messaging', () => {
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
       const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -460,7 +460,7 @@ describe('Messaging', () => {
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
       const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -483,9 +483,9 @@ describe('Messaging', () => {
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
       const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -508,7 +508,7 @@ describe('Messaging', () => {
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
       const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -531,9 +531,9 @@ describe('Messaging', () => {
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
       const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
+      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -556,7 +556,7 @@ describe('Messaging', () => {
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
       const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -1647,8 +1647,8 @@ describe('Messaging', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       await expectAsync(Beans.get(MessageClient).publish('')).toBeRejectedWithError(/IllegalTopicError/);
-      await expectAsync(Beans.get(MessageClient).publish(null)).toBeRejectedWithError(/IllegalTopicError/);
-      await expectAsync(Beans.get(MessageClient).publish(undefined)).toBeRejectedWithError(/IllegalTopicError/);
+      await expectAsync(Beans.get(MessageClient).publish(null!)).toBeRejectedWithError(/IllegalTopicError/);
+      await expectAsync(Beans.get(MessageClient).publish(undefined!)).toBeRejectedWithError(/IllegalTopicError/);
     });
 
     it('should error if publish topic contains empty segments', async () => {
@@ -1676,12 +1676,12 @@ describe('Messaging', () => {
       expect(captor1.getError()).toMatch(/IllegalTopicError/);
 
       const captor2 = new ObserveCaptor();
-      Beans.get(MessageClient).observe$(null).subscribe(captor2);
+      Beans.get(MessageClient).observe$(null!).subscribe(captor2);
       await captor2.waitUntilCompletedOrErrored();
       expect(captor2.getError()).toMatch(/IllegalTopicError/);
 
       const captor3 = new ObserveCaptor();
-      Beans.get(MessageClient).observe$(undefined).subscribe(captor3);
+      Beans.get(MessageClient).observe$(undefined!).subscribe(captor3);
       await captor3.waitUntilCompletedOrErrored();
       expect(captor3.getError()).toMatch(/IllegalTopicError/);
     });
@@ -1724,12 +1724,12 @@ describe('Messaging', () => {
       expect(captor1.getError()).toMatch(/IllegalTopicError/);
 
       const captor2 = new ObserveCaptor();
-      Beans.get(MessageClient).subscriberCount$(null).subscribe(captor2);
+      Beans.get(MessageClient).subscriberCount$(null!).subscribe(captor2);
       await captor2.waitUntilCompletedOrErrored();
       expect(captor2.getError()).toMatch(/IllegalTopicError/);
 
       const captor3 = new ObserveCaptor();
-      Beans.get(MessageClient).subscriberCount$(undefined).subscribe(captor3);
+      Beans.get(MessageClient).subscriberCount$(undefined!).subscribe(captor3);
       await captor3.waitUntilCompletedOrErrored();
       expect(captor3.getError()).toMatch(/IllegalTopicError/);
     });
@@ -1783,12 +1783,12 @@ describe('Messaging', () => {
         expect(captor1.getError()).toMatch(/IllegalTopicError/);
 
         const captor2 = new ObserveCaptor();
-        Beans.get(MessageClient).request$(null).subscribe(captor2);
+        Beans.get(MessageClient).request$(null!).subscribe(captor2);
         await captor2.waitUntilCompletedOrErrored();
         expect(captor2.getError()).toMatch(/IllegalTopicError/);
 
         const captor3 = new ObserveCaptor();
-        Beans.get(MessageClient).request$(undefined).subscribe(captor3);
+        Beans.get(MessageClient).request$(undefined!).subscribe(captor3);
         await captor3.waitUntilCompletedOrErrored();
         expect(captor3.getError()).toMatch(/IllegalTopicError/);
       });
@@ -2515,8 +2515,8 @@ describe('Messaging', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: ''}})).toBeRejectedWithError(/IllegalQualifierError/);
-      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: null}})).toBeRejectedWithError(/IllegalQualifierError/);
-      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: undefined}})).toBeRejectedWithError(/IllegalQualifierError/);
+      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: null!}})).toBeRejectedWithError(/IllegalQualifierError/);
+      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: undefined!}})).toBeRejectedWithError(/IllegalQualifierError/);
     });
 
     it('should error if observe qualifier contains entries with an illegal data type', async () => {
@@ -2537,12 +2537,12 @@ describe('Messaging', () => {
       expect(captor1.getError()).toMatch(/IllegalQualifierError/);
 
       const captor2 = new ObserveCaptor();
-      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: null}}).subscribe(captor2);
+      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: null!}}).subscribe(captor2);
       await captor2.waitUntilCompletedOrErrored();
       expect(captor2.getError()).toMatch(/IllegalQualifierError/);
 
       const captor3 = new ObserveCaptor();
-      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: undefined}}).subscribe(captor3);
+      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: undefined!}}).subscribe(captor3);
       await captor3.waitUntilCompletedOrErrored();
       expect(captor3.getError()).toMatch(/IllegalQualifierError/);
     });
@@ -2581,12 +2581,12 @@ describe('Messaging', () => {
         expect(captor1.getError()).toMatch(/IllegalQualifierError/);
 
         const captor2 = new ObserveCaptor();
-        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: null}}).subscribe(captor2);
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: null!}}).subscribe(captor2);
         await captor2.waitUntilCompletedOrErrored();
         expect(captor2.getError()).toMatch(/IllegalQualifierError/);
 
         const captor3 = new ObserveCaptor();
-        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: undefined}}).subscribe(captor3);
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: undefined!}}).subscribe(captor3);
         await captor3.waitUntilCompletedOrErrored();
         expect(captor3.getError()).toMatch(/IllegalQualifierError/);
       });
@@ -3095,17 +3095,17 @@ describe('Messaging', () => {
         // Publish retained intent in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '20°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Publish retained intent in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '21°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Receive intents in app1
@@ -3177,17 +3177,17 @@ describe('Messaging', () => {
         // Publish retained intent in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '20°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Publish retained intent in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '21°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Receive intents in app1
@@ -3259,17 +3259,17 @@ describe('Messaging', () => {
         // Publish retained intent in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '20°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Publish retained intent in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '21°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Receive intents in app1
@@ -3347,25 +3347,25 @@ describe('Messaging', () => {
         // Publish retained intent in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '20°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Publish retained intent in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '21°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Publish retained intent in app3
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app3',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '22°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Receive intents in app1
@@ -3431,25 +3431,25 @@ describe('Messaging', () => {
         // Publish retained intent in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '20°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Publish retained intent in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '21°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Delete intent in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: undefined,
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Receive intents in app1
@@ -3508,25 +3508,25 @@ describe('Messaging', () => {
         // Publish retained intent in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '20°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Publish retained intent in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '21°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Delete intent in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: undefined,
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Receive intents in app1
@@ -3581,9 +3581,9 @@ describe('Messaging', () => {
         // Publish retained intent in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'publishIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
           body: '20°C',
-          options: {retain: true} as PublishOptions,
+          options: {retain: true} satisfies PublishOptions,
         });
 
         // Receive intents in app1
@@ -4096,29 +4096,29 @@ describe('Messaging', () => {
         // Publish retained intent request in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'basement')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Receive intent requests in app1
@@ -4198,29 +4198,29 @@ describe('Messaging', () => {
         // Publish retained intent request in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'basement')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Receive intents in app1
@@ -4320,29 +4320,29 @@ describe('Messaging', () => {
         // Publish retained intent request in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'basement')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Receive intents in app1
@@ -4428,50 +4428,50 @@ describe('Messaging', () => {
         // Publish retained intent request in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent request in app2
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app2',
-          intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'basement')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent in app3
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app3',
-          intent: {type: 'temperature', params: new Map().set('room', 'basement')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'basement')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent in app3
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app3',
-          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'kitchen')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Publish retained intent in app3
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app3',
-          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} as Intent,
-          options: {retain: true} as RequestOptions,
+          intent: {type: 'temperature', params: new Map().set('room', 'livingroom')} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Receive intents in app1
@@ -4556,8 +4556,8 @@ describe('Messaging', () => {
         // Publish retained intent request in app1
         await registerFixture(new MicrofrontendFixture()).insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'requestViaIntent', {
           symbolicName: 'app1',
-          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} as Intent,
-          options: {retain: true} as PublishOptions,
+          intent: {type: 'temperature', qualifier: {room: 'livingroom'}} satisfies Intent,
+          options: {retain: true} satisfies RequestOptions,
         });
 
         // Receive intents in app1

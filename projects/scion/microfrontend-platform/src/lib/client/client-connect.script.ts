@@ -16,27 +16,28 @@ import {MessagingTransport} from '../ɵmessaging.model';
 import {ɵWINDOW_TOP} from '../ɵplatform.model';
 import {filterByTransport} from '../operators';
 
-export async function connectToHost({symbolicName, brokerDiscoverTimeout, connectCount}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
-  await MicrofrontendPlatformClient.connect(symbolicName, {brokerDiscoverTimeout});
-  observer.next(Beans.get(ɵBrokerGateway).session.clientId);
+export async function connectToHost(args: {symbolicName: string; brokerDiscoverTimeout: number; connectCount: number}, observer: Observer<string>): Promise<void> {
+  await MicrofrontendPlatformClient.connect(args.symbolicName, {brokerDiscoverTimeout: args.brokerDiscoverTimeout});
+  observer.next(Beans.get(ɵBrokerGateway).session!.clientId);
 
-  for (let i = 1; i < connectCount; i++) {
+  for (let i = 1; i < args.connectCount; i++) {
     const {clientId} = await Beans.get(ɵBrokerGateway).connectToBroker();
     observer.next(clientId);
   }
 }
 
-export async function connectClientToRemoteHost({symbolicName, brokerDiscoverTimeout}, observer: Observer<string>): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+export async function connectClientToRemoteHost(args: {symbolicName: string; brokerDiscoverTimeout: number}, observer: Observer<string>): Promise<void> {
   Beans.register(ɵWINDOW_TOP, {useValue: window}); // simulate to be loaded into the top-level window
-  await MicrofrontendPlatformClient.connect(symbolicName, {brokerDiscoverTimeout});
-  observer.next(Beans.get(ɵBrokerGateway).session.clientId);
+  await MicrofrontendPlatformClient.connect(args.symbolicName, {brokerDiscoverTimeout: args.brokerDiscoverTimeout});
+  observer.next(Beans.get(ɵBrokerGateway).session!.clientId);
 }
 
 /**
  * Bridges messages between host and client.
  */
-export async function bridgeMessages(): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+export async function bridgeMessages(): Promise<void> {
   const hostWindow = window.parent;
+  // @ts-expect-error custom property to retrieve the contentWindow of the iframe
   const clientWindow = window.parent.document['X-CLIENT-WINDOW'];
 
   // Bridge messages from the client to the remote host
@@ -49,7 +50,7 @@ export async function bridgeMessages(): Promise<void> { // eslint-disable-line @
       hostWindow.postMessage(event.data);
     });
 
-  // Bridge messages from the the remote host to the client
+  // Bridge messages from the remote host to the client
   fromEvent<MessageEvent>(window, 'message')
     .pipe(filterByTransport(MessagingTransport.BrokerToClient))
     .subscribe(event => {
