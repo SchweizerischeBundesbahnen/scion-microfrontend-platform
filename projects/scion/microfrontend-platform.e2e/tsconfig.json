@@ -11,7 +11,7 @@
       "node"
     ],
     "paths": {
-      "@scion/microfrontend-platform" : [
+      "@scion/microfrontend-platform": [
         "projects/scion/microfrontend-platform.e2e/microfrontend-platform.api"
       ]
     }
