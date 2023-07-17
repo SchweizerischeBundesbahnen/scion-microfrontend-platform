@@ -5,11 +5,10 @@
     "outDir": "../../out-tsc/microfrontend-platform-testing-app",
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "types": [],
-    "strict": true
+    "types": []
   },
   "files": [
-    "src/main.ts",
+    "src/main.ts"
   ],
   "include": [
     "src/**/*.d.ts"

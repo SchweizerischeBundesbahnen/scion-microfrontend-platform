@@ -4,8 +4,7 @@
 {
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../../out-tsc/microfrontend-platforms.script.spec",
-    "strict" : true
+    "outDir": "../../../out-tsc/microfrontend-platforms.script.spec"
   },
   "include": [
     "**/*.script.ts"
