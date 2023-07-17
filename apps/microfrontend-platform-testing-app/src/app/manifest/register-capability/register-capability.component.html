@@ -2,19 +2,19 @@
   <header>Register a capability</header>
   <form autocomplete="off" [formGroup]="registerForm">
     <sci-form-field label="Type *" direction="column">
-      <input [formControlName]="TYPE" class="e2e-type">
+      <input [formControl]="registerForm.controls.type" class="e2e-type">
     </sci-form-field>
     <sci-form-field label="Qualifier" direction="column">
-      <sci-params-enter [paramsFormArray]="$any(registerForm.get(QUALIFIER))" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
+      <sci-params-enter [paramsFormArray]="registerForm.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
     </sci-form-field>
     <sci-form-field label="Params" direction="column">
-      <input [formControlName]="PARAMS" class="e2e-params" placeholder="JSON Array, e.g., {{paramsPlaceholder | json}}">
+      <input [formControl]="registerForm.controls.params" class="e2e-params" placeholder="JSON Array, e.g., {{paramsPlaceholder | json}}">
     </sci-form-field>
     <sci-form-field label="Private" direction="column">
-      <sci-checkbox [formControlName]="PRIVATE" class="e2e-private"></sci-checkbox>
+      <sci-checkbox [formControl]="registerForm.controls.private" class="e2e-private"></sci-checkbox>
     </sci-form-field>
     <sci-form-field label="Properties" direction="column">
-      <sci-params-enter [paramsFormArray]="$any(registerForm.get(PROPERTIES))" [addable]="true" [removable]="true" class="e2e-properties"></sci-params-enter>
+      <sci-params-enter [paramsFormArray]="registerForm.controls.properties" [addable]="true" [removable]="true" class="e2e-properties"></sci-params-enter>
     </sci-form-field>
     <button type="submit" (click)="onRegister()" [disabled]="registerForm.invalid" class="e2e-register">Register</button>
   </form>
@@ -31,19 +31,19 @@
   <header>Unregister capability(-ies)</header>
   <form autocomplete="off" [formGroup]="unregisterForm">
     <sci-form-field label="ID" direction="column">
-      <input [formControlName]="ID" class="e2e-id">
+      <input [formControl]="unregisterForm.controls.id" class="e2e-id">
     </sci-form-field>
     <sci-form-field label="Type" direction="column">
-      <input [formControlName]="TYPE" class="e2e-type">
+      <input [formControl]="unregisterForm.controls.type" class="e2e-type">
     </sci-form-field>
     <sci-form-field label="Qualifier" direction="column">
-      <sci-params-enter [paramsFormArray]="$any(unregisterForm.get(QUALIFIER))" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
+      <sci-params-enter [paramsFormArray]="unregisterForm.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
     </sci-form-field>
     <sci-form-field label="NilQualifier if empty" direction="column">
-      <sci-checkbox [formControlName]="NILQUALIFIER_IF_EMPTY" class="e2e-nilqualifier-if-empty"></sci-checkbox>
+      <sci-checkbox [formControl]="unregisterForm.controls.nilqualifierIfEmpty" class="e2e-nilqualifier-if-empty"></sci-checkbox>
     </sci-form-field>
     <sci-form-field label="Application" direction="column">
-      <input [formControlName]="APP_SYMBOLIC_NAME" class="e2e-app-symbolic-name">
+      <input [formControl]="unregisterForm.controls.appSymbolicName" class="e2e-app-symbolic-name">
     </sci-form-field>
     <button type="submit" (click)="onUnregister()" [disabled]="unregisterForm.invalid" class="e2e-unregister">Unregister</button>
   </form>
@@ -61,8 +61,8 @@
     <ng-template sciListItem>
       <section class="capability">
         <sci-qualifier-chip-list [qualifier]="capability.qualifier" [type]="capability.type"></sci-qualifier-chip-list>
-        <span class="app">{{capability.metadata.appSymbolicName}}</span>
-        <span class="id">{{capability.metadata.id}}</span>
+        <span class="app">{{capability.metadata!.appSymbolicName}}</span>
+        <span class="id">{{capability.metadata!.id}}</span>
         <span class="visibility">{{capability.private ? 'PRIVATE' : 'PUBLIC'}}</span>
       </section>
     </ng-template>

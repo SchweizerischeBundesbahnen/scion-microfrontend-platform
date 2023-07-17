@@ -12,7 +12,7 @@ import packageJson from 'package.json';
 import {ApplicationConfig} from '@scion/microfrontend-platform';
 
 const version = packageJson.version.replace(/\./g, '-');
-const devtools: ApplicationConfig = {
+const devtools: ApplicationConfig | null = {
   symbolicName: 'devtools',
   manifestUrl: `https://scion-microfrontend-platform-devtools-v${version}.vercel.app/assets/manifest.json`,
   intentionCheckDisabled: true,

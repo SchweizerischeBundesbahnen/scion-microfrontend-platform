@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component, ElementRef, HostListener, Injector, OnDestroy} from '@angular/core';
-import {ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
@@ -19,8 +19,6 @@ import {A11yModule} from '@angular/cdk/a11y';
 import {SciListModule} from '@scion/components.internal/list';
 import {ContextEntryComponent} from '../context-entry/context-entry.component';
 
-export const NAME = 'name';
-export const VALUE = 'value';
 const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top'};
 
 @Component({
@@ -40,22 +38,17 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
 })
 export class RouterOutletContextComponent implements OnDestroy {
 
-  public readonly NAME = NAME;
-  public readonly VALUE = VALUE;
-
-  public form: UntypedFormGroup;
+  public form = this._formBuilder.group({
+    name: this._formBuilder.control('', Validators.required),
+    value: this._formBuilder.control(''),
+  });
 
   private _destroy$ = new Subject<void>();
 
   constructor(host: ElementRef<HTMLElement>,
-              formBuilder: UntypedFormBuilder,
-              public routerOutlet: SciRouterOutletElement,
-              private _overlay: OverlayRef) {
-    this.form = new UntypedFormGroup({
-      [NAME]: formBuilder.control('', Validators.required),
-      [VALUE]: formBuilder.control(''),
-    }, {updateOn: 'change'});
-
+              private _formBuilder: NonNullableFormBuilder,
+              private _overlay: OverlayRef,
+              public routerOutlet: SciRouterOutletElement) {
     this._overlay.backdropClick()
       .pipe(takeUntil(this._destroy$))
       .subscribe(() => {
@@ -69,12 +62,12 @@ export class RouterOutletContextComponent implements OnDestroy {
   }
 
   public onAddClick(): void {
-    this.routerOutlet.setContextValue(this.form.get(NAME).value, this.parseContextValueFromUI());
+    this.routerOutlet.setContextValue(this.form.controls.name.value, this.parseContextValueFromUI());
     this.form.reset();
   }
 
   private parseContextValueFromUI(): string | null | undefined {
-    const value = this.form.get(VALUE).value;
+    const value = this.form.controls.value.value;
     switch (value) {
       case '<undefined>':
         return undefined;

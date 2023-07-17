@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {APP_IDENTITY, Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
 import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Observable} from 'rxjs';
@@ -18,12 +18,6 @@ import {SciFormFieldModule} from '@scion/components.internal/form-field';
 import {SciCheckboxModule} from '@scion/components.internal/checkbox';
 import {SciListModule} from '@scion/components.internal/list';
 import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-chip-list';
-
-const TYPE = 'type';
-const QUALIFIER = 'qualifier';
-const ID = 'id';
-const NILQUALIFIER_IF_EMPTY = 'nilQualifierIfEmpty';
-const APP_SYMBOLIC_NAME = 'appSymbolicName';
 
 @Component({
   selector: 'app-register-intention',
@@ -44,36 +38,27 @@ const APP_SYMBOLIC_NAME = 'appSymbolicName';
 })
 export default class RegisterIntentionComponent {
 
-  public readonly TYPE = TYPE;
-  public readonly QUALIFIER = QUALIFIER;
-  public readonly ID = ID;
-  public readonly NILQUALIFIER_IF_EMPTY = NILQUALIFIER_IF_EMPTY;
-  public readonly APP_SYMBOLIC_NAME = APP_SYMBOLIC_NAME;
+  public registerForm = this._formBuilder.group({
+    type: this._formBuilder.control('', Validators.required),
+    qualifier: this._formBuilder.array([]),
+  });
 
-  public registerForm: UntypedFormGroup;
-  public unregisterForm: UntypedFormGroup;
+  public unregisterForm = this._formBuilder.group({
+    id: this._formBuilder.control(''),
+    type: this._formBuilder.control(''),
+    qualifier: this._formBuilder.array([]),
+    nilqualifierIfEmpty: this._formBuilder.control(false),
+    appSymbolicName: this._formBuilder.control(''),
+  });
 
   public intentions$: Observable<Intention[]>;
 
-  public registerResponse: string;
-  public registerError: string;
+  public registerResponse: string | undefined;
+  public registerError: string | undefined;
   public unregisterResponse: 'OK' | undefined;
-  public unregisterError: string;
+  public unregisterError: string | undefined;
 
-  constructor(fb: UntypedFormBuilder) {
-    this.registerForm = fb.group({
-      [TYPE]: new UntypedFormControl('', Validators.required),
-      [QUALIFIER]: fb.array([]),
-    });
-
-    this.unregisterForm = fb.group({
-      [ID]: new UntypedFormControl(''),
-      [TYPE]: new UntypedFormControl(''),
-      [QUALIFIER]: fb.array([]),
-      [NILQUALIFIER_IF_EMPTY]: new UntypedFormControl(false),
-      [APP_SYMBOLIC_NAME]: new UntypedFormControl(''),
-    });
-
+  constructor(private _formBuilder: NonNullableFormBuilder) {
     this.intentions$ = Beans.get(ManifestService).lookupIntentions$({appSymbolicName: Beans.get<string>(APP_IDENTITY)});
   }
 
@@ -82,8 +67,8 @@ export default class RegisterIntentionComponent {
     this.registerError = undefined;
 
     const intention: Intention = {
-      type: this.registerForm.get(TYPE).value,
-      qualifier: SciParamsEnterComponent.toParamsDictionary(this.registerForm.get(QUALIFIER) as UntypedFormArray),
+      type: this.registerForm.controls.type.value,
+      qualifier: SciParamsEnterComponent.toParamsDictionary(this.registerForm.controls.qualifier, false),
     };
 
     Beans.get(ManifestService).registerIntention(intention)
@@ -95,7 +80,7 @@ export default class RegisterIntentionComponent {
       })
       .finally(() => {
         this.registerForm.reset();
-        this.registerForm.setControl(QUALIFIER, new UntypedFormArray([]));
+        this.registerForm.setControl('qualifier', this._formBuilder.array([]));
       });
   }
 
@@ -103,15 +88,15 @@ export default class RegisterIntentionComponent {
     this.unregisterResponse = undefined;
     this.unregisterError = undefined;
 
-    const nilQualifierIfEmpty = this.unregisterForm.get(NILQUALIFIER_IF_EMPTY).value;
-    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.unregisterForm.get(QUALIFIER) as UntypedFormArray, false);
+    const nilQualifierIfEmpty = this.unregisterForm.controls.nilqualifierIfEmpty.value;
+    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.unregisterForm.controls.qualifier);
     const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
 
     const filter: ManifestObjectFilter = {
-      id: this.unregisterForm.get(ID).value || undefined,
-      type: this.unregisterForm.get(TYPE).value || undefined,
-      qualifier: Object.keys(qualifier).length ? qualifier : nilQualifierOrUndefined,
-      appSymbolicName: this.unregisterForm.get(APP_SYMBOLIC_NAME).value || undefined,
+      id: this.unregisterForm.controls.id.value || undefined,
+      type: this.unregisterForm.controls.type.value || undefined,
+      qualifier: qualifier ?? nilQualifierOrUndefined,
+      appSymbolicName: this.unregisterForm.controls.appSymbolicName.value || undefined,
     };
 
     Beans.get(ManifestService).unregisterIntentions(filter)
@@ -123,7 +108,7 @@ export default class RegisterIntentionComponent {
       })
       .finally(() => {
         this.unregisterForm.reset();
-        this.unregisterForm.setControl(QUALIFIER, new UntypedFormArray([]));
+        this.unregisterForm.setControl('qualifier', this._formBuilder.array([]));
       });
   }
 }

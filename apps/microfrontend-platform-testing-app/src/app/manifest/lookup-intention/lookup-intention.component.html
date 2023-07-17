@@ -1,18 +1,18 @@
 <form autocomplete="off" [formGroup]="form">
   <sci-form-field label="ID">
-    <input [formControlName]="ID" class="e2e-id">
+    <input [formControl]="form.controls.id" class="e2e-id">
   </sci-form-field>
   <sci-form-field label="Type">
-    <input [formControlName]="TYPE" class="e2e-type">
+    <input [formControl]="form.controls.type" class="e2e-type">
   </sci-form-field>
   <sci-form-field label="Qualifier">
-    <sci-params-enter [paramsFormArray]="$any(form.get(QUALIFIER))" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
+    <sci-params-enter [paramsFormArray]="form.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
   </sci-form-field>
   <sci-form-field label="NilQualifier if empty">
-    <sci-checkbox [formControlName]="NILQUALIFIER_IF_EMPTY" class="e2e-nilqualifier-if-empty"></sci-checkbox>
+    <sci-checkbox [formControl]="form.controls.nilqualifierIfEmpty" class="e2e-nilqualifier-if-empty"></sci-checkbox>
   </sci-form-field>
   <sci-form-field label="Application">
-    <input [formControlName]="APP_SYMBOLIC_NAME" class="e2e-app-symbolic-name">
+    <input [formControl]="form.controls.appSymbolicName" class="e2e-app-symbolic-name">
   </sci-form-field>
 
   <section class="buttons">
@@ -27,8 +27,8 @@
     <ng-template sciListItem>
       <section class="intention">
         <sci-qualifier-chip-list [qualifier]="intention.qualifier" [type]="intention.type"></sci-qualifier-chip-list>
-        <span class="app">{{intention.metadata.appSymbolicName}}</span>
-        <span class="id e2e-id">{{intention.metadata.id}}</span>
+        <span class="app">{{intention.metadata!.appSymbolicName}}</span>
+        <span class="id e2e-id">{{intention.metadata!.id}}</span>
       </section>
     </ng-template>
   </ng-container>

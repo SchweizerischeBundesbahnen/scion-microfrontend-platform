@@ -149,7 +149,7 @@ function installMessageInterceptors(queryParams: Map<string, string>): void {
     const interceptor = new class implements MessageInterceptor {
       public intercept(message: TopicMessage<string>, next: Handler<TopicMessage<string>>): Promise<void> {
         if (message.topic === queryParams.get('intercept-message:uppercase')) {
-          return next.handle({...message, body: message.body.toUpperCase()});
+          return next.handle({...message, body: message.body!.toUpperCase()});
         }
         else {
           return next.handle(message);
@@ -190,7 +190,7 @@ function installIntentInterceptors(queryParams: Map<string, string>): void {
     const interceptor = new class implements IntentInterceptor {
       public intercept(message: IntentMessage<string>, next: Handler<IntentMessage<string>>): Promise<void> {
         if (message.intent.type === queryParams.get('intercept-intent:uppercase')) {
-          return next.handle({...message, body: message.body.toUpperCase()});
+          return next.handle({...message, body: message.body!.toUpperCase()});
         }
         else {
           return next.handle(message);

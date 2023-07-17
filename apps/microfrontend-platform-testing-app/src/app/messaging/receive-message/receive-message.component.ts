@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component, OnDestroy} from '@angular/core';
-import {IntentClient, IntentMessage, MessageClient, MessageHeaders, Qualifier, TopicMessage} from '@scion/microfrontend-platform';
-import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {IntentClient, IntentMessage, MessageClient, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
+import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subject, Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith, takeUntil} from 'rxjs/operators';
 import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
@@ -18,16 +18,8 @@ import {NgFor, NgIf} from '@angular/common';
 import {SciFormFieldModule} from '@scion/components.internal/form-field';
 import {SciListModule} from '@scion/components.internal/list';
 import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
-
-export const FLAVOR = 'flavor';
-export const DESTINATION = 'destination';
-export const TOPIC = 'topic';
-export const TYPE = 'type';
-export const QUALIFIER = 'qualifier';
-
-enum MessagingFlavor {
-  Topic = 'Topic', Intent = 'Intent',
-}
+import {AppAsPipe} from '../../common/as.pipe';
+import {stringifyError} from '../../common/stringify-error.util';
 
 @Component({
   selector: 'app-receive-message',
@@ -42,54 +34,48 @@ enum MessagingFlavor {
     SciParamsEnterModule,
     SciListModule,
     MessageListItemComponent,
+    AppAsPipe,
   ],
 })
 export default class ReceiveMessageComponent implements OnDestroy {
 
-  public FLAVOR = FLAVOR;
-  public DESTINATION = DESTINATION;
-  public TOPIC = TOPIC;
-  public TYPE = TYPE;
-  public QUALIFIER = QUALIFIER;
-
   private _destroy$ = new Subject<void>();
   private _messageClient: MessageClient;
   private _intentClient: IntentClient;
-  private _subscription: Subscription;
+  private _subscription: Subscription | undefined;
 
-  public form: UntypedFormGroup;
+  public form = this._formBuilder.group({
+    flavor: this._formBuilder.control<MessagingFlavor>(MessagingFlavor.Topic, Validators.required),
+    destination: this._formBuilder.group<TopicMessageDestination | IntentMessageDestination>(this.createTopicDestination()),
+  });
+
   public messages: (TopicMessage | IntentMessage)[] = [];
   public MessagingFlavor = MessagingFlavor;
-  public MessageHeaders = MessageHeaders;
-  public subscribeError: string;
 
-  constructor(private _formBuilder: UntypedFormBuilder) {
+  public subscribeError: string | undefined;
+
+  public MessageHeaders = MessageHeaders;
+  public TopicMessageDestinationFormGroup = FormGroup<TopicMessageDestination>;
+  public IntentMessageDestinationFromGroup = FormGroup<IntentMessageDestination>;
+
+  constructor(private _formBuilder: NonNullableFormBuilder) {
     this._messageClient = Beans.get(MessageClient);
     this._intentClient = Beans.get(IntentClient);
 
-    this.form = this._formBuilder.group({
-      [FLAVOR]: new UntypedFormControl(MessagingFlavor.Topic, Validators.required),
-      [DESTINATION]: this.createTopicDestinationFormGroup(),
-    });
-
-    this.form.get(FLAVOR).valueChanges
+    this.form.controls.flavor.valueChanges
       .pipe(
-        startWith(this.form.get(FLAVOR).value as MessagingFlavor),
+        startWith(this.form.controls.flavor.value),
         distinctUntilChanged(),
         takeUntil(this._destroy$),
       )
-      .subscribe((flavor: string) => {
-        this.onFlavorChange(MessagingFlavor[flavor]);
+      .subscribe(flavor => {
+        this.onFlavorChange(flavor);
       });
   }
 
   private onFlavorChange(flavor: MessagingFlavor): void {
-    if (flavor === MessagingFlavor.Topic) {
-      this.form.setControl(DESTINATION, this.createTopicDestinationFormGroup());
-    }
-    else {
-      this.form.setControl(DESTINATION, this.createIntentDestinationFormGroup());
-    }
+    const destination = flavor === MessagingFlavor.Topic ? this.createTopicDestination() : this.createIntentDestination();
+    this.form.setControl('destination', this._formBuilder.group(destination));
   }
 
   public onSubscribe(): void {
@@ -98,27 +84,29 @@ export default class ReceiveMessageComponent implements OnDestroy {
 
   private subscribeTopic(): void {
     this.form.disable();
-    this.subscribeError = null;
+    this.subscribeError = undefined;
     try {
-      this._subscription = this._messageClient.observe$(this.form.get(DESTINATION).get(TOPIC).value)
+      const topic = (this.form.controls.destination as FormGroup<TopicMessageDestination>).controls.topic.value;
+      this._subscription = this._messageClient.observe$(topic)
         .pipe(finalize(() => this.form.enable()))
         .subscribe({
           next: message => this.messages.push(message),
           error: error => this.subscribeError = error,
         });
     }
-    catch (error) {
+    catch (error: unknown) {
       this.form.enable();
-      this.subscribeError = error;
+      this.subscribeError = stringifyError(error);
     }
   }
 
   private subscribeIntent(): void {
-    const type: string = this.form.get(DESTINATION).get(TYPE).value;
-    const qualifier: Qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(DESTINATION).get(QUALIFIER) as UntypedFormArray);
+    const destinationFormGroup = this.form.controls.destination as FormGroup<IntentMessageDestination>;
+    const type = destinationFormGroup.controls.type.value;
+    const qualifier = SciParamsEnterComponent.toParamsDictionary(destinationFormGroup.controls.qualifier) ?? undefined;
 
     this.form.disable();
-    this.subscribeError = null;
+    this.subscribeError = undefined;
     try {
       this._subscription = this._intentClient.observe$({type, qualifier})
         .pipe(finalize(() => this.form.enable()))
@@ -127,14 +115,16 @@ export default class ReceiveMessageComponent implements OnDestroy {
           error: error => this.subscribeError = error,
         });
     }
-    catch (error) {
+    catch (error: unknown) {
       this.form.enable();
-      this.subscribeError = error;
+      this.subscribeError = stringifyError(error);
     }
   }
 
   public onUnsubscribe(): void {
-    this.unsubscribe();
+    this._subscription!.unsubscribe();
+    this._subscription = undefined;
+    this.messages.length = 0;
   }
 
   public onClear(): void {
@@ -146,34 +136,46 @@ export default class ReceiveMessageComponent implements OnDestroy {
   }
 
   public get isSubscribed(): boolean {
-    return this._subscription && !this._subscription.closed;
+    return !!this._subscription && !this._subscription.closed;
   }
 
   public isTopicMessaging(): boolean {
-    return this.form.get(FLAVOR).value === MessagingFlavor.Topic;
+    return this.form.controls.flavor.value === MessagingFlavor.Topic;
   }
 
-  private createIntentDestinationFormGroup(): UntypedFormGroup {
-    return this._formBuilder.group({
-      [TYPE]: this._formBuilder.control(''),
-      [QUALIFIER]: this._formBuilder.array([]),
-    });
+  private createTopicDestination(): TopicMessageDestination {
+    return {
+      topic: this._formBuilder.control('', Validators.required),
+    };
   }
 
-  private createTopicDestinationFormGroup(): UntypedFormGroup {
-    return this._formBuilder.group({
-      [TOPIC]: new UntypedFormControl('', Validators.required),
-    });
-  }
-
-  private unsubscribe(): void {
-    this._subscription && this._subscription.unsubscribe();
-    this._subscription = null;
-    this.messages.length = 0;
+  private createIntentDestination(): IntentMessageDestination {
+    return {
+      type: this._formBuilder.control(''),
+      qualifier: this._formBuilder.array<QualifierEntryFormGroup>([]),
+      params: this._formBuilder.array<ParamEntryFormGroup>([]),
+    };
   }
 
   public ngOnDestroy(): void {
     this._destroy$.next();
-    this.unsubscribe();
+    this._subscription?.unsubscribe();
   }
+}
+
+type QualifierEntryFormGroup = FormGroup<{paramName: FormControl<string>; paramValue: FormControl<string>}>;
+type ParamEntryFormGroup = FormGroup<{paramName: FormControl<string>; paramValue: FormControl<string>}>;
+
+enum MessagingFlavor {
+  Topic = 'Topic', Intent = 'Intent',
+}
+
+interface TopicMessageDestination {
+  topic: FormControl<string>;
+}
+
+interface IntentMessageDestination {
+  type: FormControl<string>;
+  qualifier: FormArray<QualifierEntryFormGroup>;
+  params: FormArray<ParamEntryFormGroup>;
 }

@@ -9,7 +9,7 @@
  */
 import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Injector, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MessageClient, OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
-import {ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Overlay} from '@angular/cdk/overlay';
 import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
 import {RouterOutletSettingsComponent} from '../router-outlet-settings/router-outlet-settings.component';
@@ -20,8 +20,6 @@ import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs';
 import {TestingAppTopics} from '../testing-app.topics';
 import {NgFor} from '@angular/common';
-
-export const URL = 'url';
 
 /**
  * Allows entering a URL and displaying the web content in an iframe.
@@ -40,32 +38,30 @@ export const URL = 'url';
 })
 export class BrowserOutletComponent implements OnInit, OnDestroy {
 
-  public URL = URL;
-  public form: UntypedFormGroup;
+  public form = this._formBuilder.group({
+    url: this._formBuilder.control('', Validators.required),
+  });
   public appEntryPoints: AppEndpoint[];
 
   private _destroy$ = new Subject<void>();
 
   @Input()
-  public outletName: string;
+  public outletName!: string;
 
   @ViewChild('settings_button', {static: true})
-  public settingsButton: ElementRef<HTMLButtonElement>;
+  public settingsButton!: ElementRef<HTMLButtonElement>;
 
   @ViewChild('context_define_button', {static: true})
-  public contextDefineButton: ElementRef<HTMLButtonElement>;
+  public contextDefineButton!: ElementRef<HTMLButtonElement>;
 
   @ViewChild('router_outlet', {static: true})
-  public routerOutlet: ElementRef<SciRouterOutletElement>;
+  public routerOutlet!: ElementRef<SciRouterOutletElement>;
 
   constructor(host: ElementRef<HTMLElement>,
-              formBuilder: UntypedFormBuilder,
+              private _formBuilder: NonNullableFormBuilder,
               private _activatedRoute: ActivatedRoute,
               private _overlay: Overlay,
               private _injector: Injector) {
-    this.form = formBuilder.group({
-      [URL]: new UntypedFormControl('', Validators.required),
-    });
     this.appEntryPoints = this.readAppEntryPoints();
   }
 
@@ -84,7 +80,7 @@ export class BrowserOutletComponent implements OnInit, OnDestroy {
   }
 
   private navigate(): void {
-    Beans.get(OutletRouter).navigate(this.form.get(URL).value, {outlet: this.outletName}).then();
+    Beans.get(OutletRouter).navigate(this.form.controls.url.value, {outlet: this.outletName}).then();
   }
 
   public onSettingsClick(): void {
@@ -119,16 +115,16 @@ export class BrowserOutletComponent implements OnInit, OnDestroy {
 
   private readAppEntryPoints(): AppEndpoint[] {
     return Object.values(environment.apps).reduce((endpoints, app) => {
-      return endpoints.concat(this._activatedRoute.parent.routeConfig.children
+      return endpoints.concat(this._activatedRoute.parent!.routeConfig!.children!
         .filter(route => !!route.data)
         .map(route => {
-          const matrixParams: Map<string, any> = route.data['matrixParams'] || new Map();
+          const matrixParams: Map<string, any> = route.data!['matrixParams'] || new Map();
           const matrixParamsEncoded = Array.from(matrixParams.keys())
-            .reduce((encoded, paramKey) => encoded.concat(`;${paramKey}=${matrixParams.get(paramKey)}`), [])
+            .reduce((encoded, paramKey) => encoded.concat(`;${paramKey}=${matrixParams.get(paramKey)}`), new Array<string>())
             .join();
           return {
             url: `${app.url}/#/${route.path}${matrixParamsEncoded}`,
-            label: `${app.symbolicName}: ${route.data['pageTitle']}`,
+            label: `${app.symbolicName}: ${route.data!['pageTitle']}`,
           };
         }));
     }, new Array<AppEndpoint>());
@@ -141,7 +137,7 @@ export class BrowserOutletComponent implements OnInit, OnDestroy {
     Beans.get(MessageClient).observe$(TestingAppTopics.routerOutletContextUpdateTopic(outletName, ':key'))
       .pipe(takeUntil(this._destroy$))
       .subscribe(message => {
-        this.routerOutlet.nativeElement.setContextValue(message.params.get('key'), message.body);
+        this.routerOutlet.nativeElement.setContextValue(message.params!.get('key')!, message.body);
       });
   }
 

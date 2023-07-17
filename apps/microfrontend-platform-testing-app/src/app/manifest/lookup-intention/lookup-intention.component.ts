@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
 import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Observable} from 'rxjs';
@@ -19,12 +19,6 @@ import {SciFormFieldModule} from '@scion/components.internal/form-field';
 import {SciCheckboxModule} from '@scion/components.internal/checkbox';
 import {SciListModule} from '@scion/components.internal/list';
 import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-chip-list';
-
-const ID = 'id';
-const TYPE = 'type';
-const QUALIFIER = 'qualifier';
-const NILQUALIFIER_IF_EMPTY = 'nilQualifierIfEmpty';
-const APP_SYMBOLIC_NAME = 'appSymbolicName';
 
 @Component({
   selector: 'app-lookup-intention',
@@ -45,46 +39,39 @@ const APP_SYMBOLIC_NAME = 'appSymbolicName';
 })
 export default class LookupIntentionComponent {
 
-  public readonly ID = ID;
-  public readonly TYPE = TYPE;
-  public readonly QUALIFIER = QUALIFIER;
-  public readonly NILQUALIFIER_IF_EMPTY = NILQUALIFIER_IF_EMPTY;
-  public readonly APP_SYMBOLIC_NAME = APP_SYMBOLIC_NAME;
+  public form = this._formBuilder.group({
+    id: this._formBuilder.control(''),
+    type: this._formBuilder.control(''),
+    qualifier: this._formBuilder.array([]),
+    nilqualifierIfEmpty: this._formBuilder.control(false),
+    appSymbolicName: this._formBuilder.control(''),
+  });
+  public intentions$: Observable<Intention[]> | undefined;
 
-  public form: UntypedFormGroup;
-  public intentions$: Observable<Intention[]>;
-
-  constructor(fb: UntypedFormBuilder) {
-    this.form = fb.group({
-      [ID]: new UntypedFormControl(''),
-      [TYPE]: new UntypedFormControl(''),
-      [QUALIFIER]: fb.array([]),
-      [NILQUALIFIER_IF_EMPTY]: new UntypedFormControl(false),
-      [APP_SYMBOLIC_NAME]: new UntypedFormControl(''),
-    });
+  constructor(private _formBuilder: NonNullableFormBuilder) {
   }
 
   public onLookup(): void {
-    const nilQualifierIfEmpty = this.form.get(NILQUALIFIER_IF_EMPTY).value;
-    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(QUALIFIER) as UntypedFormArray, false);
+    const nilQualifierIfEmpty = this.form.controls.nilqualifierIfEmpty.value;
+    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.controls.qualifier);
     const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
 
     const filter: ManifestObjectFilter = {
-      id: this.form.get(ID).value || undefined,
-      type: this.form.get(TYPE).value || undefined,
-      qualifier: Object.keys(qualifier).length ? qualifier : nilQualifierOrUndefined,
-      appSymbolicName: this.form.get(APP_SYMBOLIC_NAME).value || undefined,
+      id: this.form.controls.id.value || undefined,
+      type: this.form.controls.type.value || undefined,
+      qualifier: qualifier ?? nilQualifierOrUndefined,
+      appSymbolicName: this.form.controls.appSymbolicName.value || undefined,
     };
     this.intentions$ = Beans.get(ManifestService).lookupIntentions$(filter)
-      .pipe(finalize(() => this.intentions$ = null));
+      .pipe(finalize(() => this.intentions$ = undefined));
   }
 
   public onLookupCancel(): void {
-    this.intentions$ = null;
+    this.intentions$ = undefined;
   }
 
   public onReset(): void {
     this.form.reset();
-    this.form.setControl(QUALIFIER, new UntypedFormArray([]));
+    this.form.setControl('qualifier', this._formBuilder.array([]));
   }
 }

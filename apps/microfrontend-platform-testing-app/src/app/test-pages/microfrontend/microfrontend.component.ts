@@ -14,7 +14,7 @@ import {ActivatedRoute, Params} from '@angular/router';
 import {Observable} from 'rxjs';
 import {SciFormFieldModule} from '@scion/components.internal/form-field';
 import {SciPropertyModule} from '@scion/components.internal/property';
-import {AsyncPipe} from '@angular/common';
+import {AsyncPipe, NgIf} from '@angular/common';
 
 @Component({
   selector: 'app-microfrontend',
@@ -26,6 +26,7 @@ import {AsyncPipe} from '@angular/common';
     AsyncPipe,
     SciFormFieldModule,
     SciPropertyModule,
+    NgIf,
   ],
 })
 export default class MicrofrontendComponent {
@@ -35,7 +36,7 @@ export default class MicrofrontendComponent {
 
   public params$: Observable<Params>;
   public queryParams$: Observable<Params>;
-  public fragment$: Observable<string>;
+  public fragment$: Observable<string | null>;
 
   constructor(testingAppService: TestingAppService, route: ActivatedRoute) {
     this.appInstanceId = testingAppService.appInstanceId;

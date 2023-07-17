@@ -21,7 +21,7 @@ export class ContextEntryComponent {
   public value: any;
 
   @Input()
-  public name: string;
+  public name!: string;
 
   @Input('value')  // eslint-disable-line @angular-eslint/no-input-rename
   public set setValue(value: any) {

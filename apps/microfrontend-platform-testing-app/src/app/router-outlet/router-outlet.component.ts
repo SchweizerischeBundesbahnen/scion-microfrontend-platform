@@ -8,15 +8,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Injector, ViewChild} from '@angular/core';
-import {ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
 import {Overlay} from '@angular/cdk/overlay';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {RouterOutletSettingsComponent} from '../router-outlet-settings/router-outlet-settings.component';
 import {NEVER, Observable} from 'rxjs';
 import {AsyncPipe, NgIf} from '@angular/common';
-
-export const OUTLET_NAME = 'outletName';
 
 @Component({
   selector: 'app-router-outlet',
@@ -33,30 +31,27 @@ export const OUTLET_NAME = 'outletName';
 })
 export default class RouterOutletComponent {
 
-  public OUTLET_NAME = OUTLET_NAME;
-
-  public form: UntypedFormGroup;
-  public outletName: string;
+  public form = this._formBuilder.group({
+    outletName: this._formBuilder.control(''),
+  });
+  public outletName: string | undefined;
 
   @ViewChild('settings_button', {static: true})
-  public _settingsButton: ElementRef<HTMLButtonElement>;
+  public _settingsButton!: ElementRef<HTMLButtonElement>;
 
   @ViewChild('context_define_button', {static: true})
-  public _contextDefineButton: ElementRef<HTMLButtonElement>;
+  public _contextDefineButton!: ElementRef<HTMLButtonElement>;
 
   @ViewChild('router_outlet', {static: true})
-  public _routerOutlet: ElementRef<SciRouterOutletElement>;
+  public _routerOutlet!: ElementRef<SciRouterOutletElement>;
 
-  constructor(formBuilder: UntypedFormBuilder,
+  constructor(private _formBuilder: NonNullableFormBuilder,
               private _overlay: Overlay,
               private _injector: Injector) {
-    this.form = formBuilder.group({
-      [OUTLET_NAME]: new UntypedFormControl(''),
-    });
   }
 
   public onApplyClick(): boolean {
-    this.outletName = this.form.get(OUTLET_NAME).value || undefined;
+    this.outletName = this.form.controls.outletName.value || undefined;
     return false;
   }
 

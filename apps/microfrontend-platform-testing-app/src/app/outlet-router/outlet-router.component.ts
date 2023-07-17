@@ -8,20 +8,17 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
+import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NavigationOptions, OutletRouter} from '@scion/microfrontend-platform';
 import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {NgIf} from '@angular/common';
 import {SciFormFieldModule} from '@scion/components.internal/form-field';
 import {SciCheckboxModule} from '@scion/components.internal/checkbox';
-
-export const OUTLET = 'outlet';
-export const USE_INTENT = 'useIntent';
-export const URL = 'url';
-export const QUALIFIER = 'qualifier';
-export const PARAMS = 'params';
-export const PUSH_SESSION_HISTORY_STATE = 'pushSessionHistoryState';
+import {distinctUntilChanged, startWith} from 'rxjs/operators';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {AppAsPipe} from '../common/as.pipe';
+import {stringifyError} from '../common/stringify-error.util';
 
 @Component({
   selector: 'app-outlet-router',
@@ -34,57 +31,85 @@ export const PUSH_SESSION_HISTORY_STATE = 'pushSessionHistoryState';
     SciFormFieldModule,
     SciCheckboxModule,
     SciParamsEnterModule,
+    AppAsPipe,
   ],
 })
 export default class OutletRouterComponent {
 
-  public OUTLET = OUTLET;
-  public USE_INTENT = USE_INTENT;
-  public URL = URL;
-  public QUALIFIER = QUALIFIER;
-  public PARAMS = PARAMS;
-  public PUSH_SESSION_HISTORY_STATE = PUSH_SESSION_HISTORY_STATE;
+  public form = this._formBuilder.group({
+    outlet: this._formBuilder.control(''),
+    useIntent: this._formBuilder.control(false),
+    destination: this._formBuilder.group<UrlDestination | IntentDestination>(this.createUrlDestination()),
+    params: this._formBuilder.array<ParamEntryFormGroup>([]),
+    pushSessionHistoryState: this._formBuilder.control(false),
+  });
 
-  public form: UntypedFormGroup;
-  public navigateError: string;
+  public navigateError: string | undefined;
 
-  constructor(formBuilder: UntypedFormBuilder) {
-    this.form = formBuilder.group({
-      [OUTLET]: new UntypedFormControl(''),
-      [USE_INTENT]: new UntypedFormControl(false),
-      [URL]: new UntypedFormControl(''),
-      [QUALIFIER]: formBuilder.array([]),
-      [PARAMS]: formBuilder.array([]),
-      [PUSH_SESSION_HISTORY_STATE]: new UntypedFormControl(false),
-    });
+  public UrlDestinationFormGroup = FormGroup<UrlDestination>;
+  public IntentDestinationFormGroup = FormGroup<IntentDestination>;
+
+  constructor(private _formBuilder: NonNullableFormBuilder) {
+    this.form.controls.useIntent.valueChanges
+      .pipe(
+        startWith(this.form.controls.useIntent.value),
+        distinctUntilChanged(),
+        takeUntilDestroyed(),
+      )
+      .subscribe(useIntent => {
+        const destination = useIntent ? this.createIntentDestination() : this.createUrlDestination();
+        this.form.setControl('destination', this._formBuilder.group(destination));
+      });
   }
 
   public async onNavigateClick(): Promise<void> {
     const options: NavigationOptions = {
-      outlet: this.form.get(OUTLET).value || undefined,
-      params: SciParamsEnterComponent.toParamsMap(this.form.get(PARAMS) as UntypedFormArray),
+      outlet: this.form.controls.outlet.value || undefined,
+      params: SciParamsEnterComponent.toParamsMap(this.form.controls.params) ?? undefined,
     };
-    if (this.form.get(PUSH_SESSION_HISTORY_STATE).value) {
+    if (this.form.controls.pushSessionHistoryState.value) {
       options.pushStateToSessionHistoryStack = true;
     }
 
     this.navigateError = undefined;
     try {
-      if (this.form.get(USE_INTENT).value) {
-        const qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.get(QUALIFIER) as UntypedFormArray);
+      if (this.form.controls.useIntent.value) {
+        const qualifier = SciParamsEnterComponent.toParamsDictionary((this.form.controls.destination as FormGroup<IntentDestination>).controls.qualifier)!;
         await Beans.get(OutletRouter).navigate(qualifier, options);
+        this.form.setControl('destination', this._formBuilder.group<UrlDestination | IntentDestination>(this.createIntentDestination()));
       }
       else {
-        const url = this.form.get(URL).value || null;
+        const url = (this.form.controls.destination as FormGroup<UrlDestination>).controls.url.value || null;
         await Beans.get(OutletRouter).navigate(url, options);
       }
 
       this.form.reset();
-      this.form.setControl(PARAMS, new UntypedFormArray([]));
-      this.form.setControl(QUALIFIER, new UntypedFormArray([]));
     }
-    catch (error) {
-      this.navigateError = error;
+    catch (error: unknown) {
+      this.navigateError = stringifyError(error);
     }
   }
+
+  private createUrlDestination(): UrlDestination {
+    return {
+      url: this._formBuilder.control(''), // not required to allow clearing the outlet
+    };
+  }
+
+  private createIntentDestination(): IntentDestination {
+    return {
+      qualifier: this._formBuilder.array<QualifierEntryFormGroup>([], Validators.required),
+    };
+  }
 }
+
+interface UrlDestination {
+  url: FormControl<string>;
+}
+
+interface IntentDestination {
+  qualifier: FormArray<QualifierEntryFormGroup>;
+}
+
+type QualifierEntryFormGroup = FormGroup<{paramName: FormControl<string>; paramValue: FormControl<string>}>;
+type ParamEntryFormGroup = FormGroup<{paramName: FormControl<string>; paramValue: FormControl<string>}>;

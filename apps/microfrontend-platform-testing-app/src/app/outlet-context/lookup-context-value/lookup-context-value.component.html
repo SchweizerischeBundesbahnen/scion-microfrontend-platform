@@ -1,10 +1,10 @@
 <form autocomplete="off" [formGroup]="form">
   <sci-form-field label="Key">
-    <input [formControlName]="KEY" class="e2e-context-key">
+    <input [formControl]="form.controls.key" class="e2e-context-key">
   </sci-form-field>
 
   <sci-form-field label="Collect">
-    <sci-checkbox class="e2e-collect-values" [formControlName]="COLLECT"></sci-checkbox>
+    <sci-checkbox class="e2e-collect-values" [formControl]="form.controls.collect"></sci-checkbox>
   </sci-form-field>
 
   <button (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="e2e-subscribe">Subscribe</button>

@@ -29,16 +29,16 @@ export class MessageListItemComponent implements OnChanges {
   public MessageHeaders = MessageHeaders;
 
   @Input()
-  public isTopicMessage: boolean;
+  public isTopicMessage!: boolean;
 
   @Input()
-  public message: TopicMessage | IntentMessage;
+  public message!: TopicMessage | IntentMessage;
 
   @HostBinding('attr.data-e2e-capability')
-  public capability: string;
+  public capability: string | undefined;
 
   public ngOnChanges(changes: SimpleChanges): void {
-    this.capability = (this.isTopicMessage ? undefined : JSON.stringify((this.message as IntentMessage).capability, null, 2));
+    this.capability = (this.isTopicMessage ? undefined : JSON.stringify((this.intentMessage).capability, null, 2));
   }
 
   public get intentMessage(): IntentMessage {

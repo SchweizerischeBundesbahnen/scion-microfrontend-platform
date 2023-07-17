@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {ReactiveFormsModule, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {APP_IDENTITY, Capability, ManifestObjectFilter, ManifestService, ParamDefinition} from '@scion/microfrontend-platform';
 import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Observable} from 'rxjs';
@@ -18,15 +18,6 @@ import {SciFormFieldModule} from '@scion/components.internal/form-field';
 import {SciCheckboxModule} from '@scion/components.internal/checkbox';
 import {SciListModule} from '@scion/components.internal/list';
 import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-chip-list';
-
-const TYPE = 'type';
-const QUALIFIER = 'qualifier';
-const PARAMS = 'params';
-const PRIVATE = 'private';
-const PROPERTIES = 'properties';
-const ID = 'id';
-const NILQUALIFIER_IF_EMPTY = 'nilQualifierIfEmpty';
-const APP_SYMBOLIC_NAME = 'appSymbolicName';
 
 @Component({
   selector: 'app-register-capability',
@@ -48,57 +39,44 @@ const APP_SYMBOLIC_NAME = 'appSymbolicName';
 })
 export default class RegisterCapabilityComponent {
 
-  public readonly TYPE = TYPE;
-  public readonly QUALIFIER = QUALIFIER;
-  public readonly PARAMS = PARAMS;
-  public readonly PRIVATE = PRIVATE;
-  public readonly PROPERTIES = PROPERTIES;
-  public readonly ID = ID;
-  public readonly NILQUALIFIER_IF_EMPTY = NILQUALIFIER_IF_EMPTY;
-  public readonly APP_SYMBOLIC_NAME = APP_SYMBOLIC_NAME;
-
   public paramsPlaceholder: ParamDefinition[] = [{name: 'param1', required: true}, {name: 'param2', required: true}];
-  public registerForm: UntypedFormGroup;
-  public unregisterForm: UntypedFormGroup;
+  public registerForm = this._formBuilder.group({
+    type: this._formBuilder.control('', Validators.required),
+    qualifier: this._formBuilder.array([]),
+    params: this._formBuilder.control(''),
+    private: this._formBuilder.control(false),
+    properties: this._formBuilder.array([]),
+  });
+  public unregisterForm = this._formBuilder.group({
+    id: this._formBuilder.control(''),
+    type: this._formBuilder.control(''),
+    qualifier: this._formBuilder.array([]),
+    nilqualifierIfEmpty: this._formBuilder.control(false),
+    appSymbolicName: this._formBuilder.control(''),
+  });
 
   public capabilities$: Observable<Capability[]>;
 
-  public registerResponse: string;
-  public registerError: string;
+  public registerResponse: string | undefined;
+  public registerError: string | undefined;
   public unregisterResponse: 'OK' | undefined;
-  public unregisterError: string;
+  public unregisterError: string | undefined;
 
-  constructor(fb: UntypedFormBuilder) {
-    this.registerForm = fb.group({
-      [TYPE]: new UntypedFormControl('', Validators.required),
-      [QUALIFIER]: fb.array([]),
-      [PARAMS]: new UntypedFormControl(''),
-      [PRIVATE]: new UntypedFormControl(false),
-      [PROPERTIES]: fb.array([]),
-    });
-
-    this.unregisterForm = fb.group({
-      [ID]: new UntypedFormControl(''),
-      [TYPE]: new UntypedFormControl(''),
-      [QUALIFIER]: fb.array([]),
-      [NILQUALIFIER_IF_EMPTY]: new UntypedFormControl(false),
-      [APP_SYMBOLIC_NAME]: new UntypedFormControl(''),
-    });
-
+  constructor(private _formBuilder: NonNullableFormBuilder) {
     this.capabilities$ = Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: Beans.get<string>(APP_IDENTITY)});
   }
 
   public onRegister(): void {
     this.registerResponse = undefined;
     this.registerError = undefined;
-    const params = this.registerForm.get(PARAMS).value;
+    const params = this.registerForm.controls.params.value;
 
     const capability: Capability = {
-      type: this.registerForm.get(TYPE).value,
-      qualifier: SciParamsEnterComponent.toParamsDictionary(this.registerForm.get(QUALIFIER) as UntypedFormArray),
+      type: this.registerForm.controls.type.value,
+      qualifier: SciParamsEnterComponent.toParamsDictionary(this.registerForm.controls.qualifier) ?? undefined,
       params: params ? JSON.parse(params) : undefined,
-      private: this.registerForm.get(PRIVATE).value,
-      properties: SciParamsEnterComponent.toParamsDictionary(this.registerForm.get(PROPERTIES) as UntypedFormArray, false),
+      private: this.registerForm.controls.private.value,
+      properties: SciParamsEnterComponent.toParamsDictionary(this.registerForm.controls.properties) ?? undefined,
     };
 
     Beans.get(ManifestService).registerCapability(capability)
@@ -110,7 +88,7 @@ export default class RegisterCapabilityComponent {
       })
       .finally(() => {
         this.registerForm.reset();
-        this.registerForm.setControl(QUALIFIER, new UntypedFormArray([]));
+        this.registerForm.setControl('qualifier', this._formBuilder.array([]));
       });
   }
 
@@ -118,15 +96,15 @@ export default class RegisterCapabilityComponent {
     this.unregisterResponse = undefined;
     this.unregisterError = undefined;
 
-    const nilQualifierIfEmpty = this.unregisterForm.get(NILQUALIFIER_IF_EMPTY).value;
-    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.unregisterForm.get(QUALIFIER) as UntypedFormArray, false);
+    const nilQualifierIfEmpty = this.unregisterForm.controls.nilqualifierIfEmpty.value;
+    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.unregisterForm.controls.qualifier);
     const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
 
     const filter: ManifestObjectFilter = {
-      id: this.unregisterForm.get(ID).value || undefined,
-      type: this.unregisterForm.get(TYPE).value || undefined,
-      qualifier: Object.keys(qualifier).length ? qualifier : nilQualifierOrUndefined,
-      appSymbolicName: this.unregisterForm.get(APP_SYMBOLIC_NAME).value || undefined,
+      id: this.unregisterForm.controls.id.value || undefined,
+      type: this.unregisterForm.controls.type.value || undefined,
+      qualifier: qualifier ?? nilQualifierOrUndefined,
+      appSymbolicName: this.unregisterForm.controls.appSymbolicName.value || undefined,
     };
 
     Beans.get(ManifestService).unregisterCapabilities(filter)
@@ -138,7 +116,7 @@ export default class RegisterCapabilityComponent {
       })
       .finally(() => {
         this.unregisterForm.reset();
-        this.unregisterForm.setControl(QUALIFIER, new UntypedFormArray([]));
+        this.unregisterForm.setControl('qualifier', this._formBuilder.array([]));
       });
   }
 }

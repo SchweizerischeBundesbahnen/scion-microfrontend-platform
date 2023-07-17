@@ -35,10 +35,10 @@ export default class BrowserOutletsComponent {
 
   constructor(route: ActivatedRoute) {
     this.outletNames$ = route.paramMap.pipe(map(params => {
-      if (params.get('names')) {
-        return params.get('names').split(',');
+      if (params.has('names')) {
+        return params.get('names')!.split(',');
       }
-      else if (params.get('count')) {
+      else if (params.has('count')) {
         const count = coerceNumberProperty(params.get('count'));
         return new Array(count).fill(undefined).map(() => UUID.randomUUID());
       }

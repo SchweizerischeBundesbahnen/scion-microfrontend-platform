@@ -1,6 +1,6 @@
 <form autocomplete="off" [formGroup]="form">
   <sci-form-field label="Flavor *">
-    <select [formControlName]="FLAVOR" class="e2e-flavor">
+    <select [formControl]="form.controls.flavor" class="e2e-flavor">
       <option [value]="MessagingFlavor.Topic">Topic</option>
       <option [value]="MessagingFlavor.Intent">Intent</option>
     </select>
@@ -8,19 +8,23 @@
   <ng-container *ngIf="isTopicMessaging(); then topic_template else intent_template"></ng-container>
 
   <ng-template #topic_template>
-    <sci-form-field label="Topic *" [formGroupName]="DESTINATION">
-      <input [formControlName]="TOPIC" class="e2e-topic">
-    </sci-form-field>
+    <ng-container [formGroup]="form.controls.destination">
+      <sci-form-field label="Topic *">
+        <input [formControl]="(form.controls.destination | appAs:TopicMessageDestinationFormGroup).controls.topic" class="e2e-topic">
+      </sci-form-field>
+    </ng-container>
   </ng-template>
 
   <ng-template #intent_template>
-    <sci-form-field label="Intent type" [formGroupName]="DESTINATION">
-      <input [formControlName]="TYPE" class="e2e-intent-type">
-    </sci-form-field>
+    <ng-container [formGroup]="form.controls.destination">
+      <sci-form-field label="Intent type">
+        <input [formControl]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.type" class="e2e-intent-type">
+      </sci-form-field>
 
-    <sci-form-field label="Intent qualifier">
-      <sci-params-enter [paramsFormArray]="$any(form.get(DESTINATION).get(QUALIFIER))" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-params-enter>
-    </sci-form-field>
+      <sci-form-field label="Intent qualifier">
+        <sci-params-enter [paramsFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-params-enter>
+      </sci-form-field>
+    </ng-container>
   </ng-template>
 </form>
 
@@ -35,15 +39,13 @@
 <ng-container *ngIf="isSubscribed">
   <sci-list class="messages e2e-messages">
     <ng-container *ngFor="let message of messages">
-
-      <ng-template sciListItem [actions]="message.headers.get(MessageHeaders.ReplyTo) ? reply_action: null">
+      <ng-template sciListItem [actions]="message.headers.get(MessageHeaders.ReplyTo) ? [reply_action] : []">
         <app-message-list-item [message]="message" [isTopicMessage]="isTopicMessaging()"></app-message-list-item>
       </ng-template>
 
       <ng-template #reply_action>
         <button class="material-icons e2e-reply" title="Reply" (click)="onReply(message.headers.get(MessageHeaders.ReplyTo))">reply</button>
       </ng-template>
-
     </ng-container>
   </sci-list>
   <button class="e2e-clear-messages" (click)="onClear()">Clear</button>

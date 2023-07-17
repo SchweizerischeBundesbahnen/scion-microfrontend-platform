@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
-import {ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ContextService} from '@scion/microfrontend-platform';
 import {Subject, Subscription} from 'rxjs';
@@ -17,9 +17,6 @@ import {JsonPipe, NgIf} from '@angular/common';
 import {SciFormFieldModule} from '@scion/components.internal/form-field';
 import {SciCheckboxModule} from '@scion/components.internal/checkbox';
 import {SciSashboxModule} from '@scion/components/sashbox';
-
-const KEY = 'key';
-const COLLECT = 'collect';
 
 @Component({
   selector: 'app-context-value-lookup',
@@ -38,31 +35,27 @@ const COLLECT = 'collect';
 })
 export default class LookupContextValueComponent implements OnDestroy {
 
-  public KEY = KEY;
-  public COLLECT = COLLECT;
-
-  public form: UntypedFormGroup;
+  public form = this._formBuilder.group({
+    key: this._formBuilder.control('', Validators.required),
+    collect: this._formBuilder.control(false, Validators.required),
+  });
   public observeValue: any;
   public lookupValue: any;
-  public subscribeError: string;
+  public subscribeError: string | undefined;
 
   private _contextService: ContextService;
-  private _subscription: Subscription;
+  private _subscription: Subscription | undefined;
   private _destroy$ = new Subject<void>();
 
-  constructor(private _formBuilder: UntypedFormBuilder, private _cd: ChangeDetectorRef) {
+  constructor(private _formBuilder: NonNullableFormBuilder, private _cd: ChangeDetectorRef) {
     this._contextService = Beans.get(ContextService);
-    this.form = this._formBuilder.group({
-      [KEY]: new UntypedFormControl('', Validators.required),
-      [COLLECT]: new UntypedFormControl(false, Validators.required),
-    });
   }
 
   public onSubscribe(): void {
-    const key = this.form.get(KEY).value;
-    const options = {collect: this.form.get(COLLECT).value};
-    this.form.get(KEY).disable();
-    this.form.get(COLLECT).disable();
+    const key = this.form.controls.key.value;
+    const options = {collect: this.form.controls.collect.value};
+    this.form.controls.key.disable();
+    this.form.controls.collect.disable();
 
     // Observe
     this._subscription = this._contextService.observe$(key, options)
@@ -86,9 +79,9 @@ export default class LookupContextValueComponent implements OnDestroy {
   }
 
   public onUnsubscribe(): void {
-    this._subscription.unsubscribe();
-    this.form.get(KEY).enable();
-    this.form.get(COLLECT).enable();
+    this._subscription!.unsubscribe();
+    this.form.controls.key.enable();
+    this.form.controls.collect.enable();
 
     this.lookupValue = undefined;
     this.observeValue = undefined;
@@ -96,10 +89,11 @@ export default class LookupContextValueComponent implements OnDestroy {
   }
 
   public get isSubscribed(): boolean {
-    return this._subscription && !this._subscription.closed;
+    return !!this._subscription && !this._subscription.closed;
   }
 
   public ngOnDestroy(): void {
+    this._subscription?.unsubscribe();
     this._destroy$.next();
   }
 }

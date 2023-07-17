@@ -1,24 +1,24 @@
 <form autocomplete="off" [formGroup]="form">
   <sci-form-field label="Outlet">
-    <input [formControlName]="OUTLET" class="e2e-outlet">
+    <input [formControl]="form.controls.outlet" class="e2e-outlet">
   </sci-form-field>
   <sci-form-field label="Use Intent">
-    <sci-checkbox [formControlName]="USE_INTENT" class="e2e-use-intent"></sci-checkbox>
+    <sci-checkbox [formControl]="form.controls.useIntent" class="e2e-use-intent"></sci-checkbox>
   </sci-form-field>
-  <sci-form-field label="URL" *ngIf="!form.get(USE_INTENT).value">
-    <input [formControlName]="URL" class="e2e-url">
+  <sci-form-field label="URL" *ngIf="!form.controls.useIntent.value">
+    <input [formControl]="(form.controls.destination | appAs:UrlDestinationFormGroup).controls.url" class="e2e-url">
   </sci-form-field>
-  <sci-form-field label="Qualifier" *ngIf="form.get(USE_INTENT).value">
-    <sci-params-enter [paramsFormArray]="$any(form.get(QUALIFIER))" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
+  <sci-form-field label="Qualifier" *ngIf="form.controls.useIntent.value">
+    <sci-params-enter [paramsFormArray]="(form.controls.destination | appAs:IntentDestinationFormGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
   </sci-form-field>
   <sci-form-field label="Params">
-    <sci-params-enter [paramsFormArray]="$any(form.get(PARAMS))" [addable]="true" [removable]="true" class="e2e-params"></sci-params-enter>
+    <sci-params-enter [paramsFormArray]="form.controls.params" [addable]="true" [removable]="true" class="e2e-params"></sci-params-enter>
   </sci-form-field>
   <sci-form-field label="Push State" title="Pushes a state to the browser's session history stack, allowing the user to use the back button to navigate back.">
-    <sci-checkbox [formControlName]="PUSH_SESSION_HISTORY_STATE" class="e2e-push-state"></sci-checkbox>
+    <sci-checkbox [formControl]="form.controls.pushSessionHistoryState" class="e2e-push-state"></sci-checkbox>
   </sci-form-field>
 
-  <button type="submit" class="e2e-navigate" (click)="onNavigateClick()">Navigate</button>
+  <button type="submit" class="e2e-navigate" (click)="onNavigateClick()" [disabled]="form.invalid">Navigate</button>
 </form>
 
 <output class="navigate-error e2e-navigate-error" *ngIf="navigateError">
