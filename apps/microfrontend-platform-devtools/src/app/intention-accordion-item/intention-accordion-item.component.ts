@@ -29,10 +29,10 @@ import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-
 })
 export class IntentionAccordionItemComponent implements OnChanges {
 
-  public nullProvider$: Observable<boolean>;
+  public nullProvider$!: Observable<boolean>;
 
   @Input()
-  public intention: Intention;
+  public intention!: Intention;
 
   constructor(private _manifestService: DevToolsManifestService) {
   }

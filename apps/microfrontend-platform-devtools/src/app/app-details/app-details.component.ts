@@ -15,7 +15,7 @@ import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {ShellService} from '../shell.service';
-import {ReactiveFormsModule, UntypedFormControl} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {SciTabbarComponent, SciTabbarModule} from '@scion/components.internal/tabbar';
 import {AsyncPipe, NgFor, NgIf} from '@angular/common';
 import {SciFilterFieldModule} from '@scion/components.internal/filter-field';
@@ -59,8 +59,8 @@ export class AppDetailsComponent implements OnDestroy {
   public capabilities$: Observable<Capability[]>;
   public intentions$: Observable<Intention[]>;
 
-  public capabilityFilterFormControl = new UntypedFormControl();
-  public intentionFilterFormControl = new UntypedFormControl();
+  public capabilityFilterFormControl = this._formBuilder.control('');
+  public intentionFilterFormControl = this._formBuilder.control('');
 
   private _tabbar$ = new Subject<SciTabbarComponent>();
   private _destroy$ = new Subject<void>();
@@ -69,7 +69,8 @@ export class AppDetailsComponent implements OnDestroy {
               private _route: ActivatedRoute,
               private _router: Router,
               private _manifestService: DevToolsManifestService,
-              private _cd: ChangeDetectorRef) {
+              private _cd: ChangeDetectorRef,
+              private _formBuilder: NonNullableFormBuilder) {
     this.application$ = this.observeApplication$();
     this.capabilities$ = this.observeCapabilities$();
     this.intentions$ = this.observeIntentions$();
@@ -81,9 +82,9 @@ export class AppDetailsComponent implements OnDestroy {
   private observeApplication$(): Observable<Application> {
     return this._route.paramMap
       .pipe(
-        map(paramMap => paramMap.get('appSymbolicName')),
+        map(paramMap => paramMap.get('appSymbolicName')!),
         distinctUntilChanged(),
-        map(appSymbolicName => this._manifestService.getApplication(appSymbolicName)),
+        map(appSymbolicName => this._manifestService.getApplication(appSymbolicName)!),
       );
   }
 

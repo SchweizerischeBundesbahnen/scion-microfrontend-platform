@@ -45,6 +45,7 @@
     "microfrontend-platform-testing-app:4204:serve": "ng serve microfrontend-platform-testing-app --port 4204",
     "microfrontend-platform-testing-app:4204:http-server": "cd dist/microfrontend-platform-testing-app-ci && http-server --cors --silent --port 4204",
 
+    "microfrontend-platform-devtools:build": "ng build microfrontend-platform-devtools --configuration=development",
     "microfrontend-platform-devtools-vercel:build": "ng build microfrontend-platform-devtools --configuration=production-vercel",
     "microfrontend-platform-devtools:lint": "ng lint microfrontend-platform-devtools",
     "microfrontend-platform-devtools:serve": "ng serve microfrontend-platform-devtools --port 5200",

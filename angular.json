@@ -293,7 +293,7 @@
               "namedChunks": true
             }
           },
-          "defaultConfiguration": "production-vercel"
+          "defaultConfiguration": "development"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",

@@ -16,7 +16,7 @@ import {Pipe, PipeTransform} from '@angular/core';
 @Pipe({name: 'devtoolsNullIfEmpty', standalone: true})
 export class NullIfEmptyPipe implements PipeTransform {
 
-  public transform<T>(value: T): T {
+  public transform<T>(value: T): T | null {
     if (value === null || value === undefined) {
       return null;
     }

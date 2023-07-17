@@ -3,7 +3,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../out-tsc/microfrontend-platform-devtools",
-    "types": []
+    "types": [],
+    "strict": true
   },
   "files": [
     "src/main.ts",

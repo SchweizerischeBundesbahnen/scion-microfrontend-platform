@@ -38,6 +38,6 @@ function connectToHostFn(): () => Promise<void> {
   const zone = inject(NgZone);
   return (): Promise<void> => {
     Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)});
-    return zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect(environment.symbolicName).catch(() => null));
+    return zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect(environment.symbolicName).catch());
   };
 }

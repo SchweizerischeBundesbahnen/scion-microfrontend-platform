@@ -26,16 +26,13 @@ import {Qualifier} from '@scion/microfrontend-platform';
 })
 export class QualifierChipListComponent implements OnChanges {
 
-  private _qualifierKeys: string[];
+  private _qualifierKeys: string[] = [];
 
   @Input()
-  public appSymbolicName: string;
+  public type!: string;
 
   @Input()
-  public qualifier: Qualifier;
-
-  @Input()
-  public type: string;
+  public qualifier?: Qualifier | undefined;
 
   @HostBinding('class')
   @Input()

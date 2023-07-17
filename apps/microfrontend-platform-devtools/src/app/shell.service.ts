@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {NavigationEnd, PRIMARY_OUTLET, Router} from '@angular/router';
+import {Event, NavigationEnd, PRIMARY_OUTLET, Router, RouterEvent} from '@angular/router';
 import {filter, map} from 'rxjs/operators';
 
 const BLANK_TITLE = '';
@@ -33,7 +33,7 @@ export class ShellService {
   public isDetailsOutletActive$(): Observable<boolean> {
     return this._router.events
       .pipe(
-        filter(event => event instanceof NavigationEnd),
+        filter((event: Event | RouterEvent): event is NavigationEnd => event instanceof NavigationEnd),
         map((event: NavigationEnd) => {
           const urlTree = this._router.parseUrl(event.urlAfterRedirects);
           return urlTree.root.children[PRIMARY_OUTLET]?.children['details'] !== undefined;

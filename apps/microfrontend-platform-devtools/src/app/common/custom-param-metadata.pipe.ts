@@ -10,7 +10,6 @@
 
 import {Pipe, PipeTransform} from '@angular/core';
 import {ParamDefinition} from '@scion/microfrontend-platform';
-import {Dictionary} from '@scion/toolkit/util';
 
 /**
  * Extracts custom metadata associated with a param, if any, otherwise, returns `null`.
@@ -24,13 +23,13 @@ export class CustomParamMetadataPipe implements PipeTransform {
     .add('deprecated')
     .add('required');
 
-  public transform(param: ParamDefinition): Dictionary | null {
+  public transform(param: ParamDefinition): Record<string, unknown> | null {
     const customProperties = Object.entries(param)
-      .filter(entry => !this.builtInProperties.has(entry[0]))
-      .reduce((acc, entry) => {
-        acc[entry[0]] = entry[1];
+      .filter(([key]) => !this.builtInProperties.has(key))
+      .reduce((acc, [key, value]) => {
+        acc[key] = value;
         return acc;
-      }, {});
+      }, {} as Record<string, unknown>);
     return Object.keys(customProperties).length ? customProperties : null;
   }
 }

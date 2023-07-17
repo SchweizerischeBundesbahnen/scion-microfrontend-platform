@@ -12,7 +12,7 @@ import {Observable} from 'rxjs';
 import {Capability} from '@scion/microfrontend-platform';
 import {CapabilityFilterSession} from '../find-capabilities/capability-filter-session.service';
 import {ShellService} from '../shell.service';
-import {ReactiveFormsModule, UntypedFormControl} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {expand, map, take} from 'rxjs/operators';
 import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {AsyncPipe, NgFor, NgIf} from '@angular/common';
@@ -43,9 +43,11 @@ import {CapabilityAccordionItemComponent} from '../capability-accordion-item/cap
 export default class CapabilityFilterResultComponent {
 
   public capabilities$: Observable<Capability[]>;
-  public filterFormControl = new UntypedFormControl();
+  public filterFormControl = this._formBuilder.control('');
 
-  constructor(shellService: ShellService, capabilityFilterSession: CapabilityFilterSession) {
+  constructor(private _formBuilder: NonNullableFormBuilder,
+              shellService: ShellService,
+              capabilityFilterSession: CapabilityFilterSession) {
     shellService.detailsTitle = 'Capabilities';
     this.capabilities$ = capabilityFilterSession.capabilities$()
       .pipe(

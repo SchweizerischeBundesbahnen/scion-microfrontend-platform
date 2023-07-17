@@ -2,8 +2,8 @@
   <ng-template sciTab label="General">
     <section class="tab general">
       <span class="description" *ngIf="capability.description">{{capability.description}}</span>
-      <span class="label">Provider:</span><a [routerLink]="['/apps', {outlets: {details: [capability.metadata.appSymbolicName]}}]">{{capability.metadata.appSymbolicName | devtoolsAppName}} ({{capability.metadata.appSymbolicName}})</a>
-      <span class="label">ID:</span><span>{{capability.metadata.id}}</span>
+      <span class="label">Provider:</span><a [routerLink]="['/apps', {outlets: {details: [capability.metadata!.appSymbolicName]}}]">{{capability.metadata!.appSymbolicName | devtoolsAppName}} ({{capability.metadata!.appSymbolicName}})</a>
+      <span class="label">ID:</span><span>{{capability.metadata!.id}}</span>
     </section>
   </ng-template>
   <ng-template sciTab label="Properties" *ngIf="capability.properties">
@@ -47,7 +47,7 @@
       <ul>
         <li *ngFor="let application of applications$ | async">
           <a (click)="onConsumerClick(application)" href=""
-             [class.self]="application.symbolicName === capability.metadata.appSymbolicName">
+             [class.self]="application.symbolicName === capability.metadata!.appSymbolicName">
             {{application.name}} ({{application.symbolicName}})
           </a>
         </li>
