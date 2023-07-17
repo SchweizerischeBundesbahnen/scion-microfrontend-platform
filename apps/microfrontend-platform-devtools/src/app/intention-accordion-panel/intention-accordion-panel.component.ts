@@ -27,10 +27,10 @@ import {AsyncPipe, NgFor} from '@angular/common';
 })
 export class IntentionAccordionPanelComponent implements OnInit {
 
-  public applications$: Observable<Application[]>;
+  public applications$!: Observable<Application[]>;
 
   @Input()
-  public intention: Intention;
+  public intention!: Intention;
 
   constructor(private _manifestService: DevToolsManifestService, private _router: Router) {
   }

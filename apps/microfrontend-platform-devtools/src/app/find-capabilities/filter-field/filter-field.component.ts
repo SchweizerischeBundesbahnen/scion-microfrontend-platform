@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, NgZone, OnInit, Output, ViewChild} from '@angular/core';
-import {ReactiveFormsModule, UntypedFormControl} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
 import {KeyValuePair, LogicalOperator} from './filter-field';
 import {A11yModule, FocusOrigin} from '@angular/cdk/a11y';
@@ -35,34 +35,34 @@ export class FilterFieldComponent implements OnInit {
   public readonly AND = 'and';
 
   @Input()
-  public title: string;
+  public title!: string;
 
   @Input()
   public type: 'value' | 'key-value' = 'value';
 
   @Input()
-  public logicalOperator?: LogicalOperator;
+  public logicalOperator?: LogicalOperator | undefined;
 
   @Input()
   public placeholder = 'Value';
 
   @Input()
-  public autocompleteKeys;
+  public autocompleteKeys?: string[] | undefined;
 
   @Input()
-  public autocompleteValues;
+  public autocompleteValues?: string[] | undefined;
 
   @Input()
-  public initialFilters: KeyValuePair[] | string[];
+  public initialFilters?: KeyValuePair[] | string[] | undefined;
 
   @Output()
-  public addValueFilter: EventEmitter<string> = new EventEmitter<string>();
+  public addValueFilter = new EventEmitter<string>();
 
   @Output()
-  public addKeyValueFilter: EventEmitter<KeyValuePair> = new EventEmitter<KeyValuePair>();
+  public addKeyValueFilter = new EventEmitter<KeyValuePair>();
 
   @Output()
-  public removeValueFilter: EventEmitter<string> = new EventEmitter<string>();
+  public removeValueFilter = new EventEmitter<string>();
 
   @Output()
   public removeKeyValueFilter: EventEmitter<KeyValuePair> = new EventEmitter<KeyValuePair>();
@@ -71,20 +71,22 @@ export class FilterFieldComponent implements OnInit {
   public changeLogicalOperator: EventEmitter<LogicalOperator> = new EventEmitter<LogicalOperator>();
 
   @ViewChild('key', {read: ElementRef})
-  private _keyElement: ElementRef<HTMLElement>;
+  private _keyElement: ElementRef<HTMLElement> | undefined;
 
-  public keyFC = new UntypedFormControl();
+  public keyFormControl = this._formBuilder.control('');
 
   @ViewChild('value', {read: ElementRef})
-  private _valueElement: ElementRef<HTMLElement>;
+  private _valueElement: ElementRef<HTMLElement> | undefined;
 
-  public valueFC = new UntypedFormControl();
+  public valueFormControl = this._formBuilder.control('');
 
   public showFilter = false;
 
   private _filters = new Set<KeyValuePair>();
 
-  constructor(private _cdRef: ChangeDetectorRef, private _zone: NgZone) {
+  constructor(private _cdRef: ChangeDetectorRef,
+              private _zone: NgZone,
+              private _formBuilder: NonNullableFormBuilder) {
   }
 
   @HostListener('keydown.escape')
@@ -123,13 +125,14 @@ export class FilterFieldComponent implements OnInit {
     if (this.isAddButtonDisabled()) {
       return;
     }
-    const newFilter = this.add(this.keyFC.value, this.valueFC.value);
+    const newFilter = this.add(this.keyFormControl.value, this.valueFormControl.value);
     if (newFilter) {
       this.addValueFilter.emit(newFilter.value);
       this.addKeyValueFilter.emit(newFilter);
     }
-    this.keyFC.reset();
-    this.valueFC.reset();
+    this.keyFormControl.reset();
+    this.valueFormControl.reset();
+    this.focusInput();
   }
 
   public onRemoveFilterClick(removedFilter: KeyValuePair): void {
@@ -140,9 +143,9 @@ export class FilterFieldComponent implements OnInit {
 
   public isAddButtonDisabled(): boolean {
     if (this.isTypeValue()) {
-      return !this.valueFC.value;
+      return !this.valueFormControl.value;
     }
-    return !this.keyFC.value && !this.valueFC.value;
+    return !this.keyFormControl.value && !this.valueFormControl.value;
   }
 
   public isTypeValue(): boolean {
@@ -153,20 +156,14 @@ export class FilterFieldComponent implements OnInit {
     return this.type === 'key-value';
   }
 
-  private add(key: string, value: string): KeyValuePair {
-    this.focusInput();
-    if (this.isTypeValue() && !this.hasEntry({value})) {
-      this._filters.add({value});
-      return {value};
+  private add(key: string, value: string): KeyValuePair | false {
+    const entry = {key: this.isTypeValue() ? undefined : key, value};
+
+    if (!this.hasEntry(entry)) {
+      this._filters.add(entry);
+      return entry;
     }
-    else if (this.isTypeKeyValue()) {
-      const entry = {key, value};
-      if (!this.hasEntry(entry)) {
-        this._filters.add(entry);
-        return entry;
-      }
-    }
-    return undefined;
+    return false;
   }
 
   private hasEntry(entry: KeyValuePair): boolean {
@@ -175,10 +172,10 @@ export class FilterFieldComponent implements OnInit {
 
   private focusInput(): void {
     if (this.isTypeValue()) {
-      this._valueElement.nativeElement.focus();
+      this._valueElement!.nativeElement.focus();
     }
     else if (this.isTypeKeyValue()) {
-      this._keyElement.nativeElement.focus();
+      this._keyElement!.nativeElement.focus();
     }
   }
 }

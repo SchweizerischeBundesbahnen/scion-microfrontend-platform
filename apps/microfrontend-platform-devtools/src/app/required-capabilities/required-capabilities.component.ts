@@ -14,7 +14,7 @@ import {Observable, ReplaySubject} from 'rxjs';
 import {expand, map, switchMap, take} from 'rxjs/operators';
 import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
-import {ReactiveFormsModule, UntypedFormControl} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Maps} from '@scion/toolkit/util';
 import {AsyncPipe, KeyValue, KeyValuePipe, NgFor, NgIf} from '@angular/common';
 import {SciFilterFieldModule} from '@scion/components.internal/filter-field';
@@ -53,31 +53,33 @@ export class RequiredCapabilitiesComponent implements OnChanges {
   private _appChange$ = new ReplaySubject<void>(1);
 
   @Input()
-  public appSymbolicName: string;
+  public appSymbolicName!: string;
 
   public capabilitiesByApp$: Observable<Map<string, Capability[]>>;
-  public filterFormControl = new UntypedFormControl();
-  public selectedCapability: Capability;
+  public filterFormControl = this._formBuilder.control('');
+  public selectedCapability: Capability | undefined;
 
-  constructor(manifestService: DevToolsManifestService, private _router: Router) {
+  constructor(manifestService: DevToolsManifestService,
+              private _router: Router,
+              private _formBuilder: NonNullableFormBuilder) {
     this.capabilitiesByApp$ = this._appChange$
       .pipe(
         switchMap(() => manifestService.observeDependingCapabilities$(this.appSymbolicName)),
         expand(capabilities => this.filterFormControl.valueChanges.pipe(take(1), map(() => capabilities))),
         map(capabilities => filterManifestObjects(capabilities, this.filterFormControl.value)),
-        map(capabilities => capabilities.reduce((acc, capability) => Maps.addListValue(acc, capability.metadata.appSymbolicName, capability), new Map())),
+        map(capabilities => capabilities.reduce((acc, capability) => Maps.addListValue(acc, capability.metadata!.appSymbolicName, capability), new Map())),
       );
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    this.filterFormControl.reset('');
-    this.selectedCapability = null;
+    this.filterFormControl.reset();
+    this.selectedCapability = undefined;
     this._appChange$.next();
   }
 
   public onCapabilityClick(capability: Capability): void {
     if (this.selectedCapability === capability) {
-      this.selectedCapability = null;
+      this.selectedCapability = undefined;
     }
     else {
       this.selectedCapability = capability;
@@ -94,7 +96,7 @@ export class RequiredCapabilitiesComponent implements OnChanges {
   }
 
   public trackByCapabilityFn(index: number, capability: Capability): string {
-    return capability.metadata.id;
+    return capability.metadata!.id;
   }
 
   public paramNameFn = (param: ParamDefinition): string => param.name;

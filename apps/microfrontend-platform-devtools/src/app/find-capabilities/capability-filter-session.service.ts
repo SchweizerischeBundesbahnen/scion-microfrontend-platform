@@ -22,11 +22,10 @@ export class CapabilityFilterSession {
   private _typeFilters = new Set<string>();
   private _qualifierFilters = new Array<KeyValuePair>();
   private _appFilters = new Set<string>();
-  private _qualifierLogicalOperator: LogicalOperator;
+  private _qualifierLogicalOperator: LogicalOperator = 'or';
   private _filterChange$ = new Subject<void>();
 
   constructor(private _manifestService: DevToolsManifestService) {
-    this.qualifierLogicalOperator = 'or';
   }
 
   public set qualifierLogicalOperator(value: LogicalOperator) {
@@ -56,7 +55,7 @@ export class CapabilityFilterSession {
   }
 
   private filterById(capability: Capability): boolean {
-    return this._idFilters.has(capability.metadata.id);
+    return this._idFilters.has(capability.metadata!.id);
   }
 
   private filterByType(capability: Capability): boolean {
@@ -64,12 +63,12 @@ export class CapabilityFilterSession {
     return Array.from(this._typeFilters).some(typeFilter => typeFilter.toLowerCase() === capabilityType);
   }
 
-  private filterByQualifier(qualifier: Qualifier): boolean {
+  private filterByQualifier(qualifier: Qualifier | undefined): boolean {
     if (this._qualifierLogicalOperator === 'and') {
-      return this._qualifierFilters.every(it => this.matchesQualifier(it, qualifier));
+      return this._qualifierFilters.every(it => this.matchesQualifier(it, qualifier ?? {}));
     }
     else {
-      return this._qualifierFilters.some(it => this.matchesQualifier(it, qualifier));
+      return this._qualifierFilters.some(it => this.matchesQualifier(it, qualifier ?? {}));
     }
   }
 
@@ -91,7 +90,7 @@ export class CapabilityFilterSession {
   }
 
   private filterAppByName(capability: Capability): boolean {
-    const symbolicName = capability.metadata.appSymbolicName.toLowerCase();
+    const symbolicName = capability.metadata!.appSymbolicName.toLowerCase();
     return Array.from(this._appFilters).some(appFilter => appFilter.toLowerCase() === symbolicName);
   }
 
@@ -165,6 +164,6 @@ export class CapabilityFilterSession {
 }
 
 const capabilityComparator = (capability1: Capability, capability2: Capability): number => {
-  return capability1.metadata.appSymbolicName.localeCompare(capability2.metadata.appSymbolicName) ||
+  return capability1.metadata!.appSymbolicName.localeCompare(capability2.metadata!.appSymbolicName) ||
     capability1.type.localeCompare(capability2.type);
 };

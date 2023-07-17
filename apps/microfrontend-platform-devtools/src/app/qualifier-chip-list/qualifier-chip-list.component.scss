@@ -12,21 +12,6 @@
       flex-direction: column;
       align-items: center;
 
-      &.app-symbolic-name {
-        @include sci-ɵcomponents.theme-chip(var(--sci-color-P600), var(--sci-color-P600), var(--sci-color-P900));
-        justify-content: center;
-        padding: .25em 1.25em;
-
-        > span.app-symbolic-name {
-          font-size: 1.5em;
-          font-variant: all-small-caps;
-          font-weight: bold;
-          color: var(--sci-color-P50);
-          padding-left: 1em;
-          padding-right: 1em;
-        }
-      }
-
       &.type {
         @include sci-ɵcomponents.theme-chip(var(--sci-color-P500), var(--sci-color-P200), var(--sci-color-P900));
         padding: .25em 1.25em;
@@ -65,10 +50,6 @@
           margin-bottom: .75em;
         }
 
-        &.app-symbolic-name {
-          min-width: 75px;
-        }
-
         &.type {
           min-width: 75px;
 
@@ -104,14 +85,6 @@
     > ul {
       > li {
         border-color: var(--sci-color-A700);
-
-        &.app-symbolic-name {
-          background-color: var(--sci-color-A200);
-
-          > span.app-symbolic-name {
-            color: var(--sci-color-A900);
-          }
-        }
 
         &.type {
           background-color: var(--sci-color-A50);

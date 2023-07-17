@@ -6,8 +6,8 @@
   </span>
 </header>
 <div class="filter" [class]="type" *ngIf="showFilter; else showFilterButton" cdkMonitorSubtreeFocus (cdkFocusChange)="onFocusChange($event)">
-  <input type="text" [formControl]="keyFC" (keydown.enter)="onAddFilterClick()" *ngIf="isTypeKeyValue()" placeholder="Key" [attr.list]="autocompleteKeysDatalistId" #key>
-  <input type="text" [formControl]="valueFC" (keydown.enter)="onAddFilterClick()" [placeholder]="placeholder" [attr.list]="autocompleteValuesDatalistId" #value>
+  <input type="text" [formControl]="keyFormControl" (keydown.enter)="onAddFilterClick()" *ngIf="isTypeKeyValue()" placeholder="Key" [attr.list]="autocompleteKeysDatalistId" #key>
+  <input type="text" [formControl]="valueFormControl" (keydown.enter)="onAddFilterClick()" [placeholder]="placeholder" [attr.list]="autocompleteValuesDatalistId" #value>
   <button type="button" (click)="onAddFilterClick()" [disabled]="isAddButtonDisabled()">Add</button>
   <datalist [attr.id]="autocompleteKeysDatalistId">
     <option *ngFor="let autocompleteKey of autocompleteKeys" [value]="autocompleteKey"></option>

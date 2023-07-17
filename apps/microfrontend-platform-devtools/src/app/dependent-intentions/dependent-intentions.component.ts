@@ -15,7 +15,7 @@ import {expand, map, switchMap, take} from 'rxjs/operators';
 import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Maps} from '@scion/toolkit/util';
-import {ReactiveFormsModule, UntypedFormControl} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {AsyncPipe, KeyValue, KeyValuePipe, NgFor} from '@angular/common';
 import {SciFilterFieldModule} from '@scion/components.internal/filter-field';
 import {SciAccordionModule} from '@scion/components.internal/accordion';
@@ -44,18 +44,20 @@ export class DependentIntentionsComponent implements OnChanges {
   private _appChange$ = new ReplaySubject<void>(1);
 
   @Input()
-  public appSymbolicName: string;
+  public appSymbolicName!: string;
 
   public intentionsByApp$: Observable<Map<string, Intention[]>>;
-  public filterFormControl = new UntypedFormControl();
+  public filterFormControl = this._formBuilder.control('');
 
-  constructor(manifestService: DevToolsManifestService, private _router: Router) {
+  constructor(private _router: Router,
+              private _formBuilder: NonNullableFormBuilder,
+              manifestService: DevToolsManifestService) {
     this.intentionsByApp$ = this._appChange$
       .pipe(
         switchMap(() => manifestService.observeDependentIntentions$(this.appSymbolicName)),
         expand(intentions => this.filterFormControl.valueChanges.pipe(take(1), map(() => intentions))),
         map(intentions => filterManifestObjects(intentions, this.filterFormControl.value)),
-        map(intentions => intentions.reduce((acc, intention) => Maps.addListValue(acc, intention.metadata.appSymbolicName, intention), new Map())),
+        map(intentions => intentions.reduce((acc, intention) => Maps.addListValue(acc, intention.metadata!.appSymbolicName, intention), new Map())),
       );
   }
 
@@ -74,6 +76,6 @@ export class DependentIntentionsComponent implements OnChanges {
   }
 
   public trackByIntentionFn(index: number, intention: Intention): string {
-    return intention.metadata.id;
+    return intention.metadata!.id;
   }
 }

@@ -46,10 +46,10 @@ export class DevToolsManifestService {
   public capabilityProviders$(intention: Intention): Observable<Application[]> {
     return this.findFulfillingCapabilities$(intention)
       .pipe(
-        mapArray(capability => capability.metadata.appSymbolicName),
+        mapArray(capability => capability.metadata!.appSymbolicName),
         distinctArray(),
         sortArray((a, b) => a.localeCompare(b)),
-        mapArray(appSymbolicName => this.getApplication(appSymbolicName)),
+        mapArray(appSymbolicName => this.getApplication(appSymbolicName)!),
       );
   }
 
@@ -59,11 +59,11 @@ export class DevToolsManifestService {
   public capabilityConsumers$(capability: Capability): Observable<Application[]> {
     return this.findFulfillingIntentions$(capability)
       .pipe(
-        mapArray(intention => intention.metadata.appSymbolicName),
-        map(apps => apps.concat(capability.metadata.appSymbolicName)), // add provider since it is an implicit consumer
+        mapArray(intention => intention.metadata!.appSymbolicName),
+        map(apps => apps.concat(capability.metadata!.appSymbolicName)), // add provider since it is an implicit consumer
         distinctArray(),
         sortArray((a, b) => a.localeCompare(b)),
-        mapArray(appSymbolicName => this.getApplication(appSymbolicName)),
+        mapArray(appSymbolicName => this.getApplication(appSymbolicName)!),
       );
   }
 
@@ -75,7 +75,7 @@ export class DevToolsManifestService {
       .pipe(
         mapArray(intention => this.findFulfillingCapabilities$(intention)),
         combineArray(),
-        distinctArray(capability => capability.metadata.id),
+        distinctArray(capability => capability.metadata!.id),
       );
   }
 
@@ -87,7 +87,7 @@ export class DevToolsManifestService {
       .pipe(
         mapArray(capability => this.findFulfillingIntentions$(capability)),
         combineArray(),
-        distinctArray(intention => intention.metadata.id),
+        distinctArray(intention => intention.metadata!.id),
       );
   }
 
@@ -104,16 +104,16 @@ export class DevToolsManifestService {
     return this._manifestService.lookupIntentions$({type: capability.type})
       .pipe(
         filterArray(intention => new QualifierMatcher(intention.qualifier).matches(capability.qualifier)),
-        filterArray(intention => this.isCapabilityVisibleToApplication(capability, intention.metadata.appSymbolicName)),
+        filterArray(intention => this.isCapabilityVisibleToApplication(capability, intention.metadata!.appSymbolicName)),
       );
   }
 
   private findFulfillingCapabilities$(intention: Intention): Observable<Intention[]> {
     return this._manifestService.lookupCapabilities$({type: intention.type, qualifier: intention.qualifier})
-      .pipe(filterArray(capability => this.isCapabilityVisibleToApplication(capability, intention.metadata.appSymbolicName)));
+      .pipe(filterArray(capability => this.isCapabilityVisibleToApplication(capability, intention.metadata!.appSymbolicName)));
   }
 
   private isCapabilityVisibleToApplication(capability: Capability, appSymbolicName: string): boolean {
-    return !capability.private || this._appsBySymbolicName.get(appSymbolicName).scopeCheckDisabled || capability.metadata.appSymbolicName === appSymbolicName;
+    return !capability.private || this._appsBySymbolicName.get(appSymbolicName)!.scopeCheckDisabled || capability.metadata!.appSymbolicName === appSymbolicName;
   }
 }

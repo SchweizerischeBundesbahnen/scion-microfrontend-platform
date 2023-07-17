@@ -28,10 +28,10 @@ import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-
 export class CapabilityAccordionItemComponent {
 
   @Input()
-  public appSymbolicName;
+  public appSymbolicName?: string | undefined;
 
   @Input()
-  public capability: Capability;
+  public capability!: Capability;
 
   constructor(private _router: Router, private _clipboard: Clipboard) {
   }

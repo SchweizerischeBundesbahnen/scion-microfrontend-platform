@@ -41,18 +41,18 @@ export default class FindCapabilitiesComponent {
 
   constructor(shellService: ShellService, public capabilityFilterSession: CapabilityFilterSession, manifestService: DevToolsManifestService) {
     shellService.primaryTitle = 'Capability Browser';
-    this.capabilityIds$ = manifestService.capabilities$().pipe(mapArray(capability => capability.metadata.id));
+    this.capabilityIds$ = manifestService.capabilities$().pipe(mapArray(capability => capability.metadata!.id));
     this.capabilityTypes$ = manifestService.capabilityTypes$();
     this.appSymbolicNames = manifestService.applications.map(app => app.symbolicName).sort();
     this.qualifierKeys$ = manifestService.capabilities$()
       .pipe(
-        map(capabilities => capabilities.reduce((acc, capability) => acc.concat(Object.keys(capability.qualifier || {})), [])),
+        map(capabilities => capabilities.reduce((acc, capability) => acc.concat(Object.keys(capability.qualifier || {})), new Array<string>())),
         distinctArray(),
         sortArray((a, b) => a.localeCompare(b)),
       );
     this.qualifierValues$ = manifestService.capabilities$()
       .pipe(
-        map(capabilities => capabilities.reduce((acc, capability) => acc.concat(Object.values(capability.qualifier || {})), [])),
+        map(capabilities => capabilities.reduce((acc, capability) => acc.concat(Object.values(capability.qualifier || {}) as Array<string>), new Array<string>())),
         distinctArray(),
         sortArray((a, b) => a.localeCompare(b)),
       );

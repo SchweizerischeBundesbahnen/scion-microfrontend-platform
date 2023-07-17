@@ -38,10 +38,10 @@ import {AppNamePipe} from '../common/app-name.pipe';
 })
 export class CapabilityAccordionPanelComponent implements OnInit {
 
-  public applications$: Observable<Application[]>;
+  public applications$!: Observable<Application[]>;
 
   @Input()
-  public capability: Capability;
+  public capability!: Capability;
 
   constructor(private _manifestService: DevToolsManifestService, private _router: Router) {
   }
