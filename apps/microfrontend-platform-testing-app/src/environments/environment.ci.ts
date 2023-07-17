@@ -10,7 +10,7 @@
 
 import {ApplicationConfig} from '@scion/microfrontend-platform';
 
-const devtools: ApplicationConfig = null;
+const devtools: ApplicationConfig | null = null;
 
 /**
  * Environment used when packaging the app for CI on GitHub.

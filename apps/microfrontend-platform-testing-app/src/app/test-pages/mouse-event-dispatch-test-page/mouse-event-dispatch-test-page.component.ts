@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectorRef, Component, OnDestroy, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {takeUntil} from 'rxjs/operators';
 import {fromEvent, merge, Subject} from 'rxjs';
 import {DatePipe, NgFor} from '@angular/common';
@@ -28,17 +28,20 @@ import {SciCheckboxModule} from '@scion/components.internal/checkbox';
     SciCheckboxModule,
   ],
 })
-export default class MouseEventDispatchTestPageComponent implements OnDestroy {
+export default class MouseEventDispatchTestPageComponent implements OnInit, OnDestroy {
 
   private _destroy$ = new Subject<void>();
 
   public dispatchedEvents = new Array<DispatchedEvent>();
   public followTailFormControl = new FormControl<boolean>(true);
 
-  @ViewChild(SciViewportComponent)
-  private _viewport: SciViewportComponent;
+  @ViewChild(SciViewportComponent, {static: true})
+  private _viewport!: SciViewportComponent;
 
   constructor(private _cd: ChangeDetectorRef) {
+  }
+
+  public ngOnInit(): void {
     merge(fromEvent(document, 'sci-mousemove'), fromEvent(document, 'sci-mouseup'))
       .pipe(takeUntil(this._destroy$))
       .subscribe(event => {

@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {ChangeDetectionStrategy, Component, ElementRef, OnDestroy} from '@angular/core';
-import {ReactiveFormsModule, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {PreferredSizeService} from '@scion/microfrontend-platform';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
@@ -16,12 +16,6 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {NgIf} from '@angular/common';
 import {SciFormFieldModule} from '@scion/components.internal/form-field';
 import {SciCheckboxModule} from '@scion/components.internal/checkbox';
-
-export const CSS_SIZE = 'cssSize';
-export const PREFERRED_SIZE = 'preferredSize';
-export const WIDTH = 'width';
-export const HEIGHT = 'height';
-export const USE_ELEMENT_SIZE = 'useElementSize';
 
 @Component({
   selector: 'app-preferred-size',
@@ -38,49 +32,42 @@ export const USE_ELEMENT_SIZE = 'useElementSize';
 })
 export default class PreferredSizeComponent implements OnDestroy {
 
-  public CSS_SIZE = CSS_SIZE;
-  public PREFERRED_SIZE = PREFERRED_SIZE;
-  public WIDTH = WIDTH;
-  public HEIGHT = HEIGHT;
-  public USE_ELEMENT_SIZE = USE_ELEMENT_SIZE;
+  public form = this._formBuilder.group({
+    cssSize: this._formBuilder.group({
+      width: this._formBuilder.control('', Validators.pattern(/^\d+px$/)),
+      height: this._formBuilder.control('', Validators.pattern(/^\d+px$/)),
+    }),
+    preferredSize: this._formBuilder.group({
+      width: this._formBuilder.control('', Validators.pattern(/^\d+px$/)),
+      height: this._formBuilder.control('', Validators.pattern(/^\d+px$/)),
+    }),
+    useElementSize: this._formBuilder.control(false),
+  }, {updateOn: 'blur'});
 
-  public form: UntypedFormGroup;
-  public elementDimensionObservableBound: boolean;
+  public elementDimensionObservableBound: boolean | undefined;
 
   private _destroy$ = new Subject<void>();
 
-  constructor(formBuilder: UntypedFormBuilder, private _host: ElementRef<HTMLElement>) {
-    this.form = formBuilder.group({
-      [CSS_SIZE]: formBuilder.group({
-        [WIDTH]: new UntypedFormControl('', Validators.pattern(/^\d+px$/)),
-        [HEIGHT]: new UntypedFormControl('', Validators.pattern(/^\d+px$/)),
-      }),
-      [PREFERRED_SIZE]: formBuilder.group({
-        [WIDTH]: new UntypedFormControl('', Validators.pattern(/^\d+px$/)),
-        [HEIGHT]: new UntypedFormControl('', Validators.pattern(/^\d+px$/)),
-      }),
-      [USE_ELEMENT_SIZE]: new UntypedFormControl(false),
-    }, {updateOn: 'blur'});
-
-    this.form.get(USE_ELEMENT_SIZE).valueChanges
+  constructor(private _formBuilder: NonNullableFormBuilder, private _host: ElementRef<HTMLElement>) {
+    this.form.controls.useElementSize.valueChanges
       .pipe(takeUntil(this._destroy$))
       .subscribe(checked => {
         this.reset();
-        this.form.get(USE_ELEMENT_SIZE).setValue(checked, {onlySelf: true, emitEvent: false});
+        this.form.controls.useElementSize.setValue(checked, {onlySelf: true, emitEvent: false});
       });
 
-    this.form.get(CSS_SIZE).valueChanges
+    this.form.controls.cssSize.valueChanges
       .pipe(takeUntil(this._destroy$))
       .subscribe(() => {
-        setCssVariable(this._host, '--width', this.form.get(CSS_SIZE).get(WIDTH).value);
-        setCssVariable(this._host, '--height', this.form.get(CSS_SIZE).get(HEIGHT).value);
+        setCssVariable(this._host, '--width', this.form.controls.cssSize.controls.width.value);
+        setCssVariable(this._host, '--height', this.form.controls.cssSize.controls.height.value);
       });
 
-    this.form.get(PREFERRED_SIZE).valueChanges
+    this.form.controls.preferredSize.valueChanges
       .pipe(takeUntil(this._destroy$))
       .subscribe(() => {
-        const width = this.form.get(PREFERRED_SIZE).get(WIDTH).value;
-        const height = this.form.get(PREFERRED_SIZE).get(HEIGHT).value;
+        const width = this.form.controls.preferredSize.controls.width.value;
+        const height = this.form.controls.preferredSize.controls.height.value;
         Beans.get(PreferredSizeService).setPreferredSize({
           minWidth: width,
           width: width,
@@ -93,7 +80,7 @@ export default class PreferredSizeComponent implements OnDestroy {
   }
 
   public get isUseElementSize(): boolean {
-    return this.form.get(USE_ELEMENT_SIZE).value;
+    return this.form.controls.useElementSize.value;
   }
 
   public onElementObservableBind(): void {
@@ -107,7 +94,7 @@ export default class PreferredSizeComponent implements OnDestroy {
   }
 
   public onElementUnmount(): void {
-    this._host.nativeElement.parentElement.removeChild(this._host.nativeElement);
+    this._host.nativeElement.parentElement!.removeChild(this._host.nativeElement);
   }
 
   public onResetClick(): void {

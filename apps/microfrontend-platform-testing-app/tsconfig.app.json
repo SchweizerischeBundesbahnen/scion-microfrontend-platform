@@ -5,7 +5,8 @@
     "outDir": "../../out-tsc/microfrontend-platform-testing-app",
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "types": []
+    "types": [],
+    "strict": true
   },
   "files": [
     "src/main.ts",

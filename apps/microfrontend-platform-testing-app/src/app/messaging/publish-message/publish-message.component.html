@@ -1,6 +1,6 @@
 <form autocomplete="off" [formGroup]="form">
   <sci-form-field label="Flavor *">
-    <select [formControlName]="FLAVOR" class="e2e-flavor">
+    <select [formControl]="form.controls.flavor" class="e2e-flavor">
       <option [value]="MessagingFlavor.Topic">Topic</option>
       <option [value]="MessagingFlavor.Intent">Intent</option>
     </select>
@@ -9,43 +9,47 @@
   <ng-container *ngIf="isTopicFlavor(); then topic_template else intent_template"></ng-container>
 
   <sci-form-field label="Message">
-    <textarea rows="10" [formControlName]="MESSAGE" class="e2e-message"></textarea>
+    <textarea rows="10" [formControl]="form.controls.message" class="e2e-message"></textarea>
   </sci-form-field>
 
   <sci-form-field label="Headers">
-    <sci-params-enter [paramsFormArray]="$any(form.get(HEADERS))" [addable]="true" [removable]="true" class="e2e-headers"></sci-params-enter>
+    <sci-params-enter [paramsFormArray]="form.controls.headers" [addable]="true" [removable]="true" class="e2e-headers"></sci-params-enter>
   </sci-form-field>
 
   <sci-form-field label="Request-Reply">
-    <sci-checkbox [formControlName]="REQUEST_REPLY" class="e2e-request-reply"></sci-checkbox>
+    <sci-checkbox [formControl]="form.controls.requestReply" class="e2e-request-reply"></sci-checkbox>
   </sci-form-field>
 
   <sci-form-field label="Retain">
-    <sci-checkbox [formControlName]="RETAIN" class="e2e-retain"></sci-checkbox>
+    <sci-checkbox [formControl]="form.controls.retain" class="e2e-retain"></sci-checkbox>
   </sci-form-field>
 
   <ng-template #topic_template>
-    <sci-form-field label="Topic *" [formGroupName]="DESTINATION">
-      <input [formControlName]="TOPIC" class="e2e-topic">
-      <div class="subscriber-badge">
-        <span class="e2e-topic-subscriber-count count">{{form.get(DESTINATION).get(TOPIC).value | appTopicSubscriberCount$ | async}}</span>
-        Subscribers
-      </div>
-    </sci-form-field>
+    <ng-container [formGroup]="form.controls.destination">
+      <sci-form-field label="Topic *">
+        <input [formControl]="(form.controls.destination | appAs:TopicMessageDestinationFormGroup).controls.topic" class="e2e-topic">
+        <div class="subscriber-badge">
+          <span class="e2e-topic-subscriber-count count">{{(form.controls.destination | appAs:TopicMessageDestinationFormGroup).controls.topic.value | appTopicSubscriberCount$ | async}}</span>
+          Subscribers
+        </div>
+      </sci-form-field>
+    </ng-container>
   </ng-template>
 
   <ng-template #intent_template>
-    <sci-form-field label="Intent type *" [formGroupName]="DESTINATION">
-      <input [formControlName]="TYPE" class="e2e-intent-type">
-    </sci-form-field>
+    <ng-container [formGroup]="form.controls.destination">
+      <sci-form-field label="Intent type *">
+        <input [formControl]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.type" class="e2e-intent-type">
+      </sci-form-field>
 
-    <sci-form-field label="Intent qualifier">
-      <sci-params-enter [paramsFormArray]="$any(form.get(DESTINATION).get(QUALIFIER))" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-params-enter>
-    </sci-form-field>
+      <sci-form-field label="Intent qualifier">
+        <sci-params-enter [paramsFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-params-enter>
+      </sci-form-field>
 
-    <sci-form-field label="Intent params">
-      <sci-params-enter [paramsFormArray]="$any(form.get(DESTINATION).get(PARAMS))" [addable]="true" [removable]="true" class="e2e-intent-params"></sci-params-enter>
-    </sci-form-field>
+      <sci-form-field label="Intent params">
+        <sci-params-enter [paramsFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.params" [addable]="true" [removable]="true" class="e2e-intent-params"></sci-params-enter>
+      </sci-form-field>
+    </ng-container>
   </ng-template>
 </form>
 

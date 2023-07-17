@@ -8,8 +8,8 @@
     <header>Add a new value:</header>
 
     <form [formGroup]="form">
-      <input [formControlName]="NAME" placeholder="Name" class="name e2e-name">
-      <input [formControlName]="VALUE" placeholder="Value" class="value e2e-value">
+      <input [formControl]="form.controls.name" placeholder="Name" class="name e2e-name">
+      <input [formControl]="form.controls.value" placeholder="Value" class="value e2e-value">
       <button (click)="onAddClick()" [disabled]="form.invalid" class="add e2e-add" title="Add this value to the outlet context">Add</button>
     </form>
   </section>

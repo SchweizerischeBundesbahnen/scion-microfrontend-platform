@@ -25,19 +25,19 @@ export default class AngularChangeDetectionTestPageComponent implements OnInit, 
   private _changeDetectionCycle$ = new Subject<void>();
 
   @ViewChild('angular_change_detection_indicator', {static: true})
-  private _changeDetectionIndicatorElement: ElementRef<HTMLElement>;
+  private _changeDetectionIndicatorElement!: ElementRef<HTMLElement>;
 
   @ViewChild('angular_change_detection_cycles', {static: true})
-  private _changeDetectionCyclesElement: ElementRef<HTMLTextAreaElement>;
+  private _changeDetectionCyclesElement!: ElementRef<HTMLTextAreaElement>;
 
   @ViewChild('angular_change_detection_cycles_clear', {static: true})
-  private _clearLogButton: ElementRef<HTMLButtonElement>;
+  private _clearLogButton!: ElementRef<HTMLButtonElement>;
 
   @ViewChild('element', {static: true})
-  private _element: ElementRef<HTMLTextAreaElement>;
+  private _element!: ElementRef<HTMLTextAreaElement>;
 
   @ViewChild('preventdefault_on_mousedown', {static: true})
-  private _preventdefaultOnMousedownCheckbox: ElementRef<HTMLInputElement>;
+  private _preventdefaultOnMousedownCheckbox!: ElementRef<HTMLInputElement>;
 
   constructor(private _zone: NgZone, @Inject(LOCALE_ID) private locale: string) {
     this.installChangeDetectionIndicator();

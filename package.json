@@ -32,6 +32,7 @@
     "microfrontend-platform:adoc:copy:images": "cp -r ./docs/adoc/microfrontend-platform-developer-guide/images dist/microfrontend-platform-developer-guide",
     "microfrontend-platform:adoc:copy:favicon": "cp ./resources/branding/favicon.ico dist/microfrontend-platform-developer-guide",
 
+    "microfrontend-platform-testing-app:build": "ng build microfrontend-platform-testing-app --configuration=development",
     "microfrontend-platform-testing-app-vercel:build": "ng build microfrontend-platform-testing-app --configuration=production-vercel",
     "microfrontend-platform-testing-app-ci:build": "ng build microfrontend-platform-testing-app --configuration=production-ci",
     "microfrontend-platform-testing-app:lint": "ng lint microfrontend-platform-testing-app",

@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, ElementRef, HostBinding, NgZone, OnDestroy, ViewChild} from '@angular/core';
+import {Component, ElementRef, HostBinding, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {asapScheduler, debounceTime, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {takeUntil, tap} from 'rxjs/operators';
@@ -34,20 +34,20 @@ import {DevToolsComponent} from '../devtools/devtools.component';
     DevToolsComponent,
   ],
 })
-export default class AppShellComponent implements OnDestroy {
+export default class AppShellComponent implements OnDestroy, OnInit {
 
   private _destroy$ = new Subject<void>();
   private _routeActivate$ = new Subject<void>();
   private _angularChangeDetectionCycle$ = new Subject<void>();
 
   public appSymbolicName: string;
-  public pageTitle: string;
+  public pageTitle: string | undefined;
   public isDevToolsOpened = false;
   public isPlatformHost = Beans.get<boolean>(IS_PLATFORM_HOST);
   public focusMonitor: FocusMonitor;
 
   @ViewChild('angular_change_detection_indicator', {static: true})
-  private _changeDetectionElement: ElementRef<HTMLElement>;
+  private _changeDetectionElement!: ElementRef<HTMLElement>;
 
   constructor(private _zone: NgZone) {
     this.appSymbolicName = Beans.get<string>(APP_IDENTITY);
@@ -55,6 +55,9 @@ export default class AppShellComponent implements OnDestroy {
 
     this.installRouteActivateListener();
     this.installKeystrokeRegisterLogger();
+  }
+
+  public ngOnInit(): void {
     this.installAngularChangeDetectionIndicator();
   }
 

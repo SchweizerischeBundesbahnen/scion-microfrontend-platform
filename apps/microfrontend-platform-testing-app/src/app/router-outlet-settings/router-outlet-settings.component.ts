@@ -64,8 +64,8 @@ export class RouterOutletSettingsComponent implements OnDestroy {
 
     // Remove properties which are not set.
     return Object.keys(preferredSize).reduce((obj, key) => {
-      if (preferredSize[key] !== undefined) {
-        return {...obj, [key]: preferredSize[key]};
+      if (preferredSize[key as keyof PreferredSize] !== undefined) {
+        return {...obj, [key]: preferredSize[key as keyof PreferredSize]};
       }
       return obj;
     }, {});

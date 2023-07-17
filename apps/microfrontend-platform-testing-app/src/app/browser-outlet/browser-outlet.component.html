@@ -1,5 +1,5 @@
 <form autocomplete="off" [formGroup]="form">
-  <input [formControlName]="URL" placeholder="Enter a URL for a microfrontend" class="url e2e-url" list="app-entry-points">
+  <input [formControl]="form.controls.url" placeholder="Enter a URL for a microfrontend" class="url e2e-url" list="app-entry-points">
   <button type="submit" class="e2e-go" (click)="onNavigateClick()" [disabled]="form.invalid">Go</button>
   <button type="button" class="e2e-clear" (click)="onUrlClearClick()">Clear</button>
   <button type="button" class="material-icons e2e-context-define" #context_define_button title="Defines the context of this outlet" (click)="onContextDefineClick()">input</button>

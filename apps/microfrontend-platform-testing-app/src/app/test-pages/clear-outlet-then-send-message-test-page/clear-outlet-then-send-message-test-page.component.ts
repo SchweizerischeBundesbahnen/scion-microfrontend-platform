@@ -8,13 +8,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {FormControl, FormGroup, ReactiveFormsModule, UntypedFormBuilder, Validators} from '@angular/forms';
+import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MessageClient, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {SciFormFieldModule} from '@scion/components.internal/form-field';
-
-export const OUTLET = 'outlet';
-export const TOPIC = 'topic';
 
 @Component({
   selector: 'app-clear-outlet-then-send-message-test-page',
@@ -28,23 +25,19 @@ export const TOPIC = 'topic';
 })
 export default class ClearOutletThenSendMessageTestPageComponent {
 
-  public OUTLET = OUTLET;
-  public TOPIC = TOPIC;
+  public form = this._formBuilder.group({
+    outlet: this._formBuilder.control('', Validators.required),
+    topic: this._formBuilder.control('', Validators.required),
+  });
 
-  public form: FormGroup;
-
-  constructor(formBuilder: UntypedFormBuilder) {
-    this.form = formBuilder.group({
-      [OUTLET]: new FormControl<string>('', Validators.required),
-      [TOPIC]: new FormControl<string>('', Validators.required),
-    });
+  constructor(private _formBuilder: NonNullableFormBuilder) {
   }
 
   public async onRunTestClick(): Promise<void> {
     // Clear the router outlet.
-    await Beans.get(OutletRouter).navigate(null, {outlet: this.form.get(OUTLET).value});
+    await Beans.get(OutletRouter).navigate(null, {outlet: this.form.controls.outlet.value});
     // Send message to the topic.
-    await Beans.get(MessageClient).publish(this.form.get(TOPIC).value);
+    await Beans.get(MessageClient).publish(this.form.controls.topic.value);
     // Reset the form.
     this.form.reset();
   }

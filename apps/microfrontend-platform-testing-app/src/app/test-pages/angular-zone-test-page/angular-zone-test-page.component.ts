@@ -133,7 +133,7 @@ export default class AngularZoneTestPageComponent {
 
   private async testContextServiceObserve(model: TestCaseModel): Promise<void> {
     const contextKey = UUID.randomUUID();
-    const outletContext = await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
+    const outletContext = (await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT))!;
 
     // Observbe context value.
     Beans.get(ContextService).observe$(contextKey)
@@ -147,7 +147,7 @@ export default class AngularZoneTestPageComponent {
   }
 
   private async testContextServiceNames(model: TestCaseModel): Promise<void> {
-    const outletContext = await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
+    const outletContext = (await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT))!;
 
     // Observe context names.
     Beans.get(ContextService).names$()
