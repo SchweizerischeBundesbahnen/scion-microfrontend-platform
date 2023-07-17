@@ -38,10 +38,11 @@ describe('MicrofrontendPlatform', () => {
     await expectAsync(connectPromise).toBeRejectedWithError(/\[GatewayError] Message broker not discovered within 250ms/);
   });
 
-  it('should repeatedly send a connect request when the client connects to a remote host', async () => {
+  it('should repeatedly send a connect request when the client connects to a remote host (e.g. if integrated into Eclipse RCP host)', async () => {
     // Load the client.
     const clientFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
     const connectPromise = clientFixture.loadScript('lib/client/client-connect.script.ts', 'connectClientToRemoteHost', {symbolicName: 'client', brokerDiscoverTimeout: 2000});
+    // @ts-expect-error custom property to retrieve the contentWindow of the iframe
     document['X-CLIENT-WINDOW'] = clientFixture.iframe.contentWindow;
 
     // Wait some time before installing the host and bridge so that the first connect request will get lost.

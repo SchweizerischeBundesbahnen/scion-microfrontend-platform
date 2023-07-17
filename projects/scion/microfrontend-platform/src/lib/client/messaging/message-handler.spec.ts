@@ -20,7 +20,7 @@ import {ObserveCaptor} from '@scion/toolkit/testing';
 import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 import {MicrofrontendFixture} from '../../testing/microfrontend-fixture/microfrontend-fixture';
 
-const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T => msg.body;
+const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T | undefined => msg.body;
 
 describe('Message Handler', () => {
 
@@ -37,7 +37,7 @@ describe('Message Handler', () => {
     it('should receive messages published to a topic', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         collector.push(message.body);
       });
@@ -53,7 +53,7 @@ describe('Message Handler', () => {
     it('should not unregister the callback on error', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         collector.push(message.body);
         throw Error('some error');
@@ -70,7 +70,7 @@ describe('Message Handler', () => {
     it('should not unregister the callback on async error', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       Beans.get(MessageClient).onMessage<string>('topic', async message => {
         collector.push(message.body);
         await Promise.reject('some-error');
@@ -87,7 +87,7 @@ describe('Message Handler', () => {
     it('should ignore values returned by the callback', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         collector.push(message.body);
         return 'some-value';
@@ -104,7 +104,7 @@ describe('Message Handler', () => {
     it('should ignore async values returned by the callback', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         collector.push(message.body);
         return Promise.resolve('some-value');
@@ -121,7 +121,7 @@ describe('Message Handler', () => {
     it('should unregister the handler when cancelling its subscription', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       const subscription = Beans.get(MessageClient).onMessage<string>('topic', message => {
         collector.push(message.body);
         return Promise.resolve('some-value');
@@ -144,7 +144,7 @@ describe('Message Handler', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
-        return message.body.toUpperCase();
+        return message.body!.toUpperCase();
       });
 
       const captor = new ObserveCaptor(bodyExtractFn);
@@ -159,7 +159,7 @@ describe('Message Handler', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
-        return Promise.resolve(message.body.toUpperCase());
+        return Promise.resolve(message.body!.toUpperCase());
       });
 
       const captor = new ObserveCaptor(bodyExtractFn);
@@ -174,7 +174,7 @@ describe('Message Handler', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
-        return of(message.body.toUpperCase());
+        return of(message.body!.toUpperCase());
       });
 
       const captor = new ObserveCaptor(bodyExtractFn);
@@ -189,7 +189,7 @@ describe('Message Handler', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
-        const body = message.body.toUpperCase();
+        const body = message.body!.toUpperCase();
         return of(`${body}-1`, `${body}-2`, `${body}-3`);
       });
 
@@ -205,7 +205,7 @@ describe('Message Handler', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
-        const body = message.body.toUpperCase();
+        const body = message.body!.toUpperCase();
         const subject = new ReplaySubject(3);
         subject.next(`${body}-1`);
         subject.next(`${body}-2`);
@@ -303,7 +303,7 @@ describe('Message Handler', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
-        const body = message.body.toUpperCase();
+        const body = message.body!.toUpperCase();
         return of(`${body}-1`, undefined, `${body}-2`, null, `${body}-3`);
       });
 
@@ -371,7 +371,7 @@ describe('Message Handler', () => {
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return concat(
-          of(message.body.toUpperCase()),
+          of(message.body!.toUpperCase()),
           throwError(() => 'some error'),
         );
       });
@@ -391,7 +391,7 @@ describe('Message Handler', () => {
 
       Beans.get(MessageClient).onMessage<string>('topic', message => {
         return concat(
-          of(message.body.toUpperCase()),
+          of(message.body!.toUpperCase()),
           throwError(() => 'some error'),
         );
       });
@@ -418,9 +418,9 @@ describe('Message Handler', () => {
     it('should not unregister the handler on error', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      const collected = [];
+      const collector = new Array<unknown>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
-        collected.push(message.body);
+        collector.push(message.body);
         throw Error('some error');
       });
 
@@ -431,7 +431,7 @@ describe('Message Handler', () => {
       expect(captor1.getError().name).toEqual('RequestError');
       expect(captor1.getError().message).toEqual('some error');
       expect(captor1.getValues()).toEqual([]);
-      expect(collected).toEqual(['a']);
+      expect(collector).toEqual(['a']);
 
       const captor2 = new ObserveCaptor(bodyExtractFn);
       Beans.get(MessageClient).request$('topic', 'b').subscribe(captor2);
@@ -440,15 +440,15 @@ describe('Message Handler', () => {
       expect(captor2.getError().name).toEqual('RequestError');
       expect(captor2.getError().message).toEqual('some error');
       expect(captor2.getValues()).toEqual([]);
-      expect(collected).toEqual(['a', 'b']);
+      expect(collector).toEqual(['a', 'b']);
     });
 
     it('should not unregister the handler on async error', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      const collected = [];
+      const collector = new Array<unknown>();
       Beans.get(MessageClient).onMessage<string>('topic', message => {
-        collected.push(message.body);
+        collector.push(message.body);
         return Promise.reject('some error');
       });
 
@@ -459,7 +459,7 @@ describe('Message Handler', () => {
       expect(captor1.getError().name).toEqual('RequestError');
       expect(captor1.getError().message).toEqual('some error');
       expect(captor1.getValues()).toEqual([]);
-      expect(collected).toEqual(['a']);
+      expect(collector).toEqual(['a']);
 
       const captor2 = new ObserveCaptor(bodyExtractFn);
       Beans.get(MessageClient).request$('topic', 'b').subscribe(captor2);
@@ -468,7 +468,7 @@ describe('Message Handler', () => {
       expect(captor2.getError().name).toEqual('RequestError');
       expect(captor2.getError().message).toEqual('some error');
       expect(captor2.getValues()).toEqual([]);
-      expect(collected).toEqual(['a', 'b']);
+      expect(collector).toEqual(['a', 'b']);
     });
 
     it('should unsubscribe from the replier Observable when the requestor unsubscribes', async () => {
@@ -583,7 +583,7 @@ describe('Intent Handler', () => {
         applications: [],
       });
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         collector.push(intentMessage.body);
       });
@@ -607,7 +607,7 @@ describe('Intent Handler', () => {
         applications: [],
       });
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         collector.push(intentMessage.body);
         throw Error('some error');
@@ -632,7 +632,7 @@ describe('Intent Handler', () => {
         applications: [],
       });
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, async intentMessage => {
         collector.push(intentMessage.body);
         await Promise.reject('some-error');
@@ -657,7 +657,7 @@ describe('Intent Handler', () => {
         applications: [],
       });
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         collector.push(intentMessage.body);
         return 'some-value';
@@ -682,7 +682,7 @@ describe('Intent Handler', () => {
         applications: [],
       });
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         collector.push(intentMessage.body);
         return Promise.resolve('some-value');
@@ -707,7 +707,7 @@ describe('Intent Handler', () => {
         applications: [],
       });
 
-      const collector = new Array<string>();
+      const collector = new Array<unknown>();
       const subscription = Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         collector.push(intentMessage.body);
         return Promise.resolve('some-value');
@@ -738,7 +738,7 @@ describe('Intent Handler', () => {
       });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
-        return intentMessage.body.toUpperCase();
+        return intentMessage.body!.toUpperCase();
       });
 
       const captor = new ObserveCaptor(bodyExtractFn);
@@ -761,7 +761,7 @@ describe('Intent Handler', () => {
       });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
-        return Promise.resolve(intentMessage.body.toUpperCase());
+        return Promise.resolve(intentMessage.body!.toUpperCase());
       });
 
       const captor = new ObserveCaptor(bodyExtractFn);
@@ -784,7 +784,7 @@ describe('Intent Handler', () => {
       });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
-        return of(intentMessage.body.toUpperCase());
+        return of(intentMessage.body!.toUpperCase());
       });
 
       const captor = new ObserveCaptor(bodyExtractFn);
@@ -807,7 +807,7 @@ describe('Intent Handler', () => {
       });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
-        const body = intentMessage.body.toUpperCase();
+        const body = intentMessage.body!.toUpperCase();
         return of(`${body}-1`, `${body}-2`, `${body}-3`);
       });
 
@@ -831,7 +831,7 @@ describe('Intent Handler', () => {
       });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
-        const body = intentMessage.body.toUpperCase();
+        const body = intentMessage.body!.toUpperCase();
         const subject = new ReplaySubject(3);
         subject.next(`${body}-1`);
         subject.next(`${body}-2`);
@@ -977,7 +977,7 @@ describe('Intent Handler', () => {
       });
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
-        const body = intentMessage.body.toUpperCase();
+        const body = intentMessage.body!.toUpperCase();
         return of(`${body}-1`, undefined, `${body}-2`, null, `${body}-3`);
       });
 
@@ -1077,7 +1077,7 @@ describe('Intent Handler', () => {
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         return concat(
-          of(intentMessage.body.toUpperCase()),
+          of(intentMessage.body!.toUpperCase()),
           throwError(() => 'some error'),
         );
       });
@@ -1105,7 +1105,7 @@ describe('Intent Handler', () => {
 
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
         return concat(
-          of(intentMessage.body.toUpperCase()),
+          of(intentMessage.body!.toUpperCase()),
           throwError(() => 'some error'),
         );
       });
@@ -1140,9 +1140,9 @@ describe('Intent Handler', () => {
         applications: [],
       });
 
-      const collected = [];
+      const collector = new Array<unknown>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
-        collected.push(intentMessage.body);
+        collector.push(intentMessage.body);
         throw Error('some error');
       });
 
@@ -1153,7 +1153,7 @@ describe('Intent Handler', () => {
       expect(captor1.getError().name).toEqual('RequestError');
       expect(captor1.getError().message).toEqual('some error');
       expect(captor1.getValues()).toEqual([]);
-      expect(collected).toEqual(['a']);
+      expect(collector).toEqual(['a']);
 
       const captor2 = new ObserveCaptor(bodyExtractFn);
       Beans.get(IntentClient).request$({type: 'capability'}, 'b').subscribe(captor2);
@@ -1162,7 +1162,7 @@ describe('Intent Handler', () => {
       expect(captor2.getError().name).toEqual('RequestError');
       expect(captor2.getError().message).toEqual('some error');
       expect(captor2.getValues()).toEqual([]);
-      expect(collected).toEqual(['a', 'b']);
+      expect(collector).toEqual(['a', 'b']);
     });
 
     it('should not unregister the handler on async error', async () => {
@@ -1176,9 +1176,9 @@ describe('Intent Handler', () => {
         applications: [],
       });
 
-      const collected = [];
+      const collector = new Array<unknown>();
       Beans.get(IntentClient).onIntent<string>({type: 'capability'}, intentMessage => {
-        collected.push(intentMessage.body);
+        collector.push(intentMessage.body);
         return Promise.reject('some error');
       });
 
@@ -1189,7 +1189,7 @@ describe('Intent Handler', () => {
       expect(captor1.getError().name).toEqual('RequestError');
       expect(captor1.getError().message).toEqual('some error');
       expect(captor1.getValues()).toEqual([]);
-      expect(collected).toEqual(['a']);
+      expect(collector).toEqual(['a']);
 
       const captor2 = new ObserveCaptor(bodyExtractFn);
       Beans.get(IntentClient).request$({type: 'capability'}, 'b').subscribe(captor2);
@@ -1198,7 +1198,7 @@ describe('Intent Handler', () => {
       expect(captor2.getError().name).toEqual('RequestError');
       expect(captor2.getError().message).toEqual('some error');
       expect(captor2.getValues()).toEqual([]);
-      expect(collected).toEqual(['a', 'b']);
+      expect(collector).toEqual(['a', 'b']);
     });
 
     it('should unsubscribe from the replier Observable when the requestor unsubscribes', async () => {
@@ -1320,7 +1320,7 @@ class ObservableCaptor {
   public unsubscribed = new Promise<void>(resolve => this.onUnsubscribe = resolve);
   public finalized = new Promise<void>(resolve => this.onFinalize = resolve);
 
-  public onConstruct: () => void;
-  public onUnsubscribe: () => void;
-  public onFinalize: () => void;
+  public onConstruct!: () => void;
+  public onUnsubscribe!: () => void;
+  public onFinalize!: () => void;
 }

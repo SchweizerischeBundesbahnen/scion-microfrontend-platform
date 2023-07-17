@@ -13,13 +13,13 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {PreferredSizeService} from './preferred-size-service';
 import {MessageClient} from '../messaging/public_api';
 import {mapToBody} from '../../messaging.model';
+import {PreferredSize} from '@scion/microfrontend-platform';
 
-export async function reportPreferredSize({scriptPreferredSizeTopic}): Promise<void> { // eslint-disable-line @typescript-eslint/typedef
+export async function reportPreferredSize(args: {scriptPreferredSizeTopic: string}): Promise<void> {
   await MicrofrontendPlatformClient.connect('host');
-  Beans.get(MessageClient).observe$(scriptPreferredSizeTopic)
+  Beans.get(MessageClient).observe$<PreferredSize>(args.scriptPreferredSizeTopic)
     .pipe(mapToBody())
     .subscribe(preferredSize => {
       Beans.get(PreferredSizeService).setPreferredSize(preferredSize);
     });
 }
-

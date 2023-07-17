@@ -32,7 +32,7 @@ describe('MicrofrontendFixture', () => {
   it('should load the passed script into the iframe', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
     await fixture.insertIframe().loadScript('lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_1');
-    expect(fixture.iframe.contentDocument.querySelector('div.testee')).toBeDefined();
+    expect(fixture.iframe.contentDocument!.querySelector('div.testee')).toBeDefined();
   });
 
   it('should allow to return data from the script', async () => {
@@ -84,7 +84,7 @@ describe('MicrofrontendFixture', () => {
   it('should wait until finished loading the script', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
     await fixture.insertIframe().loadScript('lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_6');
-    expect(fixture.iframe.contentDocument.querySelector('div.testee.delayed')).toBeDefined();
+    expect(fixture.iframe.contentDocument!.querySelector('div.testee.delayed')).toBeDefined();
   });
 
   it('should allow the script to import project-specific types', async () => {
@@ -106,18 +106,18 @@ describe('MicrofrontendFixture', () => {
   it('should support loading a web page', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
     fixture.insertIframe().setUrl('about:blank');
-    expect(fixture.iframe.contentWindow.location.href).toEqual('about:blank');
+    expect(fixture.iframe.contentWindow!.location.href).toEqual('about:blank');
   });
 
   it('should support loading another script into the iframe', async () => {
     const fixture = registerFixture(new MicrofrontendFixture()).insertIframe();
     await fixture.loadScript('lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_9a');
-    expect(fixture.iframe.contentDocument.querySelector('div.testee-1')).toBeDefined();
-    expect(fixture.iframe.contentDocument.querySelector('div.testee-2')).toBeNull();
+    expect(fixture.iframe.contentDocument!.querySelector('div.testee-1')).toBeDefined();
+    expect(fixture.iframe.contentDocument!.querySelector('div.testee-2')).toBeNull();
 
     await fixture.loadScript('lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_9b');
-    expect(fixture.iframe.contentDocument.querySelector('div.testee-1')).toBeNull();
-    expect(fixture.iframe.contentDocument.querySelector('div.testee-2')).toBeDefined();
+    expect(fixture.iframe.contentDocument!.querySelector('div.testee-1')).toBeNull();
+    expect(fixture.iframe.contentDocument!.querySelector('div.testee-2')).toBeDefined();
   });
 
   it('should destroy the iframe on unmount', async () => {
@@ -128,7 +128,7 @@ describe('MicrofrontendFixture', () => {
     expect(document.querySelector('iframe.testee')).toBeDefined();
 
     fixture.removeIframe();
-    expect(fixture.iframe).toBeNull();
+    expect(() => fixture.iframe).toThrowError(/MicrofrontendFixtureError/);
     expect(document.querySelector('iframe.testee')).toBeNull();
     expect(fixture.message$).toBe(NEVER);
   });

@@ -20,7 +20,7 @@ import {firstValueFrom} from 'rxjs';
 import {CapabilityInterceptor} from './capability-interceptors';
 import CallInfo = jasmine.CallInfo;
 
-const capabilityIdExtractFn = (capability: Capability): string => capability.metadata.id;
+const capabilityIdExtractFn = (capability: Capability): string => capability.metadata!.id;
 
 describe('ManifestRegistry', () => {
 
@@ -355,7 +355,7 @@ describe('ManifestRegistry', () => {
               {
                 type: 'capability',
                 params: [
-                  {name: 'param', required: undefined},
+                  {name: 'param', required: undefined!},
                 ],
               },
             ],
@@ -375,7 +375,7 @@ describe('ManifestRegistry', () => {
       // Register capability via ManifestServie
       await expectAsync(Beans.get(ManifestService).registerCapability({
         type: 'capability',
-        params: [{name: 'param', required: undefined}],
+        params: [{name: 'param', required: undefined!}],
       })).toBeRejectedWithError(`[CapabilityParamError] Parameter 'param' must be explicitly defined as required or optional.`);
       expect(readConsoleLog('error', {filter: /CapabilityParamError/})).toEqual([]);
     });
@@ -511,7 +511,7 @@ describe('ManifestRegistry', () => {
         public async intercept(capability: Capability): Promise<Capability> {
           return {
             ...capability,
-            metadata: {...capability.metadata, id: '1'},
+            metadata: {...capability.metadata!, id: '1'},
           };
         }
       },
@@ -522,7 +522,7 @@ describe('ManifestRegistry', () => {
 
     // Expect the capability to be intercepted before its registration.
     const actual = (await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({type: 'testee'})))[0];
-    expect(actual.metadata.id).toEqual('1');
+    expect(actual.metadata!.id).toEqual('1');
   });
 
   it('should use a unique identifier for capability ID', async () => {

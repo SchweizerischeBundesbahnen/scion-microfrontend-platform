@@ -28,7 +28,7 @@ describe('AppInstaller', () => {
     httpClientSpy.fetch
       .withArgs('http://www.app-1/manifest').and.returnValue(okAnswer({body: {name: 'App 1'}, delay: 120}))
       .withArgs('http://www.app-2/manifest').and.returnValue(okAnswer({body: {name: 'App 2'}, delay: 30}))
-      .and.callFake((arg) => fetch(arg)); // fetches the manifest of the host app
+      .and.callFake((arg: any) => fetch(arg)); // fetches the manifest of the host app
     Beans.register(HttpClient, {useValue: httpClientSpy});
 
     // mock {Logger}
@@ -48,9 +48,9 @@ describe('AppInstaller', () => {
     });
 
     // assert application registrations
-    expect(Beans.get(ApplicationRegistry).getApplication('host-app').name).toEqual('Host App');
-    expect(Beans.get(ApplicationRegistry).getApplication('app-1').name).toEqual('App 1');
-    expect(Beans.get(ApplicationRegistry).getApplication('app-2').name).toEqual('App 2');
+    expect(Beans.get(ApplicationRegistry).getApplication('host-app')!.name).toEqual('Host App');
+    expect(Beans.get(ApplicationRegistry).getApplication('app-1')!.name).toEqual('App 1');
+    expect(Beans.get(ApplicationRegistry).getApplication('app-2')!.name).toEqual('App 2');
     expect(loggerSpy.error.calls.count()).toEqual(0);
 
     expect(Beans.get(ManifestService).applications).toEqual(jasmine.arrayContaining([
@@ -68,7 +68,7 @@ describe('AppInstaller', () => {
       .withArgs('http://www.app-2/manifest').and.returnValue(nokAnswer({status: 500, delay: 100}))
       .withArgs('http://www.app-3/manifest').and.returnValue(okAnswer({body: {name: 'App 3'}, delay: 600}))
       .withArgs('http://www.app-4/manifest').and.returnValue(nokAnswer({status: 502, delay: 200}))
-      .and.callFake((arg) => fetch(arg)); // fetches the manifest of the host app
+      .and.callFake((arg: any) => fetch(arg)); // fetches the manifest of the host app
 
     Beans.register(HttpClient, {useValue: httpClientSpy});
 
@@ -87,9 +87,9 @@ describe('AppInstaller', () => {
     });
 
     // assert application registrations
-    expect(Beans.get(ApplicationRegistry).getApplication('app-1').name).toEqual('App 1');
+    expect(Beans.get(ApplicationRegistry).getApplication('app-1')!.name).toEqual('App 1');
     expect(Beans.get(ApplicationRegistry).getApplication('app-2')).toBeUndefined();
-    expect(Beans.get(ApplicationRegistry).getApplication('app-3').name).toEqual('App 3');
+    expect(Beans.get(ApplicationRegistry).getApplication('app-3')!.name).toEqual('App 3');
     expect(Beans.get(ApplicationRegistry).getApplication('app-4')).toBeUndefined();
     expect(loggerSpy.error.calls.count()).toEqual(2);
   });
@@ -102,7 +102,7 @@ describe('AppInstaller', () => {
       .withArgs('http://www.app-2/manifest').and.returnValue(okAnswer({body: {name: 'App 2'}, delay: 400}))
       .withArgs('http://www.app-3/manifest').and.returnValue(okAnswer({body: {name: 'App 3'}, delay: 600})) // greater than the global manifestLoadTimeout => expect failure
       .withArgs('http://www.app-4/manifest').and.returnValue(okAnswer({body: {name: 'App 4'}, delay: 600})) // less then than the app-specific manifestLoadTimeout => expect success
-      .and.callFake((arg) => fetch(arg)); // fetches the manifest of the host app
+      .and.callFake((arg: any) => fetch(arg)); // fetches the manifest of the host app
 
     Beans.register(HttpClient, {useValue: httpClientSpy});
 
@@ -123,9 +123,9 @@ describe('AppInstaller', () => {
 
     // assert application registrations
     expect(Beans.get(ApplicationRegistry).getApplication('app-1')).toBeUndefined();
-    expect(Beans.get(ApplicationRegistry).getApplication('app-2').name).toEqual('App 2');
+    expect(Beans.get(ApplicationRegistry).getApplication('app-2')!.name).toEqual('App 2');
     expect(Beans.get(ApplicationRegistry).getApplication('app-3')).toBeUndefined();
-    expect(Beans.get(ApplicationRegistry).getApplication('app-4').name).toEqual('App 4');
+    expect(Beans.get(ApplicationRegistry).getApplication('app-4')!.name).toEqual('App 4');
     expect(loggerSpy.error.calls.count()).toEqual(2);
     expect(loggerSpy.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[AppInstaller] Failed to install application/), jasmine.stringMatching(/\[ManifestFetchError] Failed to fetch manifest for application 'app-1'\. Timeout of 300ms elapsed/));
     expect(loggerSpy.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[AppInstaller] Failed to install application/), jasmine.stringMatching(/\[ManifestFetchError] Failed to fetch manifest for application 'app-3'\. Timeout of 500ms elapsed/));

@@ -13,14 +13,14 @@ describe('TopicMatcher', () => {
 
   it('should throw if the subscription topic is `null`, `undefined` or empty', () => {
     expect(() => new TopicMatcher('')).toThrowError(/TopicMatcherError/);
-    expect(() => new TopicMatcher(null)).toThrowError(/TopicMatcherError/);
-    expect(() => new TopicMatcher(undefined)).toThrowError(/TopicMatcherError/);
+    expect(() => new TopicMatcher(null!)).toThrowError(/TopicMatcherError/);
+    expect(() => new TopicMatcher(undefined!)).toThrowError(/TopicMatcherError/);
   });
 
   it('should throw if the publish topic is `null`, `undefined` or empty', () => {
     expect(() => new TopicMatcher('myhome/livingroom/temperature').match('')).toThrowError(/TopicMatcherError/);
-    expect(() => new TopicMatcher('myhome/livingroom/temperature').match(null)).toThrowError(/TopicMatcherError/);
-    expect(() => new TopicMatcher('myhome/livingroom/temperature').match(undefined)).toThrowError(/TopicMatcherError/);
+    expect(() => new TopicMatcher('myhome/livingroom/temperature').match(null!)).toThrowError(/TopicMatcherError/);
+    expect(() => new TopicMatcher('myhome/livingroom/temperature').match(undefined!)).toThrowError(/TopicMatcherError/);
   });
 
   it('should throw if the publish topic contains wildcard segments', () => {

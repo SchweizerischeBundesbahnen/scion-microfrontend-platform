@@ -117,17 +117,17 @@ describe('Message Interception', () => {
   it('should allow to modify a message', async () => {
     interceptor1.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => {
       message.headers.set('HEADER_INTERCEPTOR_1', true);
-      message.body.push('INTERCEPTOR_1');
+      message.body!.push('INTERCEPTOR_1');
       return next.handle(message);
     });
     interceptor2.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => {
       message.headers.set('HEADER_INTERCEPTOR_2', true);
-      message.body.push('INTERCEPTOR_2');
+      message.body!.push('INTERCEPTOR_2');
       return next.handle(message);
     });
     interceptor3.intercept.and.callFake((message: TopicMessage<string[]>, next: Handler<TopicMessage>) => {
       message.headers.set('HEADER_INTERCEPTOR_3', true);
-      message.body.push('INTERCEPTOR_3');
+      message.body!.push('INTERCEPTOR_3');
       return next.handle(message);
     });
 
@@ -172,14 +172,14 @@ describe('Intent Interception', () => {
   it('should invoke the publisher even if no interceptors are given', async () => {
     publisher = createSpy('publisher');
     publishChain = chainInterceptors([], publisher);
-    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
+    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined!};
 
     await publishChain.interceptAndPublish(intent);
     expect(publisher).toHaveBeenCalledWith(intent);
   });
 
   it('should pass an intent through the interceptors in registration order', async () => {
-    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
+    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined!};
     await publishChain.interceptAndPublish(intent);
 
     // assert interceptor invocation arguments
@@ -204,7 +204,7 @@ describe('Intent Interception', () => {
     interceptor2.intercept.and.throwError('INTENT REJECTED BY INTERCEPTOR 2');
 
     // Run the test
-    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
+    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined!};
     expect(() => publishChain.interceptAndPublish(intent)).toThrowError(/INTENT REJECTED BY INTERCEPTOR 2/);
 
     //  Verify
@@ -218,7 +218,7 @@ describe('Intent Interception', () => {
     interceptor2.intercept.and.rejectWith('INTENT REJECTED BY INTERCEPTOR 2');
 
     // Run the test
-    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
+    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined!};
     await expectPromise(publishChain.interceptAndPublish(intent)).toReject(/INTENT REJECTED BY INTERCEPTOR 2/);
 
     //  Verify
@@ -232,7 +232,7 @@ describe('Intent Interception', () => {
     interceptor2.intercept.and.callFake(asyncNoop);
 
     // Run the test
-    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined};
+    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined!};
     await publishChain.interceptAndPublish(intent);
 
     // Verify
@@ -245,22 +245,22 @@ describe('Intent Interception', () => {
   it('should allow to modify an intent', async () => {
     interceptor1.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => {
       intent.headers.set('HEADER_INTERCEPTOR_1', true);
-      intent.body.push('INTERCEPTOR_1');
+      intent.body!.push('INTERCEPTOR_1');
       return next.handle(intent);
     });
     interceptor2.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => {
       intent.headers.set('HEADER_INTERCEPTOR_2', true);
-      intent.body.push('INTERCEPTOR_2');
+      intent.body!.push('INTERCEPTOR_2');
       return next.handle(intent);
     });
     interceptor3.intercept.and.callFake((intent: IntentMessage<string[]>, next: Handler<IntentMessage>) => {
       intent.headers.set('HEADER_INTERCEPTOR_3', true);
-      intent.body.push('INTERCEPTOR_3');
+      intent.body!.push('INTERCEPTOR_3');
       return next.handle(intent);
     });
 
     // Run the test
-    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, body: [], capability: undefined};
+    const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, body: [], capability: undefined!};
     await publishChain.interceptAndPublish(intent);
 
     // Verify
@@ -271,7 +271,7 @@ describe('Intent Interception', () => {
       body: ['INTERCEPTOR_1', 'INTERCEPTOR_2', 'INTERCEPTOR_3'],
       headers: new Map().set('HEADER_INTERCEPTOR_1', true).set('HEADER_INTERCEPTOR_2', true).set('HEADER_INTERCEPTOR_3', true),
       intent: {type: 'type'},
-      capability: undefined,
+      capability: undefined!,
     } as IntentMessage);
   });
 });

@@ -39,8 +39,8 @@ export class ParamMatcher {
   /**
    * Tests if the given params match the param definitions.
    */
-  public match(parameters: Map<string, any> | undefined): ParamsMatcherResult {
-    const params = new Map(parameters || []);
+  public match(parameters: Map<string, any> | null | undefined): ParamsMatcherResult {
+    const params = new Map(parameters);
 
     const matcherResult: ParamsMatcherResult = {
       matches: true,
