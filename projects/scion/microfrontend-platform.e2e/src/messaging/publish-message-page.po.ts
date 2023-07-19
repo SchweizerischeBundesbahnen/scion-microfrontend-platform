@@ -13,7 +13,7 @@ import {MessageListItemPO} from './message-list-item.po';
 import {FrameLocator, Locator} from '@playwright/test';
 import {isPresent} from '../testing.util';
 import {SciListPO} from '../@scion/components.internal/list.po';
-import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po';
+import {SciKeyValueFieldPO} from '../@scion/components.internal/key-value-field.po';
 import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
@@ -42,22 +42,22 @@ export class PublishMessagePagePO implements OutletPageObject{
   }
 
   public async enterHeaders(headers: Record<string, string>): Promise<void> {
-    const headersEnterPO = new SciParamsEnterPO(this._locator.locator('sci-params-enter.e2e-headers'));
+    const headersEnterPO = new SciKeyValueFieldPO(this._locator.locator('sci-key-value-field.e2e-headers'));
     await headersEnterPO.clear();
-    await headersEnterPO.enterParams(headers);
+    await headersEnterPO.addEntries(headers);
   }
 
   public async enterIntent(type: string, qualifier?: Qualifier, params?: Record<string, any>): Promise<void> {
     await this._locator.locator('input.e2e-intent-type').fill(type);
-    const qualifierEnterPO = new SciParamsEnterPO(this._locator.locator('sci-params-enter.e2e-intent-qualifier'));
+    const qualifierEnterPO = new SciKeyValueFieldPO(this._locator.locator('sci-key-value-field.e2e-intent-qualifier'));
     await qualifierEnterPO.clear();
     if (qualifier) {
-      await qualifierEnterPO.enterParams(qualifier);
+      await qualifierEnterPO.addEntries(qualifier);
     }
-    const paramsEnterPO = new SciParamsEnterPO(this._locator.locator('sci-params-enter.e2e-intent-params'));
+    const paramsEnterPO = new SciKeyValueFieldPO(this._locator.locator('sci-key-value-field.e2e-intent-params'));
     await paramsEnterPO.clear();
     if (params) {
-      await paramsEnterPO.enterParams(params);
+      await paramsEnterPO.addEntries(params);
     }
   }
 

@@ -8,17 +8,17 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
+import {FormGroup, NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
-import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
+import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
 import {Observable} from 'rxjs';
 import {finalize} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {AsyncPipe, NgFor, NgIf} from '@angular/common';
-import {SciFormFieldModule} from '@scion/components.internal/form-field';
-import {SciCheckboxModule} from '@scion/components.internal/checkbox';
-import {SciListModule} from '@scion/components.internal/list';
-import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-chip-list';
+import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
+import {SciFormFieldComponent} from '@scion/components.internal/form-field';
+import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
+import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 
 @Component({
   selector: 'app-lookup-intention',
@@ -30,11 +30,12 @@ import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-c
     NgFor,
     AsyncPipe,
     ReactiveFormsModule,
-    SciFormFieldModule,
-    SciParamsEnterModule,
-    SciCheckboxModule,
-    SciListModule,
-    SciQualifierChipListModule,
+    SciFormFieldComponent,
+    SciKeyValueFieldComponent,
+    SciCheckboxComponent,
+    SciListComponent,
+    SciListItemDirective,
+    SciQualifierChipListComponent,
   ],
 })
 export default class LookupIntentionComponent {
@@ -42,7 +43,7 @@ export default class LookupIntentionComponent {
   public form = this._formBuilder.group({
     id: this._formBuilder.control(''),
     type: this._formBuilder.control(''),
-    qualifier: this._formBuilder.array([]),
+    qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
     nilqualifierIfEmpty: this._formBuilder.control(false),
     appSymbolicName: this._formBuilder.control(''),
   });
@@ -53,7 +54,7 @@ export default class LookupIntentionComponent {
 
   public onLookup(): void {
     const nilQualifierIfEmpty = this.form.controls.nilqualifierIfEmpty.value;
-    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.form.controls.qualifier);
+    const qualifier = SciKeyValueFieldComponent.toDictionary(this.form.controls.qualifier);
     const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
 
     const filter: ManifestObjectFilter = {
@@ -72,6 +73,6 @@ export default class LookupIntentionComponent {
 
   public onReset(): void {
     this.form.reset();
-    this.form.setControl('qualifier', this._formBuilder.array([]));
+    this.form.setControl('qualifier', this._formBuilder.array<FormGroup<KeyValueEntry>>([]));
   }
 }

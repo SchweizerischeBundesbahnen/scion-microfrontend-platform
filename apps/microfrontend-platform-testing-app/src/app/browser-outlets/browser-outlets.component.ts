@@ -13,9 +13,9 @@ import {ActivatedRoute} from '@angular/router';
 import {map} from 'rxjs/operators';
 import {coerceNumberProperty} from '@angular/cdk/coercion';
 import {UUID} from '@scion/toolkit/uuid';
-import {SciSashboxModule} from '@scion/components/sashbox';
 import {BrowserOutletComponent} from '../browser-outlet/browser-outlet.component';
 import {AsyncPipe, NgFor} from '@angular/common';
+import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 
 @Component({
   selector: 'app-browser-outlets',
@@ -25,7 +25,8 @@ import {AsyncPipe, NgFor} from '@angular/common';
   imports: [
     NgFor,
     AsyncPipe,
-    SciSashboxModule,
+    SciSashboxComponent,
+    SciSashDirective,
     BrowserOutletComponent,
   ],
 })

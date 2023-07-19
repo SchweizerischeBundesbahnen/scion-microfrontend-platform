@@ -14,9 +14,9 @@ import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cd
 import {ComponentPortal} from '@angular/cdk/portal';
 import {AsyncPipe, KeyValuePipe, NgFor} from '@angular/common';
 import {A11yModule} from '@angular/cdk/a11y';
-import {SciListModule} from '@scion/components.internal/list';
 import {ContextEntryComponent} from '../context-entry/context-entry.component';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
 
 const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top'};
 
@@ -31,7 +31,8 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
     KeyValuePipe,
     A11yModule,
     ReactiveFormsModule,
-    SciListModule,
+    SciListComponent,
+    SciListItemDirective,
     ContextEntryComponent,
   ],
 })
@@ -79,7 +80,7 @@ export class RouterOutletContextComponent {
     this.routerOutlet.removeContextValue(name);
   }
 
-  public static openAsOverlay(config: {anchor: HTMLElement; routerOutlet: SciRouterOutletElement; overlay: Overlay; injector: Injector}): void {
+  public static openAsOverlay(config: { anchor: HTMLElement; routerOutlet: SciRouterOutletElement; overlay: Overlay; injector: Injector }): void {
     const {anchor, routerOutlet, overlay, injector} = config;
 
     const positionStrategy = overlay.position()

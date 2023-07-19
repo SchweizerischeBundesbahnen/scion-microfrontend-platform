@@ -9,7 +9,7 @@
  */
 
 import {FrameLocator, Locator} from '@playwright/test';
-import {SciPropertyPO} from '../@scion/components.internal/property.po';
+import {SciKeyValuePO} from '../@scion/components.internal/key-value.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
 export class PlatformPropertiesPagePO implements OutletPageObject {
@@ -23,6 +23,6 @@ export class PlatformPropertiesPagePO implements OutletPageObject {
   }
 
   public async getPlatformProperties(): Promise<Record<string, any>> {
-    return new SciPropertyPO(this._locator.locator('sci-property.e2e-properties')).readProperties();
+    return new SciKeyValuePO(this._locator.locator('sci-key-value.e2e-properties')).readEntries();
   }
 }

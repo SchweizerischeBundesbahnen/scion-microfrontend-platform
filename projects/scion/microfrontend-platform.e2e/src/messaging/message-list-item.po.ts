@@ -12,7 +12,7 @@ import {Capability, Qualifier} from '@scion/microfrontend-platform';
 import {Locator} from '@playwright/test';
 import {isPresent} from '../testing.util';
 import {SciListItemPO} from '../@scion/components.internal/list.po';
-import {SciPropertyPO} from '../@scion/components.internal/property.po';
+import {SciKeyValuePO} from '../@scion/components.internal/key-value.po';
 
 export class MessageListItemPO {
 
@@ -27,14 +27,14 @@ export class MessageListItemPO {
   }
 
   public async getParams(): Promise<Record<string, string>> {
-    if (!await isPresent(this._locator.locator('sci-property.e2e-params'))) {
+    if (!await isPresent(this._locator.locator('sci-key-value.e2e-params'))) {
       return {};
     }
-    return new SciPropertyPO(this._locator.locator('sci-property.e2e-params')).readProperties();
+    return new SciKeyValuePO(this._locator.locator('sci-key-value.e2e-params')).readEntries();
   }
 
   public async getHeaders(): Promise<Record<string, string>> {
-    return new SciPropertyPO(this._locator.locator('sci-property.e2e-headers')).readProperties();
+    return new SciKeyValuePO(this._locator.locator('sci-key-value.e2e-headers')).readEntries();
   }
 
   public async getBody(): Promise<string> {
@@ -51,11 +51,11 @@ export class MessageListItemPO {
   }
 
   public async getIntentQualifier(): Promise<Qualifier> {
-    return new SciPropertyPO(this._locator.locator('sci-property.e2e-intent-qualifier')).readProperties();
+    return new SciKeyValuePO(this._locator.locator('sci-key-value.e2e-intent-qualifier')).readEntries();
   }
 
   public async getIntentParams(): Promise<Record<string, string>> {
-    return new SciPropertyPO(this._locator.locator('sci-property.e2e-intent-params')).readProperties();
+    return new SciKeyValuePO(this._locator.locator('sci-key-value.e2e-intent-params')).readEntries();
   }
 
   public async getCapability(): Promise<Capability> {

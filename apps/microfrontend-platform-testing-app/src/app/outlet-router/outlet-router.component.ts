@@ -10,15 +10,15 @@
 import {Component} from '@angular/core';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NavigationOptions, OutletRouter} from '@scion/microfrontend-platform';
-import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {NgIf} from '@angular/common';
-import {SciFormFieldModule} from '@scion/components.internal/form-field';
-import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {distinctUntilChanged, startWith} from 'rxjs/operators';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {AppAsPipe} from '../common/as.pipe';
 import {stringifyError} from '../common/stringify-error.util';
+import {SciFormFieldComponent} from '@scion/components.internal/form-field';
+import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
 
 @Component({
   selector: 'app-outlet-router',
@@ -28,9 +28,9 @@ import {stringifyError} from '../common/stringify-error.util';
   imports: [
     NgIf,
     ReactiveFormsModule,
-    SciFormFieldModule,
-    SciCheckboxModule,
-    SciParamsEnterModule,
+    SciFormFieldComponent,
+    SciCheckboxComponent,
+    SciKeyValueFieldComponent,
     AppAsPipe,
   ],
 })
@@ -40,7 +40,7 @@ export default class OutletRouterComponent {
     outlet: this._formBuilder.control(''),
     useIntent: this._formBuilder.control(false),
     destination: this._formBuilder.group<UrlDestination | IntentDestination>(this.createUrlDestination()),
-    params: this._formBuilder.array<ParamEntryFormGroup>([]),
+    params: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
     pushSessionHistoryState: this._formBuilder.control(false),
   });
 
@@ -65,7 +65,7 @@ export default class OutletRouterComponent {
   public async onNavigateClick(): Promise<void> {
     const options: NavigationOptions = {
       outlet: this.form.controls.outlet.value || undefined,
-      params: SciParamsEnterComponent.toParamsMap(this.form.controls.params) ?? undefined,
+      params: SciKeyValueFieldComponent.toMap(this.form.controls.params) ?? undefined,
     };
     if (this.form.controls.pushSessionHistoryState.value) {
       options.pushStateToSessionHistoryStack = true;
@@ -74,7 +74,7 @@ export default class OutletRouterComponent {
     this.navigateError = undefined;
     try {
       if (this.form.controls.useIntent.value) {
-        const qualifier = SciParamsEnterComponent.toParamsDictionary((this.form.controls.destination as FormGroup<IntentDestination>).controls.qualifier)!;
+        const qualifier = SciKeyValueFieldComponent.toDictionary((this.form.controls.destination as FormGroup<IntentDestination>).controls.qualifier)!;
         await Beans.get(OutletRouter).navigate(qualifier, options);
         this.form.setControl('destination', this._formBuilder.group<UrlDestination | IntentDestination>(this.createIntentDestination()));
       }
@@ -98,7 +98,7 @@ export default class OutletRouterComponent {
 
   private createIntentDestination(): IntentDestination {
     return {
-      qualifier: this._formBuilder.array<QualifierEntryFormGroup>([], Validators.required),
+      qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([], Validators.required),
     };
   }
 }
@@ -108,8 +108,5 @@ interface UrlDestination {
 }
 
 interface IntentDestination {
-  qualifier: FormArray<QualifierEntryFormGroup>;
+  qualifier: FormArray<FormGroup<KeyValueEntry>>;
 }
-
-type QualifierEntryFormGroup = FormGroup<{paramName: FormControl<string>; paramValue: FormControl<string>}>;
-type ParamEntryFormGroup = FormGroup<{paramName: FormControl<string>; paramValue: FormControl<string>}>;

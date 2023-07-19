@@ -16,19 +16,19 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {ShellService} from '../shell.service';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
-import {SciTabbarComponent, SciTabbarModule} from '@scion/components.internal/tabbar';
+import {SciTabbarComponent, SciTabDirective} from '@scion/components.internal/tabbar';
 import {AsyncPipe, NgFor, NgIf} from '@angular/common';
-import {SciFilterFieldModule} from '@scion/components.internal/filter-field';
-import {SciViewportModule} from '@scion/components/viewport';
-import {SciAccordionModule} from '@scion/components.internal/accordion';
+import {SciViewportComponent} from '@scion/components/viewport';
 import {CapabilityAccordionItemComponent} from '../capability-accordion-item/capability-accordion-item.component';
 import {CapabilityAccordionPanelComponent} from '../capability-accordion-panel/capability-accordion-panel.component';
 import {IntentionAccordionItemComponent} from '../intention-accordion-item/intention-accordion-item.component';
 import {IntentionAccordionPanelComponent} from '../intention-accordion-panel/intention-accordion-panel.component';
-import {SciSashboxModule} from '@scion/components/sashbox';
 import {RequiredCapabilitiesComponent} from '../required-capabilities/required-capabilities.component';
 import {DependentIntentionsComponent} from '../dependent-intentions/dependent-intentions.component';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {SciAccordionComponent, SciAccordionItemDirective} from '@scion/components.internal/accordion';
+import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
+import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 
 @Component({
   selector: 'devtools-app-details',
@@ -41,11 +41,14 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
     NgFor,
     AsyncPipe,
     ReactiveFormsModule,
-    SciTabbarModule,
-    SciFilterFieldModule,
-    SciViewportModule,
-    SciAccordionModule,
-    SciSashboxModule,
+    SciTabbarComponent,
+    SciTabDirective,
+    SciFilterFieldComponent,
+    SciViewportComponent,
+    SciAccordionComponent,
+    SciAccordionItemDirective,
+    SciSashboxComponent,
+    SciSashDirective,
     CapabilityAccordionItemComponent,
     CapabilityAccordionPanelComponent,
     IntentionAccordionItemComponent,

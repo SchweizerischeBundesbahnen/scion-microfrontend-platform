@@ -13,9 +13,9 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {ContextService} from '@scion/microfrontend-platform';
 import {Subscription} from 'rxjs';
 import {JsonPipe, NgIf} from '@angular/common';
-import {SciFormFieldModule} from '@scion/components.internal/form-field';
-import {SciCheckboxModule} from '@scion/components.internal/checkbox';
-import {SciSashboxModule} from '@scion/components/sashbox';
+import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
+import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
+import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 
 @Component({
   selector: 'app-context-value-lookup',
@@ -27,9 +27,10 @@ import {SciSashboxModule} from '@scion/components/sashbox';
     NgIf,
     JsonPipe,
     ReactiveFormsModule,
-    SciFormFieldModule,
-    SciCheckboxModule,
-    SciSashboxModule,
+    SciFormFieldComponent,
+    SciCheckboxComponent,
+    SciSashboxComponent,
+    SciSashDirective,
   ],
 })
 export default class LookupContextValueComponent implements OnDestroy {

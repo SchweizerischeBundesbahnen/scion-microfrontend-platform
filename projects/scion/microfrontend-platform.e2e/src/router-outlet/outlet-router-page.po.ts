@@ -11,7 +11,7 @@
 import {Qualifier} from '@scion/microfrontend-platform';
 import {FrameLocator, Locator} from '@playwright/test';
 import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
-import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po';
+import {SciKeyValueFieldPO} from '../@scion/components.internal/key-value-field.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 import {waitUntilNavigationStable} from '../testing.util';
 
@@ -37,15 +37,15 @@ export class OutletRouterPagePO implements OutletPageObject {
 
   public async enterIntentQualifier(qualifier: Qualifier): Promise<void> {
     await new SciCheckboxPO(this._locator.locator('sci-checkbox.e2e-use-intent')).toggle(true);
-    const qualifierEnterPO = new SciParamsEnterPO(this._locator.locator('sci-params-enter.e2e-qualifier'));
+    const qualifierEnterPO = new SciKeyValueFieldPO(this._locator.locator('sci-key-value-field.e2e-qualifier'));
     await qualifierEnterPO.clear();
-    await qualifierEnterPO.enterParams(qualifier);
+    await qualifierEnterPO.addEntries(qualifier);
   }
 
   public async enterParams(params: Record<string, string>): Promise<void> {
-    const headersEnterPO = new SciParamsEnterPO(this._locator.locator('sci-params-enter.e2e-params'));
+    const headersEnterPO = new SciKeyValueFieldPO(this._locator.locator('sci-key-value-field.e2e-params'));
     await headersEnterPO.clear();
-    await headersEnterPO.enterParams(params);
+    await headersEnterPO.addEntries(params);
   }
 
   public async togglePushState(check: boolean): Promise<void> {

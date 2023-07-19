@@ -17,10 +17,10 @@ import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Maps} from '@scion/toolkit/util';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {AsyncPipe, KeyValue, KeyValuePipe, NgFor} from '@angular/common';
-import {SciFilterFieldModule} from '@scion/components.internal/filter-field';
-import {SciAccordionModule} from '@scion/components.internal/accordion';
 import {AppNamePipe} from '../common/app-name.pipe';
 import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-list.component';
+import {SciAccordionComponent, SciAccordionItemDirective} from '@scion/components.internal/accordion';
+import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
 
 @Component({
   selector: 'devtools-dependent-intentions',
@@ -33,8 +33,9 @@ import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-
     AsyncPipe,
     KeyValuePipe,
     ReactiveFormsModule,
-    SciFilterFieldModule,
-    SciAccordionModule,
+    SciFilterFieldComponent,
+    SciAccordionComponent,
+    SciAccordionItemDirective,
     AppNamePipe,
     QualifierChipListComponent,
   ],

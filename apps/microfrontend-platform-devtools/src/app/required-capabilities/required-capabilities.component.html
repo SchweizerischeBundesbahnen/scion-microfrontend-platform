@@ -35,7 +35,7 @@
 
           <section class="properties" *ngIf="selectedCapability.properties | devtoolsNullIfEmpty">
             <header>Properties:</header>
-            <sci-property [properties]="selectedCapability.properties ?? {}"></sci-property>
+            <sci-key-value [object]="selectedCapability.properties ?? {}"></sci-key-value>
           </section>
         </section>
       </section>

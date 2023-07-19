@@ -9,10 +9,10 @@
     <input [formControl]="(form.controls.destination | appAs:UrlDestinationFormGroup).controls.url" class="e2e-url">
   </sci-form-field>
   <sci-form-field label="Qualifier" *ngIf="form.controls.useIntent.value">
-    <sci-params-enter [paramsFormArray]="(form.controls.destination | appAs:IntentDestinationFormGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-params-enter>
+    <sci-key-value-field [keyValueFormArray]="(form.controls.destination | appAs:IntentDestinationFormGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-key-value-field>
   </sci-form-field>
   <sci-form-field label="Params">
-    <sci-params-enter [paramsFormArray]="form.controls.params" [addable]="true" [removable]="true" class="e2e-params"></sci-params-enter>
+    <sci-key-value-field [keyValueFormArray]="form.controls.params" [addable]="true" [removable]="true" class="e2e-params"></sci-key-value-field>
   </sci-form-field>
   <sci-form-field label="Push State" title="Pushes a state to the browser's session history stack, allowing the user to use the back button to navigate back.">
     <sci-checkbox [formControl]="form.controls.pushSessionHistoryState" class="e2e-push-state"></sci-checkbox>

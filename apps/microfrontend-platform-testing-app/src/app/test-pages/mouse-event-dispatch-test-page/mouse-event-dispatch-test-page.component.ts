@@ -10,9 +10,9 @@
 import {ChangeDetectorRef, Component, DestroyRef, OnInit, ViewChild} from '@angular/core';
 import {fromEvent, merge} from 'rxjs';
 import {DatePipe, NgFor} from '@angular/common';
-import {SciViewportComponent, SciViewportModule} from '@scion/components/viewport';
+import {SciViewportComponent} from '@scion/components/viewport';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
-import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
@@ -24,8 +24,8 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
     NgFor,
     DatePipe,
     ReactiveFormsModule,
-    SciViewportModule,
-    SciCheckboxModule,
+    SciViewportComponent,
+    SciCheckboxComponent,
   ],
 })
 export default class MouseEventDispatchTestPageComponent implements OnInit {

@@ -14,9 +14,9 @@ import {UUID} from '@scion/toolkit/uuid';
 import {finalize, take} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ContextService, FocusMonitor, IntentClient, ManifestService, MessageClient, MessageHeaders, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
-import {SciCheckboxModule} from '@scion/components.internal/checkbox';
-import {SciAccordionModule} from '@scion/components.internal/accordion';
+import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {TestingAppTopics} from '../../testing-app.topics';
+import {SciAccordionComponent, SciAccordionItemDirective} from '@scion/components.internal/accordion';
 
 @Component({
   selector: 'app-angular-zone-test-page',
@@ -27,8 +27,9 @@ import {TestingAppTopics} from '../../testing-app.topics';
     NgFor,
     NgTemplateOutlet,
     FormsModule,
-    SciCheckboxModule,
-    SciAccordionModule,
+    SciCheckboxComponent,
+    SciAccordionComponent,
+    SciAccordionItemDirective,
   ],
 })
 export default class AngularZoneTestPageComponent {
@@ -191,7 +192,7 @@ export default class AngularZoneTestPageComponent {
 export class TestCaseModel {
 
   public runInAngular = true;
-  public emissions = new Array<{insideAngular: boolean; label: string}>();
+  public emissions = new Array<{ insideAngular: boolean; label: string }>();
   private _zone = inject(NgZone);
 
   constructor(private _testFn: (model: TestCaseModel) => void) {

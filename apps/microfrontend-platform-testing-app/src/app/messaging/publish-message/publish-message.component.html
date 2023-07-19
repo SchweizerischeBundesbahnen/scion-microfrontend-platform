@@ -13,7 +13,7 @@
   </sci-form-field>
 
   <sci-form-field label="Headers">
-    <sci-params-enter [paramsFormArray]="form.controls.headers" [addable]="true" [removable]="true" class="e2e-headers"></sci-params-enter>
+    <sci-key-value-field [keyValueFormArray]="form.controls.headers" [addable]="true" [removable]="true" class="e2e-headers"></sci-key-value-field>
   </sci-form-field>
 
   <sci-form-field label="Request-Reply">
@@ -43,11 +43,11 @@
       </sci-form-field>
 
       <sci-form-field label="Intent qualifier">
-        <sci-params-enter [paramsFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-params-enter>
+        <sci-key-value-field [keyValueFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-key-value-field>
       </sci-form-field>
 
       <sci-form-field label="Intent params">
-        <sci-params-enter [paramsFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.params" [addable]="true" [removable]="true" class="e2e-intent-params"></sci-params-enter>
+        <sci-key-value-field [keyValueFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.params" [addable]="true" [removable]="true" class="e2e-intent-params"></sci-key-value-field>
       </sci-form-field>
     </ng-container>
   </ng-template>

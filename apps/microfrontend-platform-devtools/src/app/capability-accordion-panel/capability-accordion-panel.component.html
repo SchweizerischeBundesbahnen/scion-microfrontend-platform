@@ -9,7 +9,7 @@
   <ng-template sciTab label="Properties" *ngIf="capability.properties">
     <section class="tab properties">
       <span class="explanation">Metadata associated with this capability.</span>
-      <sci-property [properties]="capability.properties"></sci-property>
+      <sci-key-value [object]="capability.properties"></sci-key-value>
     </section>
   </ng-template>
   <ng-template sciTab label="Parameters" *ngIf="capability.params?.length">
