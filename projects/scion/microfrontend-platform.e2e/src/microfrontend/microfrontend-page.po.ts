@@ -10,7 +10,7 @@
 
 import {isPresent} from '../testing.util';
 import {FrameLocator, Locator} from '@playwright/test';
-import {SciPropertyPO} from '../@scion/components.internal/property.po';
+import {SciKeyValuePO} from '../@scion/components.internal/key-value.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
 export abstract class MicrofrontendPagePO implements OutletPageObject {
@@ -36,11 +36,11 @@ export abstract class MicrofrontendPagePO implements OutletPageObject {
   }
 
   public async getMatrixParams(): Promise<Record<string, string>> {
-    return new SciPropertyPO(this._locator.locator('sci-property.e2e-matrix-params')).readProperties();
+    return new SciKeyValuePO(this._locator.locator('sci-key-value.e2e-matrix-params')).readEntries();
   }
 
   public async getQueryParams(): Promise<Record<string, string>> {
-    return new SciPropertyPO(this._locator.locator('sci-property.e2e-query-params')).readProperties();
+    return new SciKeyValuePO(this._locator.locator('sci-key-value.e2e-query-params')).readEntries();
   }
 
   public async getFragment(): Promise<string> {

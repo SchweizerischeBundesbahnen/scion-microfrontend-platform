@@ -10,7 +10,7 @@
 import {ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output} from '@angular/core';
 import {animate, AnimationMetadata, style, transition, trigger} from '@angular/animations';
 import {RouterLink, RouterLinkActive} from '@angular/router';
-import {SciViewportModule} from '@scion/components/viewport';
+import {SciViewportComponent} from '@scion/components/viewport';
 
 @Component({
   selector: 'devtools-app-menu',
@@ -21,7 +21,7 @@ import {SciViewportModule} from '@scion/components/viewport';
   imports: [
     RouterLink,
     RouterLinkActive,
-    SciViewportModule,
+    SciViewportComponent,
   ],
   animations: [
     trigger('openCloseMenu', provideMenuAnimation()),

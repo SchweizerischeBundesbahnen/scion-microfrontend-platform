@@ -10,8 +10,8 @@
 import {Component, HostBinding, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {IntentMessage, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
 import {NgIf} from '@angular/common';
-import {SciPropertyModule} from '@scion/components.internal/property';
 import {AppendParamDataTypePipe} from '../append-param-data-type.pipe';
+import {SciKeyValueComponent} from '@scion/components.internal/key-value';
 
 @Component({
   selector: 'app-message-list-item',
@@ -20,7 +20,7 @@ import {AppendParamDataTypePipe} from '../append-param-data-type.pipe';
   standalone: true,
   imports: [
     NgIf,
-    SciPropertyModule,
+    SciKeyValueComponent,
     AppendParamDataTypePipe,
   ],
 })

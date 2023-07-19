@@ -12,9 +12,9 @@ import {ContextService} from '@scion/microfrontend-platform';
 import {Observable, OperatorFunction} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {SciListModule} from '@scion/components.internal/list';
 import {AsyncPipe, KeyValuePipe, NgFor} from '@angular/common';
 import {ContextEntryComponent} from '../../context-entry/context-entry.component';
+import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
 
 @Component({
   selector: 'app-context',
@@ -26,7 +26,8 @@ import {ContextEntryComponent} from '../../context-entry/context-entry.component
     NgFor,
     AsyncPipe,
     KeyValuePipe,
-    SciListModule,
+    SciListComponent,
+    SciListItemDirective,
     ContextEntryComponent,
   ],
 })

@@ -16,11 +16,11 @@ import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {expand, map, take} from 'rxjs/operators';
 import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {AsyncPipe, NgFor, NgIf} from '@angular/common';
-import {SciFilterFieldModule} from '@scion/components.internal/filter-field';
-import {SciViewportModule} from '@scion/components/viewport';
-import {SciAccordionModule} from '@scion/components.internal/accordion';
+import {SciViewportComponent} from '@scion/components/viewport';
 import {CapabilityAccordionPanelComponent} from '../capability-accordion-panel/capability-accordion-panel.component';
 import {CapabilityAccordionItemComponent} from '../capability-accordion-item/capability-accordion-item.component';
+import {SciAccordionComponent, SciAccordionItemDirective} from '@scion/components.internal/accordion';
+import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
 
 @Component({
   selector: 'devtools-capability-filter-result',
@@ -33,9 +33,10 @@ import {CapabilityAccordionItemComponent} from '../capability-accordion-item/cap
     NgFor,
     AsyncPipe,
     ReactiveFormsModule,
-    SciFilterFieldModule,
-    SciViewportModule,
-    SciAccordionModule,
+    SciFilterFieldComponent,
+    SciViewportComponent,
+    SciAccordionComponent,
+    SciAccordionItemDirective,
     CapabilityAccordionPanelComponent,
     CapabilityAccordionItemComponent,
   ],

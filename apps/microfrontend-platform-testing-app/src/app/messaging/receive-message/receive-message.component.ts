@@ -12,15 +12,15 @@ import {IntentClient, IntentMessage, MessageClient, MessageHeaders, TopicMessage
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith} from 'rxjs/operators';
-import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
+import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {NgFor, NgIf} from '@angular/common';
-import {SciFormFieldModule} from '@scion/components.internal/form-field';
-import {SciListModule} from '@scion/components.internal/list';
 import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
 import {AppAsPipe} from '../../common/as.pipe';
 import {stringifyError} from '../../common/stringify-error.util';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {SciFormFieldComponent} from '@scion/components.internal/form-field';
+import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
 
 @Component({
   selector: 'app-receive-message',
@@ -31,9 +31,10 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
     NgIf,
     NgFor,
     ReactiveFormsModule,
-    SciFormFieldModule,
-    SciParamsEnterModule,
-    SciListModule,
+    SciFormFieldComponent,
+    SciKeyValueFieldComponent,
+    SciListComponent,
+    SciListItemDirective,
     MessageListItemComponent,
     AppAsPipe,
   ],
@@ -103,7 +104,7 @@ export default class ReceiveMessageComponent implements OnDestroy {
   private subscribeIntent(): void {
     const destinationFormGroup = this.form.controls.destination as FormGroup<IntentMessageDestination>;
     const type = destinationFormGroup.controls.type.value;
-    const qualifier = SciParamsEnterComponent.toParamsDictionary(destinationFormGroup.controls.qualifier) ?? undefined;
+    const qualifier = SciKeyValueFieldComponent.toDictionary(destinationFormGroup.controls.qualifier) ?? undefined;
 
     this.form.disable();
     this.subscribeError = undefined;
@@ -152,8 +153,8 @@ export default class ReceiveMessageComponent implements OnDestroy {
   private createIntentDestination(): IntentMessageDestination {
     return {
       type: this._formBuilder.control(''),
-      qualifier: this._formBuilder.array<QualifierEntryFormGroup>([]),
-      params: this._formBuilder.array<ParamEntryFormGroup>([]),
+      qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
+      params: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
     };
   }
 
@@ -161,9 +162,6 @@ export default class ReceiveMessageComponent implements OnDestroy {
     this._subscription?.unsubscribe();
   }
 }
-
-type QualifierEntryFormGroup = FormGroup<{paramName: FormControl<string>; paramValue: FormControl<string>}>;
-type ParamEntryFormGroup = FormGroup<{paramName: FormControl<string>; paramValue: FormControl<string>}>;
 
 enum MessagingFlavor {
   Topic = 'Topic', Intent = 'Intent',
@@ -175,6 +173,6 @@ interface TopicMessageDestination {
 
 interface IntentMessageDestination {
   type: FormControl<string>;
-  qualifier: FormArray<QualifierEntryFormGroup>;
-  params: FormArray<ParamEntryFormGroup>;
+  qualifier: FormArray<FormGroup<KeyValueEntry>>;
+  params: FormArray<FormGroup<KeyValueEntry>>;
 }

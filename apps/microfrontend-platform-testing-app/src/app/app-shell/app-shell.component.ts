@@ -16,8 +16,8 @@ import {Defined} from '@scion/toolkit/util';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {environment} from '../../environments/environment';
 import {AsyncPipe, NgIf} from '@angular/common';
-import {SciSashboxModule} from '@scion/components/sashbox';
-import {SciViewportModule} from '@scion/components/viewport';
+import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
+import {SciViewportComponent} from '@scion/components/viewport';
 import {DevToolsComponent} from '../devtools/devtools.component';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
@@ -30,8 +30,9 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
     NgIf,
     AsyncPipe,
     RouterOutlet,
-    SciSashboxModule,
-    SciViewportModule,
+    SciSashboxComponent,
+    SciSashDirective,
+    SciViewportComponent,
     DevToolsComponent,
   ],
 })

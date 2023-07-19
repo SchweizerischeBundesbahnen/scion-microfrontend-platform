@@ -12,18 +12,18 @@ import {IntentClient, MessageClient, TopicMessage} from '@scion/microfrontend-pl
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith} from 'rxjs/operators';
-import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
+import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {coerceBooleanProperty, coerceNumberProperty} from '@angular/cdk/coercion';
 import {AsyncPipe, NgFor, NgIf} from '@angular/common';
-import {SciFormFieldModule} from '@scion/components.internal/form-field';
-import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {TopicSubscriberCountPipe} from '../topic-subscriber-count.pipe';
-import {SciListModule} from '@scion/components.internal/list';
 import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
 import {stringifyError} from '../../common/stringify-error.util';
 import {AppAsPipe} from '../../common/as.pipe';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {SciFormFieldComponent} from '@scion/components.internal/form-field';
+import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
 
 @Component({
   selector: 'app-publish-message',
@@ -35,10 +35,11 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
     AsyncPipe,
     NgFor,
     ReactiveFormsModule,
-    SciFormFieldModule,
-    SciParamsEnterModule,
-    SciCheckboxModule,
-    SciListModule,
+    SciFormFieldComponent,
+    SciKeyValueFieldComponent,
+    SciCheckboxComponent,
+    SciListComponent,
+    SciListItemDirective,
     TopicSubscriberCountPipe,
     MessageListItemComponent,
     AppAsPipe,
@@ -54,7 +55,7 @@ export default class PublishMessageComponent implements OnDestroy {
     flavor: this._formBuilder.control<MessagingFlavor>(MessagingFlavor.Topic, Validators.required),
     destination: this._formBuilder.group<TopicMessageDestination | IntentMessageDestination>(this.createTopicDestination()),
     message: this._formBuilder.control(''),
-    headers: this._formBuilder.array([]),
+    headers: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
     requestReply: this._formBuilder.control(false),
     retain: this._formBuilder.control(false),
   });
@@ -123,8 +124,8 @@ export default class PublishMessageComponent implements OnDestroy {
   private createIntentDestination(): IntentMessageDestination {
     return {
       type: this._formBuilder.control('', Validators.required),
-      qualifier: this._formBuilder.array<QualifierEntryFormGroup>([]),
-      params: this._formBuilder.array<ParamEntryFormGroup>([]),
+      qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
+      params: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
     };
   }
 
@@ -132,7 +133,7 @@ export default class PublishMessageComponent implements OnDestroy {
     const topic = (this.form.controls.destination as FormGroup<TopicMessageDestination>).controls.topic.value;
     const message = this.form.controls.message.value || undefined;
     const requestReply = this.form.controls.requestReply.value;
-    const headers = SciParamsEnterComponent.toParamsMap(this.form.controls.headers) ?? undefined;
+    const headers = SciKeyValueFieldComponent.toMap(this.form.controls.headers) ?? undefined;
 
     this.markPublishing(true);
     this.publishError = undefined;
@@ -164,15 +165,15 @@ export default class PublishMessageComponent implements OnDestroy {
   private publishIntent(): void {
     const destinationFormGroup = this.form.controls.destination as FormGroup<IntentMessageDestination>;
     const type = destinationFormGroup.controls.type.value;
-    const qualifier = SciParamsEnterComponent.toParamsDictionary(destinationFormGroup.controls.qualifier) ?? undefined;
-    const params = SciParamsEnterComponent.toParamsMap(destinationFormGroup.controls.params) ?? undefined;
+    const qualifier = SciKeyValueFieldComponent.toDictionary(destinationFormGroup.controls.qualifier) ?? undefined;
+    const params = SciKeyValueFieldComponent.toMap(destinationFormGroup.controls.params) ?? undefined;
 
     // Convert entered params to their actual values.
     params?.forEach((paramValue, paramName) => params.set(paramName, convertValueFromUI(paramValue)));
 
     const message = this.form.controls.message.value || undefined;
     const requestReply = this.form.controls.requestReply.value;
-    const headers = SciParamsEnterComponent.toParamsMap(this.form.controls.headers, false);
+    const headers = SciKeyValueFieldComponent.toMap(this.form.controls.headers, false);
 
     this.markPublishing(true);
     this.publishError = undefined;
@@ -260,9 +261,6 @@ interface TopicMessageDestination {
 
 interface IntentMessageDestination {
   type: FormControl<string>;
-  qualifier: FormArray<QualifierEntryFormGroup>;
-  params: FormArray<ParamEntryFormGroup>;
+  qualifier: FormArray<FormGroup<KeyValueEntry>>;
+  params: FormArray<FormGroup<KeyValueEntry>>;
 }
-
-type QualifierEntryFormGroup = FormGroup<{paramName: FormControl<string>; paramValue: FormControl<string>}>;
-type ParamEntryFormGroup = FormGroup<{paramName: FormControl<string>; paramValue: FormControl<string>}>;

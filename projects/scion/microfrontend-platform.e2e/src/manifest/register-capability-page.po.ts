@@ -10,7 +10,7 @@
 
 import {FrameLocator, Locator} from '@playwright/test';
 import {Capability, ManifestObjectFilter} from '@scion/microfrontend-platform';
-import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po';
+import {SciKeyValueFieldPO} from '../@scion/components.internal/key-value-field.po';
 import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
@@ -36,13 +36,13 @@ export class RegisterCapabilityPagePO implements OutletPageObject {
   public async registerCapability<T extends Capability>(capability: T): Promise<string> {
     await this._registerSectionLocator.locator('input.e2e-type').fill(capability.type);
     if (capability.qualifier) {
-      await new SciParamsEnterPO(this._registerSectionLocator.locator('sci-params-enter.e2e-qualifier')).enterParams(capability.qualifier);
+      await new SciKeyValueFieldPO(this._registerSectionLocator.locator('sci-key-value-field.e2e-qualifier')).addEntries(capability.qualifier);
     }
     if (capability.params) {
       await this._registerSectionLocator.locator('input.e2e-params').fill(JSON.stringify(capability.params));
     }
     if (capability.properties) {
-      await new SciParamsEnterPO(this._registerSectionLocator.locator('sci-params-enter.e2e-properties')).enterParams(capability.properties);
+      await new SciKeyValueFieldPO(this._registerSectionLocator.locator('sci-key-value-field.e2e-properties')).addEntries(capability.properties);
     }
 
     await new SciCheckboxPO(this._registerSectionLocator.locator('sci-checkbox.e2e-private')).toggle(capability.private);
@@ -73,7 +73,7 @@ export class RegisterCapabilityPagePO implements OutletPageObject {
       await new SciCheckboxPO(this._unregisterSectionLocator.locator('sci-checkbox.e2e-nilqualifier-if-empty')).toggle(true);
     }
     else if (filter.qualifier) {
-      await new SciParamsEnterPO(this._unregisterSectionLocator.locator('sci-params-enter.e2e-qualifier')).enterParams(filter.qualifier);
+      await new SciKeyValueFieldPO(this._unregisterSectionLocator.locator('sci-key-value-field.e2e-qualifier')).addEntries(filter.qualifier);
     }
     if (filter.appSymbolicName) {
       await this._unregisterSectionLocator.locator('input.e2e-app-symbolic-name').fill(filter.appSymbolicName);

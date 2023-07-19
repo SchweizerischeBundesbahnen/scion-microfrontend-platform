@@ -12,9 +12,9 @@ import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/
 import {PreferredSizeService} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {NgIf} from '@angular/common';
-import {SciFormFieldModule} from '@scion/components.internal/form-field';
-import {SciCheckboxModule} from '@scion/components.internal/checkbox';
+import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 
 @Component({
   selector: 'app-preferred-size',
@@ -25,8 +25,8 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   imports: [
     NgIf,
     ReactiveFormsModule,
-    SciFormFieldModule,
-    SciCheckboxModule,
+    SciFormFieldComponent,
+    SciCheckboxComponent,
   ],
 })
 export default class PreferredSizeComponent {

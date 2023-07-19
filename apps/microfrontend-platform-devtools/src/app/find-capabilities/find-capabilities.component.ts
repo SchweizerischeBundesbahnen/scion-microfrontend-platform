@@ -15,7 +15,7 @@ import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {ShellService} from '../shell.service';
 import {map} from 'rxjs/operators';
 import {distinctArray, mapArray, sortArray} from '@scion/toolkit/operators';
-import {SciViewportModule} from '@scion/components/viewport';
+import {SciViewportComponent} from '@scion/components/viewport';
 import {FilterFieldComponent} from './filter-field/filter-field.component';
 import {AsyncPipe} from '@angular/common';
 
@@ -27,7 +27,7 @@ import {AsyncPipe} from '@angular/common';
   standalone: true,
   imports: [
     AsyncPipe,
-    SciViewportModule,
+    SciViewportComponent,
     FilterFieldComponent,
   ],
 })

@@ -13,10 +13,10 @@ import {Application, Capability} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router, RouterLink} from '@angular/router';
 import {AsyncPipe, JsonPipe, NgFor, NgIf} from '@angular/common';
-import {SciTabbarModule} from '@scion/components.internal/tabbar';
-import {SciPropertyModule} from '@scion/components.internal/property';
+import {SciKeyValueComponent} from '@scion/components.internal/key-value';
 import {CustomParamMetadataPipe} from '../common/custom-param-metadata.pipe';
 import {AppNamePipe} from '../common/app-name.pipe';
+import {SciTabbarComponent, SciTabDirective} from '@scion/components.internal/tabbar';
 
 @Component({
   selector: 'devtools-capability-accordion-panel',
@@ -32,8 +32,9 @@ import {AppNamePipe} from '../common/app-name.pipe';
     RouterLink,
     AppNamePipe,
     CustomParamMetadataPipe,
-    SciTabbarModule,
-    SciPropertyModule,
+    SciTabbarComponent,
+    SciTabDirective,
+    SciKeyValueComponent,
   ],
 })
 export class CapabilityAccordionPanelComponent implements OnInit {

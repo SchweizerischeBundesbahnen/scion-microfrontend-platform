@@ -11,7 +11,7 @@ import {Component} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MessageClient, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {SciFormFieldModule} from '@scion/components.internal/form-field';
+import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 
 @Component({
   selector: 'app-clear-outlet-then-send-message-test-page',
@@ -20,7 +20,7 @@ import {SciFormFieldModule} from '@scion/components.internal/form-field';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    SciFormFieldModule,
+    SciFormFieldComponent,
   ],
 })
 export default class ClearOutletThenSendMessageTestPageComponent {

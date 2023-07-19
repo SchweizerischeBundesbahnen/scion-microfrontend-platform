@@ -15,9 +15,9 @@ import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {sortArray} from '@scion/toolkit/operators';
 import {ShellService} from '../shell.service';
 import {AsyncPipe, NgFor} from '@angular/common';
-import {SciListModule} from '@scion/components.internal/list';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {AppListItemComponent} from '../app-list-item/app-list-item.component';
+import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
 
 @Component({
   selector: 'devtools-app-list',
@@ -30,7 +30,8 @@ import {AppListItemComponent} from '../app-list-item/app-list-item.component';
     AsyncPipe,
     RouterLink,
     RouterLinkActive,
-    SciListModule,
+    SciListComponent,
+    SciListItemDirective,
     AppListItemComponent,
   ],
 })

@@ -10,7 +10,7 @@
 
 import {FrameLocator, Locator} from '@playwright/test';
 import {ManifestObjectFilter, Qualifier} from '@scion/microfrontend-platform';
-import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po';
+import {SciKeyValueFieldPO} from '../@scion/components.internal/key-value-field.po';
 import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
 
@@ -36,7 +36,7 @@ export class RegisterIntentionPagePO implements OutletPageObject {
   public async registerIntention(intention: {type: string; qualifier?: Qualifier}): Promise<string> {
     await this._registerSectionLocator.locator('input.e2e-type').fill(intention.type);
     if (intention.qualifier) {
-      await new SciParamsEnterPO(this._registerSectionLocator.locator('sci-params-enter.e2e-qualifier')).enterParams(intention.qualifier);
+      await new SciKeyValueFieldPO(this._registerSectionLocator.locator('sci-key-value-field.e2e-qualifier')).addEntries(intention.qualifier);
     }
 
     await this._registerSectionLocator.locator('button.e2e-register').click();
@@ -66,7 +66,7 @@ export class RegisterIntentionPagePO implements OutletPageObject {
       await new SciCheckboxPO(this._unregisterSectionLocator.locator('sci-checkbox.e2e-nilqualifier-if-empty')).toggle(true);
     }
     else if (filter.qualifier) {
-      await new SciParamsEnterPO(this._unregisterSectionLocator.locator('sci-params-enter.e2e-qualifier')).enterParams(filter.qualifier);
+      await new SciKeyValueFieldPO(this._unregisterSectionLocator.locator('sci-key-value-field.e2e-qualifier')).addEntries(filter.qualifier);
     }
     if (filter.appSymbolicName) {
       await this._unregisterSectionLocator.locator('input.e2e-app-symbolic-name').fill(filter.appSymbolicName);

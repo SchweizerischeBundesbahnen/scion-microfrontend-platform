@@ -8,16 +8,16 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component} from '@angular/core';
-import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {APP_IDENTITY, Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
-import {SciParamsEnterComponent, SciParamsEnterModule} from '@scion/components.internal/params-enter';
+import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
 import {Observable} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {AsyncPipe, NgFor, NgIf} from '@angular/common';
-import {SciFormFieldModule} from '@scion/components.internal/form-field';
-import {SciCheckboxModule} from '@scion/components.internal/checkbox';
-import {SciListModule} from '@scion/components.internal/list';
-import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-chip-list';
+import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
+import {SciFormFieldComponent} from '@scion/components.internal/form-field';
+import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
+import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 
 @Component({
   selector: 'app-register-intention',
@@ -29,24 +29,25 @@ import {SciQualifierChipListModule} from '@scion/components.internal/qualifier-c
     NgFor,
     AsyncPipe,
     ReactiveFormsModule,
-    SciFormFieldModule,
-    SciParamsEnterModule,
-    SciCheckboxModule,
-    SciListModule,
-    SciQualifierChipListModule,
+    SciFormFieldComponent,
+    SciKeyValueFieldComponent,
+    SciCheckboxComponent,
+    SciListComponent,
+    SciListItemDirective,
+    SciQualifierChipListComponent,
   ],
 })
 export default class RegisterIntentionComponent {
 
   public registerForm = this._formBuilder.group({
     type: this._formBuilder.control('', Validators.required),
-    qualifier: this._formBuilder.array([]),
+    qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
   });
 
   public unregisterForm = this._formBuilder.group({
     id: this._formBuilder.control(''),
     type: this._formBuilder.control(''),
-    qualifier: this._formBuilder.array([]),
+    qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
     nilqualifierIfEmpty: this._formBuilder.control(false),
     appSymbolicName: this._formBuilder.control(''),
   });
@@ -68,7 +69,7 @@ export default class RegisterIntentionComponent {
 
     const intention: Intention = {
       type: this.registerForm.controls.type.value,
-      qualifier: SciParamsEnterComponent.toParamsDictionary(this.registerForm.controls.qualifier, false),
+      qualifier: SciKeyValueFieldComponent.toDictionary(this.registerForm.controls.qualifier, false),
     };
 
     Beans.get(ManifestService).registerIntention(intention)
@@ -80,7 +81,7 @@ export default class RegisterIntentionComponent {
       })
       .finally(() => {
         this.registerForm.reset();
-        this.registerForm.setControl('qualifier', this._formBuilder.array([]));
+        this.registerForm.setControl('qualifier', this._formBuilder.array<FormGroup<KeyValueEntry>>([]));
       });
   }
 
@@ -89,7 +90,7 @@ export default class RegisterIntentionComponent {
     this.unregisterError = undefined;
 
     const nilQualifierIfEmpty = this.unregisterForm.controls.nilqualifierIfEmpty.value;
-    const qualifier = SciParamsEnterComponent.toParamsDictionary(this.unregisterForm.controls.qualifier);
+    const qualifier = SciKeyValueFieldComponent.toDictionary(this.unregisterForm.controls.qualifier);
     const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
 
     const filter: ManifestObjectFilter = {
@@ -108,7 +109,7 @@ export default class RegisterIntentionComponent {
       })
       .finally(() => {
         this.unregisterForm.reset();
-        this.unregisterForm.setControl('qualifier', this._formBuilder.array([]));
+        this.unregisterForm.setControl('qualifier', this._formBuilder.array<FormGroup<KeyValueEntry>>([]));
       });
   }
 }

@@ -11,7 +11,7 @@
 import {FrameLocator, Locator} from '@playwright/test';
 import {ManifestObjectFilter} from '@scion/microfrontend-platform';
 import {isPresent} from '../testing.util';
-import {SciParamsEnterPO} from '../@scion/components.internal/params-enter.po';
+import {SciKeyValueFieldPO} from '../@scion/components.internal/key-value-field.po';
 import {SciListPO} from '../@scion/components.internal/list.po';
 import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
@@ -51,7 +51,7 @@ export class LookupIntentionPagePO implements OutletPageObject {
         await new SciCheckboxPO(this._locator.locator('sci-checkbox.e2e-nilqualifier-if-empty')).toggle(true);
       }
       else if (filter.qualifier) {
-        await new SciParamsEnterPO(this._locator.locator('sci-params-enter.e2e-qualifier')).enterParams(filter.qualifier);
+        await new SciKeyValueFieldPO(this._locator.locator('sci-key-value-field.e2e-qualifier')).addEntries(filter.qualifier);
       }
       if (filter.appSymbolicName) {
         await this._locator.locator('input.e2e-app-symbolic-name').fill(filter.appSymbolicName);

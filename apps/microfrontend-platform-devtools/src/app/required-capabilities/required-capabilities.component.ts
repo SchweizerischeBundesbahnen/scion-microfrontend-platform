@@ -17,14 +17,14 @@ import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Maps} from '@scion/toolkit/util';
 import {AsyncPipe, KeyValue, KeyValuePipe, NgFor, NgIf} from '@angular/common';
-import {SciFilterFieldModule} from '@scion/components.internal/filter-field';
-import {SciAccordionModule} from '@scion/components.internal/accordion';
 import {AppNamePipe} from '../common/app-name.pipe';
 import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-list.component';
 import {ParamsFilterPipe} from '../common/params-filter.pipe';
 import {NullIfEmptyPipe} from '../common/null-if-empty.pipe';
 import {JoinPipe} from '../common/join.pipe';
-import {SciPropertyModule} from '@scion/components.internal/property';
+import {SciAccordionComponent, SciAccordionItemDirective} from '@scion/components.internal/accordion';
+import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
+import {SciKeyValueComponent} from '@scion/components.internal/key-value';
 
 @Component({
   selector: 'devtools-required-capabilities',
@@ -38,9 +38,10 @@ import {SciPropertyModule} from '@scion/components.internal/property';
     AsyncPipe,
     KeyValuePipe,
     ReactiveFormsModule,
-    SciFilterFieldModule,
-    SciAccordionModule,
-    SciPropertyModule,
+    SciFilterFieldComponent,
+    SciAccordionComponent,
+    SciAccordionItemDirective,
+    SciKeyValueComponent,
     AppNamePipe,
     QualifierChipListComponent,
     ParamsFilterPipe,

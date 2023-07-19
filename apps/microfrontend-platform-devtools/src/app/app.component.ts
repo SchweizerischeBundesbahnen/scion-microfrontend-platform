@@ -13,7 +13,7 @@ import {ShellService} from './shell.service';
 import {MicrofrontendPlatformClient} from '@scion/microfrontend-platform';
 import {AsyncPipe, NgIf} from '@angular/common';
 import {RouterOutlet} from '@angular/router';
-import {SciSashboxModule} from '@scion/components/sashbox';
+import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 import {AppMenuComponent} from './app-menu/app-menu.component';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
@@ -27,7 +27,8 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
     NgIf,
     AsyncPipe,
     RouterOutlet,
-    SciSashboxModule,
+    SciSashboxComponent,
+    SciSashDirective,
     AppMenuComponent,
   ],
 })

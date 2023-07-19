@@ -10,14 +10,14 @@
 import {Component} from '@angular/core';
 import {PlatformPropertyService} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {SciPropertyModule} from '@scion/components.internal/property';
+import {SciKeyValueComponent} from '@scion/components.internal/key-value';
 
 @Component({
   selector: 'app-platform-properties',
   templateUrl: './platform-properties.component.html',
   styleUrls: ['./platform-properties.component.scss'],
   standalone: true,
-  imports: [SciPropertyModule],
+  imports: [SciKeyValueComponent],
 })
 export default class PlatformPropertiesComponent {
 
