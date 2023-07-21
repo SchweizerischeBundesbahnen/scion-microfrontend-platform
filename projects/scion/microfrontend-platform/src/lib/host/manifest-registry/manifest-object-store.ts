@@ -80,6 +80,21 @@ export class ManifestObjectStore<T extends ManifestObject> {
   }
 
   /**
+   * Finds the manifest object of given id. If not found, by default, throws an error unless setting the `orElseNull` option.
+   *
+   * @param id - Identifies the manifest object.
+   */
+  public findById(id: string): T;
+  public findById(id: string, options: {orElse: null}): T | null;
+  public findById(id: string, options?: {orElse: null}): T | null {
+    const object = this._objectById.get(id);
+    if (!object && !options) {
+      throw Error(`[NullManifestObjectError] Manifest object '${id}' not found.`);
+    }
+    return object ?? null;
+  }
+
+  /**
    * Emits when an object is added to or removed from this store.
    */
   public get change$(): Observable<void> {

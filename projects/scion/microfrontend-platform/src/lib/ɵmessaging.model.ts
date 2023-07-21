@@ -89,52 +89,105 @@ export interface MessageEnvelope<MSG extends Message = Message> {
 export namespace PlatformTopics {
   /**
    * Topic to request the subscription count on a topic.
+   *
+   * Messaging Pattern: Request-Response
+   * Request Type: {@link string}
+   * Response Type: {@link number}
    */
   export const RequestSubscriberCount = 'ɵREQUEST_SUBSCRIBER_COUNT';
   /**
    * Topic to signal when gained the focus.
+   *
+   * Messaging Pattern: Publish-Subscribe
+   * Payload: {@link void}
    */
   export const FocusIn = 'ɵFOCUS_IN';
   /**
    * Topic to request whether the requesting client (or a microfrontend embedded in the client) has gained focus.
+   *
+   * Messaging Pattern: Request-Response
+   * Request Type: {@link void}
+   * Response Type: {@link boolean}
    */
   export const IsFocusWithin = 'ɵIS_FOCUS_WITHIN';
   /**
    * Topic to request whether the requesting client has gained focus.
+   *
+   * Messaging Pattern: Request-Response
+   * Request Type: {@link void}
+   * Response Type: {@link boolean}
    */
   export const HasFocus = 'ɵHAS_FOCUS';
   /**
    * Topic to read platform properties.
+   *
+   * Messaging Pattern: Publish-Subscribe
+   * Payload: {@link Record}
    */
   export const PlatformProperties = 'ɵPLATFORM_PROPERTIES';
   /**
    * Topic to read platform registered applications.
+   *
+   * Messaging Pattern: Publish-Subscribe
+   * Payload: {@link ɵApplication}
    */
   export const Applications = 'ɵAPPLICATIONS';
   /**
    * Topic to request capabilities.
+   *
+   * Messaging Pattern: Request-Response
+   * Request Type: {@link ManifestObjectFilter}
+   * Response Type: {@link Array<Capability>}
    */
   export const LookupCapabilities = 'ɵLOOKUP_CAPABILITIES';
   /**
    * Topic to request intentions.
+   *
+   * Messaging Pattern: Request-Response
+   * Request Type: {@link ManifestObjectFilter}
+   * Response Type: {@link Array<Intention>}
    */
   export const LookupIntentions = 'ɵLOOKUP_INTENTIONS';
   /**
    * Topic to register a capability.
+   *
+   * Messaging Pattern: Request-Response
+   * Request Type: {@link Capability}
+   * Response Type: {@link string}
    */
   export const RegisterCapability = 'ɵREGISTER_CAPABILITY';
   /**
    * Topic to unregister a capability.
+   *
+   * Messaging Pattern: Request-Response
+   * Request Type: {@link ManifestObjectFilter}
+   * Response Type: {@link void}
    */
   export const UnregisterCapabilities = 'ɵUNREGISTER_CAPABILITIES';
   /**
    * Topic to register an intentions.
+   *
+   * Messaging Pattern: Request-Response
+   * Request Type: {@link Intention}
+   * Response Type: {@link string}
    */
   export const RegisterIntention = 'ɵREGISTER_INTENTION';
   /**
    * Topic to unregister an intention.
+   *
+   * Messaging Pattern: Request-Response
+   * Request Type: {@link ManifestObjectFilter}
+   * Response Type: {@link void}
    */
   export const UnregisterIntentions = 'ɵUNREGISTER_INTENTIONS';
+  /**
+   * Topic to check if application is qualified for the capability.
+   *
+   * Messaging Pattern: Request-Response
+   * Request Type: {@link ApplicationQualifiedForCapabilityRequest}
+   * Response Type: {@link boolean}
+   */
+  export const IsApplicationQualifiedForCapability = 'ɵIS_APPLICATION_QUALIFIED_FOR_CAPABILITY';
 
   /**
    * Topic to request the platform version of a specific application.

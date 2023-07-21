@@ -16,6 +16,8 @@ import {ObserveCaptor} from '@scion/toolkit/testing';
 import {Capability, Intention} from '../../platform.model';
 import {ManifestRegistry} from '../../host/manifest-registry/manifest-registry';
 import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
+import {firstValueFrom} from 'rxjs';
+import {ɵManifestRegistry} from '../../host/manifest-registry/ɵmanifest-registry';
 
 const manifestObjectIdsExtractFn = (manifestObjects: Array<Capability | Intention>): string[] => manifestObjects.map(manifestObject => manifestObject.metadata!.id);
 
@@ -1030,6 +1032,172 @@ describe('ManifestService', () => {
 
       Beans.get(ManifestService).lookupIntentions$({id: intentionIdApp1}).subscribe(captor.reset());
       await expectEmissions(captor).toEqual([[intentionIdApp1]]);
+    });
+  });
+
+  describe('#isApplicationQualified$', () => {
+    it('should be qualified if application provides capability', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
+        ],
+      });
+
+      // Register private capability for app-1
+      const privateCapabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: true}, 'app-1');
+      // Register public capability for app-1
+      const publicCapabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: false}, 'app-1');
+
+      // Expect app-1 to be qualified (app-1 provides capability)
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-1', {capabilityId: privateCapabilityId}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-1', {capabilityId: publicCapabilityId}))).toBeTrue();
+
+      // Expect app-2 NOT to be qualified (app-2 does NOT provide capability)
+      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
+      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeFalse();
+    });
+
+    it('should be qualified if application has intention', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
+        ],
+      });
+
+      // Register private capability for app-1
+      const privateCapabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: true}, 'app-1');
+      // Register public capability for app-1
+      const publicCapabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: false}, 'app-1');
+
+      // Register intention for app-2
+      Beans.get(ManifestRegistry).registerIntention({type: 'testee'}, 'app-2');
+
+      // Expect app-2 NOT to be qualified (has intention BUT private capability)
+      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
+
+      // Expect app-2 to be qualified (has intention and public capability)
+      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeTrue();
+    });
+
+    it('should be qualified if application has scope check disabled', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve(), scopeCheckDisabled: true},
+        ],
+      });
+
+      // Register private capability for app-1
+      const privateCapabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: true}, 'app-1');
+
+      // Register intention for app-2
+      Beans.get(ManifestRegistry).registerIntention({type: 'testee'}, 'app-2');
+
+      // Expect app-2 to be qualified (has intention and scope check disabled)
+      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeTrue();
+    });
+
+    it('should be qualified if application has intention check disabled', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve(), intentionCheckDisabled: true},
+        ],
+      });
+
+      // Register private capability for app-1
+      const privateCapabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: true}, 'app-1');
+      // Register public capability for app-1
+      const publicCapabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: false}, 'app-1');
+
+      // Expect app-2 NOT to be qualified (intention check disabled BUT private capability)
+      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
+
+      // Expect app-2 to be qualified (intention check disabled and public capability)
+      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeTrue();
+    });
+
+    it('should be qualified if application has scope check and intention check disabled', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve(), scopeCheckDisabled: true, intentionCheckDisabled: true},
+        ],
+      });
+
+      // Register private capability for app-1
+      const privateCapabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: true}, 'app-1');
+
+      // Expect app-2 to be qualified (scope check and intention check disabled)
+      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeTrue();
+    });
+
+    it('should error if requesting the qualification for a non-existing capability', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+        ],
+      });
+
+      // Expect request to error because capability does not exist
+      await expectAsync(firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-1', {capabilityId: 'xyz'}))).toBeRejectedWithError(/NullManifestObjectError/);
+    });
+
+    it('should error if requesting the qualification for a non-existing application', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+        ],
+      });
+
+      // Register capability for app-1
+      const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'testee'}, 'app-1');
+
+      // Expect request to error because application does not exist
+      await expectAsync(firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId}))).toBeRejectedWithError(/NullApplicationError/);
+    });
+
+    it('should continuously emit the application\' qualification for the capability', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
+        ],
+      });
+
+      // Register capability for app-1
+      const capabilityId = await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: false}, 'app-1');
+
+      const captor = new ObserveCaptor<boolean>();
+      Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: capabilityId}).subscribe(captor);
+
+      // Expect app-2 NOT to be qualified (NO intention)
+      await expectEmissions(captor).toEqual([false]);
+      captor.reset();
+
+      // Register intention for app-2
+      Beans.get(ManifestRegistry).registerIntention({type: 'testee'}, 'app-2');
+
+      // Expect app-2 to be qualified (has intention)
+      await expectEmissions(captor).toEqual([true]);
+      captor.reset();
+
+      // Unregister capability
+      (Beans.get(ManifestRegistry) as ɵManifestRegistry).unregisterCapabilities('app-1', {id: capabilityId});
+
+      // Expect request to error because capability does not exist
+      await captor.waitUntilCompletedOrErrored();
+      await expect(captor.getError()).toMatch(/NullManifestObjectError/);
     });
   });
 });

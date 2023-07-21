@@ -56,7 +56,7 @@ export class MicrofrontendIntentNavigator implements IntentInterceptor {
       throw Error(`[OutletRouterError][NullPathError] Microfrontend capability has no path to the microfrontend defined. [capability=${JSON.stringify(microfrontendCapability)}]`);
     }
     const appSymbolicName = microfrontendCapability.metadata!.appSymbolicName;
-    const application = Beans.get(ApplicationRegistry).getApplication(appSymbolicName);
+    const application = Beans.get(ApplicationRegistry).getApplication(appSymbolicName, {orElse: null});
     if (!application) {
       throw Error(`[OutletRouterError][NullApplicationError] Unexpected error. No application found with the symbolic name "${appSymbolicName}".`);
     }

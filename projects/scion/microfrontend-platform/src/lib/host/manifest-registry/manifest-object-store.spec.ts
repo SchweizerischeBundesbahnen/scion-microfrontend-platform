@@ -23,26 +23,15 @@ describe('ManifestObjectStore', () => {
     });
 
     it('should find manifest objects by id', () => {
-      const undefinedQualifierManifestObject: ManifestObject = {type: 'type1', metadata: {id: 'id_undefinedQualifierManifestObject', appSymbolicName: 'app'}};
-      const nullQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: null!, metadata: {id: 'id_nullQualifierManifestObject', appSymbolicName: 'app'}};
-      const emptyQualifierManifestObject: ManifestObject = {type: 'type1', qualifier: {}, metadata: {id: 'id_emptyQualifierManifestObject', appSymbolicName: 'app'}};
-      const asteriskQualifierManifestObject: ManifestObject = {type: 'type2', qualifier: {entity: '*'}, metadata: {id: 'id_asteriskQualifierManifestObject', appSymbolicName: 'app'}};
-      const exactQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {entity: 'test'}, metadata: {id: 'id_exactQualifierManifestObject', appSymbolicName: 'app'}};
-      const anyQualifierManifestObject: ManifestObject = {type: 'type3', qualifier: {'*': '*'}, metadata: {id: 'id_anyQualifierManifestObject', appSymbolicName: 'app'}};
+      const manifestObject: ManifestObject = {type: 'type', metadata: {id: 'id', appSymbolicName: 'app'}};
+      store.add(manifestObject);
 
-      store.add(undefinedQualifierManifestObject);
-      store.add(nullQualifierManifestObject);
-      store.add(emptyQualifierManifestObject);
-      store.add(asteriskQualifierManifestObject);
-      store.add(exactQualifierManifestObject);
-      store.add(anyQualifierManifestObject);
+      expect(store.find({id: 'id'})).toEqual([manifestObject]);
+      expect(store.find({id: 'xxx'})).toEqual([]);
 
-      expect(store.find({id: 'id_undefinedQualifierManifestObject'})).toEqual([undefinedQualifierManifestObject]);
-      expect(store.find({id: 'id_nullQualifierManifestObject'})).toEqual([nullQualifierManifestObject]);
-      expect(store.find({id: 'id_emptyQualifierManifestObject'})).toEqual([emptyQualifierManifestObject]);
-      expect(store.find({id: 'id_asteriskQualifierManifestObject'})).toEqual([asteriskQualifierManifestObject]);
-      expect(store.find({id: 'id_exactQualifierManifestObject'})).toEqual([exactQualifierManifestObject]);
-      expect(store.find({id: 'id_anyQualifierManifestObject'})).toEqual([anyQualifierManifestObject]);
+      expect(store.findById('id')).toBe(manifestObject);
+      expect(store.findById('xxx', {orElse: null})).toBeNull();
+      expect(() => store.findById('xxx')).toThrowError(/NullManifestObjectError/);
     });
 
     it('should find manifest objects by type', () => {
