@@ -1,3 +1,18 @@
+# [1.1.0](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0...1.1.0) (2023-07-21)
+
+
+### Bug Fixes
+
+* **platform/client:** add missing method overload to `ContextService#lookup` ([29d4e09](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/29d4e0990c762dac5f00155b6dc96f1f4d47d4b4))
+
+
+### Features
+
+* **platform:** allow associating arbitrary metadata with platform-specific capabilities ([6eca043](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/6eca04304d5011311adc07d0de9a5c9200166748))
+* **platform:** provide API to check if application is qualified for capability ([2204eff](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/2204eff52821813c2aebd7beb25d8c8790f36fe5))
+
+
+
 # [1.0.0](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.0.0-rc.13...1.0.0) (2023-05-15)
 
 
