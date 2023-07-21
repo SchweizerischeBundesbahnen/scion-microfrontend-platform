@@ -8,10 +8,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Capability, Intention, ManifestObjectFilter, ParamDefinition} from '../../platform.model';
+import {ApplicationQualifiedForCapabilityRequest, Capability, Intention, ManifestObjectFilter, ParamDefinition} from '../../platform.model';
 import {ManifestObjectStore} from './manifest-object-store';
 import {concatWith, defer, EMPTY, filter, merge, Observable, of, Subscription} from 'rxjs';
-import {distinctUntilChanged, expand, mergeMap, take} from 'rxjs/operators';
+import {distinctUntilChanged, expand, map, mergeMap, startWith, take} from 'rxjs/operators';
 import {Intent, MessageHeaders, TopicMessage} from '../../messaging.model';
 import {MessageClient} from '../../client/messaging/message-client';
 import {ApplicationRegistry} from '../application-registry';
@@ -52,6 +52,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
     this.installCapabilitiesLookupRequestHandler();
     this.installIntentionsLookupRequestHandler();
+    this.installIsApplicationQualifiedRequestHandler();
     this.installVersionLookupHandler();
   }
 
@@ -87,20 +88,23 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   /**
-   * Tests whether the given micro app is qualified for the given capability. This is true in two cases:
-   *   - The micro app provides the capability itself.
-   *   - The capability has public visibility and the micro app has declared an intention for it.
-   *     If 'scope check' is disabled for the given micro app, it also qualifies for capabilities with private visibility.
-   *     If 'intention check' is disabled for the given micro app, it also qualifies for capabilities for which it has not declared a respective intention.
+   * Tests if the specified micro app is qualified to interact with the given capability.
+   *
+   * A micro app is qualified if it meets either of the following criteria:
+   * - The capability is provided by the application itself.
+   * - The capability is provided by another application, but only if the capability is publicly visible (1),
+   *   and the micro app has declared an intention (2) to use the capability.
+   *
+   * (1) Unless 'scope check' is disabled for the specified micro app.
+   * (2) Unless 'intention check' is disabled for the specified micro app.
    */
   private isApplicationQualifiedForCapability(appSymbolicName: string, capability: Capability): boolean {
     if (capability.metadata!.appSymbolicName === appSymbolicName) {
       return true;
     }
-    const isCapabilityPublic = !capability.private;
     const isScopeCheckDisabled = Beans.get(ApplicationRegistry).isScopeCheckDisabled(appSymbolicName);
     const isIntentionCheckDisabled = Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName);
-    return (isScopeCheckDisabled || isCapabilityPublic) && (isIntentionCheckDisabled || this.hasIntentionForCapability(appSymbolicName, capability));
+    return (isScopeCheckDisabled || !capability.private) && (isIntentionCheckDisabled || this.hasIntentionForCapability(appSymbolicName, capability));
   }
 
   /**
@@ -145,7 +149,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     return capabilityToRegister.metadata!.id;
   }
 
-  private unregisterCapabilities(appSymbolicName: string, filter: ManifestObjectFilter): void {
+  public unregisterCapabilities(appSymbolicName: string, filter: ManifestObjectFilter): void {
     this._capabilityStore.remove({...filter, appSymbolicName});
   }
 
@@ -249,6 +253,21 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
         .pipe(
           expand(() => this._intentionStore.change$.pipe(take(1), mergeMap(() => finder$))),
           distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        );
+    }));
+  }
+
+  private installIsApplicationQualifiedRequestHandler(): void {
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<ApplicationQualifiedForCapabilityRequest, boolean>(PlatformTopics.IsApplicationQualifiedForCapability, (request: TopicMessage<ApplicationQualifiedForCapabilityRequest>) => {
+      return merge(this._intentionStore.change$, this._capabilityStore.change$)
+        .pipe(
+          startWith<void>(undefined),
+          map(() => {
+            const application = Beans.get(ApplicationRegistry).getApplication(request.body!.appSymbolicName);
+            const capability = this._capabilityStore.findById(request.body!.capabilityId);
+            return this.isApplicationQualifiedForCapability(application.symbolicName, capability);
+          }),
+          distinctUntilChanged(),
         );
     }));
   }

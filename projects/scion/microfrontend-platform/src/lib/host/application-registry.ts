@@ -80,8 +80,17 @@ export class ApplicationRegistry {
     });
   }
 
-  public getApplication(symbolicName: string): ɵApplication | undefined {
-    return this._applications.get(symbolicName);
+  /**
+   * Finds the application of given symbolic name. If not found, by default, throws an error unless setting the `orElseNull` option.
+   */
+  public getApplication(symbolicName: string): ɵApplication;
+  public getApplication(symbolicName: string, options: {orElse: null}): ɵApplication | null;
+  public getApplication(symbolicName: string, options?: {orElse: null}): ɵApplication | null {
+    const application = this._applications.get(symbolicName);
+    if (!application && !options) {
+      throw Error(`[NullApplicationError] No application registered under the symbolic name '${symbolicName}'.`);
+    }
+    return application ?? null;
   }
 
   public getApplications(): ɵApplication[] {

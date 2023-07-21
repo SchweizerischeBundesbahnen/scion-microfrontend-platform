@@ -148,7 +148,7 @@ export class MessageBroker implements Initializer, PreDestroy {
           return;
         }
 
-        const application = this._applicationRegistry.getApplication(clientAppName);
+        const application = this._applicationRegistry.getApplication(clientAppName, {orElse: null});
         if (!application) {
           const warning = `Client connect attempt rejected: Unknown client. [app='${clientAppName}']`;
           Beans.get(Logger).warn(`[CONNECT] ${warning}`);

@@ -10,7 +10,7 @@
 
 import {firstValueFrom, lastValueFrom, Observable, OperatorFunction} from 'rxjs';
 import {MessageClient} from '../messaging/message-client';
-import {Application, Capability, Intention, ManifestObjectFilter} from '../../platform.model';
+import {Application, ApplicationQualifiedForCapabilityRequest, Capability, Intention, ManifestObjectFilter} from '../../platform.model';
 import {PlatformTopics} from '../../ɵmessaging.model';
 import {mapToBody} from '../../messaging.model';
 import {Beans, Initializer} from '@scion/toolkit/bean-manager';
@@ -164,6 +164,29 @@ export class ManifestService implements Initializer {
         complete: resolve,
       });
     });
+  }
+
+  /**
+   * Tests if the specified micro app is qualified to interact with the given capability.
+   *
+   * A micro app is qualified if it meets either of the following criteria:
+   * - The capability is provided by the application itself.
+   * - The capability is provided by another application, but only if the capability is publicly visible (1),
+   *   and the micro app has declared an intention (2) to use the capability.
+   *
+   * (1) Unless 'scope check' is disabled for the specified micro app.
+   * (2) Unless 'intention check' is disabled for the specified micro app.
+   *
+   * @param appSymbolicName - Specifies the symbolic name of the application under test.
+   * @param qualifiedFor
+   *        @property capabilityId - Identifies the capability to test.
+   * @return An Observable that, when subscribed, emits the qualification of specified application.
+   *         It never completes and emits continuously when capabilites or intentions are registered or unregistered.
+   */
+  public isApplicationQualified$(appSymbolicName: string, qualifiedFor: {capabilityId: string}): Observable<boolean> {
+    const request: ApplicationQualifiedForCapabilityRequest = {appSymbolicName, capabilityId: qualifiedFor.capabilityId};
+    return Beans.get(MessageClient).request$<boolean>(PlatformTopics.IsApplicationQualifiedForCapability, request)
+      .pipe(mapToBody());
   }
 }
 

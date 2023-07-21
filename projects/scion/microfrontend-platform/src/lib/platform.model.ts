@@ -509,3 +509,17 @@ export interface ManifestObjectFilter {
    */
   appSymbolicName?: string;
 }
+
+/**
+ * Represents a request to determine if an application is qualified to interact with a given capability.
+ */
+export interface ApplicationQualifiedForCapabilityRequest {
+  /**
+   * Specifies the symbolic name of the application under test.
+   */
+  appSymbolicName: string;
+  /**
+   * Identifies the capability for which to request the application's qualification.
+   */
+  capabilityId: string;
+}

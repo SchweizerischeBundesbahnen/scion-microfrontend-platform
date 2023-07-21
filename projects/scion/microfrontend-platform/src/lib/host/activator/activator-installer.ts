@@ -84,7 +84,7 @@ export class ActivatorInstaller implements Initializer {
    */
   private async waitForActivatorsToSignalReady(appSymbolicName: string, activators: ActivatorCapability[], monitor: ProgressMonitor): Promise<void> {
     const t0 = Date.now();
-    const activatorLoadTimeout = Beans.get(ApplicationRegistry).getApplication(appSymbolicName)!.activatorLoadTimeout;
+    const activatorLoadTimeout = Beans.get(ApplicationRegistry).getApplication(appSymbolicName).activatorLoadTimeout;
     const readinessPromises: Promise<void>[] = activators
       .reduce((acc, activator) => acc.concat(Arrays.coerce(activator.properties.readinessTopics)), new Array<string>()) // concat readiness topics
       .map(readinessTopic => {
@@ -120,7 +120,7 @@ export class ActivatorInstaller implements Initializer {
    * Mounts a hidden <sci-router-outlet> and loads the activator endpoint.
    */
   private mountActivator(activator: ActivatorCapability, primary: boolean): void {
-    const application = Beans.get(ApplicationRegistry).getApplication(activator.metadata!.appSymbolicName)!;
+    const application = Beans.get(ApplicationRegistry).getApplication(activator.metadata!.appSymbolicName);
 
     // Create the router outlet and navigate to the activator endpoint.
     const routerOutlet = document.createElement('sci-router-outlet') as SciRouterOutletElement;
