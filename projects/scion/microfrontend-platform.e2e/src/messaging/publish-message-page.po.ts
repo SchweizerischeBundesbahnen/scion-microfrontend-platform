@@ -100,7 +100,7 @@ export class PublishMessagePagePO implements OutletPageObject{
     return messages[0];
   }
 
-  public async getPublishError(): Promise<string> {
+  public async getPublishError(): Promise<string | null> {
     const publishErrorLocator = this._locator.locator('output.e2e-publish-error');
     if (await isPresent(publishErrorLocator)) {
       return publishErrorLocator.innerText();

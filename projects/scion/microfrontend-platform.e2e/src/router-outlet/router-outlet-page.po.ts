@@ -66,15 +66,15 @@ export class RouterOutletPagePO implements OutletPageObject {
   /**
    * Returns the name of the router outlet.
    */
-  public getRouterOutletName(): Promise<string> {
+  public getRouterOutletName(): Promise<string | null> {
     return this._locator.locator(ElementSelectors.routerOutlet()).getAttribute('name');
   }
 
   /**
    * Returns the name of the iframe of the router outlet.
    */
-  public getRouterOutletFrameName(): Promise<string> {
-    return this._locator.locator(ElementSelectors.routerOutletFrame()).getAttribute('name');
+  public async getRouterOutletFrameName(): Promise<string> {
+    return (await this._locator.locator(ElementSelectors.routerOutletFrame()).getAttribute('name'))!;
   }
 
   /**

@@ -23,23 +23,20 @@ export async function isCssClassPresent(element: Locator, cssClass: string): Pro
  * Returns CSS classes on given element.
  */
 export async function getCssClasses(element: Locator): Promise<string[]> {
-  const classAttr: string = await element.getAttribute('class');
-  if (!classAttr) {
-    return [];
-  }
-  return classAttr.split(/\s+/);
+  const classAttr = await element.getAttribute('class');
+  return classAttr?.split(/\s+/) ?? [];
 }
 
 /**
  * Finds an element in the given list supporting returning a promise in the predicate.
  */
-export async function findAsync<T>(items: T[], predicate: (item: T) => Promise<boolean>): Promise<T | undefined> {
+export async function findAsync<T>(items: T[], predicate: (item: T) => Promise<boolean>): Promise<T> {
   for (const item of items) {
     if (await predicate(item)) {
       return item;
     }
   }
-  return undefined;
+  throw Error('[ElementNotFoundError] Element not found.');
 }
 
 /**
@@ -50,14 +47,14 @@ export async function isPresent(element: Locator): Promise<boolean> {
 }
 
 /**
- * Evaluates `location.href` in the the browsing context of the specified locator.
+ * Evaluates `location.href` in the browsing context of the specified locator.
  */
 export async function getLocationHref(frameLocator: FrameLocator): Promise<string> {
   return await frameLocator.locator('html').evaluate(() => window.location.href);
 }
 
 /**
- * Invokes `location.href` in the the browsing context of the specified locator.
+ * Invokes `location.href` in the browsing context of the specified locator.
  */
 export async function setLocationHref(locator: FrameLocator, url: string): Promise<void> {
   await locator.locator('html').evaluate((el, value) => window.location.href = value, url);
@@ -96,6 +93,6 @@ export async function waitUntilNavigationStable(page: Page): Promise<void> {
  * @see keystroke.ts
  */
 export function parseKeystroke(keystroke: string): {parts: string; flags: string} {
-  const groups = keystroke.match(/(?<parts>[^{]*)({(?<flags>.*)})?/).groups;
-  return {parts: groups['parts'], flags: groups['flags']};
+  const groups = keystroke.match(/(?<parts>[^{]*)({(?<flags>.*)})?/)!.groups;
+  return {parts: groups!['parts'], flags: groups!['flags']};
 }

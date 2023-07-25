@@ -4,6 +4,7 @@
     "outDir": "../../../out-tsc",
     "module": "commonjs",
     "sourceMap": true,
+    "strict": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "target": "es2020",
@@ -12,7 +13,7 @@
     ],
     "paths": {
       "@scion/microfrontend-platform": [
-        "projects/scion/microfrontend-platform.e2e/microfrontend-platform.api"
+        "projects/scion/microfrontend-platform/src/public-api"
       ]
     }
   }

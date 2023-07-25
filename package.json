@@ -52,8 +52,8 @@
 
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s && markdown-include docs/site/changelog/changelog.template.json",
 
-    "e2e:run": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config=projects/scion/microfrontend-platform.e2e",
-    "e2e:debug": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 PWDEBUG=1 playwright test --config=projects/scion/microfrontend-platform.e2e",
+    "e2e:run": "tsc --incremental -p projects/scion/microfrontend-platform.e2e/tsconfig.json && cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config out-tsc/microfrontend-platform.e2e",
+    "e2e:debug": "tsc --incremental -p projects/scion/microfrontend-platform.e2e/tsconfig.json && cross-env PLAYWRIGHT_BROWSERS_PATH=0 PWDEBUG=1 playwright test --config out-tsc/microfrontend-platform.e2e",
     "e2e:lint": "ng lint @scion/microfrontend-platform.e2e"
   },
   "private": true,
