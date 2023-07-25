@@ -43,7 +43,7 @@ export class MouseEventDispatchTestPagePO implements OutletPageObject {
    */
   public async moveMouseToElement(options?: {steps?: number; offsetX?: number; offsetY?: number}): Promise<void> {
     const locator = this._locator.locator('div.e2e-element');
-    const {x, y, width, height} = await locator.boundingBox();
+    const {x, y, width, height} = (await locator.boundingBox())!;
     const center = {x: x + width / 2, y: y + height / 2};
     await this._locator.page().mouse.move(center.x + (options?.offsetX ?? 0), center.y + (options?.offsetY ?? 0), {steps: options?.steps});
   }
@@ -52,7 +52,7 @@ export class MouseEventDispatchTestPagePO implements OutletPageObject {
    * Moves the mouse cursor to the center of this page, applying given offset.
    */
   public async moveMouseToCenter(options?: {offsetX?: number; offsetY?: number}): Promise<void> {
-    const {x, y, width, height} = await this._locator.boundingBox();
+    const {x, y, width, height} = (await this._locator.boundingBox())!;
     const center = {x: x + width / 2, y: y + height / 2};
     await this._locator.page().mouse.move(center.x + (options?.offsetX ?? 0), center.y + (options?.offsetY ?? 0), {steps: 1});
   }

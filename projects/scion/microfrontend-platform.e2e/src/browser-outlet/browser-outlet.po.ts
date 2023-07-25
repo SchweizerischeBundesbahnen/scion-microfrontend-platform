@@ -15,6 +15,7 @@ import {getLocationHref, isPresent, parseKeystroke} from '../testing.util';
 import {ElementSelectors} from '../element-selectors';
 import {RouterOutletSettingsPO} from '../settings/router-outlet-settings.po';
 import {ConsoleLogs} from '../console-logs';
+import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 
 /**
  * Page object for {@link BrowserOutletComponent} to show a microfrontend in an iframe inside `<sci-router-outlet>`.
@@ -42,7 +43,7 @@ export class BrowserOutletPO implements OutletPageObject {
     switch (OutletDescriptorTypes.of(command)) {
       case OutletDescriptorTypes.URL: {
         await this.enterUrlAndNavigate(command as string);
-        return undefined;
+        return undefined as never;
       }
       case OutletDescriptorTypes.PAGE_OBJECT_CLASS: {
         const clazz = command as OutletPageObjectConstructor<T>;
@@ -127,13 +128,13 @@ export class BrowserOutletPO implements OutletPageObject {
       switch (options.registration) {
         // Register keystrokes via 'keystrokes' attribute in the HTML template.
         case 'ATTR': {
-          const pageFunction = (element, argument): void => element.setAttribute('keystrokes', argument);
+          const pageFunction = (element: SciRouterOutletElement, argument: string): void => element.setAttribute('keystrokes', argument);
           await sciRouterOutletLocator.evaluate(pageFunction, keystrokes.join(','));
           break;
         }
         // Register keystrokes via 'keystrokes' property on the DOM element.
         case 'DOM': {
-          const pageFunction = (element, argument): void => void (element['keystrokes'] = argument);
+          const pageFunction = (element: SciRouterOutletElement, argument: string[]): void => void (element.keystrokes = argument);
           await sciRouterOutletLocator.evaluate(pageFunction, keystrokes);
           break;
         }

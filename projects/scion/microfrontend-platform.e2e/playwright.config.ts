@@ -46,7 +46,7 @@ const config: PlaywrightTestConfig = {
     baseURL: 'http://localhost:4201',
   },
   maxFailures: runInCI ? 1 : undefined,
-  testMatch: /.*\.e2e-spec\.ts/,
+  testMatch: /.*\.e2e-spec\.js/,
 };
 
 export default config;

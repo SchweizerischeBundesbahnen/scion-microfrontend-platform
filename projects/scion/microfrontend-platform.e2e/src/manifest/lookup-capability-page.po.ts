@@ -69,7 +69,7 @@ export class LookupCapabilityPagePO implements OutletPageObject {
 
     const capabilities: Capability[] = [];
     for (const listItemPO of listItemPOs) {
-      const capability = await listItemPO.contentLocator.locator('[data-e2e-capability]').getAttribute('data-e2e-capability');
+      const capability = (await listItemPO.contentLocator.locator('[data-e2e-capability]').getAttribute('data-e2e-capability'))!;
       capabilities.push(JSON.parse(capability));
     }
     return capabilities;
@@ -80,6 +80,6 @@ export class LookupCapabilityPagePO implements OutletPageObject {
    */
   public async getLookedUpCapabilityIds(): Promise<string[]> {
     const capabilities = await this.getLookedUpCapabilities();
-    return capabilities.map(capability => capability.metadata.id);
+    return capabilities.map(capability => capability.metadata!.id);
   }
 }
