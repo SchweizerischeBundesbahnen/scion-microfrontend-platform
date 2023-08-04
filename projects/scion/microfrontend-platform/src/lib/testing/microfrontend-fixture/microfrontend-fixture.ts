@@ -159,7 +159,7 @@ export class MicrofrontendFixture {
    * @param args - Specifies optional arguments to be passed to the function. Arguments are passed as first argument in the form of a dictionary.
    * @return Handle to obtain the script's URL and notifier Promise that resolves when loaded the script.
    */
-  public serveScript(scriptPath: string, functionName: string, args?: Dictionary): { url: string; whenLoaded: Promise<void> } {
+  public serveScript(scriptPath: string, functionName: string, args?: Dictionary): {url: string; whenLoaded: Promise<void>} {
     if (!scriptPath.endsWith('.script.ts')) {
       throw Error(`[MicrofrontendFixtureError] Expected script file name to end with '.script.ts', but was ${scriptPath}.`);
     }

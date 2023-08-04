@@ -568,7 +568,7 @@ test.describe('Manifest Registry', () => {
       const registratorPO = pagePOs.get<RegisterIntentionPagePO>('registrator');
 
       // Try to register the intention
-      await expect(registratorPO.registerIntention({type: 'type', qualifier: {key: 'value'}})).rejects.toThrow( /IntentionRegisterError/);
+      await expect(registratorPO.registerIntention({type: 'type', qualifier: {key: 'value'}})).rejects.toThrow(/IntentionRegisterError/);
     });
   });
 

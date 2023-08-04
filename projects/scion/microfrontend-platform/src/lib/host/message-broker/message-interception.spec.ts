@@ -10,12 +10,12 @@
 
 import {chainInterceptors, Handler, IntentInterceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
 import {IntentMessage, TopicMessage} from '../../messaging.model';
+import {expectPromise} from '../../testing/spec.util.spec';
 import any = jasmine.any;
 import createSpyObj = jasmine.createSpyObj;
 import createSpy = jasmine.createSpy;
 import SpyObj = jasmine.SpyObj;
 import Spy = jasmine.Spy;
-import {expectPromise} from '../../testing/spec.util.spec';
 
 const asyncNoop = async (): Promise<void> => Promise.resolve();
 
