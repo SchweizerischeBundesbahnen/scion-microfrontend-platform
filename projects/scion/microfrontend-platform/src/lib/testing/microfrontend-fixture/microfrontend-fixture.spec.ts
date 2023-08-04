@@ -174,7 +174,7 @@ describe('MicrofrontendFixture', () => {
       booleanArg: true,
       objectArg: {key: 'value'},
       mapArg: new Map().set('key', 'value'),
-      setArg: new Set().add('value1').add('value2')
+      setArg: new Set().add('value1').add('value2'),
     };
     await fixture.insertIframe().loadScript('lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_11', args);
 

@@ -6,10 +6,10 @@
     "types": [
       "jasmine"
     ],
-    "resolveJsonModule" : true
+    "resolveJsonModule": true
   },
   "files": [
-    "src/test.ts",
+    "src/test.ts"
   ],
   "include": [
     "src/**/*.spec.ts",

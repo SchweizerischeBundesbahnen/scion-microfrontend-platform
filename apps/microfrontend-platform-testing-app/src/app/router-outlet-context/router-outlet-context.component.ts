@@ -80,7 +80,7 @@ export class RouterOutletContextComponent {
     this.routerOutlet.removeContextValue(name);
   }
 
-  public static openAsOverlay(config: { anchor: HTMLElement; routerOutlet: SciRouterOutletElement; overlay: Overlay; injector: Injector }): void {
+  public static openAsOverlay(config: {anchor: HTMLElement; routerOutlet: SciRouterOutletElement; overlay: Overlay; injector: Injector}): void {
     const {anchor, routerOutlet, overlay, injector} = config;
 
     const positionStrategy = overlay.position()

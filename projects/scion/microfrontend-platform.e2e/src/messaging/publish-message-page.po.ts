@@ -21,7 +21,7 @@ export enum MessagingFlavor {
   Topic = 'Topic', Intent = 'Intent',
 }
 
-export class PublishMessagePagePO implements OutletPageObject{
+export class PublishMessagePagePO implements OutletPageObject {
 
   public readonly path = 'publish-message';
 

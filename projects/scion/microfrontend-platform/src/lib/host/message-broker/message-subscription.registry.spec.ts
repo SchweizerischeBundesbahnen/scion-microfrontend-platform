@@ -163,7 +163,7 @@ describe('MessageSubscriptionRegistry', () => {
     registerCaptor.reset();
   });
 
-  it('should emit when unregistering a subscription', async() => {
+  it('should emit when unregistering a subscription', async () => {
     const testee = Beans.get(MessageSubscriptionRegistry);
     const client1 = newClient({id: 'client#1'});
     const client2 = newClient({id: 'client#2'});
