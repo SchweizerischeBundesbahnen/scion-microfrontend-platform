@@ -275,21 +275,22 @@ This chapter describes the tasks to publish a new release to NPM.
 1. Run `npm run changelog` to generate the changelog. Then, review the generated changelog carefully and correct typos and formatting errors, if any.
 1. Commit the changed files using the following commit message: `release: vX.X.X`. Replace `X.X.X` with the current version. Later, when merging the branch into the master branch, a commit message of this format triggers the release action in our [GitHub Actions workflow][link-github-actions-workflow].
 1. Push the commit to the branch `release/X.X.X` and submit a pull request to the master branch. Replace `X.X.X` with the current version.
-1. When merged into the master branch, the release action in our [GitHub Actions workflow][link-github-actions-workflow] creates a Git release tag, publishes the package to NPM, and deploys related applications.
-1. Verify that: 
-   - **@scion/microfrontend-platform** is published to: https://www.npmjs.com/package/@scion/microfrontend-platform.
-   - **Testing App** is deployed to:
+1. When merged into the master branch, the release action in our [GitHub Actions workflow][link-github-actions-workflow] does the following:
+   - Creates a Git release tag
+   - Publishes `@scion/microfrontend-platform` package to NPM (https://www.npmjs.com/package/@scion/microfrontend-platform)
+   - Creates a release on GitHub (https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/releases)
+   - Deploys following apps to Vercel:
       - https://scion-microfrontend-platform-testing-app1-vX-X-X.vercel.app.
       - https://scion-microfrontend-platform-testing-app2-vX-X-X.vercel.app.
       - https://scion-microfrontend-platform-testing-app3-vX-X-X.vercel.app.
       - https://scion-microfrontend-platform-testing-app4-vX-X-X.vercel.app.
-   - **DevTools** are deployed to:
+   - Deploys DevTools to Vercel:
       - https://scion-microfrontend-platform-devtools.vercel.app.
       - https://scion-microfrontend-platform-devtools-vX-X-X.vercel.app.
-   - **API Documentation (TypeDoc)** is deployed to: 
+   - Publishes API Documentation (TypeDoc) to Vercel: 
       - https://scion-microfrontend-platform-api.vercel.app.
       - https://scion-microfrontend-platform-api-vX-X-X.vercel.app.
-   - **Reference Documentation (Developer Guide)** is deployed to: 
+   - Publishes Reference Documentation (Developer Guide) to Vercel: 
       - https://scion-microfrontend-platform-developer-guide.vercel.app.
       - https://scion-microfrontend-platform-developer-guide-vX-X-X.vercel.app.
 1. Migrate the [Getting Started Guide][link-getting-started-guide-repo] Git Repo if necessary.

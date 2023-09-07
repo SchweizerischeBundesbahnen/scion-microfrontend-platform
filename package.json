@@ -50,7 +50,9 @@
     "microfrontend-platform-devtools:lint": "ng lint microfrontend-platform-devtools",
     "microfrontend-platform-devtools:serve": "ng serve microfrontend-platform-devtools --port 5200",
 
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s && markdown-include docs/site/changelog/changelog.template.json",
+    "changelog":  "run-p changelog:*",
+    "changelog:full": "conventional-changelog -p angular -i CHANGELOG.md -s && markdown-include docs/site/changelog/changelog.template.json",
+    "changelog:latest": "conventional-changelog -p angular -o CHANGELOG_LATEST.md",
 
     "e2e:run": "tsc --incremental -p projects/scion/microfrontend-platform.e2e/tsconfig.json && cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config out-tsc/microfrontend-platform.e2e",
     "e2e:debug": "tsc --incremental -p projects/scion/microfrontend-platform.e2e/tsconfig.json && cross-env PLAYWRIGHT_BROWSERS_PATH=0 PWDEBUG=1 playwright test --config out-tsc/microfrontend-platform.e2e",
