@@ -197,6 +197,7 @@ jobs:
     needs: [release-guard, build-platform]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: 'Downloading platform and documentation (dist)'
         uses: actions/download-artifact@v2
         with:
@@ -264,3 +265,8 @@ jobs:
           dist-folder: dist/scion/microfrontend-platform
           npm-token: ${{ secrets.NPM_TOKEN }}
           dry-run: false
+      - name: 'Creating GitHub Release'
+        run: gh release create $VERSION --title $VERSION --notes-file CHANGELOG_LATEST.md --verify-tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.build-platform.outputs.version }}
