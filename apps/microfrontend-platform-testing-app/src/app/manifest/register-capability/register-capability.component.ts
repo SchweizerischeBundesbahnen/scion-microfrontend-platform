@@ -18,6 +18,7 @@ import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
+import {parseTypedValues} from '../../common/typed-value-parser.util';
 
 @Component({
   selector: 'app-register-capability',
@@ -77,7 +78,7 @@ export default class RegisterCapabilityComponent {
       qualifier: SciKeyValueFieldComponent.toDictionary(this.registerForm.controls.qualifier) ?? undefined,
       params: params ? JSON.parse(params) : undefined,
       private: this.registerForm.controls.private.value,
-      properties: SciKeyValueFieldComponent.toDictionary(this.registerForm.controls.properties) ?? undefined,
+      properties: parseTypedValues(SciKeyValueFieldComponent.toDictionary(this.registerForm.controls.properties)) ?? undefined,
     };
 
     Beans.get(ManifestService).registerCapability(capability)

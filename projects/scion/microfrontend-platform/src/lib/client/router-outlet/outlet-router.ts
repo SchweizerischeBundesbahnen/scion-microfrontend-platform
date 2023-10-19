@@ -13,7 +13,7 @@ import {ContextService} from '../context/context-service';
 import {Urls} from '../../url.util';
 import {RelativePathResolver} from './relative-path-resolver';
 import {Maps} from '@scion/toolkit/util';
-import {NavigationOptions, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER} from './metadata';
+import {SHOW_SPLASH_MESSAGE_HEADER, NavigationOptions, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER} from './metadata';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Intent, mapToBody, RequestError} from '../../messaging.model';
 import {lastValueFrom} from 'rxjs';
@@ -201,10 +201,17 @@ export class OutletRouter {
     const outletUrlTopic = RouterOutlets.urlTopic(outlet);
     const navigationUrl = this.computeNavigationUrl(url, options);
 
-    return Beans.get(MessageClient).publish(outletUrlTopic, navigationUrl, {
+    await Beans.get(MessageClient).publish(outletUrlTopic, navigationUrl, {
       retain: true,
-      headers: new Map<string, any>().set(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, options?.pushStateToSessionHistoryStack ?? false),
+      headers: new Map<string, any>()
+        .set(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, options?.pushStateToSessionHistoryStack ?? false)
+        .set(SHOW_SPLASH_MESSAGE_HEADER, options?.showSplash ?? false),
     });
+
+    // Clear retained navigation message in case of a `null` URL navigation.
+    if (url === null) {
+      await Beans.get(MessageClient).publish(outletUrlTopic, undefined, {retain: true});
+    }
   }
 
   /**

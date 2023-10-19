@@ -24,6 +24,11 @@
     flex: auto;
     border: 1px solid var(--sci-color-P300);
     border-radius: 3px;
+
+    &::part(splash) {
+      display: grid;
+      place-content: center;
+    }
   }
 
   > div.empty-note {

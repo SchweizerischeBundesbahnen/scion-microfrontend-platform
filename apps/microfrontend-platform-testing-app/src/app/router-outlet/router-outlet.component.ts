@@ -15,6 +15,7 @@ import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {RouterOutletSettingsComponent} from '../router-outlet-settings/router-outlet-settings.component';
 import {NEVER, Observable} from 'rxjs';
 import {AsyncPipe, NgIf} from '@angular/common';
+import {SciThrobberComponent} from '@scion/components/throbber';
 
 @Component({
   selector: 'app-router-outlet',
@@ -27,6 +28,7 @@ import {AsyncPipe, NgIf} from '@angular/common';
     NgIf,
     AsyncPipe,
     ReactiveFormsModule,
+    SciThrobberComponent,
   ],
 })
 export default class RouterOutletComponent {

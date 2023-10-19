@@ -14,7 +14,6 @@ import {Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith} from 'rxjs/operators';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {coerceBooleanProperty, coerceNumberProperty} from '@angular/cdk/coercion';
 import {AsyncPipe, NgFor, NgIf} from '@angular/common';
 import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {TopicSubscriberCountPipe} from '../topic-subscriber-count.pipe';
@@ -24,6 +23,7 @@ import {AppAsPipe} from '../../common/as.pipe';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
+import {parseTypedValues} from '../../common/typed-value-parser.util';
 
 @Component({
   selector: 'app-publish-message',
@@ -166,10 +166,7 @@ export default class PublishMessageComponent implements OnDestroy {
     const destinationFormGroup = this.form.controls.destination as FormGroup<IntentMessageDestination>;
     const type = destinationFormGroup.controls.type.value;
     const qualifier = SciKeyValueFieldComponent.toDictionary(destinationFormGroup.controls.qualifier) ?? undefined;
-    const params = SciKeyValueFieldComponent.toMap(destinationFormGroup.controls.params) ?? undefined;
-
-    // Convert entered params to their actual values.
-    params?.forEach((paramValue, paramName) => params.set(paramName, convertValueFromUI(paramValue)));
+    const params = parseTypedValues(SciKeyValueFieldComponent.toMap(destinationFormGroup.controls.params)) ?? undefined;
 
     const message = this.form.controls.message.value || undefined;
     const requestReply = this.form.controls.requestReply.value;
@@ -209,45 +206,6 @@ export default class PublishMessageComponent implements OnDestroy {
 
   public ngOnDestroy(): void {
     this.unsubscribe();
-  }
-}
-
-/**
- * Converts the value entered via the UI to its actual type.
- *
- * Examples:
- * - '<undefined>' => undefined
- * - '<null>' => null
- * - '<number>123</number>' => 123
- * - '<boolean>true</boolean>' => true
- * - '<string>value</string>' => 'value'
- * - '<json>{"key": "value"}</json>' => {"key": "value"}
- * - 'value' => 'value'
- */
-function convertValueFromUI(value: string): string | number | boolean | object | undefined | null {
-  if ('<undefined>' === value) {
-    return undefined;
-  }
-  else if ('<null>' === value) {
-    return null;
-  }
-  const paramMatch = value.match(/<(?<type>.+)>(?<value>.+)<\/\k<type>>/);
-  switch (paramMatch?.groups!['type']) {
-    case 'number': {
-      return coerceNumberProperty(paramMatch.groups['value']);
-    }
-    case 'boolean': {
-      return coerceBooleanProperty(paramMatch.groups['value']);
-    }
-    case 'string': {
-      return paramMatch.groups['value'];
-    }
-    case 'json': {
-      return JSON.parse(paramMatch.groups['value']);
-    }
-    default: {
-      return value;
-    }
   }
 }
 

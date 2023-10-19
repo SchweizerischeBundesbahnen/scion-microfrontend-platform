@@ -388,6 +388,14 @@ export interface MicrofrontendCapability extends Capability {
      */
     outlet?: string;
     /**
+     * Instructs the router outlet to show a splash, such as a skeleton or loading indicator, until the microfrontend signals readiness.
+     * The splash is the markup between the opening and closing tags of the router outlet element.
+     *
+     * @see SciRouterOutletElement
+     * @see MicrofrontendPlatformClient.signalReady
+     */
+    showSplash?: boolean;
+    /**
      * Arbitrary metadata to be associated with the capability.
      */
     [key: string]: any;

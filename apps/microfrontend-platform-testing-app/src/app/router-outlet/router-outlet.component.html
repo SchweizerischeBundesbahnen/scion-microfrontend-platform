@@ -10,5 +10,6 @@
                    (activate)="onActivate($event)"
                    (deactivate)="onDeactivate($event)"
                    (focuswithin)="onFocusWithin($event)">
+  <sci-throbber type="ellipsis" class="e2e-slotted-content"></sci-throbber>
 </sci-router-outlet>
 <div class="empty-note e2e-empty" *ngIf="empty$ | async">Router Outlet is empty</div>

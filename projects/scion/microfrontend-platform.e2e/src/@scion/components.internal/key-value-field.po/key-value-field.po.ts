@@ -26,11 +26,38 @@ export class SciKeyValueFieldPO {
     for (const key of Object.keys(entries)) {
       await addButton.click();
       await lastKeyInput.fill(key);
-      await lastValueInput.fill(`${entries[key]}`);
+      await lastValueInput.fill(toTypedValue(entries[key]));
     }
   }
 
   public async clear(): Promise<void> {
     await this._sciKeyValueFieldLocator.locator('button.e2e-clear').click();
+  }
+}
+
+/**
+ * Stringifies given value adding type information for supported types.
+ *
+ * Supported types are: null, undefined, number, boolean, object
+ *
+ * @see parseTypedValue
+ * @see parseTypedValues
+ */
+export function toTypedValue(value: unknown): string {
+  if (value === null) {
+    return '<null>';
+  }
+  if (value === undefined) {
+    return '<undefined>';
+  }
+  switch (typeof value) {
+    case 'number':
+      return `<number>${value}</number>`;
+    case 'boolean':
+      return `<boolean>${value}</boolean>`;
+    case 'object':
+      return `<json>${JSON.stringify(value)}</json>`;
+    default:
+      return `${value}`;
   }
 }

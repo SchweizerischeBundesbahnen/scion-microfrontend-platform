@@ -42,6 +42,7 @@ export default class OutletRouterComponent {
     destination: this._formBuilder.group<UrlDestination | IntentDestination>(this.createUrlDestination()),
     params: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
     pushSessionHistoryState: this._formBuilder.control(false),
+    showSplash: this._formBuilder.control(false),
   });
 
   public navigateError: string | undefined;
@@ -66,6 +67,7 @@ export default class OutletRouterComponent {
     const options: NavigationOptions = {
       outlet: this.form.controls.outlet.value || undefined,
       params: SciKeyValueFieldComponent.toMap(this.form.controls.params) ?? undefined,
+      showSplash: this.form.controls.showSplash.value,
     };
     if (this.form.controls.pushSessionHistoryState.value) {
       options.pushStateToSessionHistoryStack = true;
