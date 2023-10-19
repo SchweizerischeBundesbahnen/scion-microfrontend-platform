@@ -18,7 +18,7 @@ import {UUID} from '@scion/toolkit/uuid';
 import {mapToBody, TopicMessage} from '../../messaging.model';
 import {Keystroke} from '../keyboard-event/keystroke';
 import {PreferredSize} from '../preferred-size/preferred-size';
-import {Navigation, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER} from './metadata';
+import {Navigation, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, SHOW_SPLASH_MESSAGE_HEADER} from './metadata';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 const ELEMENT_NAME = 'sci-router-outlet';
@@ -30,6 +30,7 @@ const HTML_TEMPLATE = `
     :host {
       display: block;
       overflow: hidden;
+      position: relative; /* positioning context for splash */
     }
 
     iframe {
@@ -38,8 +39,19 @@ const HTML_TEMPLATE = `
       border: none;
       margin: 0;
     }
+
+    div[part="splash"] {
+      position: absolute;
+      inset: 0;
+    }
   </style>
   <iframe src="about:blank" scrolling="yes" marginheight="0" marginwidth="0"></iframe>
+  
+  <template id="splash">
+    <div part="splash" class="e2e-splash">
+      <slot></slot>
+    </div>  
+  </template>
 `;
 
 /**
@@ -69,7 +81,7 @@ const HTML_TEMPLATE = `
  *
  * ***
  *
- * #### Outlet Context
+ * ### Outlet Context
  * The router outlet allows associating contextual data, which then is available to embedded content at any nesting level.
  * Data must be serializable with the structured clone algorithm. Embedded content can look up contextual data using the
  * {@link ContextService}. Typically, contextual data is  used to provide microfrontends with information about their embedding
@@ -92,13 +104,13 @@ const HTML_TEMPLATE = `
  * });
  * ```
  *
- * #### Outlet size
+ * ### Outlet size
  * The router outlet can adapt its size to the preferred size of its embedded content. The preferred size is set by the microfrontend embedded
  * in the router outlet, which, therefore, requires the embedded microfrontend to be connected to the platform.
  *
  * Embedded content can report its preferred size using the {@link PreferredSizeService}, causing the outlet to adapt its size.
  *
- * #### Keystroke Bubbling
+ * ### Keystroke Bubbling
  * The router outlet allows the registration of keystrokes, instructing embedded content at any nesting level to propagate corresponding keyboard events
  * to this outlet. The outlet dispatches keyboard events for registered keystrokes as synthetic keyboard events via its event dispatcher. They bubble up
  * the DOM tree like regular events. Propagated events are of the original type, meaning that when the user presses a key on the keyboard, a `keydown`
@@ -132,7 +144,7 @@ const HTML_TEMPLATE = `
  *  ];
  * ```
  *
- * #### Scrollable Content
+ * ### Scrollable Content
  * By default, page scrolling is enabled for the embedded content, displaying a scrollbar when it overflows. If disabled, overflowing content is clipped,
  * unless the embedded content uses a viewport, or reports its preferred size to the outlet.
  *
@@ -141,7 +153,7 @@ const HTML_TEMPLATE = `
  * <sci-router-outlet scrollable="false"></sci-router-outlet>
  * ```
  *
- * #### Router Outlet Events
+ * ### Router Outlet Events
  *
  * The router outlet emits the following events as custom DOM events. You can attach an event listener declaratively in the HTML template using the `onevent`
  * handler syntax, or programmatically using the `addEventListener` method.
@@ -172,11 +184,47 @@ const HTML_TEMPLATE = `
  * <sci-router-outlet (focuswithin)="onFocusWithin($event)"></sci-router-outlet>
  * ```
  *
- * #### Web component
+ * ### Splash
+ *
+ * Loading and bootstrapping a microfrontend can take some time, at worst, only displaying content once initialized.
+ *
+ * To indicate the loading of a microfrontend, the navigator can instruct the router outlet to display a splash until the microfrontend signals readiness.
+ *
+ * ```ts
+ * Beans.get(OutletRouter).navigate('path/to/microfrontend', {showSplash: true});
+ * ```
+ *
+ * The splash is the markup between the opening and closing tags of the router outlet element.
+ *
+ * ```html
+ * <sci-router-outlet>
+ *   Loading...
+ * </sci-router-outlet>
+ * ```
+ *
+ * The splash is displayed until the embedded microfrontend signals readiness.
+ *
+ * ```ts
+ * MicrofrontendPlatformClient.signalReady();
+ * ```
+ *
+ * #### Layouting the Splash
+ *
+ * To lay out the content of the splash use the pseudo-element selector `::part(splash)`.
+ *
+ * Example of centering splash content in a CSS grid container:
+ * ```css
+ * sci-router-outlet::part(splash) {
+ *   display: grid;
+ *   place-content: center;
+ * }
+ * ```
+ *
+ * ### Web component
  * The outlet is registered as a custom element in the browser's custom element registry as defined by the Web Components standard.
  * See https://developer.mozilla.org/en-US/docs/Web/Web_Components for more information.
  *
- * #### Miscellaneous
+ * ### Miscellaneous
  * If no content is routed for display in the router outlet, the CSS class `sci-empty` is added to the outlet. An outlet will not display content if
  * either there has not yet been any navigation for the outlet or the outlet content has been cleared.
  *
@@ -196,6 +244,7 @@ export class SciRouterOutletElement extends HTMLElement {
   private _outletName$: BehaviorSubject<string>;
   private _contextProvider: RouterOutletContextProvider;
   private _empty$ = new BehaviorSubject<boolean>(true);
+  private _splash: Splash;
 
   /**
    * Emits whether content is routed for display in this router outlet.
@@ -212,6 +261,7 @@ export class SciRouterOutletElement extends HTMLElement {
     this._shadowRoot.innerHTML = HTML_TEMPLATE.trim();
     this._iframe = this._shadowRoot.querySelector('iframe')!;
     this._contextProvider = new RouterOutletContextProvider(this._iframe);
+    this._splash = new Splash(this._shadowRoot, this._iframe);
     this.empty$ = this._empty$.pipe(distinctUntilChanged());
   }
 
@@ -370,11 +420,13 @@ export class SciRouterOutletElement extends HTMLElement {
         pairwise(),
         takeUntil(this._disconnect$),
       )
-      .subscribe(([prevNavigation, currNavigation]: [Navigation, Navigation]) => runSafe(() => {
+      .subscribe(([prevNavigation, currNavigation]: [Navigation | null, Navigation | null]) => runSafe(() => {
+        // Display splash if instructed by the navigator.
+        currNavigation?.showSplash ? this._splash.attach() : this._splash.detach();
         // Emit a page deactivate event, unless not having a previous navigation
         prevNavigation && this.dispatchEvent(new CustomEvent('deactivate', {detail: prevNavigation.url}));
         // Change the outlet URL
-        Beans.get(RouterOutletUrlAssigner).assign(this._iframe, currNavigation || {url: 'about:blank', pushStateToSessionHistoryStack: false}, prevNavigation);
+        Beans.get(RouterOutletUrlAssigner).assign(this._iframe, currNavigation || {url: 'about:blank'}, prevNavigation);
         // Emit a page activate event, unless not having a current navigation
         currNavigation && this.dispatchEvent(new CustomEvent('activate', {detail: currNavigation.url}));
       }));
@@ -448,6 +500,17 @@ export class SciRouterOutletElement extends HTMLElement {
   }
 
   /**
+   * Disposes the splash when receiving a readiness signal of the embedded microfrontend.
+   */
+  private installSplashDisposer(): void {
+    Beans.get(MessageClient).observe$(RouterOutlets.signalReadyTopic(this._uid))
+      .pipe(takeUntil(this._disconnect$))
+      .subscribe(() => {
+        this._splash.detach();
+      });
+  }
+
+  /**
    * Lifecycle callback of the 'Custom element' Web Component standard.
    *
    * Invoked each time the custom element is appended into a document-connected element.
@@ -463,6 +526,7 @@ export class SciRouterOutletElement extends HTMLElement {
     this.installFocusWithinEventDispatcher();
     this.installKeyboardEventDispatcher();
     this.installHostElementDecorator();
+    this.installSplashDisposer();
     this._contextProvider.onOutletMount();
   }
 
@@ -592,6 +656,13 @@ export namespace RouterOutlets {
   }
 
   /**
+   * Computes the topic via which a microfrontend signals readiness.
+   */
+  export function signalReadyTopic(outletUid: string): string {
+    return `sci-router-outlets/${outletUid}/ready`;
+  }
+
+  /**
    * Computes the topic where to post keyboard events to be dispatched.
    */
   export function keyboardEventTopic(outletUid: string, eventType: string): string {
@@ -643,6 +714,7 @@ function outletNavigate$(outlet: string): Observable<Navigation> {
       return {
         url: navigateMessage.body || 'about:blank',
         pushStateToSessionHistoryStack: Defined.orElse(navigateMessage.headers.get(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER), false),
+        showSplash: Defined.orElse(navigateMessage.headers.get(SHOW_SPLASH_MESSAGE_HEADER), false),
       };
     }));
 }
@@ -655,4 +727,44 @@ function outletNavigate$(outlet: string): Observable<Navigation> {
  */
 function setStyle(element: HTMLElement, style: {[style: string]: any | null}): void {
   Object.keys(style).forEach(key => element.style.setProperty(key, style[key]));
+}
+
+/**
+ * Represents the splash of the router outlet element.
+ *
+ * The splash is created from the template with the id "splash" contained in the shadow DOM and is placed over the iframe.
+ * When displaying the splash, we hide the iframe so that the splash does not have to set the background color.
+ */
+class Splash {
+
+  private readonly _template: HTMLTemplateElement;
+  private _element: Element | undefined;
+
+  constructor(private readonly _shadowRoot: ShadowRoot, private readonly _iframeElement: HTMLIFrameElement) {
+    this._template = this._shadowRoot.querySelector('template#splash')!;
+  }
+
+  /**
+   * Attaches the splash if not already attached.
+   */
+  public attach(): void {
+    if (this._element) {
+      return;
+    }
+    const documentFragment = this._template.content.cloneNode(true) as DocumentFragment;
+    this._element = this._shadowRoot.appendChild(documentFragment.querySelector('div[part="splash"]')!);
+    this._iframeElement.style.setProperty('visibility', 'hidden');
+  }
+
+  /**
+   * Detaches the splash if attached.
+   */
+  public detach(): void {
+    if (!this._element) {
+      return;
+    }
+    this._element.remove();
+    this._element = undefined;
+    this._iframeElement.style.removeProperty('visibility');
+  }
 }

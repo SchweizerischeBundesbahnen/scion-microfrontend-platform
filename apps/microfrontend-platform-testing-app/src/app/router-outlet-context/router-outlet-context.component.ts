@@ -17,6 +17,7 @@ import {A11yModule} from '@angular/cdk/a11y';
 import {ContextEntryComponent} from '../context-entry/context-entry.component';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
+import {parseTypedValue} from '../common/typed-value-parser.util';
 
 const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top'};
 
@@ -60,20 +61,8 @@ export class RouterOutletContextComponent {
   }
 
   public onAddClick(): void {
-    this.routerOutlet.setContextValue(this.form.controls.name.value, this.parseContextValueFromUI());
+    this.routerOutlet.setContextValue(this.form.controls.name.value, parseTypedValue(this.form.controls.value.value));
     this.form.reset();
-  }
-
-  private parseContextValueFromUI(): string | null | undefined {
-    const value = this.form.controls.value.value;
-    switch (value) {
-      case '<undefined>':
-        return undefined;
-      case '<null>':
-        return null;
-      default:
-        return value;
-    }
   }
 
   public onRemoveClick(name: string): void {

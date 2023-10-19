@@ -27,9 +27,9 @@ export class RouterOutletUrlAssigner {
    * @param currNavigation - Current navigation.
    * @param prevNavigation - Previous navigation, if any.
    */
-  public assign(iframe: HTMLIFrameElement, currNavigation: Navigation, prevNavigation?: Navigation): void {
+  public assign(iframe: HTMLIFrameElement, currNavigation: Navigation, prevNavigation: Navigation | null): void {
     // Patch the URL to force Chrome to load the content of specified URL.
-    const patchedUrl = this.patchUrl(currNavigation.url, prevNavigation && prevNavigation.url);
+    const patchedUrl = this.patchUrl(currNavigation.url, prevNavigation?.url);
 
     if (currNavigation.pushStateToSessionHistoryStack) {
       iframe.contentWindow!.location.assign(patchedUrl);

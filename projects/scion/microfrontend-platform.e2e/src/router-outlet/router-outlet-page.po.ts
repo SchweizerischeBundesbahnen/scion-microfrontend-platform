@@ -24,9 +24,17 @@ export class RouterOutletPagePO implements OutletPageObject {
   private readonly _locator: Locator;
   private readonly _routerOutletFrameLocator: FrameLocator;
 
+  public readonly iframeLocator: Locator;
+  public readonly splash: {locator: Locator; slottedContentLocator: Locator};
+
   constructor(private readonly _frameLocator: FrameLocator) {
     this._locator = this._frameLocator.locator('app-router-outlet');
     this._routerOutletFrameLocator = this._locator.frameLocator(ElementSelectors.routerOutletFrame());
+    this.iframeLocator = this._locator.locator(ElementSelectors.routerOutletFrame());
+    this.splash = {
+      locator: this._locator.locator('sci-router-outlet > div.e2e-splash'),
+      slottedContentLocator: this._locator.locator('sci-router-outlet > sci-throbber.e2e-slotted-content'),
+    };
   }
 
   public async enterOutletName(outlet: string): Promise<void> {

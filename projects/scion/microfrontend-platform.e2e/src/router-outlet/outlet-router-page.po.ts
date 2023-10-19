@@ -52,6 +52,10 @@ export class OutletRouterPagePO implements OutletPageObject {
     await new SciCheckboxPO(this._locator.locator('sci-checkbox.e2e-push-state')).toggle(check);
   }
 
+  public async toggleShowSplash(check: boolean): Promise<void> {
+    await new SciCheckboxPO(this._locator.locator('sci-checkbox.e2e-show-splash')).toggle(check);
+  }
+
   public async clickNavigate(): Promise<void> {
     await this._locator.locator('button.e2e-navigate').click();
 

@@ -1,6 +1,6 @@
-import { ContextService, MessageClient, OutletRouter, PreferredSizeService, SciRouterOutletElement } from '@scion/microfrontend-platform';
-import { UUID } from '@scion/toolkit/uuid';
-import { Beans } from '@scion/toolkit/bean-manager';
+import {ContextService, MessageClient, OutletRouter, PreferredSizeService, SciRouterOutletElement} from '@scion/microfrontend-platform';
+import {UUID} from '@scion/toolkit/uuid';
+import {Beans} from '@scion/toolkit/bean-manager';
 
 {
   `
@@ -107,4 +107,37 @@ import { Beans } from '@scion/toolkit/bean-manager';
 
     // end::router-outlet:observe-context-value[]
   }
+}
+
+{
+  `
+  // tag::router-outlet:splash[]
+  <sci-router-outlet>
+    Loading...
+  </sci-router-outlet>
+  // end::router-outlet:splash[]
+  `;
+}
+
+{
+  // tag::router-outlet:show-splash-flag[]
+  Beans.get(OutletRouter).navigate('path/to/microfrontend', {showSplash: true});
+  // end::router-outlet:show-splash-flag[]
+}
+
+{
+  // tag::router-outlet:signal-readiness[]
+  MicrofrontendPlatformClient.signalReady();
+  // end::router-outlet:signal-readiness[]
+}
+
+{
+  `
+  // tag::router-outlet:lay-out-splash-content[]
+  sci-router-outlet::part(splash) {
+    display: grid;
+    place-content: center;
+  }
+  // end::router-outlet:lay-out-splash-content[]
+  `;
 }

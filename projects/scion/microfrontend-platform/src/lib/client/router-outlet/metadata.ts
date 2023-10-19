@@ -12,6 +12,16 @@ export interface NavigationOptions {
    */
   outlet?: string;
   /**
+   * Instructs the router outlet to show a splash, such as a skeleton or loading indicator, until the microfrontend signals readiness.
+   * The splash is the markup between the opening and closing tags of the router outlet element.
+   *
+   * This flag is ignored when navigating by intent as specified by the microfrontend capability in {@link MicrofrontendCapability.properties.showSplash}.
+   *
+   * @see SciRouterOutletElement
+   * @see MicrofrontendPlatformClient.signalReady
+   */
+  showSplash?: boolean;
+  /**
    * Specifies the base URL to resolve a relative url. If not specified, the current window location is used to resolve a relative path.
    *
    * Note that this property has no effect if navigating via intent.
@@ -37,6 +47,13 @@ export interface NavigationOptions {
 export const PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER = 'ɵPUSH_STATE_TO_SESSION_HISTORY_STACK';
 
 /**
+ * Routing message header to control if to show a splash until the microfrontend signals readiness.
+ *
+ * @internal
+ */
+export const SHOW_SPLASH_MESSAGE_HEADER = 'ɵSHOW_SPLASH';
+
+/**
  * Represents a navigation.
  *
  * @category Routing
@@ -49,5 +66,13 @@ export interface Navigation {
   /**
    * If `true`, adds a state to the browser's session history stack.
    */
-  pushStateToSessionHistoryStack: boolean;
+  pushStateToSessionHistoryStack?: boolean;
+  /**
+   * If `true`, instructs the router outlet to show a splash, such as a skeleton or loading indicator,
+   * until the microfrontend signals readiness.
+   *
+   * @see SciRouterOutletElement
+   * @see MicrofrontendPlatformClient.signalReady
+   */
+  showSplash?: boolean;
 }

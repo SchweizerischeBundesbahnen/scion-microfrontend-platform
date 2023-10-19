@@ -25,7 +25,7 @@ import {ContextService} from './context/context-service';
 import {ManifestService} from './manifest-registry/manifest-service';
 import {KeyboardEventDispatcher} from './keyboard-event/keyboard-event-dispatcher';
 import {PlatformState, Runlevel} from '../platform-state';
-import {SciRouterOutletElement} from './router-outlet/router-outlet.element';
+import {OUTLET_CONTEXT, OutletContext, RouterOutlets, SciRouterOutletElement} from './router-outlet/router-outlet.element';
 import {BrokerGateway, NullBrokerGateway, ɵBrokerGateway} from './messaging/broker-gateway';
 import {ɵMessageClient} from './messaging/ɵmessage-client';
 import {ɵIntentClient} from './messaging/ɵintent-client';
@@ -86,6 +86,23 @@ export class MicrofrontendPlatformClient {
       return false;
     }
     return brokerGateway.isConnected();
+  }
+
+  /**
+   * Signals readiness to notify the platform that the microfrontend has completed initialization.
+   *
+   * When navigating to the microfrontend with `OutletRouter.navigate('path/to/microfrontend', {showSplash: true})`,
+   * a splash is displayed until the microfrontend signals readiness.
+   *
+   * @see SciRouterOutletElement
+   * @see NavigationOptions.showSplash
+   */
+  public static async signalReady(): Promise<void> {
+    const outletContext = await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
+    if (!outletContext) {
+      throw Error('[NullOutletContextError] not running in the context of a <sci-router-outlet>.');
+    }
+    await Beans.get(MessageClient).publish(RouterOutlets.signalReadyTopic(outletContext.uid));
   }
 }
 

@@ -50,4 +50,9 @@ export default [
     loadComponent: () => import('./scrollable-microfrontend/scrollable-microfrontend.component'),
     data: {pageTitle: 'Displays a microfrontend with some tall content displayed in a viewport'},
   },
+  {
+    path: 'signal-ready-test-page',
+    loadComponent: () => import('./signal-ready-test-page/signal-ready-test-page.component'),
+    data: {pageTitle: 'Signals readiness when a message is published to the topic `signal-ready/outletName`'},
+  },
 ] satisfies Routes;

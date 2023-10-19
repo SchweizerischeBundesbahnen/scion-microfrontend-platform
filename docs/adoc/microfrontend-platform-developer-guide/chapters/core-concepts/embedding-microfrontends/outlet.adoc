@@ -16,6 +16,7 @@ In this Chapter
 - <<chapter:router-outlet:keystroke-bubbling>>
 - <<chapter:router-outlet:router-outlet-events>>
 - <<chapter:router-outlet:outlet-context>>
+- <<chapter:router-outlet:splash>>
 - <<chapter:router-outlet:router-outlet-api>>
 ****
 '''
@@ -208,6 +209,39 @@ include::outlet.snippets.ts[tags=router-outlet:observe-context-value]
 ----
 <1> Looks up the `highlighting-topic` from the current context.
 <2> Sends an event to the `highlighting-topic` when its data changes.
+
+[[chapter:router-outlet:splash]]
+[discrete]
+=== Splash
+Loading and bootstrapping a microfrontend can take some time, at worst, only displaying content once initialized. To indicate the loading of a microfrontend, the navigator can instruct the router outlet to display a splash until the microfrontend signals readiness.
+
+[source,typescript]
+----
+include::outlet.snippets.ts[tags=router-outlet:show-splash-flag]
+----
+
+The splash is the markup between the opening and closing tags of the router outlet element.
+
+[source,html]
+----
+include::outlet.snippets.ts[tags=router-outlet:splash]
+----
+
+The splash is displayed until the embedded microfrontend signals readiness.
+
+[source,typescript]
+----
+include::outlet.snippets.ts[tags=router-outlet:signal-readiness]
+----
+
+To lay out the content of the splash use the pseudo-element selector `::part(splash)`.
+
+Example of centering splash content in a CSS grid container:
+
+[source,typescript]
+----
+include::outlet.snippets.ts[tags=router-outlet:lay-out-splash-content]
+----
 
 [[chapter:router-outlet:router-outlet-api]]
 [discrete]
