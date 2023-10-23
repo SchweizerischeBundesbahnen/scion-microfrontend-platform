@@ -38,7 +38,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 export class BrowserOutletComponent implements OnInit {
 
   public form = this._formBuilder.group({
-    url: this._formBuilder.control('', Validators.required),
+    url: this._formBuilder.control(null, Validators.required),
   });
   public appEntryPoints: AppEndpoint[];
 
