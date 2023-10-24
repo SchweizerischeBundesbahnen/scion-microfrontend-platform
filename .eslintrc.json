@@ -114,7 +114,17 @@
         "plugin:@angular-eslint/template/recommended",
         "plugin:@angular-eslint/template/accessibility"
       ],
-      "rules": {}
+      "rules": {
+        "@angular-eslint/template/label-has-associated-control": [
+          "error",
+          {
+            "controlComponents": [
+              "sci-checkbox",
+              "sci-toggle-button"
+            ]
+          }
+        ]
+      }
     }
   ]
 }

@@ -1,28 +1,32 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
-
 :host {
-  display: grid;
-  justify-content: space-between;
-  grid-template-columns: auto auto;
-  grid-template-rows: auto;
-  grid-column-gap: 1em;
+  display: flex;
   user-select: none;
+  align-items: center;
+  gap: 1em;
 
-  > div.qualifier, > div.actions {
+  > span.visibility {
+    &.private {
+      color: var(--sci-color-text-subtlest)
+    }
+
+    &.public {
+      color: var(--sci-color-accent)
+    }
+  }
+
+  > div.actions {
+    flex: auto;
     display: flex;
+    gap: 1em;
+    justify-content: flex-end;
     align-items: center;
-    gap: .5em;
-    color: var(--sci-color-accent);
 
-    &.actions {
-      > button.app-symbolic-name {
-        all: unset;
-        @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
-        font-weight: bold;
-        display: flex;
-        gap: .5em;
-        align-items: center;
-      }
+    > a.app-symbolic-name {
+      font-size: smaller;
+    }
+
+    > button.copy-to-clipboard {
+      font-size: 1.5em;
     }
   }
 }

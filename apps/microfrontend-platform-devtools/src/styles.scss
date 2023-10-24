@@ -1,37 +1,47 @@
-@use '@scion/components.internal/theme' with (
-   $theme: (
-     accent: (
-       50 : #e4eef1,
-       100 : #BCD6DD,
-       200 : #8FBAC6,
-       300 : #629EAF,
-       400 : #418A9D,
-       500 : #1F758C,
-       600 : #1B6D84,
-       700 : #176279,
-       800 : #12586F,
-       900 : #0A455C,
-       default: 600,
-       lighter: 400,
-       darker: 800,
-     ),
+@use '@angular/cdk';
+@use '@scion/components' with (
+  $themes: (
+    scion-light: (
+      // Use as the text color for bold texts
+      --app-color-text-strong: var(--sci-color-text),
+      // Use as the background color for primary chips displayed on an accordion panel (e.g., type chip in qualifier list)
+      --app-accordion-panel-chip-primary-background-color: color-mix(in srgb, transparent 95%, var(--sci-static-color-black)),
+      // Use as the background color for secondary chips displayed on an accordion panel (e.g., qualifier chip in qualifier list)
+      --app-accordion-panel-chip-secondary-background-color: var(--sci-color-background-primary),
+      // Use as the background color for a container displayed on an accordion panel
+      --app-accordion-panel-container-background-color: var(--sci-color-background-primary),
+    ),
+    scion-dark: (
+      // Use as the text color for bold texts
+      --app-color-text-strong: var(--sci-color-gray-800),
+      // Use as the background color for primary chips displayed on an accordion panel (e.g., type chip in qualifier list)
+      --app-accordion-panel-chip-primary-background-color: color-mix(in srgb, transparent 50%, var(--sci-color-background-primary)),
+      // Use as the background color for secondary chips displayed on an accordion panel (e.g., qualifier chip in qualifier list)
+      --app-accordion-panel-chip-secondary-background-color: color-mix(in srgb, transparent 25%, var(--sci-color-background-primary)),
+      // Use as the background color for a container displayed on an accordion panel
+      --app-accordion-panel-container-background-color: color-mix(in srgb, transparent 25%, var(--sci-color-background-primary)),
+    )
   )
 );
+@use '@scion/components.internal/design' as sci-design;
 
-* {
-  box-sizing: border-box;
-}
+@import url('https://fonts.googleapis.com/css?family=Roboto:normal,bold,italic,bolditalic|Roboto+Mono');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded');
 
 html {
   font-size: 14px; // defines 1rem as 14px
+  width: 100vw;
+  height: 100vh;
 }
 
 body {
-  font-family: Roboto, Arial, sans-serif;
-  color: var(--sci-color-foreground);
-  background-color: var(--sci-color-background);
-  margin: 0;
   display: grid;
+  font-family: Roboto, Arial, sans-serif;
+  color: var(--sci-color-text);
+  background-color: var(--sci-color-background-primary);
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
 
   > devtools-root section.welcome {
     display: flex;
@@ -42,6 +52,7 @@ body {
       margin: .5em 0;
       font-size: 1.5em;
       font-weight: bold;
+      color: var(--app-color-text-strong);
     }
 
     > img.logo {
@@ -50,3 +61,23 @@ body {
     }
   }
 }
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  @include sci-design.style-link();
+}
+
+button[class*="material-icons"], button[class*="material-symbols"] {
+  @include sci-design.style-mat-icon-button();
+}
+
+button:not([class*="material-icons"]):not([class*="material-symbols"]) {
+  @include sci-design.style-button();
+}
+
+// Install Angular CDK styles
+@include cdk.a11y-visually-hidden();
+@include cdk.overlay();

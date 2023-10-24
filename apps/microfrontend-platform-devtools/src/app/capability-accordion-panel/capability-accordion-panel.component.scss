@@ -3,10 +3,10 @@
 
   > sci-tabbar {
     section.tab {
-      border: 1px solid var(--sci-color-P400);
-      border-radius: 5px;
+      border: 1px solid var(--sci-color-border);
+      border-radius: var(--sci-corner);
       padding: 1em;
-      background-color: #FFFFFF;
+      background-color: var(--app-accordion-panel-container-background-color);
       font-size: .9em;
 
       &.general {
@@ -16,7 +16,7 @@
 
         > span.description {
           grid-column: 1/-1;
-          color: var(--sci-color-P600);
+          color: var(--sci-color-text-subtle);
           margin-bottom: 1em;
         }
       }
@@ -25,7 +25,7 @@
         > span.explanation {
           display: inline-block;
           margin-bottom: 1.5em;
-          color: var(--sci-color-P600);
+          color: var(--sci-color-text-subtle);
         }
       }
 
@@ -36,7 +36,7 @@
 
         > span.explanation {
           margin-bottom: .75em;
-          color: var(--sci-color-P600);
+          color: var(--sci-color-text-subtle);
           grid-column: 1/-1;
         }
 
@@ -44,7 +44,7 @@
           display: flex;
           justify-content: space-between;
           grid-column: 1/3;
-          border-bottom: 1px solid var(--sci-color-P300);
+          border-bottom: 1px solid var(--sci-color-border);
           padding-bottom: .5em;
           margin-bottom: .5em;
           height: 2.5em;
@@ -56,6 +56,7 @@
           > span.name {
             font-size: 1.1em;
             font-weight: bold;
+            color: var(--app-color-text-strong);
             align-self: flex-end;
 
             &.deprecated {
@@ -65,7 +66,7 @@
 
           > span.required {
             border: 1px solid var(--sci-color-accent);
-            border-radius: 5px;
+            border-radius: var(--sci-corner);
             padding: .25em .5em;
             color: var(--sci-color-accent);
           }
@@ -90,7 +91,7 @@
         > span.explanation {
           display: inline-block;
           margin-bottom: 1.5em;
-          color: var(--sci-color-P600);
+          color: var(--sci-color-text-subtle);
         }
 
         > ul {
@@ -103,7 +104,7 @@
 
             > a.self {
               pointer-events: none;
-              color: var(--sci-color-P500);
+              color: var(--sci-color-text-subtlest);
             }
           }
         }

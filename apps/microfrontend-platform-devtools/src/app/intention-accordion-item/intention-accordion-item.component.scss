@@ -1,4 +1,4 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
+@use '@scion/components.internal/design' as sci-design;
 
 :host {
   display: grid;
@@ -15,7 +15,7 @@
 
     > span.no-provider-found {
       font-weight: bold;
-      @include sci-ɵcomponents.theme-chip(rgba(255, 0, 0, .75), rgba(255, 0, 0, .1), rgba(255, 0, 0, .75));
+      @include sci-design.style-chip(var(--sci-color-negative), var(--sci-color-background-negative), var(--sci-color-negative));
     }
   }
 }

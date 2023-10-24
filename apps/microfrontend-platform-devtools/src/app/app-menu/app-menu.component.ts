@@ -11,6 +11,7 @@ import {ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output} 
 import {animate, AnimationMetadata, style, transition, trigger} from '@angular/animations';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {SciViewportComponent} from '@scion/components/viewport';
+import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 @Component({
   selector: 'devtools-app-menu',
@@ -22,6 +23,7 @@ import {SciViewportComponent} from '@scion/components/viewport';
     RouterLink,
     RouterLinkActive,
     SciViewportComponent,
+    SciMaterialIconDirective,
   ],
   animations: [
     trigger('openCloseMenu', provideMenuAnimation()),
@@ -33,7 +35,17 @@ export class AppMenuComponent {
   public close = new EventEmitter<void>();  // eslint-disable-line @angular-eslint/no-output-native
 
   @HostListener('document:keydown.escape')
-  public onBackdropClick(): void {
+  public onEscape(): void {
+    this.close.emit();
+  }
+
+  @HostListener('mousedown', ['$event'])
+  public onHostCloseEvent(event: Event): void {
+    event.stopPropagation(); // Prevent closing this overlay if emitted from a child of this overlay.
+  }
+
+  @HostListener('document:mousedown')
+  public onDocumentCloseEvent(): void {
     this.close.emit();
   }
 

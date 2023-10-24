@@ -48,3 +48,10 @@ import {Beans} from '@scion/toolkit/bean-manager';
 }
 // end::dev-tools:intention-declaration[]
 `;
+
+`
+// tag::dev-tools:color-scheme[]
+  const devToolsRouterOutlet: SciRouterOutletElement = document.querySelector('sci-router-outlet'); // <1>
+  devToolsRouterOutlet.setContextValue('color-scheme', 'dark'); // <2>
+// end::dev-tools:color-scheme[]
+`;

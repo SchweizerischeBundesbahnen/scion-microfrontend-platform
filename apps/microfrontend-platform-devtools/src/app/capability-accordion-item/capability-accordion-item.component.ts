@@ -12,7 +12,8 @@ import {Clipboard} from '@angular/cdk/clipboard';
 import {Capability} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
 import {NgIf} from '@angular/common';
-import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-list.component';
+import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
+import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 @Component({
   selector: 'devtools-capability-accordion-item',
@@ -22,7 +23,8 @@ import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-
   standalone: true,
   imports: [
     NgIf,
-    QualifierChipListComponent,
+    SciQualifierChipListComponent,
+    SciMaterialIconDirective,
   ],
 })
 export class CapabilityAccordionItemComponent {
@@ -38,6 +40,7 @@ export class CapabilityAccordionItemComponent {
 
   public onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
     event.stopPropagation();
+    event.preventDefault();
     this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
   }
 

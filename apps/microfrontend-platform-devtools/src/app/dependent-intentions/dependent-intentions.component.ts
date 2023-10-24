@@ -18,9 +18,10 @@ import {Maps} from '@scion/toolkit/util';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {AsyncPipe, KeyValue, KeyValuePipe, NgFor} from '@angular/common';
 import {AppNamePipe} from '../common/app-name.pipe';
-import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-list.component';
+import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 import {SciAccordionComponent, SciAccordionItemDirective} from '@scion/components.internal/accordion';
 import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
+import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 @Component({
   selector: 'devtools-dependent-intentions',
@@ -37,7 +38,8 @@ import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
     SciAccordionComponent,
     SciAccordionItemDirective,
     AppNamePipe,
-    QualifierChipListComponent,
+    SciQualifierChipListComponent,
+    SciMaterialIconDirective,
   ],
 })
 export class DependentIntentionsComponent implements OnInit, OnChanges {

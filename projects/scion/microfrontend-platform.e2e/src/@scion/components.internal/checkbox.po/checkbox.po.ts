@@ -15,17 +15,22 @@ import {Locator} from '@playwright/test';
  */
 export class SciCheckboxPO {
 
-  private readonly _inputLocator: Locator;
+  private _inputLocator: Locator;
 
-  constructor(sciCheckboxLocator: Locator) {
-    this._inputLocator = sciCheckboxLocator.locator('input[type="checkbox"]');
+  constructor(private _locator: Locator) {
+    this._inputLocator = this._locator.locator('input[type="checkbox"]');
   }
 
   public async toggle(check: boolean): Promise<void> {
     const isChecked = await this.isChecked();
 
+    // We cannot use `Locator.check` or `Locator.uncheck` because the checkbox is not visible.
+    // Ensure the value of the checkbox to be `false` when it is unchecked.
+    await this._locator.click();
+    await this._locator.click();
+
     if (check !== isChecked) {
-      await this._inputLocator.click();
+      await this._locator.click();
     }
   }
 

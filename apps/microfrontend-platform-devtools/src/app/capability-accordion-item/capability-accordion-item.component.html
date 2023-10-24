@@ -1,12 +1,9 @@
-<div class="qualifier">
-  <span *ngIf="!capability.private" class="material-icons" title="Public API - This capability has public scope. Other applications can interact with this capability.">visibility</span>
-  <span *ngIf="capability.private" class="material-icons" title="Private API - This capability is not visible to other applications.">visibility_off</span>
-  <devtools-qualifier-chip-list [type]="capability.type" [qualifier]="capability.qualifier"></devtools-qualifier-chip-list>
-</div>
+<span *ngIf="!capability.private" class="visibility public" title="Public API - This capability has public scope. Other applications can interact with this capability." sciMaterialIcon>visibility</span>
+<span *ngIf="capability.private" class="visibility private" title="Private API - This capability is not visible to other applications." sciMaterialIcon>visibility_off</span>
+<sci-qualifier-chip-list [type]="capability.type" [qualifier]="capability.qualifier"></sci-qualifier-chip-list>
 <div class="actions">
-  <button *ngIf="appSymbolicName" class="app-symbolic-name" (click)="onOpenAppClick($event, appSymbolicName)" title="Navigate to details of {{appSymbolicName}}.">
-    <span>{{appSymbolicName}}</span>
-    <span class="material-icons">exit_to_app</span>
-  </button>
-  <button class="material-icons" title="Copy the intention to interact with this capability into the clipboard." (click)="onCopyToClipboard($event)">content_copy</button>
+  <a *ngIf="appSymbolicName" href="" class="app-symbolic-name" (click)="onOpenAppClick($event, appSymbolicName)" title="Navigate to details of {{appSymbolicName}}.">
+   {{appSymbolicName}}
+  </a>
+  <button class="copy-to-clipboard" title="Copy the intention to interact with this capability into the clipboard." (click)="onCopyToClipboard($event)" sciMaterialIcon>content_copy</button>
 </div>

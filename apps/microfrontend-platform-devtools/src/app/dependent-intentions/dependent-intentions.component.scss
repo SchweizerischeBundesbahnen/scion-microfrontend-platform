@@ -14,11 +14,15 @@
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
-      color: var(--sci-color-A900);
     }
 
-    devtools-qualifier-chip-list:not(:last-child) {
-      margin-bottom: .5em;
+    sci-qualifier-chip-list {
+      --sci-qualifier-chip-list-type-background-color: var(--app-accordion-panel-chip-primary-background-color);
+      --sci-qualifier-chip-list-qualifier-background-color: var(--app-accordion-panel-chip-secondary-background-color);
+
+      &:not(:last-child) {
+        margin-bottom: .5em;
+      }
     }
   }
 }

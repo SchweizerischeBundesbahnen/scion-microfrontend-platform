@@ -13,6 +13,7 @@ import {UUID} from '@scion/toolkit/uuid';
 import {KeyValuePair, LogicalOperator} from './filter-field';
 import {A11yModule, FocusOrigin} from '@angular/cdk/a11y';
 import {NgFor, NgIf} from '@angular/common';
+import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 @Component({
   selector: 'devtools-filter-field',
@@ -25,6 +26,7 @@ import {NgFor, NgIf} from '@angular/common';
     NgFor,
     ReactiveFormsModule,
     A11yModule,
+    SciMaterialIconDirective,
   ],
 })
 export class FilterFieldComponent implements OnInit {

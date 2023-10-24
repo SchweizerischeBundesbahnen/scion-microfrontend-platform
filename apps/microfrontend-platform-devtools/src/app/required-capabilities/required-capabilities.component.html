@@ -3,20 +3,19 @@
   <ng-container *ngFor="let capabilitiesByApp of capabilitiesByApp$ | async | keyvalue; trackBy: trackByApplicationFn">
     <ng-template sciAccordionItem [panel]="panel" [key]="capabilitiesByApp.key">
       <header>
-        <strong class="app-name">{{capabilitiesByApp.key | devtoolsAppName}}</strong>
-        <button class="material-icons" (click)="onOpenAppClick($event, capabilitiesByApp.key)" title="Navigate to details of {{capabilitiesByApp.key | devtoolsAppName}}.">exit_to_app</button>
+        {{capabilitiesByApp.key | devtoolsAppName}}
+        <button class="open-app" (click)="onOpenAppClick($event, capabilitiesByApp.key)" title="Navigate to details of {{capabilitiesByApp.key | devtoolsAppName}}." sciMaterialIcon>exit_to_app</button>
       </header>
     </ng-template>
 
     <ng-template #panel>
       <section class="panel">
         <section class="capability-list">
-          <devtools-qualifier-chip-list *ngFor="let capability of capabilitiesByApp.value; trackBy: trackByCapabilityFn"
-                                        [class.active]="capability === selectedCapability"
-                                        [type]="capability.type" [qualifier]="capability.qualifier"
-                                        [size]="'small'"
-                                        (click)="onCapabilityClick(capability)">
-          </devtools-qualifier-chip-list>
+          <sci-qualifier-chip-list *ngFor="let capability of capabilitiesByApp.value; trackBy: trackByCapabilityFn"
+                                   [class.selected]="capability === selectedCapability"
+                                   [type]="capability.type" [qualifier]="capability.qualifier"
+                                   (click)="onCapabilityClick(capability)">
+          </sci-qualifier-chip-list>
         </section>
         <section *ngIf="selectedCapability" class="capability-details">
           <section class="description" *ngIf="selectedCapability.description">

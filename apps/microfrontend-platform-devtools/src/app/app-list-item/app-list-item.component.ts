@@ -14,6 +14,7 @@ import {map} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router} from '@angular/router';
 import {AsyncPipe, NgIf} from '@angular/common';
+import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 @Component({
   selector: 'devtools-app-list-item',
@@ -24,6 +25,7 @@ import {AsyncPipe, NgIf} from '@angular/common';
   imports: [
     NgIf,
     AsyncPipe,
+    SciMaterialIconDirective,
   ],
 })
 export class AppListItemComponent implements OnInit {
