@@ -1,40 +1,36 @@
 :host {
   display: grid;
 
-  > sci-accordion {
-    header {
-      font-weight: bold;
+  > sci-accordion section.panel {
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
+
+    > div.run-in-angular-checkbox {
+      display: flex;
+      gap: .75em;
+      align-items: center;
+      user-select: none;
     }
 
-    section.panel {
-      display: flex;
-      flex-direction: column;
-      gap: .5em;
+    > output.zone {
+      padding: 1em;
+      border-width: 1px;
+      border-style: solid;
+      border-radius: var(--sci-corner);
+      text-align: center;
+      font-family: monospace;
 
-      > div.run-in-angular-checkbox {
-        display: flex;
-        gap: .75em;
-        align-items: center;
-        user-select: none;
+      &[data-zone="inside-angular"] {
+        color: var(--sci-color-positive);
+        background-color: var(--sci-color-background-positive);
+        border-color: var(--sci-color-positive);
       }
 
-      > output.zone {
-        padding: 1em;
-        border-width: 1px;
-        border-style: solid;
-        text-align: center;
-
-        &[data-zone="inside-angular"] {
-          color: #004d00;
-          background-color: #dff5df;
-          border-color: #004d00;
-        }
-
-        &[data-zone="outside-angular"] {
-          color: var(--sci-color-W900);
-          background-color: var(--sci-color-W50);
-          border-color: var(--sci-color-W900);
-        }
+      &[data-zone="outside-angular"] {
+        color: var(--sci-color-negative);
+        background-color: var(--sci-color-background-negative);
+        border-color: var(--sci-color-negative);
       }
     }
   }

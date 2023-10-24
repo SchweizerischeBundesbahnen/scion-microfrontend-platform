@@ -1,4 +1,4 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
+@use '@scion/components.internal/design' as sci-design;
 
 :host {
   display: flex;
@@ -7,23 +7,28 @@
   > form {
     flex: none;
     display: flex;
+    align-items: center;
     margin-bottom: .25em;
 
     > input.outlet-name {
+      @include sci-design.style-input-field();
       flex: auto;
-      @include sci-ɵcomponents.theme-input-field();
     }
 
     > button {
       flex: none;
       margin-left: .25em;
+
+      &.context-define {
+        transform: rotate(180deg);
+      }
     }
   }
 
   > sci-router-outlet {
     flex: auto;
-    border: 1px solid var(--sci-color-P300);
-    border-radius: 3px;
+    border: 1px solid var(--sci-color-border);
+    border-radius: var(--sci-corner);
 
     &::part(splash) {
       display: grid;
@@ -33,12 +38,12 @@
 
   > div.empty-note {
     flex: none;
-    border: 1px solid var(--sci-color-P500);
-    background-color: var(--sci-color-P50);
-    color: var(--sci-color-P900);
+    border: 1px dashed var(--sci-color-border);
+    color: var(--sci-color-text-subtlest);
     text-align: center;
     padding: .25em;
     margin-top: .5em;
-    border-radius: .25em;
+    border-radius: var(--sci-corner-small);
+    font-family: monospace;
   }
 }

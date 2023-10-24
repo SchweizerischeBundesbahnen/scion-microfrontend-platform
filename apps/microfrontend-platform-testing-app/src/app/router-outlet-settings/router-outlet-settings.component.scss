@@ -1,6 +1,8 @@
 :host {
-  background-color: var(--sci-color-background);
-  border: 1px solid var(--sci-color-P300);
+  background-color: var(--sci-color-background-elevation);
+  border: 1px solid var(--sci-color-border);
+  border-radius: var(--sci-corner);
+  box-shadow: var(--sci-elevation) var(--sci-static-color-black);
   width: 100%;
 
   > ul {
@@ -32,28 +34,14 @@
         font-size: smaller;
       }
 
-      > button.toggle {
+      > sci-toggle-button {
         grid-column: 2/3;
         grid-row: 1/3;
-        color: var(--sci-color-primary);
-
-        &.enabled {
-          color: var(--sci-color-accent);
-        }
-      }
-
-      > button:not(.toggle) {
-        padding: .25em .75em;
-        font-size: smaller;
       }
 
       code.preferred-size {
         display: block;
         margin: .5em 0;
-      }
-
-      &:hover > span.label {
-        color: var(--sci-color-accent);
       }
     }
   }

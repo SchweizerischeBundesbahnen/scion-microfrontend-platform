@@ -7,7 +7,7 @@
     <sci-checkbox class="e2e-collect-values" [formControl]="form.controls.collect"></sci-checkbox>
   </sci-form-field>
 
-  <button (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="e2e-subscribe">Subscribe</button>
+  <button (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="e2e-subscribe" sci-primary>Subscribe</button>
   <button (click)="onUnsubscribe()" *ngIf="isSubscribed" class="e2e-unsubscribe">Unsubscribe</button>
 </form>
 

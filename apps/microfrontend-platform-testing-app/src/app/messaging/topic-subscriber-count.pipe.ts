@@ -10,7 +10,7 @@
 
 import {Pipe, PipeTransform} from '@angular/core';
 import {MessageClient} from '@scion/microfrontend-platform';
-import {Observable, of} from 'rxjs';
+import {catchError, Observable, of} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
@@ -24,6 +24,6 @@ export class TopicSubscriberCountPipe implements PipeTransform {
       return of(0);
     }
 
-    return Beans.get(MessageClient).subscriberCount$(topic);
+    return Beans.get(MessageClient).subscriberCount$(topic).pipe(catchError(() => of(0)));
   }
 }

@@ -6,7 +6,7 @@
     <input [formControl]="form.controls.topic" class="e2e-topic" title="Specifies the topic where to send a message after cleared the outlet.">
   </sci-form-field>
 
-  <button type="submit" class="e2e-run-test" [disabled]="form.invalid" (click)="onRunTestClick()">
+  <button type="submit" class="e2e-run-test" [disabled]="form.invalid" (click)="onRunTestClick()" sci-primary>
     Clear outlet, then send message to topic
   </button>
 </form>

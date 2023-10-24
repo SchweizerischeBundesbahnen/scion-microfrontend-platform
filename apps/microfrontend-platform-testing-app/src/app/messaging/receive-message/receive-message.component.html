@@ -28,8 +28,8 @@
   </ng-template>
 </form>
 
-<button (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="e2e-subscribe">Subscribe</button>
-<button (click)="onUnsubscribe()" *ngIf="isSubscribed" class="e2e-unsubscribe">Unsubscribe</button>
+<button (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="e2e-subscribe" sci-primary>Subscribe</button>
+<button (click)="onUnsubscribe()" *ngIf="isSubscribed" class="e2e-unsubscribe" sci-primary>Unsubscribe</button>
 
 <output class="subscribe-error" *ngIf="subscribeError">
   {{subscribeError}}
@@ -44,7 +44,7 @@
       </ng-template>
 
       <ng-template #reply_action>
-        <button class="material-icons e2e-reply" title="Reply" (click)="onReply(message.headers.get(MessageHeaders.ReplyTo))">reply</button>
+        <button class="e2e-reply" title="Reply" (click)="onReply(message.headers.get(MessageHeaders.ReplyTo))" sciMaterialIcon>reply</button>
       </ng-template>
     </ng-container>
   </sci-list>

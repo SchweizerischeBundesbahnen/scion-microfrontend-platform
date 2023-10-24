@@ -18,8 +18,8 @@
       <input class="e2e-css-height" [formControl]="form.controls.cssSize.controls.height" placeholder="Enter a value in pixel" title="Enter a pixel value which is set as CSS variable for the element height, or an empty value to unset the CSS variable.">
     </sci-form-field>
 
-    <button (click)="onElementObservableBind()" *ngIf="!elementDimensionObservableBound" class="e2e-bind-element-observable">Bind the element as size observable</button>
-    <button (click)="onElementObservableUnbind()" *ngIf="elementDimensionObservableBound" class="e2e-unbind-element-observable">Unbind the element as size observable</button>
+    <button (click)="onElementObservableBind()" *ngIf="!elementDimensionObservableBound" class="e2e-bind-element-observable" sci-primary>Bind the element as size observable</button>
+    <button (click)="onElementObservableUnbind()" *ngIf="elementDimensionObservableBound" class="e2e-unbind-element-observable" sci-primary>Unbind the element as size observable</button>
     <button (click)="onElementUnmount()" class="e2e-unmount">Unmount the element from the DOM</button>
   </ng-container>
 

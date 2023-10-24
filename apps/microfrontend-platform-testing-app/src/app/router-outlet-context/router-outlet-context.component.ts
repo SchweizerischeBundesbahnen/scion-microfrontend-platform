@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, ElementRef, HostListener, Injector} from '@angular/core';
+import {Component, HostListener, Injector} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
@@ -17,6 +17,7 @@ import {A11yModule} from '@angular/cdk/a11y';
 import {ContextEntryComponent} from '../context-entry/context-entry.component';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
+import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 import {parseTypedValue} from '../common/typed-value-parser.util';
 
 const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top'};
@@ -35,6 +36,7 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
     SciListComponent,
     SciListItemDirective,
     ContextEntryComponent,
+    SciMaterialIconDirective,
   ],
 })
 export class RouterOutletContextComponent {
@@ -44,15 +46,12 @@ export class RouterOutletContextComponent {
     value: this._formBuilder.control(''),
   });
 
-  constructor(host: ElementRef<HTMLElement>,
-              private _formBuilder: NonNullableFormBuilder,
+  constructor(private _formBuilder: NonNullableFormBuilder,
               private _overlay: OverlayRef,
               public routerOutlet: SciRouterOutletElement) {
     this._overlay.backdropClick()
       .pipe(takeUntilDestroyed())
-      .subscribe(() => {
-        this._overlay.dispose();
-      });
+      .subscribe(() => this._overlay.dispose());
   }
 
   @HostListener('keydown.escape')
@@ -83,7 +82,6 @@ export class RouterOutletContextComponent {
       positionStrategy: positionStrategy,
       scrollStrategy: overlay.scrollStrategies.noop(),
       disposeOnNavigation: true,
-      width: 500,
       height: 400,
       backdropClass: 'transparent-backdrop',
     });

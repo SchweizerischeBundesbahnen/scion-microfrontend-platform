@@ -1,4 +1,4 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
+@use '@scion/components.internal/design' as sci-design;
 
 :host {
   display: grid;
@@ -32,7 +32,7 @@
         flex: none;
         align-self: flex-start;
         font-weight: bold;
-        @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
+        @include sci-design.style-chip(var(--sci-color-accent), null, var(--sci-color-accent));
         user-select: text;
       }
 

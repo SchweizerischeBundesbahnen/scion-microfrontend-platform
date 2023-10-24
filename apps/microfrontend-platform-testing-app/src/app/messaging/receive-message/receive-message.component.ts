@@ -21,6 +21,7 @@ import {stringifyError} from '../../common/stringify-error.util';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
+import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 @Component({
   selector: 'app-receive-message',
@@ -37,6 +38,7 @@ import {SciListComponent, SciListItemDirective} from '@scion/components.internal
     SciListItemDirective,
     MessageListItemComponent,
     AppAsPipe,
+    SciMaterialIconDirective,
   ],
 })
 export default class ReceiveMessageComponent implements OnDestroy {

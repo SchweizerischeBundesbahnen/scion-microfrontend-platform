@@ -2,7 +2,7 @@
   <li>
     <span class="label">Page scrolling</span>
     <span class="description">Enables native page scrolling in the embedded document</span>
-    <button class="material-icons toggle" [class.enabled]="pageScrollingEnabled" (click)="onPageScrollingToggle()">{{ pageScrollingEnabled ? 'toggle_on' : 'toggle_off'}}</button>
+    <sci-toggle-button [formControl]="pageScrollingEnabledFormControl"></sci-toggle-button>
   </li>
   <li class="e2e-preferred-size">
     <span class="label">Preferred size</span>
@@ -13,6 +13,6 @@
       The following preferred size is set:
       <code class="preferred-size">{{preferredSize | json}}</code>
     </span>
-    <button type="button" class="e2e-reset" (click)="onPreferredSizeResetClick()" [disabled]="!preferredSize">reset</button>
+    <button type="button" class="e2e-reset" (click)="onPreferredSizeResetClick()" [disabled]="!preferredSize" sci-primary>reset</button>
   </li>
 </ul>

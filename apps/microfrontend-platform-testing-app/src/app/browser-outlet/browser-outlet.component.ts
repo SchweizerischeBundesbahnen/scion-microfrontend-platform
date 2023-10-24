@@ -19,6 +19,7 @@ import {environment} from '../../environments/environment';
 import {TestingAppTopics} from '../testing-app.topics';
 import {NgFor} from '@angular/common';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 /**
  * Allows entering a URL and displaying the web content in an iframe.
@@ -32,6 +33,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   imports: [
     NgFor,
     ReactiveFormsModule,
+    SciMaterialIconDirective,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
 })
@@ -54,8 +56,7 @@ export class BrowserOutletComponent implements OnInit {
   @ViewChild('router_outlet', {static: true})
   public routerOutlet!: ElementRef<SciRouterOutletElement>;
 
-  constructor(host: ElementRef<HTMLElement>,
-              private _formBuilder: NonNullableFormBuilder,
+  constructor(private _formBuilder: NonNullableFormBuilder,
               private _activatedRoute: ActivatedRoute,
               private _overlay: Overlay,
               private _injector: Injector,

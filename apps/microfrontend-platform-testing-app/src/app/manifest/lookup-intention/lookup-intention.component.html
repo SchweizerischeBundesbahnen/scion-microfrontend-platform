@@ -16,8 +16,8 @@
   </sci-form-field>
 
   <section class="buttons">
-    <button type="submit" *ngIf="!intentions$" (click)="onLookup()" [disabled]="form.invalid" class="e2e-lookup">Lookup</button>
-    <button type="submit" *ngIf="intentions$" (click)="onLookupCancel()" class="e2e-cancel-lookup">Cancel the lookup</button>
+    <button type="submit" *ngIf="!intentions$" (click)="onLookup()" [disabled]="form.invalid" class="e2e-lookup" sci-primary>Lookup</button>
+    <button type="submit" *ngIf="intentions$" (click)="onLookupCancel()" class="e2e-cancel-lookup" sci-primary>Cancel the lookup</button>
     <button type="button" (click)="onReset()" [disabled]="form.pristine" class="e2e-reset">Reset</button>
   </section>
 </form>

@@ -1,18 +1,20 @@
 <header class="e2e-header">
   <h1>Define the context of this outlet</h1>
-  <button type="button" (click)="onClose()" class="material-icons close e2e-close">close</button>
+  <button type="button" (click)="onClose()" class="close e2e-close" sciMaterialIcon>close</button>
 </header>
 
 <main cdkTrapFocus cdkTrapFocusAutoCapture>
-  <section class="new-context-entry e2e-new-context-entry">
-    <header>Add a new value:</header>
+  <div class="overlay-anchor">
+    <section class="overlay new-context-entry e2e-new-context-entry">
+      <header>Add a new value:</header>
 
-    <form [formGroup]="form">
-      <input [formControl]="form.controls.name" placeholder="Name" class="name e2e-name">
-      <input [formControl]="form.controls.value" placeholder="Value" class="value e2e-value">
-      <button (click)="onAddClick()" [disabled]="form.invalid" class="add e2e-add" title="Add this value to the outlet context">Add</button>
-    </form>
-  </section>
+      <form [formGroup]="form">
+        <input [formControl]="form.controls.name" placeholder="Name" class="name e2e-name">
+        <input [formControl]="form.controls.value" placeholder="Value" class="value e2e-value">
+        <button (click)="onAddClick()" [disabled]="form.invalid" class="add e2e-add" title="Add this value to the outlet context" sci-primary>Add</button>
+      </form>
+    </section>
+  </div>
 
   <sci-list class="context e2e-context">
     <ng-container *ngFor="let entry of routerOutlet.contextValues$ | async | keyvalue">
@@ -21,7 +23,7 @@
       </ng-template>
 
       <ng-template #remove_template>
-        <button class="material-icons e2e-remove" (click)="onRemoveClick(entry.key)" title="Remove this value from the outlet context">close</button>
+        <button class="e2e-remove" (click)="onRemoveClick(entry.key)" title="Remove this value from the outlet context" sciMaterialIcon>close</button>
       </ng-template>
     </ng-container>
   </sci-list>

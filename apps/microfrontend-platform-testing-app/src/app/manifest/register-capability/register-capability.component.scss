@@ -1,12 +1,4 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
-
-@mixin response-panel($backgroundColor) {
-  border: 1px solid rgb($backgroundColor);
-  background-color: #{rgba($backgroundColor, .2)};
-  border-radius: 3px;
-  margin: 1em 0;
-  padding: 1em;
-}
+@use '@scion/components.internal/design' as sci-design;
 
 :host {
   display: grid;
@@ -18,8 +10,8 @@
     display: grid;
     grid-auto-rows: max-content;
     row-gap: .5em;
-    border: 1px solid var(--sci-color-P300);
-    border-radius: 5px;
+    border: 1px solid var(--sci-color-border);
+    border-radius: var(--sci-corner);
     padding: 1em;
 
     > header {
@@ -38,11 +30,21 @@
     }
 
     > output.error {
-      @include response-panel(var(--sci-color-warn-rgb));
+      border: 1px solid var(--sci-color-negative);
+      background-color: var(--sci-color-background-negative);
+      color: var(--sci-color-negative);
+      border-radius: var(--sci-corner);
+      padding: 1em;
+      font-family: monospace;
     }
 
     > output.response {
-      @include response-panel(var(--sci-color-accent-rgb));
+      border: 1px solid var(--sci-color-positive);
+      background-color: var(--sci-color-background-positive);
+      color: var(--sci-color-positive);
+      border-radius: var(--sci-corner);
+      padding: 1em;
+      font-family: monospace;
     }
   }
 
@@ -62,7 +64,7 @@
         flex: none;
         align-self: flex-start;
         font-weight: bold;
-        @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
+        @include sci-design.style-chip(var(--sci-color-accent), null, var(--sci-color-accent));
         user-select: text;
       }
 
