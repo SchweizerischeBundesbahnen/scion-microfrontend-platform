@@ -1,9 +1,9 @@
 :host {
   display: block;
-  border: 1px solid var(--sci-color-P500);
-  border-radius: 5px;
+  border: 1px solid var(--sci-color-border);
+  border-radius: var(--sci-corner);
   padding: 1em;
-  background-color: #FFFFFF;
+  background-color: var(--app-accordion-panel-container-background-color);
   font-size: 12px;
 
   > header {
@@ -11,6 +11,7 @@
     margin-top: 0;
     margin-bottom: 1em;
     font-weight: bold;
+    color: var(--app-color-text-strong);
   }
 
   > ul {
@@ -23,7 +24,7 @@
 
       > a.self {
         pointer-events: none;
-        color: var(--sci-color-P500);
+        color: var(--sci-color-text-subtlest);
       }
     }
   }

@@ -1,64 +1,78 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
+@use '@scion/components.internal/design' as sci-design;
 
 :host {
+  display: flex;
+  flex-direction: column;
+
   > header {
     display: flex;
     justify-content: space-between;
-    border: 1px solid var(--sci-color-A600);
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+    border: 1px solid var(--sci-color-border);
+    border-top-left-radius: var(--sci-corner);
+    border-top-right-radius: var(--sci-corner);
     padding: .5em .5em 1.75em;
-    background-color: var(--sci-color-accent);
-    color: var(--sci-color-P50);
+    background-color: var(--sci-color-background-secondary);
 
     > span.title {
       margin-top: 0;
       user-select: none;
       font-weight: bold;
+      color: var(--app-color-text-strong);
     }
 
     > span.toggle-button {
       display: flex;
       gap: 1px;
-      border: 1px solid var(--sci-color-background);
-      border-radius: .25em;
-      background-color: var(--sci-color-background);
-      overflow: hidden;
+      border: 1px solid var(--sci-color-accent);
+      border-radius: var(--sci-corner-small);
+      background-color: var(--sci-color-background-input);
 
       > button {
+        all: unset;
         font-size: smaller;
         padding: 3px 5px;
         border: none;
-        border-radius: 0;
-        color: var(--sci-color-background);
-        background-color: var(--sci-color-accent);
+        color: var(--sci-color-accent);
         user-select: none;
 
         &.active {
-          color: var(--sci-color-accent);
-          background-color: var(--sci-color-background);
+          color: var(--sci-color-accent-inverse);
+          background-color: var(--sci-color-accent);
           box-shadow: none;
         }
       }
     }
   }
 
-  > div.filter, > div.show-filter {
-    display: flex;
-    min-height: 50px;
-    align-items: center;
-    justify-content: space-evenly;
+  > div.overlay-anchor {
+    height: 0;
+    width: 0;
+    position: relative; // positioning context for overlay
+    align-self: center;
+    display: grid;
+    place-items: center;
 
-    &.filter {
-      width: 260px;
-      margin: -25px 2px -25px calc(50% - 130px);
-      border-radius: 2px;
-      box-shadow: 0 5px 5px -3px rgba(0, 0, 0, .2), 0 8px 10px 1px rgba(0, 0, 0, .14), 0 3px 14px 2px rgba(0, 0, 0, .12);
-      background-color: white;
+    > button.add-filter {
+      position: absolute;
+      padding: 8px;
+      border-radius: 50%;
+      border: 1px solid var(--sci-color-border);
+      background-color: var(--sci-color-background-elevation);
+    }
+
+    > div.overlay.add-filter {
+      position: absolute;
+      display: flex;
+      gap: .25em;
+      align-items: center;
+      border-radius: var(--sci-corner-small);
+      background-color: var(--sci-color-background-elevation);
+      box-shadow: var(--sci-elevation) var(--sci-static-color-black);
+      border: 1px solid var(--sci-color-border);
       padding: .5em;
 
       > input {
-        @include sci-ɵcomponents.theme-input-field();
+        @include sci-design.style-input-field();
       }
 
       &.value {
@@ -73,28 +87,18 @@
         }
       }
     }
-
-    &.show-filter {
-      margin: -25px calc(50% - 25px);
-
-      > button {
-        padding: 8px;
-        border-radius: 50%;
-        color: var(--sci-color-accent);
-        border: 1px solid rgba(51, 51, 51, .5);
-        background-color: white;
-      }
-    }
   }
 
   > ul.chips {
     display: flex;
+    gap: .25em;
     flex-wrap: wrap;
-    border-left: 1px solid var(--sci-color-P500);
-    border-right: 1px solid var(--sci-color-P500);
-    border-bottom: 1px solid var(--sci-color-P500);
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
+    border-left: 1px solid var(--sci-color-border);
+    border-right: 1px solid var(--sci-color-border);
+    border-bottom: 1px solid var(--sci-color-border);
+    border-bottom-left-radius: var(--sci-corner-small);
+    border-bottom-right-radius: var(--sci-corner-small);
+    background-color: var(--sci-color-background-primary);
     padding: 2.5em .5em .5em;
     margin: 0;
     min-height: 50px;
@@ -106,40 +110,29 @@
       > button {
         all: unset;
         display: flex;
-        flex-wrap: wrap;
-        margin-top: 10px;
-        margin-right: 10px;
-        border-radius: 10px;
-        padding: 5px 10px;
+        border-radius: var(--sci-corner);
+        padding: .25em 1em;
+        border: 1px solid var(--sci-color-border);
+        background-color: var(--sci-color-gray-100);
         overflow: hidden;
-        text-overflow: ellipsis;
-        border: 1px solid var(--sci-color-P500);
-        background-color: var(--sci-color-P200);
-        color: var(--sci-color-P900);
 
         > span.key {
           font-weight: bold;
+          color: var(--app-color-text-strong);
         }
 
         &:hover {
           position: relative;
           cursor: pointer;
-          border: 1px solid var(--sci-color-P600);
-          background-color: var(--sci-color-P400);
-          color: var(--sci-color-P400);
 
           &::after {
             position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            content: '✗';
-            border-radius: 10px;
-            color: var(--sci-color-P900);
+            inset: 0;
+            content: 'x';
             font-size: 1.25em;
-            font-weight: bold;
             text-align: center;
+            background-color: var(--sci-color-accent);
+            color: var(--sci-color-accent-inverse);
           }
         }
       }

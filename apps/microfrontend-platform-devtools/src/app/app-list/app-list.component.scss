@@ -2,24 +2,16 @@
   display: flex;
 
   > sci-list {
-    padding: 1em;
     flex: auto;
+    --sci-list-item-padding: 0;
 
     devtools-app-list-item {
       outline: none;
-      padding-left: 10px;
+      border-left: 5px solid transparent;
 
       &.active {
-        padding-left: 7px;
-        border-left: 3px solid var(--sci-color-accent);
+        border-left-color: var(--sci-color-accent);
       }
-    }
-
-    span.action {
-      outline: none;
-      margin-top: 2em;
-      color: var(--sci-color-A800);
-      cursor: pointer;
     }
   }
 }

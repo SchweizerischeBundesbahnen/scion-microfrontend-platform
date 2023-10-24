@@ -2,66 +2,54 @@
   display: grid;
   position: absolute;
   inset: 0;
-
-  router-outlet {
-    position: absolute; // take router outlet out of the document flow
-  }
+  padding: 0 .75em .5em .75em;
 
   > sci-sashbox {
-    --sci-sashbox-gap: 0;
+    --sci-sashbox-gap: .75em;
 
-    section {
+    aside, main {
       display: grid;
-      grid-template-rows: max-content 1fr;
+      grid-template-rows: auto 1fr;
+      row-gap: 1em;
 
       > header {
         display: flex;
         align-items: center;
-        background-color: var(--sci-color-P100);
         height: 2.5em;
+        white-space: nowrap;
+        font-weight: bold;
+        color: var(--app-color-text-strong);
+        font-size: 1.1em;
         user-select: none;
+      }
 
-        > :where(button.title) { // Use the where selector to set the specificity to 0 to allow overrides.
-          all: unset;
-        }
+      > router-outlet {
+        position: absolute; // take router outlet out of the document flow
+      }
+    }
 
-        > button {
-          cursor: pointer;
-        }
+    aside > header {
+      > button.menu {
+        all: unset;
+        flex: auto;
+        display: flex;
+        align-items: center;
+        gap: 1em;
+        cursor: pointer;
 
-        > button, > span.title {
-          font-weight: bold;
-          white-space: nowrap;
+        &:hover {
           color: var(--sci-color-accent);
-
-          &.title {
-            font-size: 1.1em;
-            flex: auto;
-            padding: .5em;
-            margin-left: .5em;
-          }
-
-          &.material-icons {
-            flex: none;
-            cursor: pointer;
-            padding: .25em;
-            font-size: 1.75em;
-
-            &.menu {
-              padding-left: .5em;
-              font-weight: normal;
-            }
-          }
-
-          &:hover {
-            color: var(--sci-color-A800);
-          }
         }
+      }
+
+      > button.collapse {
+        position: relative;
+        right: -.25em;
       }
     }
   }
 
-  > section.usage-message {
+  > section.welcome {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -70,6 +58,7 @@
       margin: .5em 0;
       font-size: 1.5em;
       font-weight: bold;
+      color: var(--app-color-text-strong);
     }
 
     > img.logo {

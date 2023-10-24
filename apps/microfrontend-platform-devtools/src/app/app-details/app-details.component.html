@@ -89,7 +89,7 @@
             Disabled
           </span>
           <ng-template #scopeCheckEnabled>
-            <span class="chip" title="Scope check is enabled for this application. This application cannot interact with private capabilities of other applications.">
+            <span class="chip default" title="Scope check is enabled for this application. This application cannot interact with private capabilities of other applications.">
               Default (enabled)
             </span>
           </ng-template>
@@ -100,7 +100,7 @@
           <span class="description">
             Controls whether this application can register and unregister intentions dynamically at runtime. Enabling this API is strongly discouraged. By default, this API is disabled.
           </span>
-          <span class="chip" *ngIf="application.intentionRegisterApiDisabled; else intentionRegisterApiEnabled" title="Intention register API is disabled for this application. This application has to declare intentions in its manifest.">
+          <span class="chip default" *ngIf="application.intentionRegisterApiDisabled; else intentionRegisterApiEnabled" title="Intention register API is disabled for this application. This application has to declare intentions in its manifest.">
             Default (disabled)
           </span>
           <ng-template #intentionRegisterApiEnabled>
@@ -119,7 +119,7 @@
             Disabled
           </span>
           <ng-template #intentionCheckEnabled>
-            <span class="chip" title="Intention check is enabled for this application. This application can only issue intents for which it has declared an intention in its manifest.">
+            <span class="chip default" title="Intention check is enabled for this application. This application can only issue intents for which it has declared an intention in its manifest.">
               Default (enabled)
             </span>
           </ng-template>

@@ -18,13 +18,14 @@ import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Maps} from '@scion/toolkit/util';
 import {AsyncPipe, KeyValue, KeyValuePipe, NgFor, NgIf} from '@angular/common';
 import {AppNamePipe} from '../common/app-name.pipe';
-import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-list.component';
+import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 import {ParamsFilterPipe} from '../common/params-filter.pipe';
 import {NullIfEmptyPipe} from '../common/null-if-empty.pipe';
 import {JoinPipe} from '../common/join.pipe';
 import {SciAccordionComponent, SciAccordionItemDirective} from '@scion/components.internal/accordion';
 import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
 import {SciKeyValueComponent} from '@scion/components.internal/key-value';
+import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 @Component({
   selector: 'devtools-required-capabilities',
@@ -42,8 +43,9 @@ import {SciKeyValueComponent} from '@scion/components.internal/key-value';
     SciAccordionComponent,
     SciAccordionItemDirective,
     SciKeyValueComponent,
+    SciMaterialIconDirective,
+    SciQualifierChipListComponent,
     AppNamePipe,
-    QualifierChipListComponent,
     ParamsFilterPipe,
     NullIfEmptyPipe,
     JoinPipe,

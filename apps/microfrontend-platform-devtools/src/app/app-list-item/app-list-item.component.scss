@@ -1,4 +1,4 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
+@use '@scion/components.internal/design' as sci-design;
 
 :host {
   display: grid;
@@ -7,26 +7,28 @@
   grid-row-gap: .5em;
   grid-template-rows: auto;
   align-items: start;
-  cursor: pointer;
+  padding: 1em 1.75em 1em 1em;
+  position: relative; // positioning context for hover action
 
   > span.app-name {
     grid-column: 1/2;
     grid-row: 1/2;
     font-weight: bold;
-    color: var(--sci-color-A800);
+    color: var(--app-color-text-strong);
   }
 
   > span.app-symbolic-name {
     grid-column: 1/2;
     grid-row: 2/3;
+    justify-self: start;
     font-size: smaller;
     font-style: italic;
   }
 
   > a {
-    justify-self: start;
     grid-column: 1/-1;
     grid-row: 3/4;
+    justify-self: start;
     font-size: smaller;
   }
 
@@ -38,11 +40,26 @@
     justify-content: flex-end;
 
     > a.chip {
-      @include sci-ɵcomponents.theme-chip(var(--sci-color-P200), transparent, var(--sci-color-P700));
+      @include sci-design.style-chip(var(--sci-color-gray-300), null, var(--sci-color-text-subtle));
 
       &.version {
         font-family: monospace;
       }
     }
+  }
+
+  > span.action-indicator {
+    position: absolute;
+    justify-self: end;
+    align-self: center;
+    color: var(--sci-color-accent);
+  }
+
+  &:not(.active) {
+    cursor: pointer;
+  }
+
+  :is(&.active, &:not(:hover)) > span.action-indicator {
+    display: none;
   }
 }

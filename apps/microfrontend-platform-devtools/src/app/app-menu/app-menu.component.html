@@ -4,7 +4,7 @@
        routerLinkActive="active"
        (click)="onMenuItemClick($event)"
        href="">
-      <span class="material-icons">apps</span>
+      <span class="icon" sciMaterialIcon>apps</span>
       <section>
         <header>Applications</header>
         <span class="description">Browse registered micro applications.</span>
@@ -13,7 +13,7 @@
     <a [routerLink]="['/find-capabilities', {outlets: {details: ['filter-results']}}]"
        routerLinkActive="active"
        (click)="onMenuItemClick($event)">
-      <span class="material-icons">extension</span>
+      <span class="icon" sciMaterialIcon>extension</span>
       <section>
         <header>Capability Browser</header>
         <span class="description">Browse registered capabilities.</span>
@@ -34,5 +34,4 @@
   </section>
 
 </sci-viewport>
-<div class="backdrop" (click)="onBackdropClick()"></div> <!-- eslint-disable-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
 

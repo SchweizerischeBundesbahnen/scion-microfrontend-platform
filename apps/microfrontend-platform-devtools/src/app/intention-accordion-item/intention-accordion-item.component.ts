@@ -13,7 +13,7 @@ import {Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {map} from 'rxjs/operators';
 import {AsyncPipe, NgIf} from '@angular/common';
-import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-list.component';
+import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 
 @Component({
   selector: 'devtools-intention-accordion-item',
@@ -24,7 +24,7 @@ import {QualifierChipListComponent} from '../qualifier-chip-list/qualifier-chip-
   imports: [
     NgIf,
     AsyncPipe,
-    QualifierChipListComponent,
+    SciQualifierChipListComponent,
   ],
 })
 export class IntentionAccordionItemComponent implements OnChanges {

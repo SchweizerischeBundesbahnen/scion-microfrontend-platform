@@ -62,3 +62,14 @@ include::dev-tools.snippets.ts[tags=dev-tools:integrate-via-url]
 ----
 --
 
+***
+
+SCION DevTools is available with a light and dark color scheme. By default, the user's preferred OS color scheme is used. To customize, set the `color-scheme` context value on the router outlet into which loaded the SCION DevTools. Supported color schemes are `light` and `dark`.
+
+[source,typescript]
+----
+include::dev-tools.snippets.ts[tags=dev-tools:color-scheme]
+----
+<1> Get a reference to the router outlet into which loaded the SCION DevTools
+<2> Set the color scheme; can be `light` or `dark`.
+
