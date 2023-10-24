@@ -1,4 +1,4 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
+@use '@scion/components.internal/design' as sci-design;
 
 :host {
   display: flex;
@@ -20,7 +20,7 @@
     div.subscriber-badge {
       display: flex;
       margin: 2px 0 10px 0;
-      @include sci-ɵcomponents.theme-chip(var(--sci-color-primary), var(--sci-color-P100), var(--sci-color-primary));
+      @include sci-design.style-chip(var(--sci-color-border), var(--sci-color-background-secondary), var(--sci-color-text));
       padding: .25em 1em;
 
       > span.count {
@@ -30,10 +30,12 @@
   }
 
   > output.publish-error {
-    border: 1px solid var(--sci-color-warn);
-    background-color: var(--sci-color-W100);
-    border-radius: 3px;
+    border: 1px solid var(--sci-color-negative);
+    background-color: var(--sci-color-background-negative);
+    color: var(--sci-color-negative);
+    border-radius: var(--sci-corner);
     padding: 1em;
+    font-family: monospace;
   }
 
   > sci-list.replies {

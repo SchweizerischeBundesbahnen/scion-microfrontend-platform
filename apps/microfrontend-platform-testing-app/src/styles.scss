@@ -1,16 +1,41 @@
-@use '@scion/components.internal/theme';
+@use '@angular/cdk';
+@use '@scion/components';
+@use '@scion/components.internal/design' as sci-design;
+
+@import url('https://fonts.googleapis.com/css?family=Roboto:normal,bold,italic,bolditalic|Roboto+Mono');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded');
+
+html {
+  font-size: 14px; // defines 1rem as 14px
+  width: 100vw;
+  height: 100vh;
+}
+
+body {
+  font-family: Roboto, Arial, sans-serif;
+  color: var(--sci-color-text);
+  background-color: var(--sci-color-background-primary);
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
 
 * {
   box-sizing: border-box;
 }
 
-html {
-  font-size: 14px; // defines 1rem as 14px
+a {
+  @include sci-design.style-link();
 }
 
-body {
-  font-family: Roboto, Arial, sans-serif;
-  color: var(--sci-color-foreground);
-  background-color: var(--sci-color-background);
-  margin: 0;
+button[class*="material-icons"], button[class*="material-symbols"] {
+  @include sci-design.style-mat-icon-button();
 }
+
+button:not([class*="material-icons"]):not([class*="material-symbols"]) {
+  @include sci-design.style-button();
+}
+
+// Install Angular CDK styles
+@include cdk.a11y-visually-hidden();
+@include cdk.overlay();

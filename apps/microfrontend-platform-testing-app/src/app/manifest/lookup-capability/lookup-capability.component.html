@@ -16,8 +16,8 @@
   </sci-form-field>
 
   <section class="buttons">
-    <button type="submit" *ngIf="!capabilities$" (click)="onLookup()" [disabled]="form.invalid" class="e2e-lookup">Lookup</button>
-    <button type="submit" *ngIf="capabilities$" (click)="onLookupCancel()" class="e2e-cancel-lookup">Cancel the lookup</button>
+    <button type="submit" *ngIf="!capabilities$" (click)="onLookup()" [disabled]="form.invalid" class="e2e-lookup" sci-primary>Lookup</button>
+    <button type="submit" *ngIf="capabilities$" (click)="onLookupCancel()" class="e2e-cancel-lookup" sci-primary>Cancel the lookup</button>
     <button type="button" (click)="onReset()" [disabled]="form.pristine" class="e2e-reset">Reset</button>
   </section>
 </form>
@@ -30,7 +30,7 @@
         <span class="app">{{capability.metadata!.appSymbolicName}}</span>
         <span class="id">{{capability.metadata!.id}}</span>
         <span class="visibility">{{capability.private ? 'PRIVATE' : 'PUBLIC'}}</span>
-        <button type="button" class="material-icons" title="Copy capability to clipboard" (click)="onCopyToClipboard(capability)">content_copy</button>
+        <button type="button" title="Copy capability to clipboard" (click)="onCopyToClipboard(capability)" sciMaterialIcon>content_copy</button>
       </section>
     </ng-template>
   </ng-container>

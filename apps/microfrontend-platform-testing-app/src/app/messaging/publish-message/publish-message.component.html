@@ -53,8 +53,8 @@
   </ng-template>
 </form>
 
-<button type="button" (click)="onPublish()" *ngIf="!publishing" [disabled]="form.invalid" class="e2e-publish">{{isTopicFlavor() ? 'Publish message' : 'Issue intent'}}</button>
-<button type="button" (click)="onCancelPublish()" *ngIf="publishing" class="e2e-cancel">Cancel</button>
+<button type="button" (click)="onPublish()" *ngIf="!publishing" [disabled]="form.invalid" class="e2e-publish" sci-primary>{{isTopicFlavor() ? 'Publish message' : 'Issue intent'}}</button>
+<button type="button" (click)="onCancelPublish()" *ngIf="publishing" class="e2e-cancel" sci-primary>Cancel</button>
 
 <output class="publish-error e2e-publish-error" *ngIf="publishError">
   {{publishError}}

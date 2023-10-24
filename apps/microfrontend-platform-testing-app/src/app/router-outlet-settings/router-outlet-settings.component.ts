@@ -7,13 +7,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, ElementRef, HostListener, Injector} from '@angular/core';
+import {Component, HostListener, Injector} from '@angular/core';
 import {PreferredSize, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
 import {JsonPipe, NgIf, NgTemplateOutlet} from '@angular/common';
 import {A11yModule} from '@angular/cdk/a11y';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {SciToggleButtonComponent} from '@scion/components.internal/toggle-button';
+import {FormControl, ReactiveFormsModule} from '@angular/forms';
 
 const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top'};
 
@@ -27,30 +29,26 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
     JsonPipe,
     NgTemplateOutlet,
     A11yModule,
+    ReactiveFormsModule,
+    SciToggleButtonComponent,
   ],
 })
 export class RouterOutletSettingsComponent {
 
-  constructor(host: ElementRef<HTMLElement>,
-              private _routerOutlet: SciRouterOutletElement,
-              private _overlay: OverlayRef) {
+  public pageScrollingEnabledFormControl: FormControl<boolean>;
+
+  constructor(private _routerOutlet: SciRouterOutletElement, private _overlay: OverlayRef) {
+    this.pageScrollingEnabledFormControl = new FormControl<boolean>(this._routerOutlet.scrollable, {nonNullable: true});
+    this.pageScrollingEnabledFormControl.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(on => this._routerOutlet.scrollable = on);
     this._overlay.backdropClick()
       .pipe(takeUntilDestroyed())
-      .subscribe(() => {
-        this._overlay.dispose();
-      });
-  }
-
-  public onPageScrollingToggle(): void {
-    this._routerOutlet.scrollable = !this._routerOutlet.scrollable;
+      .subscribe(() => this._overlay.dispose());
   }
 
   public onPreferredSizeResetClick(): void {
     this._routerOutlet.resetPreferredSize();
-  }
-
-  public get pageScrollingEnabled(): boolean {
-    return this._routerOutlet.scrollable;
   }
 
   public get preferredSize(): PreferredSize | undefined {

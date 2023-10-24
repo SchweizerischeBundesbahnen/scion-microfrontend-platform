@@ -21,7 +21,7 @@
     <sci-checkbox [formControl]="form.controls.showSplash" class="e2e-show-splash"></sci-checkbox>
   </sci-form-field>
 
-  <button type="submit" class="e2e-navigate" (click)="onNavigateClick()" [disabled]="form.invalid">Navigate</button>
+  <button type="submit" class="e2e-navigate" (click)="onNavigateClick()" [disabled]="form.invalid" sci-primary>Navigate</button>
 </form>
 
 <output class="navigate-error e2e-navigate-error" *ngIf="navigateError">

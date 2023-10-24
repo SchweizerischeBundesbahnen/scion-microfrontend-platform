@@ -4,22 +4,24 @@
   gap: .5em;
 
   > div.angular-change-detection-indicator {
-    border: 1px dashed var(--sci-color-P400);
-    color: var(--sci-color-P500);
+    border: 1px dashed var(--sci-color-border);
+    border-radius: var(--sci-corner-small);
+    color: var(--sci-color-text-subtlest);
     padding: 1em;
     text-align: center;
 
     &.active {
-      background-color: #dff5df;
-      border-color: #004d00;
-      color: #004d00;
+      background-color: var(--sci-color-background-positive);
+      border-color: var(--sci-color-positive);
+      color: var(--sci-color-positive);
     }
   }
 
   > div.element {
     flex: none;
-    border: 1px dashed var(--sci-color-P400);
-    color: var(--sci-color-P500);
+    border: 1px dashed var(--sci-color-border);
+    border-radius: var(--sci-corner-small);
+    color: var(--sci-color-text-subtlest);
     padding: 1em;
     user-select: none;
     text-align: center;

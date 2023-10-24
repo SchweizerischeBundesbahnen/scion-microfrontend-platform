@@ -3,15 +3,17 @@
     <img *ngIf="isPlatformHost" class="banner" src="assets/scion-microfrontend-platform-banner.svg" alt="SCION Microfrontend Platform">
     <span *ngIf="pageTitle" class="page-title">{{pageTitle}}</span>
   </div>
-  <span class="angular-change-detection-indicator" title="Indicates that Angular is currently checking the application for changes." #angular_change_detection_indicator></span>
-  <span class="chip focus-within e2e-focus-within" title="This document or its embedded web content has received focus" *ngIf="focusMonitor.focusWithin$ | async">focus-within</span>
-  <span class="chip focus e2e-has-focus" *ngIf="focusMonitor.focus$ | async">has-focus</span>
-  <span class="chip app-name">{{appSymbolicName}}</span>
-  <button class="chip devtools" *ngIf="isDevToolsEnabled" (click)="onDevToolsToggle()">
-    <span>DevTools</span>
-    <span class="material-icons toggle" [class.enabled]="isDevToolsOpened">{{isDevToolsOpened ? 'toggle_on' : 'toggle_off'}}</span>
-  </button>
-
+  <div class="actions">
+    <span class="angular-change-detection-indicator" title="Indicates that Angular is currently checking the application for changes." #angular_change_detection_indicator></span>
+    <span class="chip focus-within e2e-focus-within" title="This document or its embedded web content has received focus" *ngIf="focusMonitor.focusWithin$ | async">focus-within</span>
+    <span class="chip focus e2e-has-focus" *ngIf="focusMonitor.focus$ | async">has-focus</span>
+    <span class="chip app-name">{{appSymbolicName}}</span>
+    <div class="separator"></div>
+    <label class="devtools-toggle" *ngIf="devToolsFormControl.enabled">
+      <sci-toggle-button [formControl]="devToolsFormControl" [class.selected]="devToolsFormControl.value"></sci-toggle-button>
+      DevTools
+    </label>
+  </div>
 </header>
 <sci-sashbox [direction]="'column'">
   <ng-template sciSash size="2">
@@ -19,7 +21,7 @@
       <router-outlet #outlet=outlet (activate)="onRouteActivate(outlet.activatedRoute)"></router-outlet>
     </sci-viewport>
   </ng-template>
-  <ng-template sciSash size="1" *ngIf="isDevToolsOpened">
+  <ng-template sciSash size="1" *ngIf="devToolsFormControl.value">
     <app-devtools></app-devtools>
   </ng-template>
 </sci-sashbox>

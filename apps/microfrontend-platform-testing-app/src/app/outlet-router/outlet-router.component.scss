@@ -13,9 +13,11 @@
 
   > output.navigate-error {
     flex: none;
-    border: 1px solid var(--sci-color-warn);
-    background-color: var(--sci-color-W100);
-    border-radius: 3px;
+    border: 1px solid var(--sci-color-negative);
+    background-color: var(--sci-color-background-negative);
+    color: var(--sci-color-negative);
+    border-radius: var(--sci-corner);
     padding: 1em;
+    font-family: monospace;
   }
 }

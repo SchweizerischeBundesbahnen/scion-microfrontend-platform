@@ -19,6 +19,8 @@ import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {DevToolsComponent} from '../devtools/devtools.component';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {SciToggleButtonComponent} from '@scion/components.internal/toggle-button';
+import {FormControl, ReactiveFormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-shell',
@@ -33,6 +35,8 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
     SciSashDirective,
     SciViewportComponent,
     DevToolsComponent,
+    SciToggleButtonComponent,
+    ReactiveFormsModule,
   ],
 })
 export default class AppShellComponent implements OnInit {
@@ -42,10 +46,10 @@ export default class AppShellComponent implements OnInit {
 
   public appSymbolicName: string;
   public pageTitle: string | undefined;
-  public isDevToolsOpened = false;
-  public isDevToolsEnabled: boolean;
   public isPlatformHost = Beans.get<boolean>(IS_PLATFORM_HOST);
   public focusMonitor: FocusMonitor;
+
+  public devToolsFormControl = new FormControl<boolean>(false, {nonNullable: true});
 
   @ViewChild('angular_change_detection_indicator', {static: true})
   private _changeDetectionElement!: ElementRef<HTMLElement>;
@@ -53,10 +57,12 @@ export default class AppShellComponent implements OnInit {
   constructor(private _zone: NgZone, private _destroyRef: DestroyRef) {
     this.appSymbolicName = Beans.get<string>(APP_IDENTITY);
     this.focusMonitor = Beans.get(FocusMonitor);
-
     this.installRouteActivateListener();
     this.installKeystrokeRegisterLogger();
-    this.isDevToolsEnabled = this.isPlatformHost && Beans.get(ManifestService).applications.some(app => app.symbolicName === 'devtools');
+
+    if (!this.isPlatformHost || !Beans.get(ManifestService).applications.some(app => app.symbolicName === 'devtools')) {
+      this.devToolsFormControl.disable();
+    }
   }
 
   public ngOnInit(): void {
@@ -129,11 +135,6 @@ export default class AppShellComponent implements OnInit {
     const isPageTitleVisible = Defined.orElse(route.snapshot.data['pageTitleVisible'], true);
     asapScheduler.schedule(() => this.pageTitle = isPageTitleVisible ? route.snapshot.data['pageTitle'] : null);
     this._routeActivate$.next();
-  }
-
-
-  public onDevToolsToggle(): void {
-    this.isDevToolsOpened = !this.isDevToolsOpened;
   }
 
   /**

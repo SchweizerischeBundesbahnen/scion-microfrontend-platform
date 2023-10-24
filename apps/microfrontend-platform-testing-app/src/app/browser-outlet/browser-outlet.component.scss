@@ -1,28 +1,34 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
+@use '@scion/components.internal/design' as sci-design;
 
 :host {
   display: flex;
   flex-direction: column;
+  gap: .25em;
+  margin-top: 1px; // to not crop outline of buttons when active
 
   > form {
     flex: none;
     display: flex;
-    margin-bottom: .25em;
+    align-items: center;
+    gap: .25em;
 
     > input.url {
+      @include sci-design.style-input-field();
       flex: auto;
-      @include sci-ɵcomponents.theme-input-field();
     }
 
     > button {
       flex: none;
-      margin-left: .25em;
+
+      &.context-define {
+        transform: rotate(180deg);
+      }
     }
   }
 
   > sci-router-outlet {
     flex: auto;
-    border: 1px solid var(--sci-color-P300);
-    border-radius: 3px;
+    border: 1px solid var(--sci-color-border);
+    border-radius: var(--sci-corner);
   }
 }

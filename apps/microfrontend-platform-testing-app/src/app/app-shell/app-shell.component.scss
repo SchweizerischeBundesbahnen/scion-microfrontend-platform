@@ -1,5 +1,3 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
-
 :host {
   display: flex;
   flex-direction: column;
@@ -15,10 +13,6 @@
     display: flex;
     margin-bottom: 1.5em;
     align-items: flex-start;
-
-    > *:not(:last-child) {
-      margin-right: .25em;
-    }
 
     > div.title {
       flex: auto;
@@ -36,55 +30,57 @@
       }
     }
 
-    > span.angular-change-detection-indicator {
-      width: 1em;
-      height: 1em;
-      min-width: 1em;
-      min-height: 1em;
-      border: 1px solid var(--sci-color-primary);
-      border-radius: 50%;
-      background-color: var(--sci-color-P50);
-      position: relative;
-      top: .5em;
-      margin: 0 .5em;
+    > div.actions {
+      display: flex;
+      gap: .25em;
+      align-items: center;
+      user-select: none;
 
-      &:not(.active) {
-        visibility: hidden;
+      > span.angular-change-detection-indicator {
+        width: 1em;
+        height: 1em;
+        border: 1px solid var(--sci-color-border);
+        border-radius: 50%;
+        background-color: var(--sci-color-gray-100);
+        margin: 0 .25em;
+
+        &:not(.active) {
+          visibility: hidden;
+        }
       }
-    }
 
-    > span.chip, > button.chip {
-      flex: none;
-
-      &.focus-within, &.focus {
-        @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
-        padding: .25em .75em;
+      > span.chip {
+        border: 1px solid var(--sci-color-border);
+        border-radius: var(--sci-corner-small);
+        color: var(--sci-color-text-subtlest);
         font-size: 1.1rem;
-      }
-
-      &.app-name {
-        @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), var(--sci-color-A50), var(--sci-color-accent));
         padding: .25em .75em;
-        font-size: 1.1rem;
-        font-weight: bold;
+
+        &.app-name {
+          font-weight: bold;
+        }
       }
 
-      &.devtools {
-        all: unset;
-        @include sci-ɵcomponents.theme-chip(var(--sci-color-accent), null, var(--sci-color-accent));
-        padding: .1em 1em;
-        font-size: 1rem;
-        font-weight: bold;
+      > div.separator {
+        align-self: stretch;
+        background-color: var(--sci-color-border);
+        width: 1px;
+        margin: 0 .5em;
+
+        &:last-child {
+          display: none;
+        }
+      }
+
+      > label.devtools-toggle {
         display: flex;
         align-items: center;
+        gap: .5em;
         cursor: pointer;
+        color: var(--sci-color-gray-600);
 
-        > span.toggle {
-          color: var(--sci-color-primary);
-
-          &.enabled {
-            color: var(--sci-color-accent);
-          }
+        &:has(sci-toggle-button.selected) {
+          color: var(--sci-color-accent);
         }
       }
     }

@@ -1,4 +1,4 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
+@use '@scion/components.internal/design' as sci-design;
 
 :host {
   display: flex;
@@ -8,8 +8,8 @@
   > section {
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--sci-color-P300);
-    border-radius: 3px;
+    border: 1px solid var(--sci-color-border);
+    border-radius: var(--sci-corner);
     padding: 1em;
 
     > *:not(:last-child):not(h2) {
@@ -17,7 +17,7 @@
     }
 
     > input {
-      @include sci-ɵcomponents.theme-input-field();
+      @include sci-design.style-input-field();
     }
 
     > h2 {
@@ -28,8 +28,9 @@
   }
 
   > section.focusable-element {
-    border: 1px dashed var(--sci-color-P400);
-    color: var(--sci-color-P500);
+    border: 1px dashed var(--sci-color-border);
+    border-radius: var(--sci-corner-small);
+    color: var(--sci-color-text-subtlest);
     padding: 1em;
     user-select: none;
   }

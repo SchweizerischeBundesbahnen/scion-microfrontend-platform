@@ -20,6 +20,7 @@ import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
+import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 @Component({
   selector: 'app-lookup-capability',
@@ -38,6 +39,7 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
     SciListComponent,
     SciListItemDirective,
     SciQualifierChipListComponent,
+    SciMaterialIconDirective,
   ],
 })
 export default class LookupCapabilityComponent {

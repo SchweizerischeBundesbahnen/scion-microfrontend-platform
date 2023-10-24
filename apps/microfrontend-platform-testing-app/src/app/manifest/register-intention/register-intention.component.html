@@ -7,7 +7,7 @@
     <sci-form-field label="Qualifier" direction="column">
       <sci-key-value-field [keyValueFormArray]="registerForm.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-key-value-field>
     </sci-form-field>
-    <button type="submit" (click)="onRegister()" [disabled]="registerForm.invalid" class="e2e-register">Register</button>
+    <button type="submit" (click)="onRegister()" [disabled]="registerForm.invalid" class="e2e-register" sci-primary>Register</button>
   </form>
 
   <output class="error e2e-register-error" *ngIf="registerError">
@@ -36,7 +36,7 @@
     <sci-form-field label="Application" direction="column">
       <input [formControl]="unregisterForm.controls.appSymbolicName" class="e2e-app-symbolic-name">
     </sci-form-field>
-    <button type="submit" (click)="onUnregister()" [disabled]="unregisterForm.invalid" class="e2e-unregister">Unregister</button>
+    <button type="submit" (click)="onUnregister()" [disabled]="unregisterForm.invalid" class="e2e-unregister" sci-primary>Unregister</button>
   </form>
 
   <output class="error e2e-unregister-error" *ngIf="unregisterError">

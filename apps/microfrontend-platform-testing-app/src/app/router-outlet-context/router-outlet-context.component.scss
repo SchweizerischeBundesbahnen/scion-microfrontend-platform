@@ -1,23 +1,24 @@
-@use '@scion/components.internal' as sci-ɵcomponents;
-
-$h-margin: 2em;
+@use '@scion/components.internal/design' as sci-design;
 
 :host {
   display: flex;
   flex-direction: column;
-  background-color: var(--sci-color-background);
-  border: 1px solid var(--sci-color-accent);
-  width: 100%;
+  background-color: var(--sci-color-background-elevation);
+  border: 1px solid var(--sci-color-border);
+  border-radius: var(--sci-corner);
+  box-shadow: var(--sci-elevation) var(--sci-static-color-black);
 
   > header {
     flex: none;
     display: flex;
-    padding: .5em .5em .5em $h-margin;
+    padding: .5em 1em .5em 1em;
     height: 100px;
     justify-content: space-between;
     align-items: flex-start;
     background-color: var(--sci-color-accent);
-    color: var(--sci-color-background);
+    color: var(--sci-color-accent-inverse);
+    border-top-left-radius: var(--sci-corner);
+    border-top-right-radius: var(--sci-corner);
 
     > h1 {
       font-size: 1.2em;
@@ -35,51 +36,60 @@ $h-margin: 2em;
     flex: auto;
     display: flex;
     flex-direction: column;
-    margin: 0 $h-margin;
-    position: relative;
-    top: -3em;
+    gap: 4em;
+    padding: 0 1em 1em 1em;
+    width: 32em;
 
-    > section.new-context-entry {
-      flex: none;
-      display: flex;
-      flex-direction: column;
-      padding: 1em;
-      background-color: var(--sci-color-background);
-      box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+    > div.overlay-anchor {
+      height: 0;
+      width: 0;
+      position: relative; // positioning context for overlay
+      align-self: center;
+      display: grid;
+      place-items: center;
 
-      > header {
-        flex: none;
-        font-weight: bold;
-        margin-bottom: .75em;
-      }
-
-      > form {
-        flex: none;
+      > section.overlay.new-context-entry {
+        position: absolute;
         display: flex;
+        flex-direction: column;
+        padding: 1em;
+        background-color: var(--sci-color-background-elevation);
+        border: 1px solid var(--sci-color-border);
+        border-radius: var(--sci-corner-small);
+        box-shadow: var(--sci-elevation) var(--sci-static-color-black);
+        width: 30em;
 
-        > input.name {
+        > header {
           flex: none;
-          margin-right: .25em;
-          width: 100px;
-          @include sci-ɵcomponents.theme-input-field();
+          font-weight: bold;
+          margin-bottom: .75em;
         }
 
-        > input.value {
-          flex: auto;
-          margin-right: .25em;
-          @include sci-ɵcomponents.theme-input-field();
-        }
-
-        > button.add {
+        > form {
           flex: none;
+          display: flex;
+          gap: .25em;
+
+          > input.name {
+            @include sci-design.style-input-field();
+            flex: none;
+            width: 100px;
+          }
+
+          > input.value {
+            @include sci-design.style-input-field();
+            flex: auto;
+          }
+
+          > button.add {
+            flex: none;
+          }
         }
       }
     }
 
     > sci-list.context {
       flex: auto;
-      position: relative;
-      top: 1.5em;
     }
   }
 }
