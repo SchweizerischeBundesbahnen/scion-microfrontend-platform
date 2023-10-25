@@ -2,4 +2,9 @@
   display: grid;
   border: 1px solid var(--sci-color-border);
   border-radius: var(--sci-corner);
+
+  > sci-router-outlet::part(splash) {
+    display: grid;
+    place-content: center;
+  }
 }

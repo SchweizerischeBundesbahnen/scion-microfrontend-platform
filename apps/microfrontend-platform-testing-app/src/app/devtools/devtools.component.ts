@@ -10,6 +10,7 @@
 import {Component, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 import {OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {SciThrobberComponent} from '@scion/components/throbber';
 
 @Component({
   selector: 'app-devtools',
@@ -17,6 +18,9 @@ import {Beans} from '@scion/toolkit/bean-manager';
   styleUrls: ['./devtools.component.scss'],
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
+  imports: [
+    SciThrobberComponent,
+  ],
 })
 export class DevToolsComponent {
 

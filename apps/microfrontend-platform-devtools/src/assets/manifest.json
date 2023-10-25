@@ -11,7 +11,8 @@
       "private": false,
       "description": "Provides an overview of the installed micro applications, their intentions and capabilities, and shows dependencies between applications.",
       "properties": {
-        "path": ""
+        "path": "",
+        "showSplash": true
       }
     },
     {
@@ -25,7 +26,8 @@
       "properties": {
         "path": "",
         "title": "Developer Tools",
-        "heading": "SCION Microfrontend Platform"
+        "heading": "SCION Microfrontend Platform",
+        "showSplash": true
       }
     }
   ]
