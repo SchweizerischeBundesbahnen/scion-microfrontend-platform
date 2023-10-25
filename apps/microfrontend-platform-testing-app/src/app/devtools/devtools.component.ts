@@ -8,9 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
-import {ApplicationConfig, OutletRouter} from '@scion/microfrontend-platform';
+import {OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {environment} from '../../environments/environment';
 
 @Component({
   selector: 'app-devtools',
@@ -22,8 +21,6 @@ import {environment} from '../../environments/environment';
 export class DevToolsComponent {
 
   constructor() {
-    const devToolsApplicationConfig = environment.devtools! as ApplicationConfig;
-    const devToolsUrl = new URL(devToolsApplicationConfig.manifestUrl).origin;
-    Beans.get(OutletRouter).navigate(devToolsUrl, {outlet: 'devtools'});
+    Beans.get(OutletRouter).navigate({component: 'devtools', vendor: 'scion'}, {outlet: 'devtools'});
   }
 }

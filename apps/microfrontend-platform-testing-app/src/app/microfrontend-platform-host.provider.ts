@@ -9,7 +9,7 @@
  */
 import {coerceBooleanProperty} from '@angular/cdk/coercion';
 import {APP_INITIALIZER, DestroyRef, EnvironmentInjector, EnvironmentProviders, inject, makeEnvironmentProviders, NgZone, PlatformRef, runInInjectionContext} from '@angular/core';
-import {ApplicationConfig, Handler, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatformHost, ObservableDecorator, TopicMessage} from '@scion/microfrontend-platform';
+import {ApplicationConfig, Handler, IntentInterceptor, IntentMessage, MessageClient, MessageHeaders, MessageInterceptor, MicrofrontendPlatformHost, ObservableDecorator, PlatformCapabilityTypes, TopicMessage} from '@scion/microfrontend-platform';
 import {environment} from '../environments/environment';
 import {TestingAppTopics} from './testing-app.topics';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -53,6 +53,7 @@ async function startMicrofrontendPlatformHost(): Promise<void> {
   const manifestClassifier = queryParams.has('manifestClassifier') ? `-${queryParams.get('manifestClassifier')}` : '';
   const activatorApiDisabled = coerceBooleanProperty(queryParams.get('activatorApiDisabled'));
   const intentionRegisterApiDisabled = new Set((queryParams.get('intentionRegisterApiDisabled') || '').split(','));
+  const hasDevTools = !!environment.devtools && (!queryParams.has('devtools') || coerceBooleanProperty(queryParams.get('devtools')));
 
   installMessageInterceptors(queryParams);
   installIntentInterceptors(queryParams);
@@ -68,8 +69,8 @@ async function startMicrofrontendPlatformHost(): Promise<void> {
   });
 
   // Register devtools app if enabled for this environment
-  if (environment.devtools) {
-    testingAppConfigs.push(environment.devtools);
+  if (hasDevTools) {
+    testingAppConfigs.push(environment.devtools!);
   }
 
   // Log the startup progress (startup-progress.e2e-spec.ts).
@@ -85,6 +86,14 @@ async function startMicrofrontendPlatformHost(): Promise<void> {
 
   // Start the microfrontend platform as host
   await zone.runOutsideAngular(() => MicrofrontendPlatformHost.start({
+    host: {
+      manifest: {
+        name: 'Host',
+        intentions: [
+          ...(hasDevTools ? [{type: PlatformCapabilityTypes.Microfrontend, qualifier: {component: 'devtools', vendor: 'scion'}}] : []),
+        ],
+      },
+    },
     applications: testingAppConfigs,
     activatorLoadTimeout: environment.activatorLoadTimeout,
     activatorApiDisabled: activatorApiDisabled,

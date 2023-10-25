@@ -857,7 +857,6 @@ test.describe('Manifest Registry', () => {
       await registratorApp3PO.unregisterIntentions({type: 'type', qualifier: {key: 'value'}, appSymbolicName: 'app-2'});
       await registratorApp3PO.unregisterIntentions({type: 'type', qualifier: {key: 'value'}, appSymbolicName: 'app-3'});
       await expect(await lookupApp2PO.getLookedUpIntentionIds()).toEqual([]);
-      await expect(await lookupApp2PO.getLookedUpIntentionIds()).toEqual([]);
     });
   });
 

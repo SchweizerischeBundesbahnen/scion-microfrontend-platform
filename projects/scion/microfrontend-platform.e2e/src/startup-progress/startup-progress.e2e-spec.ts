@@ -25,70 +25,35 @@ test.describe('Startup Progress', () => {
     // devtools manifest.json with 0 activators are only configured for environment.ts and disabled for CI.
     await testingAppPO.navigateTo({}, {queryParams: new Map().set('manifestClassifier', 'activator-progress')});
 
-    if (await testingAppPO.isDevtoolsEnabled()) {
-      await expect(await consoleLogs.get({severity: 'debug', filter: /PlatformInitializer::host:progress/})).toEqualIgnoreOrder([
-        '[PlatformInitializer::host:progress] 0%',
-        '[PlatformInitializer::host:progress] 5.56%',
-        '[PlatformInitializer::host:progress] 11.11%',
-        '[PlatformInitializer::host:progress] 16.67%',
-        '[PlatformInitializer::host:progress] 22.22%',
-        '[PlatformInitializer::host:progress] 27.78%',
-        '[PlatformInitializer::host:progress] 33.33%',
-        '[PlatformInitializer::host:progress] 47.22%',
-        '[PlatformInitializer::host:progress] 61.11%',
-        '[PlatformInitializer::host:progress] 75%',
-        '[PlatformInitializer::host:progress] 88.89%',
-        '[PlatformInitializer::host:progress] 100%',
-        '[PlatformInitializer::host:progress] startup completed',
-      ]);
-    }
-    else {
-      await expect(await consoleLogs.get({severity: 'debug', filter: /PlatformInitializer::host:progress/})).toEqualIgnoreOrder([
-        '[PlatformInitializer::host:progress] 0%',
-        '[PlatformInitializer::host:progress] 6.67%',
-        '[PlatformInitializer::host:progress] 13.33%',
-        '[PlatformInitializer::host:progress] 20%',
-        '[PlatformInitializer::host:progress] 26.67%',
-        '[PlatformInitializer::host:progress] 33.33%',
-        '[PlatformInitializer::host:progress] 47.22%',
-        '[PlatformInitializer::host:progress] 61.11%',
-        '[PlatformInitializer::host:progress] 75%',
-        '[PlatformInitializer::host:progress] 88.89%',
-        '[PlatformInitializer::host:progress] 100%',
-        '[PlatformInitializer::host:progress] startup completed',
-      ]);
-    }
+    await expect(await consoleLogs.get({severity: 'debug', filter: /PlatformInitializer::host:progress/})).toEqualIgnoreOrder([
+      '[PlatformInitializer::host:progress] 0%',
+      '[PlatformInitializer::host:progress] 6.67%',
+      '[PlatformInitializer::host:progress] 13.33%',
+      '[PlatformInitializer::host:progress] 20%',
+      '[PlatformInitializer::host:progress] 26.67%',
+      '[PlatformInitializer::host:progress] 33.33%',
+      '[PlatformInitializer::host:progress] 47.22%',
+      '[PlatformInitializer::host:progress] 61.11%',
+      '[PlatformInitializer::host:progress] 75%',
+      '[PlatformInitializer::host:progress] 88.89%',
+      '[PlatformInitializer::host:progress] 100%',
+      '[PlatformInitializer::host:progress] startup completed',
+    ]);
   });
 
   test('should report startup progress and complete if no activators are present', async ({testingAppPO, consoleLogs}) => {
     await testingAppPO.navigateTo({}, {queryParams: new Map().set('activatorApiDisabled', true)});
 
-    if (await testingAppPO.isDevtoolsEnabled()) {
-      await expect(await consoleLogs.get({severity: 'debug', filter: /PlatformInitializer::host:progress/})).toEqualIgnoreOrder([
-        '[PlatformInitializer::host:progress] 0%',
-        '[PlatformInitializer::host:progress] 5.56%',
-        '[PlatformInitializer::host:progress] 11.11%',
-        '[PlatformInitializer::host:progress] 16.67%',
-        '[PlatformInitializer::host:progress] 22.22%',
-        '[PlatformInitializer::host:progress] 27.78%',
-        '[PlatformInitializer::host:progress] 33.33%',
-        '[PlatformInitializer::host:progress] 88.89%',
-        '[PlatformInitializer::host:progress] 100%',
-        '[PlatformInitializer::host:progress] startup completed',
-      ]);
-    }
-    else {
-      await expect(await consoleLogs.get({severity: 'debug', filter: /PlatformInitializer::host:progress/})).toEqualIgnoreOrder([
-        '[PlatformInitializer::host:progress] 0%',
-        '[PlatformInitializer::host:progress] 6.67%',
-        '[PlatformInitializer::host:progress] 13.33%',
-        '[PlatformInitializer::host:progress] 20%',
-        '[PlatformInitializer::host:progress] 26.67%',
-        '[PlatformInitializer::host:progress] 33.33%',
-        '[PlatformInitializer::host:progress] 88.89%',
-        '[PlatformInitializer::host:progress] 100%',
-        '[PlatformInitializer::host:progress] startup completed',
-      ]);
-    }
+    await expect(await consoleLogs.get({severity: 'debug', filter: /PlatformInitializer::host:progress/})).toEqualIgnoreOrder([
+      '[PlatformInitializer::host:progress] 0%',
+      '[PlatformInitializer::host:progress] 6.67%',
+      '[PlatformInitializer::host:progress] 13.33%',
+      '[PlatformInitializer::host:progress] 20%',
+      '[PlatformInitializer::host:progress] 26.67%',
+      '[PlatformInitializer::host:progress] 33.33%',
+      '[PlatformInitializer::host:progress] 88.89%',
+      '[PlatformInitializer::host:progress] 100%',
+      '[PlatformInitializer::host:progress] startup completed',
+    ]);
   });
 });
