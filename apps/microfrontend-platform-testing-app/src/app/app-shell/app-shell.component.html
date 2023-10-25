@@ -7,7 +7,7 @@
   <span class="chip focus-within e2e-focus-within" title="This document or its embedded web content has received focus" *ngIf="focusMonitor.focusWithin$ | async">focus-within</span>
   <span class="chip focus e2e-has-focus" *ngIf="focusMonitor.focus$ | async">has-focus</span>
   <span class="chip app-name">{{appSymbolicName}}</span>
-  <button class="chip devtools" *ngIf="isDevtoolsEnabled" (click)="onDevToolsToggle()">
+  <button class="chip devtools" *ngIf="isDevToolsEnabled" (click)="onDevToolsToggle()">
     <span>DevTools</span>
     <span class="material-icons toggle" [class.enabled]="isDevToolsOpened">{{isDevToolsOpened ? 'toggle_on' : 'toggle_off'}}</span>
   </button>

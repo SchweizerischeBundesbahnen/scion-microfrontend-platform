@@ -7,14 +7,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, DestroyRef, ElementRef, HostBinding, NgZone, OnInit, ViewChild} from '@angular/core';
+import {Component, DestroyRef, ElementRef, NgZone, OnInit, ViewChild} from '@angular/core';
 import {asapScheduler, debounceTime, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
-import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
+import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, ManifestService, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {tap} from 'rxjs/operators';
 import {ActivatedRoute, RouterOutlet} from '@angular/router';
 import {Defined} from '@scion/toolkit/util';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {environment} from '../../environments/environment';
 import {AsyncPipe, NgIf} from '@angular/common';
 import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 import {SciViewportComponent} from '@scion/components/viewport';
@@ -44,6 +43,7 @@ export default class AppShellComponent implements OnInit {
   public appSymbolicName: string;
   public pageTitle: string | undefined;
   public isDevToolsOpened = false;
+  public isDevToolsEnabled: boolean;
   public isPlatformHost = Beans.get<boolean>(IS_PLATFORM_HOST);
   public focusMonitor: FocusMonitor;
 
@@ -56,6 +56,7 @@ export default class AppShellComponent implements OnInit {
 
     this.installRouteActivateListener();
     this.installKeystrokeRegisterLogger();
+    this.isDevToolsEnabled = this.isPlatformHost && Beans.get(ManifestService).applications.some(app => app.symbolicName === 'devtools');
   }
 
   public ngOnInit(): void {
@@ -130,10 +131,6 @@ export default class AppShellComponent implements OnInit {
     this._routeActivate$.next();
   }
 
-  @HostBinding('class.e2e-devtools-enabled')
-  public get isDevtoolsEnabled(): boolean {
-    return this.isPlatformHost && environment.devtools !== null;
-  }
 
   public onDevToolsToggle(): void {
     this.isDevToolsOpened = !this.isDevToolsOpened;

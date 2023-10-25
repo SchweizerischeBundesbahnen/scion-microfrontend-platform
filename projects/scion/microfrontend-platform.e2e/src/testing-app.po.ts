@@ -10,7 +10,7 @@
 
 import {FrameLocator, Page} from '@playwright/test';
 import {BrowserOutletPO, OutletDescriptorTypes, OutletPageObject, OutletPageObjectConstructor, OutletPageObjectDescriptor} from './browser-outlet/browser-outlet.po';
-import {isCssClassPresent, isPresent} from './testing.util';
+import {isPresent} from './testing.util';
 import {ElementSelectors} from './element-selectors';
 
 /**
@@ -103,6 +103,10 @@ export class TestingAppPO {
 
     // Setup the test case
     const queryParams = options?.queryParams ?? new Map<string, string>();
+
+    // Do not register DevTools.
+    queryParams.set('devtools', 'false');
+
     const queryParamsEncoded = (queryParams.size ? `?${new URLSearchParams([...queryParams]).toString()}` : '');
     await this._page.goto(`/#/browser-outlets;names=${Object.keys(outlets).join(',')}${queryParamsEncoded}`);
     // Wait until started the host app.
@@ -170,13 +174,6 @@ export class TestingAppPO {
    */
   public async hasFocus(): Promise<boolean> {
     return isPresent(this._page.locator('app-root').locator('.e2e-has-focus'));
-  }
-
-  /**
-   * Returns `true` if the devtools is present in the current configuration.
-   */
-  public async isDevtoolsEnabled(): Promise<boolean> {
-    return isCssClassPresent(this._page.locator('app-shell'), 'e2e-devtools-enabled');
   }
 }
 
