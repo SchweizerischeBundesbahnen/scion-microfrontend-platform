@@ -10,7 +10,7 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, inject} from '@angular/core';
 import {Observable} from 'rxjs';
 import {ShellService} from './shell.service';
-import {ContextService, MicrofrontendPlatformClient} from '@scion/microfrontend-platform';
+import {ContextService, MicrofrontendPlatformClient, OUTLET_CONTEXT} from '@scion/microfrontend-platform';
 import {AsyncPipe, DOCUMENT, NgIf} from '@angular/common';
 import {RouterOutlet} from '@angular/router';
 import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
@@ -46,6 +46,17 @@ export class AppComponent {
   constructor(private _shellService: ShellService, private _cd: ChangeDetectorRef) {
     this.installNavigationEndListener();
     this.installThemeSwitcher();
+    this.signalReady().then();
+
+  }
+
+  /**
+   * Signals completed loading if loaded in a router outlet.
+   */
+  private async signalReady(): Promise<void> {
+    if (await Beans.opt(ContextService)?.isPresent(OUTLET_CONTEXT)) {
+      await MicrofrontendPlatformClient.signalReady();
+    }
   }
 
   private installNavigationEndListener(): void {

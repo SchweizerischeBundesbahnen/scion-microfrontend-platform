@@ -73,3 +73,7 @@ include::dev-tools.snippets.ts[tags=dev-tools:color-scheme]
 <1> Get a reference to the router outlet into which loaded the SCION DevTools
 <2> Set the color scheme; can be `light` or `dark`.
 
+***
+
+SCION DevTools supports the display of a splash while loading. If navigating to the DevTools via intent, the splash is displayed by default. If navigating via URL the navigation option `showSplash` must be set. See chapter <<chapter:router-outlet:splash>> for more information about displaying a splash.
+
