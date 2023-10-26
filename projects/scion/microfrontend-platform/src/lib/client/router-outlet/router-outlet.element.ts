@@ -39,6 +39,21 @@ const HTML_TEMPLATE = `
       border: none;
       margin: 0;
     }
+    
+    /* Ensure transparent router-outlet if empty.
+     *
+     * An iframe is transparent only if the embedded content has the same color scheme as the embedding document.
+     * An empty router-outlet loads the 'about:blank' page. This page has the user's preferred OS color scheme,
+     * which may be different from the application's color scheme, making the iframe opaque. Therefore, we hide
+     * the iframe to make the router-outlet transparent again.
+     *
+     * More information about iframe transparency:
+     * - https://github.com/w3c/csswg-drafts/issues/4772#issuecomment-591553929
+     * - https://fvsch.com/transparent-iframes
+     */
+    :host-context(.sci-empty) iframe {
+      display: none;
+    }
 
     div[part="splash"] {
       position: absolute;
