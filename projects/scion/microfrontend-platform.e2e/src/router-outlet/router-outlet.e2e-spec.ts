@@ -1910,6 +1910,53 @@ test.describe('RouterOutlet', () => {
     // expect the secondary router outlet to be navigated
     await expect(secondaryRouterOutletPO).toHaveRouterOutletUrl(getPageUrl({origin: TestingAppOrigins.APP_1, path: Microfrontend2PagePO.PATH}));
   });
+
+  test('should hide iframe if empty', async ({testingAppPO}) => {
+    const pagePOs = await testingAppPO.navigateTo({
+      router: OutletRouterPagePO,
+      routerOutlet: RouterOutletPagePO,
+    });
+
+    const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+    const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+
+    // Expect iframe to be invisible if not having performed a navigation yet
+    await expect(routerOutletPO.iframeLocator).not.toBeVisible();
+
+    // WHEN: Setting the outlet name
+    await routerOutletPO.enterOutletName('testee');
+    await routerOutletPO.clickApply();
+    // THEN: Expect iframe to still be invisible
+    await expect(routerOutletPO.iframeLocator).not.toBeVisible();
+
+    // WHEN: Navigating to a microfrontend
+    await routerPO.enterOutletName('testee');
+    await routerPO.enterUrl('/test-pages/microfrontend-1-test-page');
+    await routerPO.clickNavigate();
+    // THEN: Expect iframe to be visible
+    await expect(routerOutletPO.iframeLocator).toBeVisible();
+
+    // WHEN: Clearing the outlet
+    await routerPO.enterOutletName('testee');
+    await routerPO.enterUrl(null);
+    await routerPO.clickNavigate();
+    // THEN: Expect iframe to be invisible
+    await expect(routerOutletPO.iframeLocator).not.toBeVisible();
+
+    // WHEN: Navigating to a microfrontend
+    await routerPO.enterOutletName('testee');
+    await routerPO.enterUrl('/test-pages/microfrontend-1-test-page');
+    await routerPO.clickNavigate();
+    // THEN: Expect iframe to be visible
+    await expect(routerOutletPO.iframeLocator).toBeVisible();
+
+    // WHEN: Navigating to 'about:bank'
+    await routerPO.enterOutletName('testee');
+    await routerPO.enterUrl('about:blank');
+    await routerPO.clickNavigate();
+    // THEN: Expect iframe to be invisible
+    await expect(routerOutletPO.iframeLocator).not.toBeVisible();
+  });
 });
 
 function getPageUrl(parts: {origin: string; path: string}): string {
