@@ -97,12 +97,13 @@ export class MicrofrontendPlatformClient {
    * @see SciRouterOutletElement
    * @see NavigationOptions.showSplash
    */
-  public static async signalReady(): Promise<void> {
-    const outletContext = await Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
-    if (!outletContext) {
-      throw Error('[NullOutletContextError] not running in the context of a <sci-router-outlet>.');
-    }
-    await Beans.get(MessageClient).publish(RouterOutlets.signalReadyTopic(outletContext.uid));
+  public static signalReady(): void {
+    Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT).then(outletContext => {
+      if (!outletContext) {
+        return Promise.reject(Error('[NullOutletContextError] not running in the context of a <sci-router-outlet>.'));
+      }
+      return Beans.get(MessageClient).publish(RouterOutlets.signalReadyTopic(outletContext.uid));
+    });
   }
 }
 

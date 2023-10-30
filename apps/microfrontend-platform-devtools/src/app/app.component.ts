@@ -55,7 +55,7 @@ export class AppComponent {
    */
   private async signalReady(): Promise<void> {
     if (await Beans.opt(ContextService)?.isPresent(OUTLET_CONTEXT)) {
-      await MicrofrontendPlatformClient.signalReady();
+      MicrofrontendPlatformClient.signalReady();
     }
   }
 
