@@ -38,7 +38,7 @@ body {
   display: grid;
   font-family: Roboto, Arial, sans-serif;
   color: var(--sci-color-text);
-  background-color: var(--sci-color-background-primary);
+  background-color: unset; // Do not set background color to inherit it from the embedding context.
   width: 100vw;
   height: 100vh;
   margin: 0;
