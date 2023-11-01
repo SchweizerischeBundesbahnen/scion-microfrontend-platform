@@ -244,7 +244,7 @@ include::outlet.snippets.ts[tags=router-outlet:lay-out-splash-content]
 ----
 
 ****
-TIP: If the application explicitly sets the CSS color scheme (e.g., because of support for different themes), we recommend showing a splash. Otherwise, if the microfrontend and the host use different color schemes, the iframe is no longer opaque, causing unwanted flickering particularly while loading the microfrontend. See https://github.com/w3c/csswg-drafts/issues/4772#issuecomment-591553929 for more information.
+TIP: If the application explicitly sets the CSS color scheme (e.g., because of support for different themes), we recommend showing a splash. Otherwise, if the microfrontend and the host use different color schemes, the iframe is no longer transparent, causing unwanted flickering particularly while loading the microfrontend. See https://github.com/w3c/csswg-drafts/issues/4772#issuecomment-591553929 for more information.
 ****
 
 [[chapter:router-outlet:router-outlet-api]]

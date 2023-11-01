@@ -13,7 +13,7 @@ import {ContextService} from '../context/context-service';
 import {Urls} from '../../url.util';
 import {RelativePathResolver} from './relative-path-resolver';
 import {Maps} from '@scion/toolkit/util';
-import {SHOW_SPLASH_MESSAGE_HEADER, NavigationOptions, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER} from './metadata';
+import {SHOW_SPLASH_MESSAGE_HEADER, NavigationOptions, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, CAPABILITY_ID_MESSAGE_HEADER} from './metadata';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Intent, mapToBody, RequestError} from '../../messaging.model';
 import {lastValueFrom} from 'rxjs';
@@ -205,7 +205,8 @@ export class OutletRouter {
       retain: true,
       headers: new Map<string, any>()
         .set(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, options?.pushStateToSessionHistoryStack ?? false)
-        .set(SHOW_SPLASH_MESSAGE_HEADER, options?.showSplash ?? false),
+        .set(SHOW_SPLASH_MESSAGE_HEADER, options?.showSplash ?? false)
+        .set(CAPABILITY_ID_MESSAGE_HEADER, options?.ɵcapabilityId),
     });
 
     // Clear retained navigation message in case of a `null` URL navigation.

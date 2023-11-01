@@ -18,7 +18,7 @@ import {UUID} from '@scion/toolkit/uuid';
 import {mapToBody, TopicMessage} from '../../messaging.model';
 import {Keystroke} from '../keyboard-event/keystroke';
 import {PreferredSize} from '../preferred-size/preferred-size';
-import {Navigation, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, SHOW_SPLASH_MESSAGE_HEADER} from './metadata';
+import {CAPABILITY_ID_MESSAGE_HEADER, Navigation, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, SHOW_SPLASH_MESSAGE_HEADER} from './metadata';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 const ELEMENT_NAME = 'sci-router-outlet';
@@ -436,8 +436,12 @@ export class SciRouterOutletElement extends HTMLElement {
         takeUntil(this._disconnect$),
       )
       .subscribe(([prevNavigation, currNavigation]: [Navigation | null, Navigation | null]) => runSafe(() => {
-        // Display splash if instructed by the navigator.
-        currNavigation?.showSplash ? this._splash.attach() : this._splash.detach();
+        // Display splash if instructed by the navigator, but only if not navigating to the same capability, if any.
+        // Otherwise, the micro app would have to signal readiness not only after loading the microfrontend, but also when the parameters change.
+        // For example, the same microfrontend that displays data based on a path or query parameter.
+        if (!currNavigation?.capabilityId || currNavigation?.capabilityId !== prevNavigation?.capabilityId) {
+          currNavigation?.showSplash ? this._splash.attach() : this._splash.detach();
+        }
         // Emit a page deactivate event, unless not having a previous navigation
         prevNavigation && this.dispatchEvent(new CustomEvent('deactivate', {detail: prevNavigation.url}));
         // Change the outlet URL
@@ -730,6 +734,7 @@ function outletNavigate$(outlet: string): Observable<Navigation> {
         url: navigateMessage.body || 'about:blank',
         pushStateToSessionHistoryStack: Defined.orElse(navigateMessage.headers.get(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER), false),
         showSplash: Defined.orElse(navigateMessage.headers.get(SHOW_SPLASH_MESSAGE_HEADER), false),
+        capabilityId: navigateMessage.headers.get(CAPABILITY_ID_MESSAGE_HEADER),
       };
     }));
 }
