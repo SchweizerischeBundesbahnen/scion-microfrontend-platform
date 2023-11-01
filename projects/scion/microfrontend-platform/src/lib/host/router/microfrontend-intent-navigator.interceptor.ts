@@ -67,6 +67,7 @@ export class MicrofrontendIntentNavigator implements IntentInterceptor {
       relativeTo: application.baseUrl,
       params: {...intent.qualifier, ...Dictionaries.coerce(intent.params)},
       showSplash: microfrontendCapability.properties.showSplash,
+      ɵcapabilityId: microfrontendCapability.metadata!.id,
     });
   }
 

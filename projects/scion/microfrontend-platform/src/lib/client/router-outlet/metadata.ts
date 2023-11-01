@@ -37,6 +37,12 @@ export interface NavigationOptions {
    * By default, this behavior is disabled.
    */
   pushStateToSessionHistoryStack?: boolean;
+  /**
+   * Reference to the microfrontend capability when navigating via intent.
+   * Internal property used by the router outlet to determine if to ignore the `showSplash` instruction when navigating to the same microfrontend capability again.
+   * @ignore
+   */
+  ɵcapabilityId?: string;
 }
 
 /**
@@ -52,6 +58,13 @@ export const PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER = 'ɵPUSH_STATE_
  * @internal
  */
 export const SHOW_SPLASH_MESSAGE_HEADER = 'ɵSHOW_SPLASH';
+
+/**
+ * Routing message header that contains the microfrontend capability when navigating via intent.
+ *
+ * @internal
+ */
+export const CAPABILITY_ID_MESSAGE_HEADER = 'ɵCAPABILITY_ID';
 
 /**
  * Represents a navigation.
@@ -75,4 +88,8 @@ export interface Navigation {
    * @see MicrofrontendPlatformClient.signalReady
    */
   showSplash?: boolean;
+  /**
+   * The microfrontend capability when navigating via intent.
+   */
+  capabilityId?: string;
 }
