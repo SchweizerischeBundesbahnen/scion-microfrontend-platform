@@ -38,6 +38,10 @@ describe('Urls', () => {
     it('should evaluate to `true` if given the \'about:blank\' URL', () => {
       expect(Urls.isAbsoluteUrl('about:blank')).toBeTrue();
     });
+
+    it('should evaluate to `true` if given a blob URL', () => {
+      expect(Urls.isAbsoluteUrl('blob:https://localhost:4200/bbcc7119-13e2-4f99-95fc-c1872f1e322c')).toBeTrue();
+    });
   });
 
   describe('Urls.ensureTrailingSlash', () => {

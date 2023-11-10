@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-const ABSOLUTE_URL_REGEX = /^http[s]?:\/\//;
+const ABSOLUTE_URL_REGEX = /^(https?:\/\/)|(blob:)/;
 
 /**
  * @internal
@@ -16,7 +16,7 @@ const ABSOLUTE_URL_REGEX = /^http[s]?:\/\//;
 export namespace Urls {
 
   /**
-   * Returns `true` if the given URL is an absolute URL or the 'about:blank' page.
+   * Returns `true` if the given URL is an absolute URL, a blob or the 'about:blank' page.
    */
   export function isAbsoluteUrl(url: string): boolean {
     return url === 'about:blank' || ABSOLUTE_URL_REGEX.test(url);
