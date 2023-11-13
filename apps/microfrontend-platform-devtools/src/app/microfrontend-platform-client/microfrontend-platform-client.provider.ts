@@ -8,13 +8,16 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {APP_INITIALIZER, EnvironmentProviders, inject, makeEnvironmentProviders, NgZone} from '@angular/core';
+import {APP_INITIALIZER, EnvironmentProviders, inject, InjectionToken, Injector, makeEnvironmentProviders, NgZone, runInInjectionContext} from '@angular/core';
 import {ContextService, IntentClient, ManifestService, MessageClient, MicrofrontendPlatformClient, ObservableDecorator, OutletRouter} from '@scion/microfrontend-platform';
 import {NgZoneObservableDecorator} from './ng-zone-observable-decorator';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {environment} from '../../environments/environment';
-import {noop} from 'rxjs';
-import {DOCUMENT} from '@angular/common';
+
+/**
+ * DI token for injectables to be instantiated after connected to the host.
+ */
+export const MICROFRONTEND_PLATFORM_POST_CONNECT = new InjectionToken<unknown>('MICROFRONTEND_PLATFORM_POST_CONNECT');
 
 /**
  * Registers a set of DI providers to set up SCION Microfrontend Platform Client.
@@ -30,6 +33,7 @@ export function provideMicrofrontendPlatformClient(): EnvironmentProviders {
     {provide: IntentClient, useFactory: () => Beans.get(IntentClient)},
     {provide: OutletRouter, useFactory: () => Beans.get(OutletRouter)},
     {provide: ManifestService, useFactory: () => Beans.get(ManifestService)},
+    {provide: ContextService, useFactory: () => Beans.get(ContextService)},
   ]);
 }
 
@@ -38,22 +42,13 @@ export function provideMicrofrontendPlatformClient(): EnvironmentProviders {
  */
 function connectToHostFn(): () => Promise<void> {
   const zone = inject(NgZone);
-  const documentRoot = inject<Document>(DOCUMENT).documentElement;
+  const injector = inject(Injector);
 
   return async (): Promise<void> => {
     Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)});
-    await zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect(environment.symbolicName).catch(noop));
-    await applyTheme(documentRoot);
+    if (await zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect(environment.symbolicName).then(() => true).catch(() => false))) {
+      await runInInjectionContext(injector, () => inject(MICROFRONTEND_PLATFORM_POST_CONNECT, {optional: true}));
+    }
   };
-}
-
-/**
- * Looks up the color scheme of the embedding context and applies either the 'scion-dark' or 'scion-light' theme.
- */
-async function applyTheme(documentRoot: HTMLElement): Promise<void> {
-  const colorScheme = await Beans.opt(ContextService)?.lookup<'light' | 'dark' | null>('color-scheme');
-  if (colorScheme) {
-    documentRoot.setAttribute('sci-theme', colorScheme === 'dark' ? 'scion-dark' : 'scion-light');
-  }
 }
 
