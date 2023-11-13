@@ -7,18 +7,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, inject} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener} from '@angular/core';
 import {Observable} from 'rxjs';
 import {ShellService} from './shell.service';
 import {ContextService, MicrofrontendPlatformClient, OUTLET_CONTEXT} from '@scion/microfrontend-platform';
-import {AsyncPipe, DOCUMENT, NgIf} from '@angular/common';
+import {AsyncPipe, NgIf} from '@angular/common';
 import {RouterOutlet} from '@angular/router';
 import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 import {AppMenuComponent} from './app-menu/app-menu.component';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
-import {filter} from 'rxjs/operators';
 
 @Component({
   selector: 'devtools-root',
@@ -45,7 +44,6 @@ export class AppComponent {
 
   constructor(private _shellService: ShellService, private _cd: ChangeDetectorRef) {
     this.installNavigationEndListener();
-    this.installThemeSwitcher();
     this.signalReady().then();
 
   }
@@ -101,21 +99,5 @@ export class AppComponent {
   @HostListener('document:keydown.escape')
   public onMenuClose(): void {
     this.menuOpen = false;
-  }
-
-  /**
-   * Subscribes to color scheme changes of the embedding context and applies either the 'scion-dark' or 'scion-light' theme.
-   */
-  private installThemeSwitcher(): void {
-    const documentRoot = inject<Document>(DOCUMENT).documentElement;
-
-    Beans.opt(ContextService)?.observe$<'light' | 'dark' | null>('color-scheme')
-      .pipe(
-        filter(Boolean),
-        takeUntilDestroyed(),
-      )
-      .subscribe(colorScheme => {
-        documentRoot.setAttribute('sci-theme', colorScheme === 'dark' ? 'scion-dark' : 'scion-light');
-      });
   }
 }
