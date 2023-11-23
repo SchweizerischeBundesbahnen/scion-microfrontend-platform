@@ -1,18 +1,18 @@
 name: DevTools Deployment
 on: workflow_dispatch
 env:
-  NODE_VERSION: 18.16.0
+  NODE_VERSION: 20.9.0
 jobs:
   install:
     name: 'Installing NPM modules'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Caching NPM modules if necessary'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: node-modules-cache
         with:
           path: ./node_modules
@@ -24,12 +24,12 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -41,12 +41,12 @@ jobs:
     outputs:
       version: ${{ steps.microfrontend-platform-package-json.outputs.version }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -57,7 +57,7 @@ jobs:
           path: projects/scion/microfrontend-platform/package.json
       - name: 'Building @scion/microfrontend-platform'
         run: npm run microfrontend-platform:build
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist
@@ -66,22 +66,22 @@ jobs:
     needs: build-platform
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - name: 'Downloading platform (dist)'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
       - run: npm run microfrontend-platform-devtools-vercel:build
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: microfrontend-platform-devtools-vercel
           path: dist/microfrontend-platform-devtools-vercel
@@ -94,14 +94,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Downloading app: microfrontend-platform-devtools-vercel (dist)'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: microfrontend-platform-devtools-vercel
           path: dist/microfrontend-platform-devtools-vercel
       - name: 'Deploying microfrontend-platform-devtools to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
-          dist-folder: dist/microfrontend-platform-devtools-vercel
+          dist-folder: dist/microfrontend-platform-devtools-vercel/browser
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           org-id: ${{ secrets.VERCEL_ORG_ID }}
           project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_DEVTOOLS_PROJECT_ID }}

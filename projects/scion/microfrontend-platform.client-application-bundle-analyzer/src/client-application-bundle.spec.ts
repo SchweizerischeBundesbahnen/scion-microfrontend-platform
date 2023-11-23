@@ -40,7 +40,7 @@ describe('Client Application Bundle', () => {
  */
 async function parseSourceMapExplorerStats(): Promise<IFile[]> {
   // @ts-ignore: file only exists after executed `microfrontend-platform:analyze`
-  const output: SourceMapExplorerOutput = await import('dist/microfrontend-platform-client-application-bundle-analyzer/stats.json');
+  const output: SourceMapExplorerOutput = await import('../../../../dist/microfrontend-platform-client-application-bundle-analyzer/stats.json');
   const files = new Array<IFile>();
   output.results.forEach(result => {
     Object.entries(result.files).forEach(([name, {size}]) => files.push({name, size}));

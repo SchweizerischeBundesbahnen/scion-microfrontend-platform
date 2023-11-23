@@ -1,14 +1,8 @@
 <sci-list (filter)="onAppFilter($event)" filterPosition="top">
   <ng-container *ngFor="let application of applications$ | async; trackBy: trackByFn">
     <ng-template sciListItem [key]="application.symbolicName">
-      <!-- TODO [Angular 17] Replace with the following code when resolved issue https://github.com/angular/angular/issues/50611 -->
-      <!-- <devtools-app-list-item [application]="application"-->
-      <!--                         [routerLink]="[{outlets: {details: [application.symbolicName]}}]"-->
-      <!--                         routerLinkActive="active">-->
-      <!-- </devtools-app-list-item>-->
       <devtools-app-list-item [application]="application"
-                              [routerLink]="['apps', {outlets: {details: [application.symbolicName]}}]"
-                              [relativeTo]="null"
+                              [routerLink]="['/apps', {outlets: {details: [application.symbolicName]}}]"
                               routerLinkActive="active">
       </devtools-app-list-item>
     </ng-template>
