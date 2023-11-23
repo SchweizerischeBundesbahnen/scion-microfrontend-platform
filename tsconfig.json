@@ -2,7 +2,6 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -10,9 +9,9 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
@@ -26,7 +25,7 @@
     ],
     "paths": {
       "@scion/microfrontend-platform": [
-        "dist/scion/microfrontend-platform"
+        "./dist/scion/microfrontend-platform"
       ]
     }
     /*
@@ -44,16 +43,7 @@
      */
     //    "paths": {
     //      "@scion/microfrontend-platform": [
-    //        "projects/scion/microfrontend-platform/src/public-api"
-    //      ],
-    //      "@scion/toolkit/*": [
-    //        "../scion-microfrontend-platform/node_modules/@scion/toolkit/*"
-    //      ],
-    //      "@scion/components/*": [
-    //        "../scion-microfrontend-platform/node_modules/@scion/components/*"
-    //      ],
-    //      "@scion/components.internal/*": [
-    //        "../scion-microfrontend-platform/node_modules/@scion/components.internal/*"
+    //        "./projects/scion/microfrontend-platform/src/public-api"
     //      ],
     //      //      "@scion/toolkit/bean-manager": [
     //      //        "../scion-toolkit/projects/scion/toolkit/bean-manager/src/public_api"
@@ -124,15 +114,6 @@
     //      //      "@scion/components.internal/material-icon": [
     //      //        "../scion-toolkit/projects/scion/components.internal/material-icon/src/public_api"
     //      //      ],
-    //      "@angular/*": [
-    //        "../scion-microfrontend-platform/node_modules/@angular/*"
-    //      ],
-    //      "rxjs": [
-    //        "../scion-microfrontend-platform/node_modules/rxjs"
-    //      ],
-    //      "rxjs/*": [
-    //        "../scion-microfrontend-platform/node_modules/rxjs/*"
-    //      ]
     //    }
   },
   "angularCompilerOptions": {

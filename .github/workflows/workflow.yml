@@ -1,18 +1,18 @@
 name: Continuous Integration and Delivery
 on: [push, pull_request]
 env:
-  NODE_VERSION: 18.16.0
+  NODE_VERSION: 20.9.0
 jobs:
   install:
     name: 'Installing NPM modules'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Caching NPM modules if necessary'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: node-modules-cache
         with:
           path: ./node_modules
@@ -24,12 +24,12 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -42,8 +42,8 @@ jobs:
       version: ${{ steps.root-package-json.outputs.version }}
       version-dasherized: ${{ steps.root-package-json.outputs.version-dasherized }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Reading package.json version of project root'
@@ -63,7 +63,7 @@ jobs:
             ${{ steps.root-package-json.outputs.version }},
             ${{ steps.microfrontend-platform-package-json.outputs.version }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -73,7 +73,7 @@ jobs:
         run: npm run microfrontend-platform:typedoc
       - name: 'Building Reference Documentation (Developer Guide)'
         run: npm run microfrontend-platform:adoc -- -a revnumber=${{ steps.root-package-json.outputs.version }} -a revnumber-dasherized=${{ steps.root-package-json.outputs.version-dasherized }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist
@@ -91,23 +91,23 @@ jobs:
           - name: microfrontend-platform-devtools-vercel
             cmd: npm run microfrontend-platform-devtools-vercel:build
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - name: 'Downloading platform (dist)'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
       - name: 'Building ${{ matrix.app.name }}'
         run: ${{ matrix.app.cmd }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.app.name }}
           path: dist/${{ matrix.app.name }}
@@ -116,12 +116,12 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -131,12 +131,12 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -150,22 +150,22 @@ jobs:
       matrix:
         shard: [ 1/10, 2/10, 3/10, 4/10, 5/10, 6/10, 7/10, 8/10, 9/10, 10/10 ]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Downloading platform (dist)'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
       - name: 'Downloading app: microfrontend-platform-testing-app-ci (dist)'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: microfrontend-platform-testing-app-ci
           path: dist/microfrontend-platform-testing-app-ci
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -184,7 +184,7 @@ jobs:
     outputs:
       should-release: ${{ steps.tag-release-commit.outputs.is-release-commit }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: 'If release commit present, add release tag'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/tag-release-commit@master
         id: tag-release-commit
@@ -197,26 +197,26 @@ jobs:
     needs: [release-guard, build-platform]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: 'Downloading platform and documentation (dist)'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
       - name: 'Downloading app: microfrontend-platform-testing-app-vercel (dist)'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: microfrontend-platform-testing-app-vercel
           path: dist/microfrontend-platform-testing-app-vercel
       - name: 'Downloading app: microfrontend-platform-devtools-vercel (dist)'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: microfrontend-platform-devtools-vercel
           path: dist/microfrontend-platform-devtools-vercel
       - name: 'Deploying microfrontend-platform-testing-app to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
-          dist-folder: dist/microfrontend-platform-testing-app-vercel
+          dist-folder: dist/microfrontend-platform-testing-app-vercel/browser
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           org-id: ${{ secrets.VERCEL_ORG_ID }}
           project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_TESTING_APP_PROJECT_ID }}
@@ -229,7 +229,7 @@ jobs:
       - name: 'Deploying microfrontend-platform-devtools to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
-          dist-folder: dist/microfrontend-platform-devtools-vercel
+          dist-folder: dist/microfrontend-platform-devtools-vercel/browser
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           org-id: ${{ secrets.VERCEL_ORG_ID }}
           project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_DEVTOOLS_PROJECT_ID }}

@@ -56,7 +56,10 @@ export namespace CustomMatchers {
 
       toEqualIgnoreOrder(actual: unknown, expected: Array<any>): ExpectationResult {
         if (Array.isArray(actual) && actual.length === expected.length && includeSameElements(actual, expected)) {
-          return {pass: true};
+          return {
+            pass: true,
+            message: () => 'passed',
+          };
         }
         return {
           pass: false,
@@ -81,7 +84,10 @@ export namespace CustomMatchers {
         if (expected.headers !== undefined) {
           await expect(await actualMessage.getHeaders(), 'unexpected headers').toEqual(expect.objectContaining(Object.fromEntries(expected.headers)));
         }
-        return {pass: true};
+        return {
+          pass: true,
+          message: () => 'passed',
+        };
       },
 
       async toMatchTopicMessage(actual: MessageListItemPO | Promise<MessageListItemPO>, expected: Partial<TopicMessage>): Promise<ExpectationResult> {
@@ -98,7 +104,10 @@ export namespace CustomMatchers {
         if (expected.headers !== undefined) {
           await expect(await actualMessage.getHeaders(), 'unexpected headers').toEqual(expect.objectContaining(Object.fromEntries(expected.headers)));
         }
-        return {pass: true};
+        return {
+          pass: true,
+          message: () => 'passed',
+        };
       },
 
       async toHaveRouterOutletUrl(routerOutletPO: RouterOutletPagePO, expected: string): Promise<ExpectationResult> {
@@ -110,7 +119,10 @@ export namespace CustomMatchers {
             message: () => `URLs not equal. Expected [${url}] to equal [${expected}]`,
           };
         }
-        return {pass: true};
+        return {
+          pass: true,
+          message: () => 'passed',
+        };
       },
     });
   }
@@ -122,5 +134,5 @@ function includeSameElements(array1: Array<any>, array2: Array<any>): boolean {
 
 interface ExpectationResult {
   pass: boolean;
-  message?: () => string;
+  message: () => string;
 }

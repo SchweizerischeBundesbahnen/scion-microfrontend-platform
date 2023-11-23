@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import packageJson from 'package.json';
+import packageJson from '../../../../package.json';
 import {ApplicationConfig} from '@scion/microfrontend-platform';
 
 const version = packageJson.version.replace(/\./g, '-');

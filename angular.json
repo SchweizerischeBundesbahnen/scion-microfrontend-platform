@@ -114,11 +114,11 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
             "outputPath": "dist/microfrontend-platform-testing-app",
             "index": "apps/microfrontend-platform-testing-app/src/index.html",
-            "main": "apps/microfrontend-platform-testing-app/src/main.ts",
+            "browser": "apps/microfrontend-platform-testing-app/src/main.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -188,12 +188,9 @@
               "outputPath": "dist/microfrontend-platform-testing-app-ci"
             },
             "development": {
-              "buildOptimizer": false,
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "development"
@@ -202,10 +199,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "microfrontend-platform-testing-app:build:production-ci"
+              "buildTarget": "microfrontend-platform-testing-app:build:production-ci"
             },
             "development": {
-              "browserTarget": "microfrontend-platform-testing-app:build:development"
+              "buildTarget": "microfrontend-platform-testing-app:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -233,11 +230,11 @@
       "prefix": "devtools",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
             "outputPath": "dist/microfrontend-platform-devtools",
             "index": "apps/microfrontend-platform-devtools/src/index.html",
-            "main": "apps/microfrontend-platform-devtools/src/main.ts",
+            "browser": "apps/microfrontend-platform-devtools/src/main.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -285,12 +282,9 @@
               "outputPath": "dist/microfrontend-platform-devtools-vercel"
             },
             "development": {
-              "buildOptimizer": false,
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "development"
@@ -299,10 +293,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "microfrontend-platform-devtools:build:production-vercel"
+              "buildTarget": "microfrontend-platform-devtools:build:production-vercel"
             },
             "development": {
-              "browserTarget": "microfrontend-platform-devtools:build:development"
+              "buildTarget": "microfrontend-platform-devtools:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -317,14 +311,6 @@
           }
         }
       }
-    }
-  },
-  "schematics": {
-    "@angular-eslint/schematics:application": {
-      "setParserOptionsProject": true
-    },
-    "@angular-eslint/schematics:library": {
-      "setParserOptionsProject": true
     }
   }
 }

@@ -70,15 +70,17 @@
           display: flex;
           gap: .25em;
 
-          > input.name {
+          > input {
             @include sci-design.style-input-field();
-            flex: none;
-            width: 100px;
-          }
 
-          > input.value {
-            @include sci-design.style-input-field();
-            flex: auto;
+            &.name {
+              flex: none;
+              width: 100px;
+            }
+
+            &.value {
+              flex: auto;
+            }
           }
 
           > button.add {
