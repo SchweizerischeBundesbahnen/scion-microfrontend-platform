@@ -26,6 +26,55 @@ describe('ManifestService', () => {
   beforeEach(async () => await MicrofrontendPlatform.destroy());
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
+  describe('Application', () => {
+    it('should return applications', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
+        ],
+      });
+
+      // Assert applications.
+      expect(Beans.get(ManifestService).applications.map(app => app.symbolicName)).toEqual(jasmine.arrayWithExactContents(['host-app', 'app-1', 'app-2']));
+      // Assert same array reference.
+      expect(Beans.get(ManifestService).applications).toBe(Beans.get(ManifestService).applications);
+    });
+
+    it('should return application if found', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [
+          {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+          {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
+        ],
+      });
+
+      expect(Beans.get(ManifestService).getApplication('host-app').symbolicName).toEqual('host-app');
+      expect(Beans.get(ManifestService).getApplication('app-1').symbolicName).toEqual('app-1');
+      expect(Beans.get(ManifestService).getApplication('app-2').symbolicName).toEqual('app-2');
+    });
+
+    it('should return `null` if application is not found', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
+
+      expect(Beans.get(ManifestService).getApplication('app-1', {orElse: null})).toBeNull();
+    });
+
+    it('should error if application is not found', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {symbolicName: 'host-app'},
+        applications: [],
+      });
+
+      expect(() => Beans.get(ManifestService).getApplication('app-1').symbolicName).toThrowError(/NullApplicationError/);
+    });
+  });
+
   describe('#lookupCapabilities$', () => {
 
     it('should allow looking up own capabilities without declaring an intention (implicit intention)', async () => {
