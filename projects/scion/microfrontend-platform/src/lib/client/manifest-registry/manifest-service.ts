@@ -53,6 +53,19 @@ export class ManifestService implements Initializer {
   }
 
   /**
+   * Returns the specified application. If not found, by default, throws an error unless setting the `orElseNull` option.
+   */
+  public getApplication(symbolicName: string): Application;
+  public getApplication(symbolicName: string, options: {orElse: null}): Application | null;
+  public getApplication(symbolicName: string, options?: {orElse: null}): Application | null {
+    const application = this._applications.find(application => application.symbolicName === symbolicName);
+    if (!application && !options) {
+      throw Error(`[NullApplicationError] No application found with symbolic name '${symbolicName}'.`);
+    }
+    return application ?? null;
+  }
+
+  /**
    * Allows browsing the catalog of capabilities that match the given filter.
    *
    * <strong>
