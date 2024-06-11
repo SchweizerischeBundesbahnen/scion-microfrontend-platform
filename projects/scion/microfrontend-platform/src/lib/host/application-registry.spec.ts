@@ -119,9 +119,9 @@ describe('ApplicationRegistry', () => {
     });
 
     it('should use the origin of the window if the manifest URL is relative', () => {
-      registerApp({symbolicName: 'app-1', manifestUrl: '/assets/manifest.json'});
+      registerApp({symbolicName: 'app-1', manifestUrl: '/manifest.json'});
       expect(registry.getApplication('app-1').baseUrl).toEqual(window.origin + '/');
-      expect(registry.getApplication('app-1').manifestUrl).toEqual(window.origin + '/assets/manifest.json');
+      expect(registry.getApplication('app-1').manifestUrl).toEqual(window.origin + '/manifest.json');
 
       registerApp({symbolicName: 'app-2', manifestUrl: 'manifest.json'});
       expect(registry.getApplication('app-2').baseUrl).toEqual(window.origin + '/');
@@ -131,21 +131,21 @@ describe('ApplicationRegistry', () => {
       expect(registry.getApplication('app-3').baseUrl).toEqual(window.origin + '/');
       expect(registry.getApplication('app-3').manifestUrl).toEqual(window.origin + '/manifest.json');
 
-      registerApp({symbolicName: 'app-4', manifestUrl: 'assets/manifest.json'});
+      registerApp({symbolicName: 'app-4', manifestUrl: 'manifest.json'});
       expect(registry.getApplication('app-4').baseUrl).toEqual(window.origin + '/');
-      expect(registry.getApplication('app-4').manifestUrl).toEqual(window.origin + '/assets/manifest.json');
+      expect(registry.getApplication('app-4').manifestUrl).toEqual(window.origin + '/manifest.json');
 
-      registerApp({symbolicName: 'app-5', manifestUrl: 'assets/manifest.json', baseUrl: 'app'});
+      registerApp({symbolicName: 'app-5', manifestUrl: 'manifest.json', baseUrl: 'app'});
       expect(registry.getApplication('app-5').baseUrl).toEqual(window.origin + '/app/');
-      expect(registry.getApplication('app-5').manifestUrl).toEqual(window.origin + '/assets/manifest.json');
+      expect(registry.getApplication('app-5').manifestUrl).toEqual(window.origin + '/manifest.json');
 
-      registerApp({symbolicName: 'app-6', manifestUrl: '/assets/manifest.json', baseUrl: 'app'});
+      registerApp({symbolicName: 'app-6', manifestUrl: '/manifest.json', baseUrl: 'app'});
       expect(registry.getApplication('app-6').baseUrl).toEqual(window.origin + '/app/');
-      expect(registry.getApplication('app-6').manifestUrl).toEqual(window.origin + '/assets/manifest.json');
+      expect(registry.getApplication('app-6').manifestUrl).toEqual(window.origin + '/manifest.json');
 
-      registerApp({symbolicName: 'app-7', manifestUrl: '/assets/manifest.json', baseUrl: 'https://www.some-origin.com'});
+      registerApp({symbolicName: 'app-7', manifestUrl: '/manifest.json', baseUrl: 'https://www.some-origin.com'});
       expect(registry.getApplication('app-7').baseUrl).toEqual('https://www.some-origin.com/');
-      expect(registry.getApplication('app-7').manifestUrl).toEqual(window.origin + '/assets/manifest.json');
+      expect(registry.getApplication('app-7').manifestUrl).toEqual(window.origin + '/manifest.json');
     });
 
     function registerApp(app: {symbolicName: string; manifestUrl: string; baseUrl?: string}): Promise<void> {

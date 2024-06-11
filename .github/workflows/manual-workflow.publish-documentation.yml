@@ -1,7 +1,7 @@
 name: Documentation Publication
 on: workflow_dispatch
 env:
-  NODE_VERSION: 20.9.0
+  NODE_VERSION: 20.14.0
 jobs:
   install:
     name: 'Installing NPM modules'
@@ -12,7 +12,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Caching NPM modules if necessary'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: node-modules-cache
         with:
           path: ./node_modules
@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}

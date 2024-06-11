@@ -19,7 +19,7 @@ IMPORTANT: Note that we need to disable some checks for the SCION DevTools to ha
 ====
 With each release of the SCION Microfrontend Platform, we also publish a new version of the SCION DevTools. We strongly recommend integrating the SCION DevTools via the versioned URL to be compatible with your platform version.
 
-Example: https://scion-microfrontend-platform-devtools-v{revnumber-dasherized}.vercel.app/assets/manifest.json
+Example: https://scion-microfrontend-platform-devtools-v{revnumber-dasherized}.vercel.app/manifest.json
 ====
 
 .2. Create a router outlet to display the SCION DevTools

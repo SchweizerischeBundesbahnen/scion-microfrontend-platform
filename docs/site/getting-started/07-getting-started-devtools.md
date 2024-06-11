@@ -26,7 +26,7 @@ Follow the steps below to register the *SCION DevTools* micro app.
                {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
    [+]         {
    [+]           symbolicName: 'devtools',
-   [+]           manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json',
+   [+]           manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/manifest.json',
    [+]           intentionCheckDisabled: true,
    [+]           scopeCheckDisabled: true,
    [+]         },
@@ -63,7 +63,7 @@ Like any other micro app, the host app must declare its intentions in its manife
                {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
                {
                  symbolicName: 'devtools',
-                 manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json',
+                 manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/manifest.json',
                  intentionCheckDisabled: true,
                  scopeCheckDisabled: true,
                },
@@ -105,7 +105,7 @@ In the [first chapter][link-getting-started:01:host-app] we added a router outle
                {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
                {
                  symbolicName: 'devtools',
-                 manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json',
+                 manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/manifest.json',
                  intentionCheckDisabled: true,
                  scopeCheckDisabled: true,
                },
@@ -167,7 +167,7 @@ class HostController {
         {symbolicName: 'customers-app', manifestUrl: 'http://localhost:4202/manifest.json'},
         {
           symbolicName: 'devtools',
-          manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/assets/manifest.json',
+          manifestUrl: 'https://scion-microfrontend-platform-devtools.vercel.app/manifest.json',
           intentionCheckDisabled: true,
           scopeCheckDisabled: true,
         },
