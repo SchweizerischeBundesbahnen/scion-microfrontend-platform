@@ -162,7 +162,11 @@ test.describe('Mouse Event Dispatching', () => {
     });
   });
 
-  test('should receive "sci-mousemove" and "sci-mouseup" events from inactive outlets only in the active outlet and having the primary mouse button pressed', async ({testingAppPO}) => {
+  // TODO [#278] Either native or synthetic mousemove and mouseup events should be reported to the iframe where the mousedown event occurred.
+  // Before Chromium version 122, if preventDefault was called on mouse down and the mouse was moved out of the iframe (while pressing the mouse button),
+  // respective mouse move events were not reported back to the iframe where the mouse down event occurred.
+  // For this reason, the microfrontend platform sent synthetic events to the iframe, for example, to enable scrolling near the iframe boundaries.
+  test.fixme('should receive "sci-mousemove" and "sci-mouseup" events from inactive outlets only in the active outlet and having the primary mouse button pressed', async ({testingAppPO}) => {
     const pagePOs = await testingAppPO.navigateTo({
       activeOutlet: MouseEventDispatchTestPagePO,
       inactiveOutlet1: MouseEventDispatchTestPagePO,

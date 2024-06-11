@@ -61,7 +61,7 @@ async function startMicrofrontendPlatformHost(): Promise<void> {
   // Read testing apps to be registered from the environment
   const testingAppConfigs: ApplicationConfig[] = Object.values(environment.apps).map(app => {
     return {
-      manifestUrl: `${app.url}/assets/${app.symbolicName}-manifest${manifestClassifier}.json`,
+      manifestUrl: `${app.url}/${app.symbolicName}-manifest${manifestClassifier}.json`,
       activatorLoadTimeout: app.activatorLoadTimeout,
       symbolicName: app.symbolicName,
       intentionRegisterApiDisabled: intentionRegisterApiDisabled.has(app.symbolicName),

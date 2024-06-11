@@ -1,7 +1,7 @@
 name: Continuous Integration and Delivery
 on: [push, pull_request, workflow_dispatch]
 env:
-  NODE_VERSION: 20.9.0
+  NODE_VERSION: 20.14.0
 jobs:
   install:
     name: 'Installing NPM modules'
@@ -12,7 +12,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Caching NPM modules if necessary'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: node-modules-cache
         with:
           path: ./node_modules
@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -63,7 +63,7 @@ jobs:
             ${{ steps.root-package-json.outputs.version }},
             ${{ steps.microfrontend-platform-package-json.outputs.version }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -73,7 +73,7 @@ jobs:
         run: npm run microfrontend-platform:typedoc
       - name: 'Building Reference Documentation (Developer Guide)'
         run: npm run microfrontend-platform:adoc -- -a revnumber=${{ steps.root-package-json.outputs.version }} -a revnumber-dasherized=${{ steps.root-package-json.outputs.version-dasherized }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist
@@ -96,18 +96,18 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - name: 'Downloading platform (dist)'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist
       - name: 'Building ${{ matrix.app.name }}'
         run: ${{ matrix.app.cmd }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.app.name }}
           path: dist/${{ matrix.app.name }}
@@ -121,7 +121,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -136,7 +136,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -155,17 +155,17 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: 'Downloading platform (dist)'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist
       - name: 'Downloading app: microfrontend-platform-testing-app-ci (dist)'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: microfrontend-platform-testing-app-ci
           path: dist/microfrontend-platform-testing-app-ci
       - name: 'Restoring NPM modules from cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -199,17 +199,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: 'Downloading platform and documentation (dist)'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist
       - name: 'Downloading app: microfrontend-platform-testing-app-vercel (dist)'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: microfrontend-platform-testing-app-vercel
           path: dist/microfrontend-platform-testing-app-vercel
       - name: 'Downloading app: microfrontend-platform-devtools-vercel (dist)'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: microfrontend-platform-devtools-vercel
           path: dist/microfrontend-platform-devtools-vercel

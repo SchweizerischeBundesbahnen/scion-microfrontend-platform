@@ -125,7 +125,10 @@
             "tsConfig": "apps/microfrontend-platform-testing-app/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "apps/microfrontend-platform-testing-app/src/assets",
+              {
+                "glob": "**/*",
+                "input": "apps/microfrontend-platform-testing-app/public"
+              },
               {
                 "glob": "favicon.ico",
                 "input": "resources/branding",
@@ -134,7 +137,7 @@
               {
                 "glob": "scion-microfrontend-platform-banner.svg",
                 "input": "resources/branding",
-                "output": "/assets"
+                "output": "/"
               }
             ],
             "styles": [
@@ -147,13 +150,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "2kB",
+                  "maximumError": "4kB"
                 }
               ],
               "fileReplacements": [
@@ -169,13 +172,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "2kB",
+                  "maximumError": "4kB"
                 }
               ],
               "fileReplacements": [
@@ -241,7 +244,15 @@
             "tsConfig": "apps/microfrontend-platform-devtools/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "apps/microfrontend-platform-devtools/src/assets",
+              {
+                "glob": "**/*",
+                "input": "apps/microfrontend-platform-devtools/public"
+              },
+              {
+                "glob": "manifest.json",
+                "input": "apps/microfrontend-platform-devtools/public",
+                "output": "/assets"
+              },
               {
                 "glob": "favicon.ico",
                 "input": "resources/branding",
@@ -250,7 +261,7 @@
               {
                 "glob": "scion-microfrontend-platform-logo.svg",
                 "input": "resources/branding",
-                "output": "/assets"
+                "output": "/"
               }
             ],
             "styles": [
@@ -263,13 +274,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "2kB",
+                  "maximumError": "4kB"
                 }
               ],
               "fileReplacements": [
