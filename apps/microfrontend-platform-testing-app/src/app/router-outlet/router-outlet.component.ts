@@ -14,7 +14,7 @@ import {Overlay} from '@angular/cdk/overlay';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {RouterOutletSettingsComponent} from '../router-outlet-settings/router-outlet-settings.component';
 import {NEVER, Observable} from 'rxjs';
-import {AsyncPipe, NgIf} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {SciThrobberComponent} from '@scion/components/throbber';
 import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
@@ -26,7 +26,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
   imports: [
-    NgIf,
     AsyncPipe,
     ReactiveFormsModule,
     SciThrobberComponent,

@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component, inject, NgZone} from '@angular/core';
-import {NgFor, NgTemplateOutlet} from '@angular/common';
+import {NgTemplateOutlet} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
 import {finalize, take} from 'rxjs/operators';
@@ -24,7 +24,6 @@ import {SciAccordionComponent, SciAccordionItemDirective} from '@scion/component
   styleUrls: ['./angular-zone-test-page.component.scss'],
   standalone: true,
   imports: [
-    NgFor,
     NgTemplateOutlet,
     FormsModule,
     SciCheckboxComponent,

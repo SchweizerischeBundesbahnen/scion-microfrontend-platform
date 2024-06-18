@@ -12,7 +12,7 @@ import {ContextService} from '@scion/microfrontend-platform';
 import {Observable, OperatorFunction} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {AsyncPipe, KeyValuePipe, NgFor} from '@angular/common';
+import {AsyncPipe, KeyValuePipe} from '@angular/common';
 import {ContextEntryComponent} from '../../context-entry/context-entry.component';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
 
@@ -23,7 +23,6 @@ import {SciListComponent, SciListItemDirective} from '@scion/components.internal
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgFor,
     AsyncPipe,
     KeyValuePipe,
     SciListComponent,

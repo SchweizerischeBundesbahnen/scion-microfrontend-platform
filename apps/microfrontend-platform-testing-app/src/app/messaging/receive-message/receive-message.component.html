@@ -5,48 +5,49 @@
       <option [value]="MessagingFlavor.Intent">Intent</option>
     </select>
   </sci-form-field>
-  <ng-container *ngIf="isTopicMessaging(); then topic_template else intent_template"></ng-container>
-
-  <ng-template #topic_template>
+  @if (isTopicMessaging()) {
     <ng-container [formGroup]="form.controls.destination">
       <sci-form-field label="Topic *">
         <input [formControl]="(form.controls.destination | appAs:TopicMessageDestinationFormGroup).controls.topic" class="e2e-topic">
       </sci-form-field>
     </ng-container>
-  </ng-template>
-
-  <ng-template #intent_template>
+  } @else {
     <ng-container [formGroup]="form.controls.destination">
       <sci-form-field label="Intent type">
         <input [formControl]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.type" class="e2e-intent-type">
       </sci-form-field>
-
       <sci-form-field label="Intent qualifier">
-        <sci-key-value-field [keyValueFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-key-value-field>
+        <sci-key-value-field [keyValueFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-intent-qualifier"/>
       </sci-form-field>
     </ng-container>
-  </ng-template>
+  }
+
+
 </form>
 
-<button (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="e2e-subscribe" sci-primary>Subscribe</button>
-<button (click)="onUnsubscribe()" *ngIf="isSubscribed" class="e2e-unsubscribe" sci-primary>Unsubscribe</button>
+@if (!isSubscribed) {
+  <button (click)="onSubscribe()" [disabled]="form.invalid" class="e2e-subscribe" sci-primary>Subscribe</button>
+} @else {
+  <button (click)="onUnsubscribe()" class="e2e-unsubscribe" sci-primary>Unsubscribe</button>
+}
 
-<output class="subscribe-error" *ngIf="subscribeError">
-  {{subscribeError}}
-</output>
+@if (subscribeError) {
+  <output class="subscribe-error">
+    {{subscribeError}}
+  </output>
+}
 
 
-<ng-container *ngIf="isSubscribed">
+@if (isSubscribed) {
   <sci-list class="messages e2e-messages">
-    <ng-container *ngFor="let message of messages">
+    @for (message of messages; track message) {
       <ng-template sciListItem [actions]="message.headers.get(MessageHeaders.ReplyTo) ? [reply_action] : []">
-        <app-message-list-item [message]="message" [isTopicMessage]="isTopicMessaging()"></app-message-list-item>
+        <app-message-list-item [message]="message" [isTopicMessage]="isTopicMessaging()"/>
       </ng-template>
-
       <ng-template #reply_action>
         <button class="e2e-reply" title="Reply" (click)="onReply(message.headers.get(MessageHeaders.ReplyTo))" sciMaterialIcon>reply</button>
       </ng-template>
-    </ng-container>
+    }
   </sci-list>
   <button class="e2e-clear-messages" (click)="onClear()">Clear</button>
-</ng-container>
+}

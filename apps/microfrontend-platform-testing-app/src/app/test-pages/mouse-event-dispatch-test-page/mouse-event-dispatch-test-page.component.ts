@@ -9,7 +9,7 @@
  */
 import {ChangeDetectorRef, Component, DestroyRef, OnInit, ViewChild} from '@angular/core';
 import {fromEvent, merge} from 'rxjs';
-import {DatePipe, NgFor} from '@angular/common';
+import {DatePipe} from '@angular/common';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
@@ -21,7 +21,6 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   styleUrls: ['./mouse-event-dispatch-test-page.component.scss'],
   standalone: true,
   imports: [
-    NgFor,
     DatePipe,
     ReactiveFormsModule,
     SciViewportComponent,

@@ -17,14 +17,14 @@
   </div>
 
   <sci-list class="context e2e-context">
-    <ng-container *ngFor="let entry of routerOutlet.contextValues$ | async | keyvalue">
+    @for (entry of routerOutlet.contextValues$ | async | keyvalue; track entry) {
       <ng-template sciListItem [actions]="remove_template">
-        <app-context-entry [name]="entry.key" [value]="entry.value"></app-context-entry>
+        <app-context-entry [name]="entry.key" [value]="entry.value"/>
       </ng-template>
 
       <ng-template #remove_template>
         <button class="e2e-remove" (click)="onRemoveClick(entry.key)" title="Remove this value from the outlet context" sciMaterialIcon>close</button>
       </ng-template>
-    </ng-container>
+    }
   </sci-list>
 </main>

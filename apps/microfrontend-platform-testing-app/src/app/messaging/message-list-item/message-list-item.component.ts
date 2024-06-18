@@ -9,7 +9,6 @@
  */
 import {Component, HostBinding, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {IntentMessage, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
-import {NgIf} from '@angular/common';
 import {AppendParamDataTypePipe} from '../append-param-data-type.pipe';
 import {SciKeyValueComponent} from '@scion/components.internal/key-value';
 
@@ -19,7 +18,6 @@ import {SciKeyValueComponent} from '@scion/components.internal/key-value';
   styleUrls: ['./message-list-item.component.scss'],
   standalone: true,
   imports: [
-    NgIf,
     SciKeyValueComponent,
     AppendParamDataTypePipe,
   ],

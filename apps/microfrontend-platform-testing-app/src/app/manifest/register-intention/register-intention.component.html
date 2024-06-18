@@ -5,17 +5,21 @@
       <input [formControl]="registerForm.controls.type" class="e2e-type">
     </sci-form-field>
     <sci-form-field label="Qualifier" direction="column">
-      <sci-key-value-field [keyValueFormArray]="registerForm.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-key-value-field>
+      <sci-key-value-field [keyValueFormArray]="registerForm.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"/>
     </sci-form-field>
     <button type="submit" (click)="onRegister()" [disabled]="registerForm.invalid" class="e2e-register" sci-primary>Register</button>
   </form>
 
-  <output class="error e2e-register-error" *ngIf="registerError">
-    {{registerError}}
-  </output>
-  <output class="response e2e-register-response" *ngIf="registerResponse">
-    Intention ID: <span class="e2e-intention-id">{{registerResponse}}</span>
-  </output>
+  @if (registerError) {
+    <output class="error e2e-register-error">
+      {{registerError}}
+    </output>
+  }
+  @if (registerResponse) {
+    <output class="response e2e-register-response">
+      Intention ID: <span class="e2e-intention-id">{{registerResponse}}</span>
+    </output>
+  }
 </section>
 
 <section class="unregister e2e-unregister">
@@ -28,10 +32,10 @@
       <input [formControl]="unregisterForm.controls.type" class="e2e-type">
     </sci-form-field>
     <sci-form-field label="Qualifier" direction="column">
-      <sci-key-value-field [keyValueFormArray]="unregisterForm.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-key-value-field>
+      <sci-key-value-field [keyValueFormArray]="unregisterForm.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"/>
     </sci-form-field>
     <sci-form-field label="NilQualifier if empty" direction="column">
-      <sci-checkbox [formControl]="unregisterForm.controls.nilqualifierIfEmpty" class="e2e-nilqualifier-if-empty"></sci-checkbox>
+      <sci-checkbox [formControl]="unregisterForm.controls.nilqualifierIfEmpty" class="e2e-nilqualifier-if-empty"/>
     </sci-form-field>
     <sci-form-field label="Application" direction="column">
       <input [formControl]="unregisterForm.controls.appSymbolicName" class="e2e-app-symbolic-name">
@@ -39,22 +43,26 @@
     <button type="submit" (click)="onUnregister()" [disabled]="unregisterForm.invalid" class="e2e-unregister" sci-primary>Unregister</button>
   </form>
 
-  <output class="error e2e-unregister-error" *ngIf="unregisterError">
-    {{unregisterError}}
-  </output>
-  <output class="response e2e-unregister-response" *ngIf="unregisterResponse">
-    {{unregisterResponse}}
-  </output>
+  @if (unregisterError) {
+    <output class="error e2e-unregister-error">
+      {{unregisterError}}
+    </output>
+  }
+  @if (unregisterResponse) {
+    <output class="response e2e-unregister-response">
+      {{unregisterResponse}}
+    </output>
+  }
 </section>
 
 <sci-list class="intentions">
-  <ng-container *ngFor="let intention of intentions$ | async">
+  @for (intention of intentions$ | async; track intention) {
     <ng-template sciListItem>
       <section class="intention">
-        <sci-qualifier-chip-list [qualifier]="intention.qualifier" [type]="intention.type"></sci-qualifier-chip-list>
+        <sci-qualifier-chip-list [qualifier]="intention.qualifier" [type]="intention.type"/>
         <span class="app">{{intention.metadata!.appSymbolicName}}</span>
         <span class="id">{{intention.metadata!.id}}</span>
       </section>
     </ng-template>
-  </ng-container>
+  }
 </sci-list>

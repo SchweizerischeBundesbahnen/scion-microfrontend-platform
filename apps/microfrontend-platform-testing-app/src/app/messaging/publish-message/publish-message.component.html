@@ -6,25 +6,7 @@
     </select>
   </sci-form-field>
 
-  <ng-container *ngIf="isTopicFlavor(); then topic_template else intent_template"></ng-container>
-
-  <sci-form-field label="Message">
-    <textarea rows="10" [formControl]="form.controls.message" class="e2e-message"></textarea>
-  </sci-form-field>
-
-  <sci-form-field label="Headers">
-    <sci-key-value-field [keyValueFormArray]="form.controls.headers" [addable]="true" [removable]="true" class="e2e-headers"></sci-key-value-field>
-  </sci-form-field>
-
-  <sci-form-field label="Request-Reply">
-    <sci-checkbox [formControl]="form.controls.requestReply" class="e2e-request-reply"></sci-checkbox>
-  </sci-form-field>
-
-  <sci-form-field label="Retain">
-    <sci-checkbox [formControl]="form.controls.retain" class="e2e-retain"></sci-checkbox>
-  </sci-form-field>
-
-  <ng-template #topic_template>
+  @if (isTopicFlavor()) {
     <ng-container [formGroup]="form.controls.destination">
       <sci-form-field label="Topic *">
         <input [formControl]="(form.controls.destination | appAs:TopicMessageDestinationFormGroup).controls.topic" class="e2e-topic">
@@ -34,37 +16,59 @@
         </div>
       </sci-form-field>
     </ng-container>
-  </ng-template>
-
-  <ng-template #intent_template>
+  } @else {
     <ng-container [formGroup]="form.controls.destination">
       <sci-form-field label="Intent type *">
         <input [formControl]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.type" class="e2e-intent-type">
       </sci-form-field>
-
       <sci-form-field label="Intent qualifier">
-        <sci-key-value-field [keyValueFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-intent-qualifier"></sci-key-value-field>
+        <sci-key-value-field [keyValueFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-intent-qualifier"/>
       </sci-form-field>
-
       <sci-form-field label="Intent params">
-        <sci-key-value-field [keyValueFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.params" [addable]="true" [removable]="true" class="e2e-intent-params"></sci-key-value-field>
+        <sci-key-value-field [keyValueFormArray]="(form.controls.destination | appAs:IntentMessageDestinationFromGroup).controls.params" [addable]="true" [removable]="true" class="e2e-intent-params"/>
       </sci-form-field>
     </ng-container>
-  </ng-template>
+  }
+
+  <sci-form-field label="Message">
+    <textarea rows="10" [formControl]="form.controls.message" class="e2e-message"></textarea>
+  </sci-form-field>
+
+  <sci-form-field label="Headers">
+    <sci-key-value-field [keyValueFormArray]="form.controls.headers" [addable]="true" [removable]="true" class="e2e-headers"/>
+  </sci-form-field>
+
+  <sci-form-field label="Request-Reply">
+    <sci-checkbox [formControl]="form.controls.requestReply" class="e2e-request-reply"/>
+  </sci-form-field>
+
+  <sci-form-field label="Retain">
+    <sci-checkbox [formControl]="form.controls.retain" class="e2e-retain"/>
+  </sci-form-field>
+
+
 </form>
 
-<button type="button" (click)="onPublish()" *ngIf="!publishing" [disabled]="form.invalid" class="e2e-publish" sci-primary>{{isTopicFlavor() ? 'Publish message' : 'Issue intent'}}</button>
-<button type="button" (click)="onCancelPublish()" *ngIf="publishing" class="e2e-cancel" sci-primary>Cancel</button>
+@if (!publishing) {
+  <button type="button" (click)="onPublish()" [disabled]="form.invalid" class="e2e-publish" sci-primary>{{isTopicFlavor() ? 'Publish message' : 'Issue intent'}}</button>
+}
+@if (publishing) {
+  <button type="button" (click)="onCancelPublish()" class="e2e-cancel" sci-primary>Cancel</button>
+}
 
-<output class="publish-error e2e-publish-error" *ngIf="publishError">
-  {{publishError}}
-</output>
+@if (publishError) {
+  <output class="publish-error e2e-publish-error">
+    {{publishError}}
+  </output>
+}
 
-<ng-container *ngIf="isRequestReply() && publishing">
+@if (isRequestReply() && publishing) {
   <sci-list class="replies e2e-replies">
-    <ng-template sciListItem *ngFor="let reply of replies">
-      <app-message-list-item [message]="reply" [isTopicMessage]="true"></app-message-list-item>
-    </ng-template>
+    @for (reply of replies; track reply) {
+      <ng-template sciListItem>
+        <app-message-list-item [message]="reply" [isTopicMessage]="true"/>
+      </ng-template>
+    }
   </sci-list>
   <button type="button" class="e2e-clear-replies" (click)="onClear()">Clear</button>
-</ng-container>
+}

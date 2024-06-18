@@ -6,32 +6,35 @@
     <input [formControl]="form.controls.type" class="e2e-type">
   </sci-form-field>
   <sci-form-field label="Qualifier">
-    <sci-key-value-field [keyValueFormArray]="form.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-key-value-field>
+    <sci-key-value-field [keyValueFormArray]="form.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"/>
   </sci-form-field>
   <sci-form-field label="NilQualifier if empty">
-    <sci-checkbox [formControl]="form.controls.nilqualifierIfEmpty" class="e2e-nilqualifier-if-empty"></sci-checkbox>
+    <sci-checkbox [formControl]="form.controls.nilqualifierIfEmpty" class="e2e-nilqualifier-if-empty"/>
   </sci-form-field>
   <sci-form-field label="Application">
     <input [formControl]="form.controls.appSymbolicName" class="e2e-app-symbolic-name">
   </sci-form-field>
 
   <section class="buttons">
-    <button type="submit" *ngIf="!capabilities$" (click)="onLookup()" [disabled]="form.invalid" class="e2e-lookup" sci-primary>Lookup</button>
-    <button type="submit" *ngIf="capabilities$" (click)="onLookupCancel()" class="e2e-cancel-lookup" sci-primary>Cancel the lookup</button>
+    @if (!capabilities$) {
+      <button type="submit" (click)="onLookup()" [disabled]="form.invalid" class="e2e-lookup" sci-primary>Lookup</button>
+    } @else {
+      <button type="submit" (click)="onLookupCancel()" class="e2e-cancel-lookup" sci-primary>Cancel the lookup</button>
+    }
     <button type="button" (click)="onReset()" [disabled]="form.pristine" class="e2e-reset">Reset</button>
   </section>
 </form>
 
 <sci-list class="capabilities e2e-capabilities">
-  <ng-container *ngFor="let capability of capabilities$ | async">
+  @for (capability of capabilities$ | async; track capability) {
     <ng-template sciListItem>
       <section class="capability" [attr.data-e2e-capability]="capability | json">
-        <sci-qualifier-chip-list [qualifier]="capability.qualifier" [type]="capability.type"></sci-qualifier-chip-list>
+        <sci-qualifier-chip-list [qualifier]="capability.qualifier" [type]="capability.type"/>
         <span class="app">{{capability.metadata!.appSymbolicName}}</span>
         <span class="id">{{capability.metadata!.id}}</span>
         <span class="visibility">{{capability.private ? 'PRIVATE' : 'PUBLIC'}}</span>
         <button type="button" title="Copy capability to clipboard" (click)="onCopyToClipboard(capability)" sciMaterialIcon>content_copy</button>
       </section>
     </ng-template>
-  </ng-container>
+  }
 </sci-list>

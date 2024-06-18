@@ -6,7 +6,9 @@
   <button type="button" class="e2e-settings" #settings_button title="Settings" (click)="onSettingsClick()" sciMaterialIcon>settings</button>
 
   <datalist id="app-entry-points">
-    <option *ngFor="let appEntryPoint of appEntryPoints" [value]="appEntryPoint.url">{{appEntryPoint.label}}</option>
+    @for (appEntryPoint of appEntryPoints; track appEntryPoint) {
+      <option [value]="appEntryPoint.url">{{appEntryPoint.label}}</option>
+    }
   </datalist>
 </form>
 

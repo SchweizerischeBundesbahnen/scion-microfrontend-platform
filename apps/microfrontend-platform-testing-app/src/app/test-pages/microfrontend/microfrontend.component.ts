@@ -12,7 +12,7 @@ import {UUID} from '@scion/toolkit/uuid';
 import {TestingAppService} from '../../testing-app.service';
 import {ActivatedRoute, Params} from '@angular/router';
 import {Observable} from 'rxjs';
-import {AsyncPipe, NgIf} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciKeyValueComponent} from '@scion/components.internal/key-value';
 
@@ -26,7 +26,6 @@ import {SciKeyValueComponent} from '@scion/components.internal/key-value';
     AsyncPipe,
     SciFormFieldComponent,
     SciKeyValueComponent,
-    NgIf,
   ],
 })
 export default class MicrofrontendComponent {

@@ -17,7 +17,6 @@ import {ActivatedRoute} from '@angular/router';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {environment} from '../../environments/environment';
 import {TestingAppTopics} from '../testing-app.topics';
-import {NgFor} from '@angular/common';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
@@ -31,7 +30,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgFor,
     ReactiveFormsModule,
     SciMaterialIconDirective,
   ],

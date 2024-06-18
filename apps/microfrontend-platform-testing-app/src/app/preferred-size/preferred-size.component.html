@@ -1,30 +1,34 @@
 <form autocomplete="off" [formGroup]="form">
-  <!-- set the preferred size programmatically -->
-  <ng-container *ngIf="!isUseElementSize" [formGroup]="form.controls.preferredSize">
-    <sci-form-field label="Preferred width">
-      <input class="e2e-preferred-width" [formControl]="form.controls.preferredSize.controls.width" placeholder="Enter a value in pixel" title="Enter a value in pixel to be reported as preferred width, or an empty value to unset the preferred width.">
-    </sci-form-field>
-    <sci-form-field label="Preferred height">
-      <input class="e2e-preferred-height" [formControl]="form.controls.preferredSize.controls.height" placeholder="Enter a value in pixel" title="Enter a value in pixel to be reported as preferred height, or an empty value to unset the preferred height.">
-    </sci-form-field>
-  </ng-container>
-
-  <!-- set the preferred size by observing the component size -->
-  <ng-container *ngIf="isUseElementSize" [formGroup]="form.controls.cssSize">
-    <sci-form-field label="CSS width">
-      <input class="e2e-css-width" [formControl]="form.controls.cssSize.controls.width" placeholder="Enter a value in pixel" title="Enter a pixel value which is set as CSS variable for the element width, or an empty value to unset the CSS variable.">
-    </sci-form-field>
-    <sci-form-field label="CSS height">
-      <input class="e2e-css-height" [formControl]="form.controls.cssSize.controls.height" placeholder="Enter a value in pixel" title="Enter a pixel value which is set as CSS variable for the element height, or an empty value to unset the CSS variable.">
-    </sci-form-field>
-
-    <button (click)="onElementObservableBind()" *ngIf="!elementDimensionObservableBound" class="e2e-bind-element-observable" sci-primary>Bind the element as size observable</button>
-    <button (click)="onElementObservableUnbind()" *ngIf="elementDimensionObservableBound" class="e2e-unbind-element-observable" sci-primary>Unbind the element as size observable</button>
-    <button (click)="onElementUnmount()" class="e2e-unmount">Unmount the element from the DOM</button>
-  </ng-container>
+  @if (isUseElementSize) {
+    <!-- set the preferred size by observing the component size -->
+    <ng-container [formGroup]="form.controls.cssSize">
+      <sci-form-field label="CSS width">
+        <input class="e2e-css-width" [formControl]="form.controls.cssSize.controls.width" placeholder="Enter a value in pixel" title="Enter a pixel value which is set as CSS variable for the element width, or an empty value to unset the CSS variable.">
+      </sci-form-field>
+      <sci-form-field label="CSS height">
+        <input class="e2e-css-height" [formControl]="form.controls.cssSize.controls.height" placeholder="Enter a value in pixel" title="Enter a pixel value which is set as CSS variable for the element height, or an empty value to unset the CSS variable.">
+      </sci-form-field>
+      @if (!elementDimensionObservableBound) {
+        <button (click)="onElementObservableBind()" class="e2e-bind-element-observable" sci-primary>Bind the element as size observable</button>
+      } @else {
+        <button (click)="onElementObservableUnbind()" class="e2e-unbind-element-observable" sci-primary>Unbind the element as size observable</button>
+      }
+      <button (click)="onElementUnmount()" class="e2e-unmount">Unmount the element from the DOM</button>
+    </ng-container>
+  } @else {
+    <!-- set the preferred size programmatically -->
+    <ng-container [formGroup]="form.controls.preferredSize">
+      <sci-form-field label="Preferred width">
+        <input class="e2e-preferred-width" [formControl]="form.controls.preferredSize.controls.width" placeholder="Enter a value in pixel" title="Enter a value in pixel to be reported as preferred width, or an empty value to unset the preferred width.">
+      </sci-form-field>
+      <sci-form-field label="Preferred height">
+        <input class="e2e-preferred-height" [formControl]="form.controls.preferredSize.controls.height" placeholder="Enter a value in pixel" title="Enter a value in pixel to be reported as preferred height, or an empty value to unset the preferred height.">
+      </sci-form-field>
+    </ng-container>
+  }
 
   <sci-form-field label="Use element size" title="If checked, width and height are set as CSS variables on the element. In turn, the element fires a size change event which is reported as the outlet's preferred size.">
-    <sci-checkbox [formControl]="form.controls.useElementSize" class="e2e-use-element-size"></sci-checkbox>
+    <sci-checkbox [formControl]="form.controls.useElementSize" class="e2e-use-element-size"/>
   </sci-form-field>
 
   <button type="button" (click)="onResetClick()" class="e2e-reset">Reset</button>

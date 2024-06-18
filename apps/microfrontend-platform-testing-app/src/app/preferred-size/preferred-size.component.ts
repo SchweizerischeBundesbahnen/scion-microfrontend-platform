@@ -11,7 +11,6 @@ import {ChangeDetectionStrategy, Component, ElementRef} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {PreferredSizeService} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {NgIf} from '@angular/common';
 import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
@@ -23,7 +22,6 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
     ReactiveFormsModule,
     SciFormFieldComponent,
     SciCheckboxComponent,

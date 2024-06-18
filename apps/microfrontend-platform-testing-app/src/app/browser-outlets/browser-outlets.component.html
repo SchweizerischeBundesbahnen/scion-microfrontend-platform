@@ -1,5 +1,7 @@
 <sci-sashbox>
-  <ng-template sciSash *ngFor="let outletName of outletNames$ | async">
-    <app-browser-outlet [outletName]="outletName"></app-browser-outlet>
-  </ng-template>
+  @for (outletName of outletNames$ | async; track outletName) {
+    <ng-template sciSash>
+      <app-browser-outlet [outletName]="outletName"/>
+    </ng-template>
+  }
 </sci-sashbox>

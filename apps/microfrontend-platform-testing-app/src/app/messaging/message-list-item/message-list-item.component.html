@@ -1,29 +1,26 @@
-<ng-container *ngIf="isTopicMessage; then topic_message_template else intent_message_template"></ng-container>
-<ng-template #topic_message_template>
+@if (isTopicMessage) {
   Topic:<span class="e2e-topic topic">{{topicMessage.topic}}</span>
-  <ng-container *ngIf="message.headers.get(MessageHeaders.ReplyTo) as replyTo">
+  @if (message.headers.get(MessageHeaders.ReplyTo); as replyTo) {
     replyTo: <span class="e2e-reply-to">{{replyTo}}</span>
-  </ng-container>
+  }
   Body: <span class="e2e-body">{{message.body}}</span>
-  <ng-container *ngIf="topicMessage.params && topicMessage.params.size">
+  @if (topicMessage.params && topicMessage.params.size) {
     Params:
-    <sci-key-value [object]="topicMessage.params" class="e2e-params"></sci-key-value>
-  </ng-container>
+    <sci-key-value [object]="topicMessage.params" class="e2e-params"/>
+  }
   Headers:
-  <sci-key-value [object]="message.headers" class="e2e-headers"></sci-key-value>
-</ng-template>
-
-<ng-template #intent_message_template>
+  <sci-key-value [object]="message.headers" class="e2e-headers"/>
+} @else {
   Type: <span class="e2e-intent-type intent-type">{{intentMessage.intent.type}}</span>
   Qualifier:
-  <sci-key-value [object]="intentMessage.intent.qualifier ?? {}" class="e2e-intent-qualifier"></sci-key-value>
+  <sci-key-value [object]="intentMessage.intent.qualifier ?? {}" class="e2e-intent-qualifier"/>
   Params:
-  <sci-key-value [object]="(intentMessage.intent.params | appAppendParamDataType) ?? {}" class="e2e-intent-params"></sci-key-value>
-  <ng-container *ngIf="message.headers.get(MessageHeaders.ReplyTo) as replyTo">
+  <sci-key-value [object]="(intentMessage.intent.params | appAppendParamDataType) ?? {}" class="e2e-intent-params"/>
+  @if (message.headers.get(MessageHeaders.ReplyTo); as replyTo) {
     replyTo: <span class="e2e-reply-to">{{replyTo}}</span>
-  </ng-container>
+  }
   Body: <span class="e2e-body">{{message.body}}</span>
   Headers:
-  <sci-key-value [object]="message.headers" class="e2e-headers"></sci-key-value>
+  <sci-key-value [object]="message.headers" class="e2e-headers"/>
   Capability ID: <span>{{intentMessage.capability.metadata!.id}}</span>
-</ng-template>
+}

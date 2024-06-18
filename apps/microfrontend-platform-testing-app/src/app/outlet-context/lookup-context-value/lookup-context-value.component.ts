@@ -12,7 +12,7 @@ import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ContextService} from '@scion/microfrontend-platform';
 import {Subscription} from 'rxjs';
-import {JsonPipe, NgIf} from '@angular/common';
+import {JsonPipe} from '@angular/common';
 import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
@@ -24,7 +24,6 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
     JsonPipe,
     ReactiveFormsModule,
     SciFormFieldComponent,
