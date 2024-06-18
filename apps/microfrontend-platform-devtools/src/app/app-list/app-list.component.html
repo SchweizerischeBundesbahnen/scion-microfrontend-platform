@@ -1,10 +1,9 @@
 <sci-list (filter)="onAppFilter($event)" filterPosition="top">
-  <ng-container *ngFor="let application of applications$ | async; trackBy: trackByFn">
+  @for (application of applications$ | async; track application.symbolicName) {
     <ng-template sciListItem [key]="application.symbolicName">
       <devtools-app-list-item [application]="application"
                               [routerLink]="['/apps', {outlets: {details: [application.symbolicName]}}]"
-                              routerLinkActive="active">
-      </devtools-app-list-item>
+                              routerLinkActive="active"/>
     </ng-template>
-  </ng-container>
+  }
 </sci-list>

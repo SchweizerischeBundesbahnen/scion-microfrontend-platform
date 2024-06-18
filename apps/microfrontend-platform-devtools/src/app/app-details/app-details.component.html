@@ -1,4 +1,4 @@
-<ng-container *ngIf="application$ | async as application">
+@if (application$ | async; as application) {
   <section class="properties">
     <span>Name:</span>
     <span>{{application.name}} ({{application.symbolicName}})</span>
@@ -6,59 +6,61 @@
     <span>URL:</span>
     <a class="app-url" [href]="application.baseUrl" target="_blank">{{application.baseUrl}}</a>
 
-    <ng-container *ngIf="application.manifestUrl">
+    @if (application.manifestUrl) {
       <span>Manifest:</span>
       <a [href]="application.manifestUrl" target="_blank">{{application.manifestUrl}}</a>
-    </ng-container>
+    }
 
-    <ng-container *ngIf="application.platformVersion | async as version">
+    @if (application.platformVersion | async; as version) {
       <span>Version:</span>
       <a [href]="'https://www.npmjs.com/package/@scion/microfrontend-platform/v/' + version" target="_blank">
         &commat;scion/microfrontend-platform&commat;{{version}}
       </a>
-    </ng-container>
+    }
 
   </section>
   <sci-tabbar>
     <ng-template sciTab label="Capabilities" name="capabilities">
-      <section class="capabilities" *ngIf="capabilities$ | async as capabilities">
-        <sci-filter-field #capability_filter_field [formControl]="capabilityFilterFormControl"
-                          placeholder="Filter by type and qualifier, with multiple filter terms separated by space.">
-        </sci-filter-field>
-        <sci-viewport>
-          <sci-accordion (keydown)="capability_filter_field.focusAndApplyKeyboardEvent($event)">
-            <ng-container *ngFor="let capability of capabilities">
-              <ng-template sciAccordionItem [panel]="panel">
-                <devtools-capability-accordion-item [capability]="capability"></devtools-capability-accordion-item>
-              </ng-template>
+      @if (capabilities$ | async; as capabilities) {
+        <section class="capabilities">
+          <sci-filter-field #capability_filter_field [formControl]="capabilityFilterFormControl"
+                            placeholder="Filter by type and qualifier, with multiple filter terms separated by space."/>
+          <sci-viewport>
+            <sci-accordion (keydown)="capability_filter_field.focusAndApplyKeyboardEvent($event)">
+              @for (capability of capabilities; track capability) {
+                <ng-template sciAccordionItem [panel]="panel">
+                  <devtools-capability-accordion-item [capability]="capability"/>
+                </ng-template>
 
-              <ng-template #panel>
-                <devtools-capability-accordion-panel [capability]="capability"></devtools-capability-accordion-panel>
-              </ng-template>
-            </ng-container>
-          </sci-accordion>
-        </sci-viewport>
-      </section>
+                <ng-template #panel>
+                  <devtools-capability-accordion-panel [capability]="capability"/>
+                </ng-template>
+              }
+            </sci-accordion>
+          </sci-viewport>
+        </section>
+      }
     </ng-template>
     <ng-template sciTab label="Intentions" name="intentions">
-      <section class="intentions" *ngIf="intentions$ | async as intentions">
-        <sci-filter-field #intention_filter_field [formControl]="intentionFilterFormControl"
-                          placeholder="Filter by type and qualifier, with multiple filter terms separated by space.">
-        </sci-filter-field>
-        <sci-viewport>
-          <sci-accordion (keydown)="intention_filter_field.focusAndApplyKeyboardEvent($event)">
-            <ng-container *ngFor="let intention of intentions">
-              <ng-template sciAccordionItem [panel]="panel">
-                <devtools-intention-accordion-item [intention]="intention"></devtools-intention-accordion-item>
-              </ng-template>
+      @if (intentions$ | async; as intentions) {
+        <section class="intentions">
+          <sci-filter-field #intention_filter_field [formControl]="intentionFilterFormControl"
+                            placeholder="Filter by type and qualifier, with multiple filter terms separated by space."/>
+          <sci-viewport>
+            <sci-accordion (keydown)="intention_filter_field.focusAndApplyKeyboardEvent($event)">
+              @for (intention of intentions; track intention) {
+                <ng-template sciAccordionItem [panel]="panel">
+                  <devtools-intention-accordion-item [intention]="intention"/>
+                </ng-template>
 
-              <ng-template #panel>
-                <devtools-intention-accordion-panel [intention]="intention"></devtools-intention-accordion-panel>
-              </ng-template>
-            </ng-container>
-          </sci-accordion>
-        </sci-viewport>
-      </section>
+                <ng-template #panel>
+                  <devtools-intention-accordion-panel [intention]="intention"/>
+                </ng-template>
+              }
+            </sci-accordion>
+          </sci-viewport>
+        </section>
+      }
     </ng-template>
     <ng-template sciTab label="Dependencies">
       <sci-sashbox class="dependencies">
@@ -66,14 +68,14 @@
           <section class="required-applications">
             <header>Required Applications</header>
             <span class="description">Lists applications on which this application depends. The required capabilities are listed for each application.</span>
-            <devtools-required-capabilities [appSymbolicName]="application.symbolicName"></devtools-required-capabilities>
+            <devtools-required-capabilities [appSymbolicName]="application.symbolicName"/>
           </section>
         </ng-template>
         <ng-template sciSash>
           <section class="dependent-applications">
             <header>Dependent Applications</header>
             <span class="description">Lists applications that depend on this application. Dependent intentions are listed for each application.</span>
-            <devtools-dependent-intentions [appSymbolicName]="application.symbolicName"></devtools-dependent-intentions>
+            <devtools-dependent-intentions [appSymbolicName]="application.symbolicName"/>
           </section>
         </ng-template>
       </sci-sashbox>
@@ -85,14 +87,15 @@
           <span class="description">
             Controls whether this application can interact with the private capabilities of other apps. Disabling scope check is strongly discouraged. By default, scope check is enabled.
           </span>
-          <span class="chip" *ngIf="application.scopeCheckDisabled; else scopeCheckEnabled" title="Scope check is disabled for this application. This application can interact with private capabilities of other applications.">
+          @if (application.scopeCheckDisabled) {
+            <span class="chip" title="Scope check is disabled for this application. This application can interact with private capabilities of other applications.">
             Disabled
           </span>
-          <ng-template #scopeCheckEnabled>
+          } @else {
             <span class="chip default" title="Scope check is enabled for this application. This application cannot interact with private capabilities of other applications.">
               Default (enabled)
             </span>
-          </ng-template>
+          }
         </section>
 
         <section class="intent-register-api">
@@ -100,14 +103,15 @@
           <span class="description">
             Controls whether this application can register and unregister intentions dynamically at runtime. Enabling this API is strongly discouraged. By default, this API is disabled.
           </span>
-          <span class="chip default" *ngIf="application.intentionRegisterApiDisabled; else intentionRegisterApiEnabled" title="Intention register API is disabled for this application. This application has to declare intentions in its manifest.">
+          @if (application.intentionRegisterApiDisabled) {
+            <span class="chip default" title="Intention register API is disabled for this application. This application has to declare intentions in its manifest.">
             Default (disabled)
           </span>
-          <ng-template #intentionRegisterApiEnabled>
+          } @else {
             <span class="chip" title="Intention register API is enabled for this application. This application can register intentions dynamically at runtime.">
               Enabled
             </span>
-          </ng-template>
+          }
         </section>
 
         <section class="intention-check">
@@ -115,16 +119,17 @@
           <span class="description">
             Controls whether this application can interact with the capabilities of other apps without having to declare respective intentions. Disabling intention check is strongly discouraged. By default, intention check is enabled.
           </span>
-          <span class="chip" *ngIf="application.intentionCheckDisabled; else intentionCheckEnabled" title="Intention check is disabled for this application. This application can issue intents for which it has not declared any intention.">
+          @if (application.intentionCheckDisabled) {
+            <span class="chip" title="Intention check is disabled for this application. This application can issue intents for which it has not declared any intention.">
             Disabled
           </span>
-          <ng-template #intentionCheckEnabled>
+          } @else {
             <span class="chip default" title="Intention check is enabled for this application. This application can only issue intents for which it has declared an intention in its manifest.">
               Default (enabled)
             </span>
-          </ng-template>
+          }
         </section>
       </section>
     </ng-template>
   </sci-tabbar>
-</ng-container>
+}

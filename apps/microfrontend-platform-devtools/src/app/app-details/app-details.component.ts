@@ -17,7 +17,7 @@ import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {ShellService} from '../shell.service';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {SciTabbarComponent, SciTabDirective} from '@scion/components.internal/tabbar';
-import {AsyncPipe, NgFor, NgIf} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {CapabilityAccordionItemComponent} from '../capability-accordion-item/capability-accordion-item.component';
 import {CapabilityAccordionPanelComponent} from '../capability-accordion-panel/capability-accordion-panel.component';
@@ -37,8 +37,6 @@ import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
-    NgFor,
     AsyncPipe,
     ReactiveFormsModule,
     SciTabbarComponent,

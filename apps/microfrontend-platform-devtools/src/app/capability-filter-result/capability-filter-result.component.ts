@@ -15,7 +15,7 @@ import {ShellService} from '../shell.service';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {expand, map, take} from 'rxjs/operators';
 import {filterManifestObjects} from '../common/manifest-object-filter.utils';
-import {AsyncPipe, NgFor, NgIf} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {CapabilityAccordionPanelComponent} from '../capability-accordion-panel/capability-accordion-panel.component';
 import {CapabilityAccordionItemComponent} from '../capability-accordion-item/capability-accordion-item.component';
@@ -29,8 +29,6 @@ import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
-    NgFor,
     AsyncPipe,
     ReactiveFormsModule,
     SciFilterFieldComponent,

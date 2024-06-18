@@ -1,32 +1,39 @@
-<sci-sashbox *ngIf="connnectedToHost | async; else welcome_message">
-  <ng-template sciSash *ngIf="showPrimaryOutlet" size="1">
-    <aside>
-      <header>
-        <button class="menu" (click)="onOpenMenuClick()">
-          <span sciMaterialIcon>menu</span>
-          {{primaryTitle$ | async}}
-        </button>
-        <button class="collapse" *ngIf="showPrimaryOutlet && showDetailsOutlet" (click)="onCollapsePrimaryClick()" sciMaterialIcon>keyboard_arrow_left</button>
-      </header>
-      <router-outlet></router-outlet>
-    </aside>
-  </ng-template>
-
-  <ng-template sciSash *ngIf="showDetailsOutlet" size="4">
-    <main>
-      <header>
-        <button class="menu" *ngIf="!showPrimaryOutlet" (click)="onOpenMenuClick()" sciMaterialIcon>menu</button>
-        <button class="expand" *ngIf="!showPrimaryOutlet && showDetailsOutlet" (click)="onExpandPrimaryClick()" sciMaterialIcon>keyboard_arrow_right</button>
-        <span class="title" (dblclick)="onDetailsDblClick()">{{detailsTitle$ | async}}</span>
-      </header>
-      <router-outlet name="details"></router-outlet>
-    </main>
-  </ng-template>
-</sci-sashbox>
-
-<devtools-app-menu *ngIf="menuOpen" (close)="onMenuClose()"></devtools-app-menu>
-
-<ng-template #welcome_message>
+@if (connnectedToHost | async) {
+  <sci-sashbox>
+    @if (showPrimaryOutlet) {
+      <ng-template sciSash size="1">
+        <aside>
+          <header>
+            <button class="menu" (click)="onOpenMenuClick()">
+              <span sciMaterialIcon>menu</span>
+              {{primaryTitle$ | async}}
+            </button>
+            @if (showPrimaryOutlet && showDetailsOutlet) {
+              <button class="collapse" (click)="onCollapsePrimaryClick()" sciMaterialIcon>keyboard_arrow_left</button>
+            }
+          </header>
+          <router-outlet/>
+        </aside>
+      </ng-template>
+    }
+    @if (showDetailsOutlet) {
+      <ng-template sciSash size="4">
+        <main>
+          <header>
+            @if (!showPrimaryOutlet) {
+              <button class="menu" (click)="onOpenMenuClick()" sciMaterialIcon>menu</button>
+            }
+            @if (!showPrimaryOutlet && showDetailsOutlet) {
+              <button class="expand" (click)="onExpandPrimaryClick()" sciMaterialIcon>keyboard_arrow_right</button>
+            }
+            <span class="title" (dblclick)="onDetailsDblClick()">{{detailsTitle$ | async}}</span>
+          </header>
+          <router-outlet name="details"/>
+        </main>
+      </ng-template>
+    }
+  </sci-sashbox>
+} @else {
   <section class="welcome">
     <header>Welcome to SCION Microfrontend Platform DevTools</header>
     <p>Embed SCION DevTools as microfrontend in your application to inspect micro applications and their dependencies.</p>
@@ -36,4 +43,9 @@
     </p>
     <img src="scion-microfrontend-platform-logo.svg" alt="SCION Microfrontend Platform" class="logo">
   </section>
-</ng-template>
+}
+
+@if (menuOpen) {
+  <devtools-app-menu (close)="onMenuClose()"/>
+}
+

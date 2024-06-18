@@ -16,7 +16,7 @@ import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Maps} from '@scion/toolkit/util';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
-import {AsyncPipe, KeyValue, KeyValuePipe, NgFor} from '@angular/common';
+import {AsyncPipe, KeyValuePipe} from '@angular/common';
 import {AppNamePipe} from '../common/app-name.pipe';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 import {SciAccordionComponent, SciAccordionItemDirective} from '@scion/components.internal/accordion';
@@ -30,7 +30,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgFor,
     AsyncPipe,
     KeyValuePipe,
     ReactiveFormsModule,
@@ -75,13 +74,5 @@ export class DependentIntentionsComponent implements OnInit, OnChanges {
   public onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
     event.stopPropagation();
     this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
-  }
-
-  public trackByApplicationFn(index: number, entry: KeyValue<string, Intention[]>): string {
-    return entry.key;
-  }
-
-  public trackByIntentionFn(index: number, intention: Intention): string {
-    return intention.metadata!.id;
   }
 }

@@ -1,9 +1,11 @@
 <header>Provided by:</header>
 <ul>
-  <li *ngFor="let application of applications$ | async">
-    <a (click)="onProviderClick(application)" href=""
-       [class.self]="application.symbolicName === intention.metadata!.appSymbolicName">
-      {{application.name}}
-    </a>
-  </li>
+  @for (application of applications$ | async; track application.symbolicName) {
+    <li>
+      <a (click)="onProviderClick(application)" href=""
+         [class.self]="application.symbolicName === intention.metadata!.appSymbolicName">
+        {{application.name}}
+      </a>
+    </li>
+  }
 </ul>

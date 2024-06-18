@@ -1,6 +1,6 @@
-<sci-filter-field [formControl]="filterFormControl" placeholder="Filter by type and qualifier, with multiple filter terms separated by space."></sci-filter-field>
+<sci-filter-field [formControl]="filterFormControl" placeholder="Filter by type and qualifier, with multiple filter terms separated by space."/>
 <sci-accordion>
-  <ng-container *ngFor="let capabilitiesByApp of capabilitiesByApp$ | async | keyvalue; trackBy: trackByApplicationFn">
+  @for (capabilitiesByApp of capabilitiesByApp$ | async | keyvalue; track capabilitiesByApp.key) {
     <ng-template sciAccordionItem [panel]="panel" [key]="capabilitiesByApp.key">
       <header>
         {{capabilitiesByApp.key | devtoolsAppName}}
@@ -11,33 +11,40 @@
     <ng-template #panel>
       <section class="panel">
         <section class="capability-list">
-          <sci-qualifier-chip-list *ngFor="let capability of capabilitiesByApp.value; trackBy: trackByCapabilityFn"
-                                   [class.selected]="capability === selectedCapability"
-                                   [type]="capability.type" [qualifier]="capability.qualifier"
-                                   (click)="onCapabilityClick(capability)">
-          </sci-qualifier-chip-list>
+          @for (capability of capabilitiesByApp.value; track capability.metadata!.id) {
+            <sci-qualifier-chip-list [class.selected]="capability === selectedCapability"
+                                     [type]="capability.type" [qualifier]="capability.qualifier"
+                                     (click)="onCapabilityClick(capability)"/>
+          }
         </section>
-        <section *ngIf="selectedCapability" class="capability-details">
-          <section class="description" *ngIf="selectedCapability.description">
-            <span>{{selectedCapability.description}}</span>
+        @if (selectedCapability) {
+          <section class="capability-details">
+            @if (selectedCapability.description) {
+              <section class="description">
+                <span>{{selectedCapability.description}}</span>
+              </section>
+            }
+            @if (selectedCapability.params | devtoolsParamsFilter:'required' | devtoolsNullIfEmpty; as requiredParams) {
+              <section class="required-params">
+                <header>Required Params:</header>
+                {{requiredParams | devtoolsJoin:', ':paramNameFn}}
+              </section>
+            }
+            @if (selectedCapability.params | devtoolsParamsFilter:'optional' | devtoolsNullIfEmpty; as optionalParams) {
+              <section class="optional-params">
+                <header>Optional Params:</header>
+                {{optionalParams | devtoolsJoin:', ':paramNameFn}}
+              </section>
+            }
+            @if (selectedCapability.properties | devtoolsNullIfEmpty) {
+              <section class="properties">
+                <header>Properties:</header>
+                <sci-key-value [object]="selectedCapability.properties ?? {}"/>
+              </section>
+            }
           </section>
-
-          <section class="required-params" *ngIf="selectedCapability.params | devtoolsParamsFilter:'required' | devtoolsNullIfEmpty as requiredParams ">
-            <header>Required Params:</header>
-            {{requiredParams | devtoolsJoin:', ':paramNameFn}}
-          </section>
-
-          <section class="optional-params" *ngIf="selectedCapability.params | devtoolsParamsFilter:'optional' | devtoolsNullIfEmpty as optionalParams">
-            <header>Optional Params:</header>
-            {{optionalParams | devtoolsJoin:', ':paramNameFn}}
-          </section>
-
-          <section class="properties" *ngIf="selectedCapability.properties | devtoolsNullIfEmpty">
-            <header>Properties:</header>
-            <sci-key-value [object]="selectedCapability.properties ?? {}"></sci-key-value>
-          </section>
-        </section>
+        }
       </section>
     </ng-template>
-  </ng-container>
+  }
 </sci-accordion>

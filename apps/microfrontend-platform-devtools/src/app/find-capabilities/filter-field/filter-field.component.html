@@ -1,32 +1,45 @@
 <header>
   <span class="title">{{title}}</span>
-  <span class="toggle-button" *ngIf="logicalOperator">
-    <button [class.active]="logicalOperator === OR" (click)="onLogicalOperatorClick(OR)">OR</button>
-    <button [class.active]="logicalOperator === AND" (click)="onLogicalOperatorClick(AND)">AND</button>
-  </span>
+  @if (logicalOperator) {
+    <span class="toggle-button">
+      <button [class.active]="logicalOperator === OR" (click)="onLogicalOperatorClick(OR)">OR</button>
+      <button [class.active]="logicalOperator === AND" (click)="onLogicalOperatorClick(AND)">AND</button>
+    </span>
+  }
 </header>
 <div class="overlay-anchor">
-  <div class="overlay add-filter" [class]="type" *ngIf="showFilter; else addFilterButton" cdkMonitorSubtreeFocus (cdkFocusChange)="onFocusChange($event)">
-    <input type="text" [formControl]="keyFormControl" (keydown.enter)="onAddFilterClick()" *ngIf="isTypeKeyValue()" placeholder="Key" [attr.list]="autocompleteKeysDatalistId" #key>
-    <input type="text" [formControl]="valueFormControl" (keydown.enter)="onAddFilterClick()" [placeholder]="placeholder" [attr.list]="autocompleteValuesDatalistId" #value>
-    <button (click)="onAddFilterClick()" [disabled]="isAddButtonDisabled()" sci-primary>Add</button>
-    <datalist [attr.id]="autocompleteKeysDatalistId">
-      <option *ngFor="let autocompleteKey of autocompleteKeys" [value]="autocompleteKey"></option>
-    </datalist>
-    <datalist [attr.id]="autocompleteValuesDatalistId">
-      <option *ngFor="let autocompleteValue of autocompleteValues" [value]="autocompleteValue"></option>
-    </datalist>
-  </div>
-  <ng-template #addFilterButton>
+  @if (showFilter) {
+    <div class="overlay add-filter" [class]="type" cdkMonitorSubtreeFocus (cdkFocusChange)="onFocusChange($event)">
+      @if (isTypeKeyValue()) {
+        <input type="text" [formControl]="keyFormControl" (keydown.enter)="onAddFilterClick()" placeholder="Key" [attr.list]="autocompleteKeysDatalistId" #key>
+      }
+      <input type="text" [formControl]="valueFormControl" (keydown.enter)="onAddFilterClick()" [placeholder]="placeholder" [attr.list]="autocompleteValuesDatalistId" #value>
+      <button (click)="onAddFilterClick()" [disabled]="isAddButtonDisabled()" sci-primary>Add</button>
+      <datalist [attr.id]="autocompleteKeysDatalistId">
+        @for (autocompleteKey of autocompleteKeys; track autocompleteKey) {
+          <option [value]="autocompleteKey"></option>
+        }
+      </datalist>
+      <datalist [attr.id]="autocompleteValuesDatalistId">
+        @for (autocompleteValue of autocompleteValues; track autocompleteValue) {
+          <option [value]="autocompleteValue"></option>
+        }
+      </datalist>
+    </div>
+  } @else {
     <button class="add-filter" (click)="onNewFilterClick()" sciMaterialIcon>add</button>
-  </ng-template>
+  }
 </div>
 <ul class="chips">
-  <li *ngFor="let filter of filters">
-    <button (click)="onRemoveFilterClick(filter)" title="Click to remove">
-      <span class="key">{{filter.key}}</span>
-      <span class="separator" *ngIf="filter.key && filter.value">&nbsp;:&nbsp;</span>
-      <span class="value">{{filter.value}}</span>
-    </button>
-  </li>
+  @for (filter of filters; track filter) {
+    <li>
+      <button (click)="onRemoveFilterClick(filter)" title="Click to remove">
+        <span class="key">{{filter.key}}</span>
+        @if (filter.key && filter.value) {
+          <span class="separator">&nbsp;:&nbsp;</span>
+        }
+        <span class="value">{{filter.value}}</span>
+      </button>
+    </li>
+  }
 </ul>

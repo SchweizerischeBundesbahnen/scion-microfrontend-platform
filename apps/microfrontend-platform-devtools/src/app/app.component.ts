@@ -11,7 +11,7 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener} fro
 import {Observable} from 'rxjs';
 import {ShellService} from './shell.service';
 import {ContextService, MicrofrontendPlatformClient, OUTLET_CONTEXT} from '@scion/microfrontend-platform';
-import {AsyncPipe, NgIf} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {RouterOutlet} from '@angular/router';
 import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 import {AppMenuComponent} from './app-menu/app-menu.component';
@@ -26,7 +26,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
     AsyncPipe,
     RouterOutlet,
     SciSashboxComponent,
