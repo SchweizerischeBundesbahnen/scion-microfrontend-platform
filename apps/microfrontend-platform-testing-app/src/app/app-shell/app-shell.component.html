@@ -1,29 +1,41 @@
 <header>
   <div class="title">
-    <img *ngIf="isPlatformHost" class="banner" src="scion-microfrontend-platform-banner.svg" alt="SCION Microfrontend Platform">
-    <span *ngIf="pageTitle" class="page-title">{{pageTitle}}</span>
+    @if (isPlatformHost) {
+      <img class="banner" src="scion-microfrontend-platform-banner.svg" alt="SCION Microfrontend Platform">
+    }
+    @if (pageTitle) {
+      <span class="page-title">{{pageTitle}}</span>
+    }
   </div>
   <div class="actions">
     <span class="angular-change-detection-indicator" title="Indicates that Angular is currently checking the application for changes." #angular_change_detection_indicator></span>
-    <span class="chip focus-within e2e-focus-within" title="This document or its embedded web content has received focus" *ngIf="focusMonitor.focusWithin$ | async">focus-within</span>
-    <span class="chip focus e2e-has-focus" *ngIf="focusMonitor.focus$ | async">has-focus</span>
+    @if (focusMonitor.focusWithin$ | async) {
+      <span class="chip focus-within e2e-focus-within" title="This document or its embedded web content has received focus">focus-within</span>
+    }
+    @if (focusMonitor.focus$ | async) {
+      <span class="chip focus e2e-has-focus">has-focus</span>
+    }
     <span class="chip app-name">{{appSymbolicName}}</span>
     <div class="separator"></div>
-    <label class="devtools-toggle" *ngIf="devToolsFormControl.enabled">
-      <sci-toggle-button [formControl]="devToolsFormControl" [class.selected]="devToolsFormControl.value"></sci-toggle-button>
-      DevTools
-    </label>
+    @if (devToolsFormControl.enabled) {
+      <label class="devtools-toggle">
+        <sci-toggle-button [formControl]="devToolsFormControl" [class.selected]="devToolsFormControl.value"/>
+        DevTools
+      </label>
+    }
   </div>
 </header>
 <sci-sashbox [direction]="'column'">
   <ng-template sciSash size="2">
     <sci-viewport>
-      <router-outlet #outlet=outlet (activate)="onRouteActivate(outlet.activatedRoute)"></router-outlet>
+      <router-outlet #outlet=outlet (activate)="onRouteActivate(outlet.activatedRoute)"/>
     </sci-viewport>
   </ng-template>
-  <ng-template sciSash size="1" *ngIf="devToolsFormControl.value">
-    <app-devtools></app-devtools>
-  </ng-template>
+  @if (devToolsFormControl.value) {
+    <ng-template sciSash size="1">
+      <app-devtools/>
+    </ng-template>
+  }
 </sci-sashbox>
 
 <!-- Captures Angular change detection cycles -->

@@ -13,7 +13,7 @@ import {APP_IDENTITY, Capability, ManifestObjectFilter, ManifestService, ParamDe
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
 import {Observable} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {AsyncPipe, JsonPipe, NgFor, NgIf} from '@angular/common';
+import {AsyncPipe, JsonPipe} from '@angular/common';
 import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
@@ -26,8 +26,6 @@ import {parseTypedValues} from '../../common/typed-value-parser.util';
   styleUrls: ['./register-capability.component.scss'],
   standalone: true,
   imports: [
-    NgIf,
-    NgFor,
     AsyncPipe,
     JsonPipe,
     ReactiveFormsModule,

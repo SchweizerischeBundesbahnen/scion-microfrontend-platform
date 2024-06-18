@@ -14,7 +14,7 @@ import {tap} from 'rxjs/operators';
 import {ActivatedRoute, RouterOutlet} from '@angular/router';
 import {Defined} from '@scion/toolkit/util';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {AsyncPipe, NgIf} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {DevToolsComponent} from '../devtools/devtools.component';
@@ -28,7 +28,6 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
   styleUrls: ['./app-shell.component.scss'],
   standalone: true,
   imports: [
-    NgIf,
     AsyncPipe,
     RouterOutlet,
     SciSashboxComponent,

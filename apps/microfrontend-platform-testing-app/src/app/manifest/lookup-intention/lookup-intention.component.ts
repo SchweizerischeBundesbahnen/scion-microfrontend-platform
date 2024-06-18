@@ -14,7 +14,7 @@ import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.intern
 import {Observable} from 'rxjs';
 import {finalize} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {AsyncPipe, NgFor, NgIf} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
@@ -26,8 +26,6 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
   styleUrls: ['./lookup-intention.component.scss'],
   standalone: true,
   imports: [
-    NgIf,
-    NgFor,
     AsyncPipe,
     ReactiveFormsModule,
     SciFormFieldComponent,

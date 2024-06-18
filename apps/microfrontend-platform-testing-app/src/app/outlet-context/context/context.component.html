@@ -1,5 +1,7 @@
 <sci-list>
-  <ng-template sciListItem *ngFor="let entry of context$ | async | keyvalue">
-    <app-context-entry [name]="entry.key" [value]="entry.value | async"></app-context-entry>
-  </ng-template>
+  @for (entry of context$ | async | keyvalue; track entry) {
+    <ng-template sciListItem>
+      <app-context-entry [name]="entry.key" [value]="entry.value | async"/>
+    </ng-template>
+  }
 </sci-list>

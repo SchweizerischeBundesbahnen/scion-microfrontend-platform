@@ -5,26 +5,30 @@
       <input [formControl]="registerForm.controls.type" class="e2e-type">
     </sci-form-field>
     <sci-form-field label="Qualifier" direction="column">
-      <sci-key-value-field [keyValueFormArray]="registerForm.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-key-value-field>
+      <sci-key-value-field [keyValueFormArray]="registerForm.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"/>
     </sci-form-field>
     <sci-form-field label="Params" direction="column">
       <input [formControl]="registerForm.controls.params" class="e2e-params" placeholder="JSON Array, e.g., {{paramsPlaceholder | json}}">
     </sci-form-field>
     <sci-form-field label="Private" direction="column">
-      <sci-checkbox [formControl]="registerForm.controls.private" class="e2e-private"></sci-checkbox>
+      <sci-checkbox [formControl]="registerForm.controls.private" class="e2e-private"/>
     </sci-form-field>
     <sci-form-field label="Properties" direction="column">
-      <sci-key-value-field [keyValueFormArray]="registerForm.controls.properties" [addable]="true" [removable]="true" class="e2e-properties"></sci-key-value-field>
+      <sci-key-value-field [keyValueFormArray]="registerForm.controls.properties" [addable]="true" [removable]="true" class="e2e-properties"/>
     </sci-form-field>
     <button type="submit" (click)="onRegister()" [disabled]="registerForm.invalid" class="e2e-register" sci-primary>Register</button>
   </form>
 
-  <output class="error e2e-register-error" *ngIf="registerError">
-    {{registerError}}
-  </output>
-  <output class="response e2e-register-response" *ngIf="registerResponse">
-    Capability ID: <span class="e2e-capability-id">{{registerResponse}}</span>
-  </output>
+  @if (registerError) {
+    <output class="error e2e-register-error">
+      {{registerError}}
+    </output>
+  }
+  @if (registerResponse) {
+    <output class="response e2e-register-response">
+      Capability ID: <span class="e2e-capability-id">{{registerResponse}}</span>
+    </output>
+  }
 </section>
 
 <section class="unregister e2e-unregister">
@@ -37,10 +41,10 @@
       <input [formControl]="unregisterForm.controls.type" class="e2e-type">
     </sci-form-field>
     <sci-form-field label="Qualifier" direction="column">
-      <sci-key-value-field [keyValueFormArray]="unregisterForm.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-key-value-field>
+      <sci-key-value-field [keyValueFormArray]="unregisterForm.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"/>
     </sci-form-field>
     <sci-form-field label="NilQualifier if empty" direction="column">
-      <sci-checkbox [formControl]="unregisterForm.controls.nilqualifierIfEmpty" class="e2e-nilqualifier-if-empty"></sci-checkbox>
+      <sci-checkbox [formControl]="unregisterForm.controls.nilqualifierIfEmpty" class="e2e-nilqualifier-if-empty"/>
     </sci-form-field>
     <sci-form-field label="Application" direction="column">
       <input [formControl]="unregisterForm.controls.appSymbolicName" class="e2e-app-symbolic-name">
@@ -48,23 +52,27 @@
     <button type="submit" (click)="onUnregister()" [disabled]="unregisterForm.invalid" class="e2e-unregister" sci-primary>Unregister</button>
   </form>
 
-  <output class="error e2e-unregister-error" *ngIf="unregisterError">
-    {{unregisterError}}
-  </output>
-  <output class="response e2e-unregister-response" *ngIf="unregisterResponse">
-    {{unregisterResponse}}
-  </output>
+  @if (unregisterError) {
+    <output class="error e2e-unregister-error">
+      {{unregisterError}}
+    </output>
+  }
+  @if (unregisterResponse) {
+    <output class="response e2e-unregister-response">
+      {{unregisterResponse}}
+    </output>
+  }
 </section>
 
 <sci-list class="capabilities">
-  <ng-container *ngFor="let capability of capabilities$ | async">
+  @for (capability of capabilities$ | async; track capability) {
     <ng-template sciListItem>
       <section class="capability">
-        <sci-qualifier-chip-list [qualifier]="capability.qualifier" [type]="capability.type"></sci-qualifier-chip-list>
+        <sci-qualifier-chip-list [qualifier]="capability.qualifier" [type]="capability.type"/>
         <span class="app">{{capability.metadata!.appSymbolicName}}</span>
         <span class="id">{{capability.metadata!.id}}</span>
         <span class="visibility">{{capability.private ? 'PRIVATE' : 'PUBLIC'}}</span>
       </section>
     </ng-template>
-  </ng-container>
+  }
 </sci-list>

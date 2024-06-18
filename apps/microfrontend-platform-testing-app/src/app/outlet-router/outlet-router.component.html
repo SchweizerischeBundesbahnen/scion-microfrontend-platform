@@ -3,27 +3,33 @@
     <input [formControl]="form.controls.outlet" class="e2e-outlet">
   </sci-form-field>
   <sci-form-field label="Use Intent">
-    <sci-checkbox [formControl]="form.controls.useIntent" class="e2e-use-intent"></sci-checkbox>
+    <sci-checkbox [formControl]="form.controls.useIntent" class="e2e-use-intent"/>
   </sci-form-field>
-  <sci-form-field label="URL" *ngIf="!form.controls.useIntent.value">
-    <input [formControl]="(form.controls.destination | appAs:UrlDestinationFormGroup).controls.url" class="e2e-url">
-  </sci-form-field>
-  <sci-form-field label="Qualifier" *ngIf="form.controls.useIntent.value">
-    <sci-key-value-field [keyValueFormArray]="(form.controls.destination | appAs:IntentDestinationFormGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-key-value-field>
-  </sci-form-field>
+  @if (form.controls.useIntent.value) {
+    <sci-form-field label="Qualifier">
+      <sci-key-value-field [keyValueFormArray]="(form.controls.destination | appAs:IntentDestinationFormGroup).controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"/>
+    </sci-form-field>
+  } @else {
+    <sci-form-field label="URL">
+      <input [formControl]="(form.controls.destination | appAs:UrlDestinationFormGroup).controls.url" class="e2e-url">
+    </sci-form-field>
+  }
+
   <sci-form-field label="Params">
-    <sci-key-value-field [keyValueFormArray]="form.controls.params" [addable]="true" [removable]="true" class="e2e-params"></sci-key-value-field>
+    <sci-key-value-field [keyValueFormArray]="form.controls.params" [addable]="true" [removable]="true" class="e2e-params"/>
   </sci-form-field>
   <sci-form-field label="Push State" title="Pushes a state to the browser's session history stack, allowing the user to use the back button to navigate back.">
-    <sci-checkbox [formControl]="form.controls.pushSessionHistoryState" class="e2e-push-state"></sci-checkbox>
+    <sci-checkbox [formControl]="form.controls.pushSessionHistoryState" class="e2e-push-state"/>
   </sci-form-field>
   <sci-form-field label="Show Splash" title="Shows a splash until the microfrontend signals readiness.">
-    <sci-checkbox [formControl]="form.controls.showSplash" class="e2e-show-splash"></sci-checkbox>
+    <sci-checkbox [formControl]="form.controls.showSplash" class="e2e-show-splash"/>
   </sci-form-field>
 
   <button type="submit" class="e2e-navigate" (click)="onNavigateClick()" [disabled]="form.invalid" sci-primary>Navigate</button>
 </form>
 
-<output class="navigate-error e2e-navigate-error" *ngIf="navigateError">
-  {{navigateError}}
-</output>
+@if (navigateError) {
+  <output class="navigate-error e2e-navigate-error">
+    {{navigateError}}
+  </output>
+}

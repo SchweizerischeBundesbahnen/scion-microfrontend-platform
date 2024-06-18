@@ -12,7 +12,7 @@ import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
-import {AsyncPipe, KeyValuePipe, NgFor} from '@angular/common';
+import {AsyncPipe, KeyValuePipe} from '@angular/common';
 import {A11yModule} from '@angular/cdk/a11y';
 import {ContextEntryComponent} from '../context-entry/context-entry.component';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
@@ -28,7 +28,6 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
   styleUrls: ['./router-outlet-context.component.scss'],
   standalone: true,
   imports: [
-    NgFor,
     AsyncPipe,
     KeyValuePipe,
     A11yModule,

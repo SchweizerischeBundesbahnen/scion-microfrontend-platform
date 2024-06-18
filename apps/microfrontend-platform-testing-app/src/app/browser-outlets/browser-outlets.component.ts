@@ -14,7 +14,7 @@ import {map} from 'rxjs/operators';
 import {coerceNumberProperty} from '@angular/cdk/coercion';
 import {UUID} from '@scion/toolkit/uuid';
 import {BrowserOutletComponent} from '../browser-outlet/browser-outlet.component';
-import {AsyncPipe, NgFor} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 
 @Component({
@@ -23,7 +23,6 @@ import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
   styleUrls: ['./browser-outlets.component.scss'],
   standalone: true,
   imports: [
-    NgFor,
     AsyncPipe,
     SciSashboxComponent,
     SciSashDirective,

@@ -4,35 +4,42 @@
   </sci-form-field>
 
   <sci-form-field label="Collect">
-    <sci-checkbox class="e2e-collect-values" [formControl]="form.controls.collect"></sci-checkbox>
+    <sci-checkbox class="e2e-collect-values" [formControl]="form.controls.collect"/>
   </sci-form-field>
 
-  <button (click)="onSubscribe()" *ngIf="!isSubscribed" [disabled]="form.invalid" class="e2e-subscribe" sci-primary>Subscribe</button>
-  <button (click)="onUnsubscribe()" *ngIf="isSubscribed" class="e2e-unsubscribe">Unsubscribe</button>
+  @if (!isSubscribed) {
+    <button (click)="onSubscribe()" [disabled]="form.invalid" class="e2e-subscribe" sci-primary>Subscribe</button>
+  } @else {
+    <button (click)="onUnsubscribe()" class="e2e-unsubscribe">Unsubscribe</button>
+  }
 </form>
 
-<sci-sashbox class="context-value" *ngIf="isSubscribed">
-  <!-- Observe -->
-  <ng-template sciSash>
-    <section class="context-value">
-      <header>Observe:</header>
-      <output class="e2e-observe-value">
-        {{observeValue | json}}
-      </output>
-    </section>
-  </ng-template>
+@if (isSubscribed) {
+  <sci-sashbox class="context-value">
+    <!-- Observe -->
+    <ng-template sciSash>
+      <section class="context-value">
+        <header>Observe:</header>
+        <output class="e2e-observe-value">
+          {{observeValue | json}}
+        </output>
+      </section>
+    </ng-template>
 
-  <!-- Lookup -->
-  <ng-template sciSash>
-    <section class="context-value">
-      <header>Lookup:</header>
-      <output class="e2e-lookup-value">
-        {{lookupValue | json}}
-      </output>
-    </section>
-  </ng-template>
-</sci-sashbox>
+    <!-- Lookup -->
+    <ng-template sciSash>
+      <section class="context-value">
+        <header>Lookup:</header>
+        <output class="e2e-lookup-value">
+          {{lookupValue | json}}
+        </output>
+      </section>
+    </ng-template>
+  </sci-sashbox>
+}
 
-<output class="subscribe-error e2e-observe-error e2e-lookup-error" *ngIf="subscribeError">
-  {{subscribeError}}
-</output>
+@if (subscribeError) {
+  <output class="subscribe-error e2e-observe-error e2e-lookup-error">
+    {{subscribeError}}
+  </output>
+}

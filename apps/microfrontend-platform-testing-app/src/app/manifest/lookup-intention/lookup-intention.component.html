@@ -6,30 +6,33 @@
     <input [formControl]="form.controls.type" class="e2e-type">
   </sci-form-field>
   <sci-form-field label="Qualifier">
-    <sci-key-value-field [keyValueFormArray]="form.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"></sci-key-value-field>
+    <sci-key-value-field [keyValueFormArray]="form.controls.qualifier" [addable]="true" [removable]="true" class="e2e-qualifier"/>
   </sci-form-field>
   <sci-form-field label="NilQualifier if empty">
-    <sci-checkbox [formControl]="form.controls.nilqualifierIfEmpty" class="e2e-nilqualifier-if-empty"></sci-checkbox>
+    <sci-checkbox [formControl]="form.controls.nilqualifierIfEmpty" class="e2e-nilqualifier-if-empty"/>
   </sci-form-field>
   <sci-form-field label="Application">
     <input [formControl]="form.controls.appSymbolicName" class="e2e-app-symbolic-name">
   </sci-form-field>
 
   <section class="buttons">
-    <button type="submit" *ngIf="!intentions$" (click)="onLookup()" [disabled]="form.invalid" class="e2e-lookup" sci-primary>Lookup</button>
-    <button type="submit" *ngIf="intentions$" (click)="onLookupCancel()" class="e2e-cancel-lookup" sci-primary>Cancel the lookup</button>
+    @if (!intentions$) {
+      <button type="submit" (click)="onLookup()" [disabled]="form.invalid" class="e2e-lookup" sci-primary>Lookup</button>
+    } @else {
+      <button type="submit" (click)="onLookupCancel()" class="e2e-cancel-lookup" sci-primary>Cancel the lookup</button>
+    }
     <button type="button" (click)="onReset()" [disabled]="form.pristine" class="e2e-reset">Reset</button>
   </section>
 </form>
 
 <sci-list class="intentions e2e-intentions">
-  <ng-container *ngFor="let intention of intentions$ | async">
+  @for (intention of intentions$ | async; track intention) {
     <ng-template sciListItem>
       <section class="intention">
-        <sci-qualifier-chip-list [qualifier]="intention.qualifier" [type]="intention.type"></sci-qualifier-chip-list>
+        <sci-qualifier-chip-list [qualifier]="intention.qualifier" [type]="intention.type"/>
         <span class="app">{{intention.metadata!.appSymbolicName}}</span>
         <span class="id e2e-id">{{intention.metadata!.id}}</span>
       </section>
     </ng-template>
-  </ng-container>
+  }
 </sci-list>

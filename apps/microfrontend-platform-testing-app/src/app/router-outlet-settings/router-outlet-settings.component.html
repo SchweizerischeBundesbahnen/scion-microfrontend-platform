@@ -2,17 +2,20 @@
   <li>
     <span class="label">Page scrolling</span>
     <span class="description">Enables native page scrolling in the embedded document</span>
-    <sci-toggle-button [formControl]="pageScrollingEnabledFormControl"></sci-toggle-button>
+    <sci-toggle-button [formControl]="pageScrollingEnabledFormControl"/>
   </li>
   <li class="e2e-preferred-size">
     <span class="label">Preferred size</span>
-    <span class="description" *ngIf="!preferredSize">
-      There is no preferred size set.
-    </span>
-    <span class="description" *ngIf="preferredSize">
-      The following preferred size is set:
-      <code class="preferred-size">{{preferredSize | json}}</code>
-    </span>
+    @if (preferredSize) {
+      <span class="description">
+        The following preferred size is set:
+        <code class="preferred-size">{{preferredSize | json}}</code>
+      </span>
+    } @else {
+      <span class="description">
+        There is no preferred size set.
+      </span>
+    }
     <button type="button" class="e2e-reset" (click)="onPreferredSizeResetClick()" [disabled]="!preferredSize" sci-primary>reset</button>
   </li>
 </ul>

@@ -14,7 +14,7 @@ import {Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith} from 'rxjs/operators';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {AsyncPipe, NgFor, NgIf} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {TopicSubscriberCountPipe} from '../topic-subscriber-count.pipe';
 import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
@@ -31,9 +31,7 @@ import {parseTypedValues} from '../../common/typed-value-parser.util';
   styleUrls: ['./publish-message.component.scss'],
   standalone: true,
   imports: [
-    NgIf,
     AsyncPipe,
-    NgFor,
     ReactiveFormsModule,
     SciFormFieldComponent,
     SciKeyValueFieldComponent,

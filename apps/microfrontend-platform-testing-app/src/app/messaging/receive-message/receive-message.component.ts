@@ -14,7 +14,6 @@ import {Subscription} from 'rxjs';
 import {distinctUntilChanged, finalize, startWith} from 'rxjs/operators';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {NgFor, NgIf} from '@angular/common';
 import {MessageListItemComponent} from '../message-list-item/message-list-item.component';
 import {AppAsPipe} from '../../common/as.pipe';
 import {stringifyError} from '../../common/stringify-error.util';
@@ -29,8 +28,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   styleUrls: ['./receive-message.component.scss'],
   standalone: true,
   imports: [
-    NgIf,
-    NgFor,
     ReactiveFormsModule,
     SciFormFieldComponent,
     SciKeyValueFieldComponent,

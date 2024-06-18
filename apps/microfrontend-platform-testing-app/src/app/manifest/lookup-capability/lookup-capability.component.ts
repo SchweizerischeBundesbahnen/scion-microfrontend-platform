@@ -15,7 +15,7 @@ import {Observable} from 'rxjs';
 import {finalize} from 'rxjs/operators';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Clipboard} from '@angular/cdk/clipboard';
-import {AsyncPipe, JsonPipe, NgFor, NgIf} from '@angular/common';
+import {AsyncPipe, JsonPipe} from '@angular/common';
 import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
@@ -28,8 +28,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   styleUrls: ['./lookup-capability.component.scss'],
   standalone: true,
   imports: [
-    NgIf,
-    NgFor,
     AsyncPipe,
     JsonPipe,
     ReactiveFormsModule,
