@@ -11,7 +11,6 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Clipboard} from '@angular/cdk/clipboard';
 import {Capability} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
-import {NgIf} from '@angular/common';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
@@ -22,7 +21,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
     SciQualifierChipListComponent,
     SciMaterialIconDirective,
   ],

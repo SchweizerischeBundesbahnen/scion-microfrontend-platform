@@ -12,7 +12,7 @@ import {Observable} from 'rxjs';
 import {Application, Capability} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router, RouterLink} from '@angular/router';
-import {AsyncPipe, JsonPipe, NgFor, NgIf} from '@angular/common';
+import {AsyncPipe, JsonPipe} from '@angular/common';
 import {SciKeyValueComponent} from '@scion/components.internal/key-value';
 import {CustomParamMetadataPipe} from '../common/custom-param-metadata.pipe';
 import {AppNamePipe} from '../common/app-name.pipe';
@@ -25,8 +25,6 @@ import {SciTabbarComponent, SciTabDirective} from '@scion/components.internal/ta
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
-    NgFor,
     AsyncPipe,
     JsonPipe,
     RouterLink,

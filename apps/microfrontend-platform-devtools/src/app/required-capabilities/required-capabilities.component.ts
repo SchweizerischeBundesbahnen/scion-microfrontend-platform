@@ -16,7 +16,7 @@ import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Maps} from '@scion/toolkit/util';
-import {AsyncPipe, KeyValue, KeyValuePipe, NgFor, NgIf} from '@angular/common';
+import {AsyncPipe, KeyValuePipe} from '@angular/common';
 import {AppNamePipe} from '../common/app-name.pipe';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 import {ParamsFilterPipe} from '../common/params-filter.pipe';
@@ -34,8 +34,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
-    NgFor,
     AsyncPipe,
     KeyValuePipe,
     ReactiveFormsModule,
@@ -92,14 +90,6 @@ export class RequiredCapabilitiesComponent implements OnChanges {
   public onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
     event.stopPropagation();
     this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
-  }
-
-  public trackByApplicationFn(index: number, entry: KeyValue<string, Capability[]>): string {
-    return entry.key;
-  }
-
-  public trackByCapabilityFn(index: number, capability: Capability): string {
-    return capability.metadata!.id;
   }
 
   public paramNameFn = (param: ParamDefinition): string => param.name;

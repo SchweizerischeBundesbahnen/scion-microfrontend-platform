@@ -12,7 +12,7 @@ import {Observable} from 'rxjs';
 import {Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {map} from 'rxjs/operators';
-import {AsyncPipe, NgIf} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 
 @Component({
@@ -22,7 +22,6 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
     AsyncPipe,
     SciQualifierChipListComponent,
   ],

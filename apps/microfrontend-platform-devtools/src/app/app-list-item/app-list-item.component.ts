@@ -13,7 +13,7 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router} from '@angular/router';
-import {AsyncPipe, NgIf} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 @Component({
@@ -23,7 +23,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgIf,
     AsyncPipe,
     SciMaterialIconDirective,
   ],

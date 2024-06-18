@@ -14,7 +14,7 @@ import {map} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {sortArray} from '@scion/toolkit/operators';
 import {ShellService} from '../shell.service';
-import {AsyncPipe, NgFor} from '@angular/common';
+import {AsyncPipe} from '@angular/common';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {AppListItemComponent} from '../app-list-item/app-list-item.component';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
@@ -26,7 +26,6 @@ import {SciListComponent, SciListItemDirective} from '@scion/components.internal
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    NgFor,
     AsyncPipe,
     RouterLink,
     RouterLinkActive,
@@ -48,10 +47,6 @@ export class AppListComponent {
         map(appFilter => this._manifestService.applications.filter(app => app.name.toLowerCase().includes(appFilter))),
         sortArray(byName),
       );
-  }
-
-  public trackByFn(index: number, application: Application): string {
-    return application.symbolicName;
   }
 
   public onAppFilter(appFilter: string): void {
