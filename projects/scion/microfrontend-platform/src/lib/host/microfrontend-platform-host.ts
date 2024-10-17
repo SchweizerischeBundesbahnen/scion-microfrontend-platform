@@ -87,7 +87,7 @@ export class MicrofrontendPlatformHost {
         const symbolicName = config.host?.symbolicName || 'host';
 
         // Provide environment for running the platform as host.
-        providePlatformEnvironment({symbolicName, isPlatformHost: true});
+        providePlatformEnvironment({symbolicName, isPlatformHost: true, cspNonce: config.cspNonce});
         provideClientEnvironment({
           messageDeliveryTimeout: config.host?.messageDeliveryTimeout,
           brokerDiscoverTimeout: config.host?.brokerDiscoverTimeout,

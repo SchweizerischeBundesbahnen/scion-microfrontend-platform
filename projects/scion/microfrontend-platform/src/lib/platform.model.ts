@@ -454,6 +454,8 @@ export const IS_PLATFORM_HOST = Symbol('IS_PLATFORM_HOST');
  */
 export const APP_IDENTITY = Symbol('APP_IDENTITY');
 
+export const CSP_NONCE = Symbol('CSP_NONCE');
+
 /**
  * Key for obtaining the current activation context using {@link ContextService}.
  *

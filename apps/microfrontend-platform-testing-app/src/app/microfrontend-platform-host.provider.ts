@@ -98,6 +98,7 @@ async function startMicrofrontendPlatformHost(): Promise<void> {
     activatorLoadTimeout: environment.activatorLoadTimeout,
     activatorApiDisabled: activatorApiDisabled,
     properties: Array.from(queryParams.keys()).reduce((dictionary, key) => ({...dictionary, [key]: queryParams.get(key)}), {}),
+    cspNonce: environment.cspNonce,
   }));
 
   // When starting the app with the manifest classifier `activator-readiness`, send a ping request to the activators to test their readiness. (activator-readiness.e2e-spec.ts).

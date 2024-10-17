@@ -33,4 +33,6 @@ export interface ConnectOptions {
    * the publishing Promise. By default, a timeout of 10s is used.
    */
   messageDeliveryTimeout?: number;
+
+  cspNonce?: string;
 }

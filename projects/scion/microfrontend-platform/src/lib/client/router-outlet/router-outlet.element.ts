@@ -20,46 +20,13 @@ import {Keystroke} from '../keyboard-event/keystroke';
 import {PreferredSize} from '../preferred-size/preferred-size';
 import {CAPABILITY_ID_MESSAGE_HEADER, Navigation, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, SHOW_SPLASH_MESSAGE_HEADER} from './metadata';
 import {Beans} from '@scion/toolkit/bean-manager';
+import {CSP_NONCE} from '../../platform.model';
 
 const ELEMENT_NAME = 'sci-router-outlet';
 const ATTR_NAME = 'name';
 const ATTR_SCROLLABLE = 'scrollable';
 const ATTR_KEYSTROKES = 'keystrokes';
 const HTML_TEMPLATE = `
-  <style>
-    :host {
-      display: block;
-      overflow: hidden;
-      position: relative; /* positioning context for splash */
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      margin: 0;
-    }
-    
-    /* Ensure transparent router-outlet if empty.
-     *
-     * An iframe is transparent only if the embedded content has the same color scheme as the embedding document.
-     * An empty router-outlet loads the 'about:blank' page. This page has the user's preferred OS color scheme,
-     * which may be different from the application's color scheme, making the iframe opaque. Therefore, we hide
-     * the iframe to make the router-outlet transparent again.
-     *
-     * More information about iframe transparency:
-     * - https://github.com/w3c/csswg-drafts/issues/4772#issuecomment-591553929
-     * - https://fvsch.com/transparent-iframes
-     */
-    :host-context(.sci-empty) iframe {
-      display: none;
-    }
-
-    div[part="splash"] {
-      position: absolute;
-      inset: 0;
-    }
-  </style>
   <iframe src="about:blank" scrolling="yes" marginheight="0" marginwidth="0"></iframe>
   
   <template id="splash">
@@ -67,6 +34,40 @@ const HTML_TEMPLATE = `
       <slot></slot>
     </div>  
   </template>
+`;
+const STYLE_SHEET = `
+  :host {
+    display: block;
+    overflow: hidden;
+    position: relative; /* positioning context for splash */
+  }
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    margin: 0;
+  }
+  
+  /* Ensure transparent router-outlet if empty.
+   *
+   * An iframe is transparent only if the embedded content has the same color scheme as the embedding document.
+   * An empty router-outlet loads the 'about:blank' page. This page has the user's preferred OS color scheme,
+   * which may be different from the application's color scheme, making the iframe opaque. Therefore, we hide
+   * the iframe to make the router-outlet transparent again.
+   *
+   * More information about iframe transparency:
+   * - https://github.com/w3c/csswg-drafts/issues/4772#issuecomment-591553929
+   * - https://fvsch.com/transparent-iframes
+   */
+  :host-context(.sci-empty) iframe {
+    display: none;
+  }
+
+  div[part="splash"] {
+    position: absolute;
+    inset: 0;
+  }
 `;
 
 /**
@@ -274,6 +275,8 @@ export class SciRouterOutletElement extends HTMLElement {
     this._outletName$ = new BehaviorSubject<string>(PRIMARY_OUTLET);
     this._shadowRoot = this.attachShadow({mode: 'open'});
     this._shadowRoot.innerHTML = HTML_TEMPLATE.trim();
+    this._shadowRoot.appendChild(createStyleElement(STYLE_SHEET));
+
     this._iframe = this._shadowRoot.querySelector('iframe')!;
     this._contextProvider = new RouterOutletContextProvider(this._iframe);
     this._splash = new Splash(this._shadowRoot, this._iframe);
@@ -747,6 +750,17 @@ function outletNavigate$(outlet: string): Observable<Navigation> {
  */
 function setStyle(element: HTMLElement, style: {[style: string]: any | null}): void {
   Object.keys(style).forEach(key => element.style.setProperty(key, style[key]));
+}
+
+/**
+ * Creates a <style> element with the provided CSS styles and adds the CSP nonce if configured.
+ */
+function createStyleElement(styles: string): HTMLStyleElement {
+  const style = document.createElement('style');
+  const nonce = Beans.opt<string>(CSP_NONCE);
+  nonce && style.setAttribute('nonce', nonce);
+  style.textContent = styles;
+  return style;
 }
 
 /**
