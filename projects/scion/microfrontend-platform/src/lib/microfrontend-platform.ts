@@ -11,7 +11,7 @@ import {BehaviorSubject, Observable} from 'rxjs';
 import {first} from 'rxjs/operators';
 import {PlatformState, Runlevel} from './platform-state';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {APP_IDENTITY, CSP_NONCE, IS_PLATFORM_HOST} from './platform.model';
+import {APP_IDENTITY, IS_PLATFORM_HOST} from './platform.model';
 import {ɵVERSION, ɵWINDOW_TOP} from './ɵplatform.model';
 import {MicrofrontendPlatformStopper, ɵMicrofrontendPlatformStopper} from './microfrontend-platform-stopper';
 import {ConsoleLogger, Logger} from './logger';
@@ -171,17 +171,13 @@ export class MicrofrontendPlatform {
 /**
  * @internal
  */
-export function providePlatformEnvironment(config: {symbolicName: string; isPlatformHost: boolean; cspNonce?: string}): void {
+export function providePlatformEnvironment(config: {symbolicName: string; isPlatformHost: boolean}): void {
   Beans.register(IS_PLATFORM_HOST, {useValue: config.isPlatformHost});
   Beans.register(APP_IDENTITY, {useValue: config.symbolicName});
   Beans.registerIfAbsent(ɵWINDOW_TOP, {useValue: window.top});
   Beans.registerIfAbsent(ɵVERSION, {useValue: version, destroyOrder: BeanDestroyOrders.CORE});
   Beans.registerIfAbsent(MicrofrontendPlatformStopper, {useClass: ɵMicrofrontendPlatformStopper, eager: true});
   Beans.registerIfAbsent(Logger, {useClass: ConsoleLogger, destroyOrder: BeanDestroyOrders.CORE});
-
-  if (config.cspNonce) {
-    Beans.registerIfAbsent(CSP_NONCE, {useValue: config.cspNonce});
-  }
 }
 
 /**

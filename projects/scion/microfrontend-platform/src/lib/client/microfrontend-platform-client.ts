@@ -65,7 +65,7 @@ export class MicrofrontendPlatformClient {
   public static connect(symbolicName: string, connectOptions?: ConnectOptions): Promise<void> {
     return MicrofrontendPlatform.startPlatform(() => {
         // Provide environment for running the platform as client.
-        providePlatformEnvironment({symbolicName, isPlatformHost: false, cspNonce: connectOptions?.cspNonce});
+        providePlatformEnvironment({symbolicName, isPlatformHost: false});
         provideClientEnvironment({...connectOptions, connectRunlevel: Runlevel.Zero});
 
         // Provide initializers to start the platform as client.

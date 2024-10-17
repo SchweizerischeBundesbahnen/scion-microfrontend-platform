@@ -28,9 +28,6 @@ export abstract class MicrofrontendPlatformConfig {
    * As with micro applications, you can provide a manifest for the host, allowing the host to contribute capabilities and declare intentions.
    */
   public abstract readonly host?: HostConfig;
-
-  public abstract readonly cspNonce?: string;
-
   /**
    * Controls whether the Activator API is enabled.
    *

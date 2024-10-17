@@ -45,7 +45,6 @@ export const environment = {
     },
   },
   activatorLoadTimeout: 20000,
-  cspNonce: 'test',
   devtools,
 };
 
