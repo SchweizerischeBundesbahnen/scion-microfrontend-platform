@@ -30,7 +30,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
  * import {NgZone} from '@angular/core';
  * import {ObservableDecorator} from '@scion/microfrontend-platform';
  * import {Observable} from 'rxjs';
- * import {observeInside, subscribeInside} from '@scion/toolkit/operators';
+ * import {observeIn, subscribeIn} from '@scion/toolkit/operators';
  *
  * export class NgZoneObservableDecorator implements ObservableDecorator {
  *
@@ -42,8 +42,8 @@ import {Beans} from '@scion/toolkit/bean-manager';
  *        const insideAngular = NgZone.isInAngularZone();
  *        const subscription = source$
  *          .pipe(
- *            subscribeInside(fn => this.zone.runOutsideAngular(fn)),
- *            observeInside(fn => insideAngular ? this.zone.run(fn) : this.zone.runOutsideAngular(fn)),
+ *            subscribeIn(fn => this.zone.runOutsideAngular(fn)),
+ *            observeIn(fn => insideAngular ? this.zone.run(fn) : this.zone.runOutsideAngular(fn)),
  *          )
  *          .subscribe(observer);
  *        return () => subscription.unsubscribe();

@@ -11,7 +11,7 @@ import {Component, DestroyRef, ElementRef, Inject, LOCALE_ID, NgZone, OnInit, Vi
 import {debounceTime, fromEvent, Subject} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import {formatDate} from '@angular/common';
-import {subscribeInside} from '@scion/toolkit/operators';
+import {subscribeIn} from '@scion/toolkit/operators';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
@@ -49,7 +49,7 @@ export default class AngularChangeDetectionTestPageComponent implements OnInit {
     // Install event listeners directly on DOM elements to not trigger change detection.
     fromEvent(this._element.nativeElement, 'mousedown')
       .pipe(
-        subscribeInside(fn => this._zone.runOutsideAngular(fn)),
+        subscribeIn(fn => this._zone.runOutsideAngular(fn)),
         takeUntilDestroyed(this._destroyRef),
       )
       .subscribe(event => {
@@ -60,7 +60,7 @@ export default class AngularChangeDetectionTestPageComponent implements OnInit {
 
     fromEvent(this._clearLogButton.nativeElement, 'click')
       .pipe(
-        subscribeInside(fn => this._zone.runOutsideAngular(fn)),
+        subscribeIn(fn => this._zone.runOutsideAngular(fn)),
         takeUntilDestroyed(this._destroyRef),
       )
       .subscribe(() => {

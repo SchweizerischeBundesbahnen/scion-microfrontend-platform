@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2022 Swiss Federal Railways
+ * Copyright (c) 2018-2024 Swiss Federal Railways
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -11,7 +11,7 @@
 import {NgZone} from '@angular/core';
 import {ObservableDecorator} from '@scion/microfrontend-platform';
 import {Observable} from 'rxjs';
-import {observeInside, subscribeInside} from '@scion/toolkit/operators';
+import {observeIn, subscribeIn} from '@scion/toolkit/operators';
 
 /**
  * Mirrors the source, but ensures subscription and emission {@link NgZone} to be identical.
@@ -26,8 +26,8 @@ export class NgZoneObservableDecorator implements ObservableDecorator {
       const insideAngular = NgZone.isInAngularZone();
       const subscription = source$
         .pipe(
-          subscribeInside(fn => this._zone.runOutsideAngular(fn)),
-          observeInside(fn => insideAngular ? this._zone.run(fn) : this._zone.runOutsideAngular(fn)),
+          subscribeIn(fn => this._zone.runOutsideAngular(fn)),
+          observeIn(fn => insideAngular ? this._zone.run(fn) : this._zone.runOutsideAngular(fn)),
         )
         .subscribe(observer);
       return () => subscription.unsubscribe();
