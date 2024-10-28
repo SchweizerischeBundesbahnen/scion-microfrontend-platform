@@ -11,7 +11,7 @@ import {Component, HostListener, NgZone, OnDestroy} from '@angular/core';
 import {ContextService, MicrofrontendPlatform, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {fromEvent, merge, withLatestFrom} from 'rxjs';
-import {subscribeInside} from '@scion/toolkit/operators';
+import {subscribeIn} from '@scion/toolkit/operators';
 import {RouterOutlet} from '@angular/router';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
@@ -48,7 +48,7 @@ export class AppComponent implements OnDestroy {
     merge(fromEvent<KeyboardEvent>(document, 'keydown'), fromEvent<KeyboardEvent>(document, 'keyup'))
       .pipe(
         withLatestFrom(this._outletContext),
-        subscribeInside(fn => this._zone.runOutsideAngular(fn)),
+        subscribeIn(fn => this._zone.runOutsideAngular(fn)),
         takeUntilDestroyed(),
       )
       .subscribe(([event, outletContext]: [KeyboardEvent, OutletContext | null]) => {

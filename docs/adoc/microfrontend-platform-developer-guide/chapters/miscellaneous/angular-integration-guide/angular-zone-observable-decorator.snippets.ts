@@ -1,10 +1,10 @@
+// tag::ng-zone-observable-decorator[]
 import {ObservableDecorator} from '@scion/microfrontend-platform';
 import {inject, NgZone} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {observeInside, subscribeInside} from '@scion/toolkit/operators';
+import {observeIn, subscribeIn} from '@scion/toolkit/operators';
 
-// tag::ng-zone-observable-decorator[]
 /**
  * Mirrors the source, but ensures subscription and emission {@link NgZone} to be identical.
  */
@@ -18,8 +18,8 @@ export class NgZoneObservableDecorator implements ObservableDecorator {
       const insideAngular = NgZone.isInAngularZone(); // <1>
       const subscription = source$
         .pipe(
-          subscribeInside(fn => this.zone.runOutsideAngular(fn)), // <2>
-          observeInside(fn => insideAngular ? this.zone.run(fn) : this.zone.runOutsideAngular(fn)), // <3>
+          subscribeIn(fn => this.zone.runOutsideAngular(fn)), // <2>
+          observeIn(fn => insideAngular ? this.zone.run(fn) : this.zone.runOutsideAngular(fn)), // <3>
         )
         .subscribe(observer);
       return () => subscription.unsubscribe();
