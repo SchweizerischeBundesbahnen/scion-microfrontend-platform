@@ -19,22 +19,22 @@ const config: PlaywrightTestConfig = {
   fullyParallel: true,
   webServer: [
     {
-      command: runInCI ? 'npm run microfrontend-platform-testing-app:4201:http-server' : 'npm run microfrontend-platform-testing-app:4201:serve',
+      command: runInCI ? 'npm run microfrontend-platform-testing-app:4201:dist-serve' : 'npm run microfrontend-platform-testing-app:4201:serve',
       port: 4201,
       reuseExistingServer: !runInCI,
     },
     {
-      command: runInCI ? 'npm run microfrontend-platform-testing-app:4202:http-server' : 'npm run microfrontend-platform-testing-app:4202:serve',
+      command: runInCI ? 'npm run microfrontend-platform-testing-app:4202:dist-serve' : 'npm run microfrontend-platform-testing-app:4202:serve',
       port: 4202,
       reuseExistingServer: !runInCI,
     },
     {
-      command: runInCI ? 'npm run microfrontend-platform-testing-app:4203:http-server' : 'npm run microfrontend-platform-testing-app:4203:serve',
+      command: runInCI ? 'npm run microfrontend-platform-testing-app:4203:dist-serve' : 'npm run microfrontend-platform-testing-app:4203:serve',
       port: 4203,
       reuseExistingServer: !runInCI,
     },
     {
-      command: runInCI ? 'npm run microfrontend-platform-testing-app:4204:http-server' : 'npm run microfrontend-platform-testing-app:4204:serve',
+      command: runInCI ? 'npm run microfrontend-platform-testing-app:4204:dist-serve' : 'npm run microfrontend-platform-testing-app:4204:serve',
       port: 4204,
       reuseExistingServer: !runInCI,
     },
