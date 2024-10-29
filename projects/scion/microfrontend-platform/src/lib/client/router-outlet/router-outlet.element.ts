@@ -26,40 +26,6 @@ const ATTR_NAME = 'name';
 const ATTR_SCROLLABLE = 'scrollable';
 const ATTR_KEYSTROKES = 'keystrokes';
 const HTML_TEMPLATE = `
-  <style>
-    :host {
-      display: block;
-      overflow: hidden;
-      position: relative; /* positioning context for splash */
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      margin: 0;
-    }
-    
-    /* Ensure transparent router-outlet if empty.
-     *
-     * An iframe is transparent only if the embedded content has the same color scheme as the embedding document.
-     * An empty router-outlet loads the 'about:blank' page. This page has the user's preferred OS color scheme,
-     * which may be different from the application's color scheme, making the iframe opaque. Therefore, we hide
-     * the iframe to make the router-outlet transparent again.
-     *
-     * More information about iframe transparency:
-     * - https://github.com/w3c/csswg-drafts/issues/4772#issuecomment-591553929
-     * - https://fvsch.com/transparent-iframes
-     */
-    :host-context(.sci-empty) iframe {
-      display: none;
-    }
-
-    div[part="splash"] {
-      position: absolute;
-      inset: 0;
-    }
-  </style>
   <iframe src="about:blank" scrolling="yes" marginheight="0" marginwidth="0"></iframe>
   
   <template id="splash">
@@ -67,6 +33,40 @@ const HTML_TEMPLATE = `
       <slot></slot>
     </div>  
   </template>
+`;
+const STYLE_SHEET = `
+  :host {
+    display: block;
+    overflow: hidden;
+    position: relative; /* positioning context for splash */
+  }
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    margin: 0;
+  }
+  
+  /* Ensure transparent router-outlet if empty.
+   *
+   * An iframe is transparent only if the embedded content has the same color scheme as the embedding document.
+   * An empty router-outlet loads the 'about:blank' page. This page has the user's preferred OS color scheme,
+   * which may be different from the application's color scheme, making the iframe opaque. Therefore, we hide
+   * the iframe to make the router-outlet transparent again.
+   *
+   * More information about iframe transparency:
+   * - https://github.com/w3c/csswg-drafts/issues/4772#issuecomment-591553929
+   * - https://fvsch.com/transparent-iframes
+   */
+  :host-context(.sci-empty) iframe {
+    display: none;
+  }
+
+  div[part="splash"] {
+    position: absolute;
+    inset: 0;
+  }
 `;
 
 /**
@@ -274,6 +274,12 @@ export class SciRouterOutletElement extends HTMLElement {
     this._outletName$ = new BehaviorSubject<string>(PRIMARY_OUTLET);
     this._shadowRoot = this.attachShadow({mode: 'open'});
     this._shadowRoot.innerHTML = HTML_TEMPLATE.trim();
+
+    // Add styles using a constructable stylesheet instead of inline styles, as inline styles require a nonce if CSP blocks 'unsafe-inline' styles.
+    const styleSheet = new CSSStyleSheet();
+    styleSheet.replaceSync(STYLE_SHEET);
+    this._shadowRoot.adoptedStyleSheets.push(styleSheet);
+
     this._iframe = this._shadowRoot.querySelector('iframe')!;
     this._contextProvider = new RouterOutletContextProvider(this._iframe);
     this._splash = new Splash(this._shadowRoot, this._iframe);
