@@ -1,9 +1,9 @@
-# [1.3.0](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.2.2...1.3.0) (2024-06-04)
+## [1.3.1](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.3.0...1.3.1) (2024-10-29)
 
 
-### Features
+### Bug Fixes
 
-* **platform:** provide method to get a specific application ([c917433](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/c917433cc1093c133ee312c1f72ae884a6095ea1))
+* **platform/router-outlet:** remove inline styles for CSP compliance ([40e4fbd](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/commit/40e4fbdfe2d9fa626ba1edcfdd3d6e0655bba912)), closes [#287](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/issues/287)
 
 
 
