@@ -280,10 +280,11 @@ This chapter describes the tasks to publish a new release to NPM.
    - Publishes `@scion/microfrontend-platform` package to NPM (https://www.npmjs.com/package/@scion/microfrontend-platform)
    - Creates a release on GitHub (https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/releases)
    - Deploys following apps to Vercel:
-      - https://scion-microfrontend-platform-testing-app1-vX-X-X.vercel.app.
-      - https://scion-microfrontend-platform-testing-app2-vX-X-X.vercel.app.
-      - https://scion-microfrontend-platform-testing-app3-vX-X-X.vercel.app.
-      - https://scion-microfrontend-platform-testing-app4-vX-X-X.vercel.app.
+      - https://microfrontend-platform-testing-app.scion.vercel.app.
+      - https://microfrontend-platform-testing-app1-vX-X-X.scion.vercel.app.
+      - https://microfrontend-platform-testing-app2-vX-X-X.scion.vercel.app.
+      - https://microfrontend-platform-testing-app3-vX-X-X.scion.vercel.app.
+      - https://microfrontend-platform-testing-app4-vX-X-X.scion.vercel.app.
    - Deploys DevTools to Vercel:
       - https://microfrontend-platform-devtools.scion.vercel.app.
       - https://microfrontend-platform-devtools-vX-X-X.scion.vercel.app.

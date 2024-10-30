@@ -222,10 +222,11 @@ jobs:
           project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_TESTING_APP_PROJECT_ID }}
           version: ${{ needs.build-platform.outputs.version }}
           aliases: |
-            scion-microfrontend-platform-testing-app1-v%v.vercel.app,
-            scion-microfrontend-platform-testing-app2-v%v.vercel.app,
-            scion-microfrontend-platform-testing-app3-v%v.vercel.app,
-            scion-microfrontend-platform-testing-app4-v%v.vercel.app
+            microfrontend-platform-testing-app.scion.vercel.app,
+            microfrontend-platform-testing-app1-v%v.scion.vercel.app,
+            microfrontend-platform-testing-app2-v%v.scion.vercel.app,
+            microfrontend-platform-testing-app3-v%v.scion.vercel.app,
+            microfrontend-platform-testing-app4-v%v.scion.vercel.app
       - name: 'Deploying microfrontend-platform-devtools to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
