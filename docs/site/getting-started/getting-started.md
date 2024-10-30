@@ -4,7 +4,7 @@
 | --- | --- | --- | --- | --- |
 
 ## [SCION Microfrontend Platform][menu-home] > Getting Started
-This Getting Started Guide introduces you to the basics of the SCION Microfrontend Platform by developing a simple [eCommerce web application](https://scion-microfrontend-platform-getting-started.vercel.app), allowing us to view our products, our customers and the products a customer has purchased.
+This Getting Started Guide introduces you to the basics of the SCION Microfrontend Platform by developing a simple [web application](https://microfrontend-platform-getting-started.scion.vercel.app), allowing us to view our products, our customers and the products a customer has purchased.
 
 In the course of this tutorial, we will create two independent applications, also referred to as micro apps, the *Products App* and the *Customers App*, each providing two microfrontends. We will also create a host app to integrate the two micro apps.
 
@@ -17,7 +17,7 @@ In the course of this tutorial, we will create two independent applications, als
 - **Customers Apps**\
   Provides the *CustomerList Microfrontend* and *Customer Microfrontend*, so that we can view our customers. The *Customer Microfrontend* further embeds the *ProductList Microfrontend* to show the products purchased by a customer.
 
-**When you have finished this guide, the app should look as follows: https://scion-microfrontend-platform-getting-started.vercel.app.**
+**When you have finished this guide, the app should look as follows: https://microfrontend-platform-getting-started.scion.vercel.app.**
 
 ***
 
@@ -114,7 +114,7 @@ We recommend cloning the source code repository for this guide. It contains mini
 - The source code of the final app you find on [Github](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform-getting-started) on the `master` branch.
 - You can start the app using the `npm run start` command.
 - We use [Parcel][link-parcel] as web application bundler to build and serve the apps.
-- When you have finished this guide, the app should look as follows: https://scion-microfrontend-platform-getting-started.vercel.app.
+- When you have finished this guide, the app should look as follows: https://microfrontend-platform-getting-started.scion.vercel.app.
 - The applications are served at the following URLs:
   - Host App: http://localhost:4200
   - Products App: http://localhost:4201
