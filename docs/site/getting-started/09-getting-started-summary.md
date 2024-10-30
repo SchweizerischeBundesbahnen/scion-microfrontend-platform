@@ -11,7 +11,7 @@ The source code is available on [Github](https://github.com/SchweizerischeBundes
 
 <br>
 <p align="center">
-  <a href="https://scion-microfrontend-platform-developer-guide.vercel.app"><img src="09-developer-guide.png" alt="Developer Guide"></a>
+  <a href="https://microfrontend-platform-developer-guide.scion.vercel.app"><img src="09-developer-guide.png" alt="Developer Guide"></a>
 </p>
 
 [menu-home]: /README.md
@@ -31,7 +31,7 @@ The source code is available on [Github](https://github.com/SchweizerischeBundes
 [link-getting-started:08:browse-capabilities]: 08-getting-started-browse-capabilities.md
 [link-getting-started:09:summary]: 09-getting-started-summary.md
 
-[link-getting-started:developer-guide]: https://scion-microfrontend-platform-developer-guide.vercel.app
+[link-getting-started:developer-guide]: https://microfrontend-platform-developer-guide.scion.vercel.app
 
-[link-getting-started:developer-guide:messaging]: https://scion-microfrontend-platform-developer-guide.vercel.app/index.html#chapter:cross-application-communication
-[link-getting-started:developer-guide:activator]: https://scion-microfrontend-platform-developer-guide.vercel.app/index.html#chapter:activator
+[link-getting-started:developer-guide:messaging]: https://microfrontend-platform-developer-guide.scion.vercel.app/index.html#chapter:cross-application-communication
+[link-getting-started:developer-guide:activator]: https://microfrontend-platform-developer-guide.scion.vercel.app/index.html#chapter:activator

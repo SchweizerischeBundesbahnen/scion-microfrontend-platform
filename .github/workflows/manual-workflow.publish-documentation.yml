@@ -49,5 +49,5 @@ jobs:
           project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_DEVELOPER_GUIDE_PROJECT_ID }}
           version: ${{ steps.package-json.outputs.version }}
           aliases: |
-            scion-microfrontend-platform-developer-guide.vercel.app,
-            scion-microfrontend-platform-developer-guide-v%v.vercel.app
+            microfrontend-platform-developer-guide.scion.vercel.app,
+            microfrontend-platform-developer-guide-v%v.scion.vercel.app

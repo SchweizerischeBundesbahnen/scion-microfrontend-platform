@@ -292,8 +292,8 @@ This chapter describes the tasks to publish a new release to NPM.
       - https://microfrontend-platform-api.scion.vercel.app.
       - https://microfrontend-platform-api-vX-X-X.scion.vercel.app.
    - Publishes Reference Documentation (Developer Guide) to Vercel: 
-      - https://scion-microfrontend-platform-developer-guide.vercel.app.
-      - https://scion-microfrontend-platform-developer-guide-vX-X-X.vercel.app.
+      - https://microfrontend-platform-developer-guide.scion.vercel.app.
+      - https://microfrontend-platform-developer-guide-vX-X-X.scion.vercel.app.
 1. Migrate the [Getting Started Guide][link-getting-started-guide-repo] Git Repo if necessary.
  
 </details>

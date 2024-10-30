@@ -31,6 +31,6 @@ A microfrontend architecture can be achieved in many ways, each with its pros an
 [menu-contributing]: /CONTRIBUTING.md
 [menu-sponsoring]: /docs/site/sponsoring.md
 
-[link-developer-guide#cross-application-communication]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:cross-application-communication
-[link-developer-guide#intention-api]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:intention-api
-[link-developer-guide#embedding-microfrontends]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:embedding-microfrontends
+[link-developer-guide#cross-application-communication]: https://microfrontend-platform-developer-guide.scion.vercel.app/#chapter:cross-application-communication
+[link-developer-guide#intention-api]: https://microfrontend-platform-developer-guide.scion.vercel.app/#chapter:intention-api
+[link-developer-guide#embedding-microfrontends]: https://microfrontend-platform-developer-guide.scion.vercel.app/#chapter:embedding-microfrontends
