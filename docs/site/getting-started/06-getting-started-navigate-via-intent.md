@@ -513,6 +513,6 @@ new CustomerListController().init();
 [link-getting-started:08:browse-capabilities]: 08-getting-started-browse-capabilities.md
 [link-getting-started:09:summary]: 09-getting-started-summary.md
 
-[link-getting-started:developer-guide:intention-api]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:intention-api
-[link-getting-started:developer-guide:intent-based-routing]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:outlet-router:navigation-via-intent
-[link-getting-started:developer-guide:intent-based-messaging]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:intent-based-messaging
+[link-getting-started:developer-guide:intention-api]: https://microfrontend-platform-developer-guide.scion.vercel.app/#chapter:intention-api
+[link-getting-started:developer-guide:intent-based-routing]: https://microfrontend-platform-developer-guide.scion.vercel.app/#chapter:outlet-router:navigation-via-intent
+[link-getting-started:developer-guide:intent-based-messaging]: https://microfrontend-platform-developer-guide.scion.vercel.app/#chapter:intent-based-messaging

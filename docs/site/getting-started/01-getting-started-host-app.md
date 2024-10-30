@@ -223,5 +223,5 @@ In the next chapter, we will develop the *Products App*. Click [here][link-getti
 [link-getting-started:09:summary]: 09-getting-started-summary.md
 
 [link-getting-started#installation]: /docs/site/getting-started/getting-started.md#how-to-complete-this-guide
-[link-getting-started:developer-guide:routing]: https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:embedding-microfrontends
+[link-getting-started:developer-guide:routing]: https://microfrontend-platform-developer-guide.scion.vercel.app/#chapter:embedding-microfrontends
 
