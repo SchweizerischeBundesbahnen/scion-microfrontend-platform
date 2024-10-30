@@ -235,8 +235,8 @@ jobs:
           project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_DEVTOOLS_PROJECT_ID }}
           version: ${{ needs.build-platform.outputs.version }}
           aliases: |
-            scion-microfrontend-platform-devtools.vercel.app,
-            scion-microfrontend-platform-devtools-v%v.vercel.app
+            microfrontend-platform-devtools.scion.vercel.app, 
+            microfrontend-platform-devtools-v%v.scion.vercel.app
       - name: 'Publishing API Documentation (TypeDoc) to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:

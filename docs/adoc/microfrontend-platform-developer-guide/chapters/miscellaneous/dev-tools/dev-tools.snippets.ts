@@ -10,7 +10,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
       // register the 'devtools' micro application
       {
         symbolicName: 'devtools',
-        manifestUrl: 'https://scion-microfrontend-platform-devtools-<version>.vercel.app/manifest.json',
+        manifestUrl: 'https://microfrontend-platform-devtools-<version>.scion.vercel.app/manifest.json',
         intentionCheckDisabled: true,
         scopeCheckDisabled: true,
       },
@@ -27,7 +27,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 
 {
   // tag::dev-tools:integrate-via-url[]
-  Beans.get(OutletRouter).navigate('https://scion-microfrontend-platform-devtools-<version>.vercel.app', {outlet: 'devtools'});
+  Beans.get(OutletRouter).navigate('https://microfrontend-platform-devtools-<version>.scion.vercel.app', {outlet: 'devtools'});
   // end::dev-tools:integrate-via-url[]
 }
 
