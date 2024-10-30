@@ -59,7 +59,7 @@ SCION Microfrontend Platform enables you to successfully implement a framework-a
 [link-introduction]: /docs/site/introduction.md
 [link-getting-started]: /docs/site/getting-started/getting-started.md
 [link-developer-guide]: https://scion-microfrontend-platform-developer-guide.vercel.app
-[link-reference-documentation]: https://scion-microfrontend-platform-api.vercel.app
+[link-reference-documentation]: https://microfrontend-platform-api.scion.vercel.app
 [link-versioning]: /docs/site/versioning.md
 [link-features]: /docs/site/features.md
 [link-announcements]: /docs/site/announcements.md
