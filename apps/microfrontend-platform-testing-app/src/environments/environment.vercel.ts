@@ -14,7 +14,7 @@ import {ApplicationConfig} from '@scion/microfrontend-platform';
 const version = packageJson.version.replace(/\./g, '-');
 const devtools: ApplicationConfig | null = {
   symbolicName: 'devtools',
-  manifestUrl: `https://scion-microfrontend-platform-devtools-v${version}.vercel.app/manifest.json`,
+  manifestUrl: `https://microfrontend-platform-devtools-v${version}.scion.vercel.app/manifest.json`,
   intentionCheckDisabled: true,
   scopeCheckDisabled: true,
 };

@@ -13,13 +13,13 @@ The SCION DevTools is a microfrontend that allows inspecting installed micro app
 include::dev-tools.snippets.ts[tags=dev-tools:register-dev-tools]
 ----
 
-IMPORTANT: Note that we need to disable some checks for the SCION DevTools to have access to private capabilities. We strongly recommend not to do this for regular micro applications.
+IMPORTANT: Note that we need to disable some checks for the SCION DevTools to have access to private capabilities. We recommend not to do this for regular micro applications.
 
 [NOTE]
 ====
-With each release of the SCION Microfrontend Platform, we also publish a new version of the SCION DevTools. We strongly recommend integrating the SCION DevTools via the versioned URL to be compatible with your platform version.
+With each release of the SCION Microfrontend Platform, we also publish a new version of the SCION DevTools. We recommend integrating the SCION DevTools via the versioned URL to be compatible with your platform version.
 
-Example: https://scion-microfrontend-platform-devtools-v{revnumber-dasherized}.vercel.app/manifest.json
+Example: https://microfrontend-platform-devtools-v{revnumber-dasherized}.scion.vercel.app/manifest.json
 ====
 
 .2. Create a router outlet to display the SCION DevTools

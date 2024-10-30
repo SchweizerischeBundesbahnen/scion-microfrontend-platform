@@ -285,8 +285,8 @@ This chapter describes the tasks to publish a new release to NPM.
       - https://scion-microfrontend-platform-testing-app3-vX-X-X.vercel.app.
       - https://scion-microfrontend-platform-testing-app4-vX-X-X.vercel.app.
    - Deploys DevTools to Vercel:
-      - https://scion-microfrontend-platform-devtools.vercel.app.
-      - https://scion-microfrontend-platform-devtools-vX-X-X.vercel.app.
+      - https://microfrontend-platform-devtools.scion.vercel.app.
+      - https://microfrontend-platform-devtools-vX-X-X.scion.vercel.app.
    - Publishes API Documentation (TypeDoc) to Vercel: 
       - https://scion-microfrontend-platform-api.vercel.app.
       - https://scion-microfrontend-platform-api-vX-X-X.vercel.app.
