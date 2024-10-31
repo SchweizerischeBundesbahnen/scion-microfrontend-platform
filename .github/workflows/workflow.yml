@@ -69,9 +69,9 @@ jobs:
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - name: 'Building @scion/microfrontend-platform'
         run: npm run microfrontend-platform:build
-      - name: 'Building API Documentation (TypeDoc)'
+      - name: 'Building TypeDoc'
         run: npm run microfrontend-platform:typedoc
-      - name: 'Building Reference Documentation (Developer Guide)'
+      - name: 'Building Developer Guide'
         run: npm run microfrontend-platform:adoc -- -a revnumber=${{ steps.root-package-json.outputs.version }} -a revnumber-dasherized=${{ steps.root-package-json.outputs.version-dasherized }}
       - uses: actions/upload-artifact@v4
         with:
@@ -238,7 +238,7 @@ jobs:
           aliases: |
             microfrontend-platform-devtools.scion.vercel.app, 
             microfrontend-platform-devtools-v%v.scion.vercel.app
-      - name: 'Publishing API Documentation (TypeDoc) to Vercel'
+      - name: 'Publishing TypeDoc to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
           dist-folder: dist/microfrontend-platform-api
@@ -249,7 +249,7 @@ jobs:
           aliases: |
             microfrontend-platform-api.scion.vercel.app,
             microfrontend-platform-api-v%v.scion.vercel.app
-      - name: 'Publishing Reference Documentation (Developer Guide) to Vercel'
+      - name: 'Publishing Developer Guide to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
           dist-folder: dist/microfrontend-platform-developer-guide

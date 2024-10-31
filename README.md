@@ -26,11 +26,11 @@ SCION Microfrontend Platform enables you to successfully implement a framework-a
   
 #### Documentation
 
-- [**Reference Documentation**][link-developer-guide]\
+- [**Developer Guide**][link-developer-guide]\
   Read our Developer Guide to learn more about the core concepts and configuration of the platform.
    
-- [**API Documentation**][link-reference-documentation]\
-  Consult our Public API documentation for a complete overview of the API.
+- [**TypeDoc**][link-reference-documentation]\
+  Consult our API documentation for a complete overview of the API.
 
 #### Miscellaneous
 

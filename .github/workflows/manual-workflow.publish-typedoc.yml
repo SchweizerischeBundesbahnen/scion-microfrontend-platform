@@ -1,4 +1,4 @@
-name: Documentation Publication
+name: Publish TypeDoc
 on: workflow_dispatch
 env:
   NODE_VERSION: 20.14.0
@@ -19,8 +19,8 @@ jobs:
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - if: steps.node-modules-cache.outputs.cache-hit != 'true'
         run: npm ci
-  publish-documentation:
-    name: 'Publishing Documentation'
+  publish-typedoc:
+    name: 'Publishing TypeDoc'
     needs: install
     runs-on: ubuntu-latest
     steps:
@@ -35,19 +35,19 @@ jobs:
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - name: 'Reading package.json version of scion/microfrontend-platform'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/package-json@master
-        id: package-json
+        id: microfrontend-platform-package-json
         with:
           path: projects/scion/microfrontend-platform/package.json
-      - name: 'Building Reference Documentation (Developer Guide)'
-        run: npm run microfrontend-platform:adoc -- -a revnumber=${{ steps.package-json.outputs.version }} -a revnumber-dasherized=${{ steps.package-json.outputs.version-dasherized }}
-      - name: 'Deploying Reference Documentation (Developer Guide) to Vercel'
+      - name: 'Building TypeDoc'
+        run: npm run microfrontend-platform:typedoc
+      - name: 'Publishing TypeDoc to Vercel'
         uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
         with:
-          dist-folder: dist/microfrontend-platform-developer-guide
+          dist-folder: dist/microfrontend-platform-api
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           org-id: ${{ secrets.VERCEL_ORG_ID }}
-          project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_DEVELOPER_GUIDE_PROJECT_ID }}
-          version: ${{ steps.package-json.outputs.version }}
+          project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_API_PROJECT_ID }}
+          version: ${{ steps.microfrontend-platform-package-json.outputs.version }}
           aliases: |
-            microfrontend-platform-developer-guide.scion.vercel.app,
-            microfrontend-platform-developer-guide-v%v.scion.vercel.app
+            microfrontend-platform-api.scion.vercel.app,
+            microfrontend-platform-api-v%v.scion.vercel.app

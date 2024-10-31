@@ -1,0 +1,53 @@
+name: Publish Developer Guide
+on: workflow_dispatch
+env:
+  NODE_VERSION: 20.14.0
+jobs:
+  install:
+    name: 'Installing NPM modules'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: 'Caching NPM modules if necessary'
+        uses: actions/cache@v4
+        id: node-modules-cache
+        with:
+          path: ./node_modules
+          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm ci
+  publish-developer-guide:
+    name: 'Publishing Developer Guide'
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: 'Restoring NPM modules from cache'
+        uses: actions/cache@v4
+        with:
+          path: ./node_modules
+          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - name: 'Reading package.json version of scion/microfrontend-platform'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/package-json@master
+        id: microfrontend-platform-package-json
+        with:
+          path: projects/scion/microfrontend-platform/package.json
+      - name: 'Building Developer Guide'
+        run: npm run microfrontend-platform:adoc -- -a revnumber=${{ steps.microfrontend-platform-package-json.outputs.version }} -a revnumber-dasherized=${{ steps.microfrontend-platform-package-json.outputs.version-dasherized }}
+      - name: 'Publishing Developer Guide to Vercel'
+        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/vercel-deploy@master
+        with:
+          dist-folder: dist/microfrontend-platform-developer-guide
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          org-id: ${{ secrets.VERCEL_ORG_ID }}
+          project-id: ${{ secrets.VERCEL_MICROFRONTEND_PLATFORM_DEVELOPER_GUIDE_PROJECT_ID }}
+          version: ${{ steps.microfrontend-platform-package-json.outputs.version }}
+          aliases: |
+            microfrontend-platform-developer-guide.scion.vercel.app,
+            microfrontend-platform-developer-guide-v%v.scion.vercel.app

@@ -82,10 +82,10 @@ The following is a summary of commands useful for development of `scion-microfro
 ### Commands for generating the project documentation
 
 - `npm run microfrontend-platform:adoc`\
-  Use to build the reference documentation (Developer Guide), i.e., creates a HTML file from the AsciiDoc source files. The output is written to `dist/microfrontend-platform-developer-guide`.
+  Use to build the Developer Guide, i.e., creates a HTML file from the AsciiDoc source files. The output is written to `dist/microfrontend-platform-developer-guide`.
   
 - `npm run microfrontend-platform:typedoc`\
-  Use to generate the API documentation (TypeDoc) for the SCION Microfrontend Platform library. The output is written to `dist/microfrontend-platform-api`.
+  Use to generate the TypeDoc for the SCION Microfrontend Platform library. The output is written to `dist/microfrontend-platform-api`.
   
 - `npm run changelog`\
   Use to generate the changelog based on the commit history. The output is written to `CHANGELOG.md`, which will be included in `docs/site/changelog/changelog.md` using the template `docs/site/changelog/changelog.template.md`. 
@@ -288,10 +288,10 @@ This chapter describes the tasks to publish a new release to NPM.
    - Deploys DevTools to Vercel:
       - https://microfrontend-platform-devtools.scion.vercel.app.
       - https://microfrontend-platform-devtools-vX-X-X.scion.vercel.app.
-   - Publishes API Documentation (TypeDoc) to Vercel: 
+   - Publishes TypeDoc to Vercel: 
       - https://microfrontend-platform-api.scion.vercel.app.
       - https://microfrontend-platform-api-vX-X-X.scion.vercel.app.
-   - Publishes Reference Documentation (Developer Guide) to Vercel: 
+   - Publishes Developer Guide to Vercel: 
       - https://microfrontend-platform-developer-guide.scion.vercel.app.
       - https://microfrontend-platform-developer-guide-vX-X-X.scion.vercel.app.
 1. Migrate the [Getting Started Guide][link-getting-started-guide-repo] Git Repo if necessary.
