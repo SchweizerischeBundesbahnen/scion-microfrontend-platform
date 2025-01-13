@@ -16,7 +16,6 @@ import {SciThrobberComponent} from '@scion/components/throbber';
   selector: 'app-devtools',
   templateUrl: './devtools.component.html',
   styleUrls: ['./devtools.component.scss'],
-  standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
   imports: [
     SciThrobberComponent,

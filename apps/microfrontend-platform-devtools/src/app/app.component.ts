@@ -24,7 +24,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     AsyncPipe,
     RouterOutlet,

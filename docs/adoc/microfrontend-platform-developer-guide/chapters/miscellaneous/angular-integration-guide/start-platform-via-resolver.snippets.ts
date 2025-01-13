@@ -5,7 +5,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {Observable} from 'rxjs';
 import {bootstrapApplication} from '@angular/platform-browser';
 
-@Component({selector: 'app-root', template: '', standalone: true})
+@Component({selector: 'app-root', template: ''})
 class AppComponent {
 }
 

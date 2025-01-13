@@ -30,6 +30,6 @@ export class NgZoneObservableDecorator implements ObservableDecorator {
 // end::ng-zone-observable-decorator[]
 
 // tag::register-ng-zone-observable-decorator[]
-const zone: NgZone = inject(NgZone); // <1>
+const zone = inject(NgZone); // <1>
 Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)}); // <2>
 // end::register-ng-zone-observable-decorator[]

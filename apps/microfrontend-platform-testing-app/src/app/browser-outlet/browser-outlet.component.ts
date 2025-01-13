@@ -28,7 +28,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   templateUrl: './browser-outlet.component.html',
   styleUrls: ['./browser-outlet.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     SciMaterialIconDirective,

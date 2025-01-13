@@ -18,7 +18,6 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   selector: 'app-angular-change-detection-test-page',
   templateUrl: './angular-change-detection-test-page.component.html',
   styleUrls: ['./angular-change-detection-test-page.component.scss'],
-  standalone: true,
 })
 export default class AngularChangeDetectionTestPageComponent implements OnInit {
 

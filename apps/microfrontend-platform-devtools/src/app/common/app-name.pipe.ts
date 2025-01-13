@@ -14,7 +14,7 @@ import {DevToolsManifestService} from '../dev-tools-manifest.service';
 /**
  * Resolves to the name of an application's symbolic name.
  */
-@Pipe({name: 'devtoolsAppName', standalone: true})
+@Pipe({name: 'devtoolsAppName'})
 export class AppNamePipe implements PipeTransform {
 
   constructor(private _manifestService: DevToolsManifestService) {

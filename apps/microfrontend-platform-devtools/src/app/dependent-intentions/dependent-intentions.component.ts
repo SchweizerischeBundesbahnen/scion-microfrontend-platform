@@ -28,7 +28,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   templateUrl: './dependent-intentions.component.html',
   styleUrls: ['./dependent-intentions.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     AsyncPipe,
     KeyValuePipe,

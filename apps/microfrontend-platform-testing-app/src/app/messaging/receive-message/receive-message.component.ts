@@ -26,7 +26,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'app-receive-message',
   templateUrl: './receive-message.component.html',
   styleUrls: ['./receive-message.component.scss'],
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     SciFormFieldComponent,

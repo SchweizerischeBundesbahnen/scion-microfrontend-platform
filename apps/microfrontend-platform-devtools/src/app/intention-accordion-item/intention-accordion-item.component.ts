@@ -20,7 +20,6 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
   templateUrl: './intention-accordion-item.component.html',
   styleUrls: ['./intention-accordion-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     AsyncPipe,
     SciQualifierChipListComponent,

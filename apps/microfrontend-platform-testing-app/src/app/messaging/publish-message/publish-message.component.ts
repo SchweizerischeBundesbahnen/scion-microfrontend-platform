@@ -29,7 +29,6 @@ import {parseTypedValues} from '../../common/typed-value-parser.util';
   selector: 'app-publish-message',
   templateUrl: './publish-message.component.html',
   styleUrls: ['./publish-message.component.scss'],
-  standalone: true,
   imports: [
     AsyncPipe,
     ReactiveFormsModule,

@@ -21,7 +21,6 @@ import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
   selector: 'app-browser-outlets',
   templateUrl: './browser-outlets.component.html',
   styleUrls: ['./browser-outlets.component.scss'],
-  standalone: true,
   imports: [
     AsyncPipe,
     SciSashboxComponent,

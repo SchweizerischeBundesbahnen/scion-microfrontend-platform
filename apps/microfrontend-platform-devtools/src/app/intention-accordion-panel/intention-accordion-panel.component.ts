@@ -19,7 +19,6 @@ import {AsyncPipe} from '@angular/common';
   templateUrl: './intention-accordion-panel.component.html',
   styleUrls: ['./intention-accordion-panel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     AsyncPipe,
   ],

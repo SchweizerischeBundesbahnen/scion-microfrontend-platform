@@ -23,7 +23,6 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
   selector: 'app-register-intention',
   templateUrl: './register-intention.component.html',
   styleUrls: ['./register-intention.component.scss'],
-  standalone: true,
   imports: [
     AsyncPipe,
     ReactiveFormsModule,

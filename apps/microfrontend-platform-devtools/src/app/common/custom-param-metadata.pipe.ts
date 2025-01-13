@@ -14,7 +14,7 @@ import {ParamDefinition} from '@scion/microfrontend-platform';
 /**
  * Extracts custom metadata associated with a param, if any, otherwise, returns `null`.
  */
-@Pipe({name: 'devtoolsCustomParamMetadata', standalone: true})
+@Pipe({name: 'devtoolsCustomParamMetadata'})
 export class CustomParamMetadataPipe implements PipeTransform {
 
   public readonly builtInProperties = new Set<string>()

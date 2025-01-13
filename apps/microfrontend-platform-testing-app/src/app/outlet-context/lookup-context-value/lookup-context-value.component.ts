@@ -22,7 +22,6 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
   templateUrl: './lookup-context-value.component.html',
   styleUrls: ['./lookup-context-value.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     JsonPipe,
     ReactiveFormsModule,

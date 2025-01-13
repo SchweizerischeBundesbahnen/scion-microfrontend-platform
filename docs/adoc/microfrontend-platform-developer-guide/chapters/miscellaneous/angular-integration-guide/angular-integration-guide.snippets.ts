@@ -4,7 +4,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {bootstrapApplication} from '@angular/platform-browser';
 import {Component, CUSTOM_ELEMENTS_SCHEMA, EnvironmentProviders, makeEnvironmentProviders} from '@angular/core';
 
-@Component({selector: 'app-root', template: '', standalone: true})
+@Component({selector: 'app-root', template: ''})
 class AppComponent {
 }
 
@@ -52,7 +52,6 @@ provideRouter(appRoutes, withHashLocation());
 @Component({
   selector: '...',
   // content skipped ...
-  standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
 })
 export class YourComponent {

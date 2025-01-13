@@ -26,7 +26,6 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
   selector: 'app-router-outlet-context',
   templateUrl: './router-outlet-context.component.html',
   styleUrls: ['./router-outlet-context.component.scss'],
-  standalone: true,
   imports: [
     AsyncPipe,
     KeyValuePipe,

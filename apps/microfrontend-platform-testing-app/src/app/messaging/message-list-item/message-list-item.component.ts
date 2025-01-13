@@ -16,7 +16,6 @@ import {SciKeyValueComponent} from '@scion/components.internal/key-value';
   selector: 'app-message-list-item',
   templateUrl: './message-list-item.component.html',
   styleUrls: ['./message-list-item.component.scss'],
-  standalone: true,
   imports: [
     SciKeyValueComponent,
     AppendParamDataTypePipe,

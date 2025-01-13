@@ -21,7 +21,6 @@ import {SciKeyValueComponent} from '@scion/components.internal/key-value';
   templateUrl: './microfrontend.component.html',
   styleUrls: ['./microfrontend.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     AsyncPipe,
     SciFormFieldComponent,

@@ -19,7 +19,6 @@ import {from, switchMap} from 'rxjs';
 @Component({
   selector: 'app-signal-ready-test-page',
   template: '',
-  standalone: true,
 })
 export default class SignalReadyTestPageComponent {
 

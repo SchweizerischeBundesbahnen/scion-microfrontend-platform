@@ -16,7 +16,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 /**
  * Observes the number of subscribers on a topic.
  */
-@Pipe({name: 'appTopicSubscriberCount$', standalone: true})
+@Pipe({name: 'appTopicSubscriberCount$'})
 export class TopicSubscriberCountPipe implements PipeTransform {
 
   public transform(topic: string): Observable<number> {

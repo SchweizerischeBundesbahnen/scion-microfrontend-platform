@@ -24,7 +24,6 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
   selector: 'app-lookup-intention',
   templateUrl: './lookup-intention.component.html',
   styleUrls: ['./lookup-intention.component.scss'],
-  standalone: true,
   imports: [
     AsyncPipe,
     ReactiveFormsModule,

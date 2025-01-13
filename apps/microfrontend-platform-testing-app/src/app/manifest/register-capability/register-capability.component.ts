@@ -24,7 +24,6 @@ import {parseTypedValues} from '../../common/typed-value-parser.util';
   selector: 'app-register-capability',
   templateUrl: './register-capability.component.html',
   styleUrls: ['./register-capability.component.scss'],
-  standalone: true,
   imports: [
     AsyncPipe,
     JsonPipe,

@@ -23,7 +23,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   templateUrl: './router-outlet.component.html',
   styleUrls: ['./router-outlet.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
   imports: [
     AsyncPipe,
