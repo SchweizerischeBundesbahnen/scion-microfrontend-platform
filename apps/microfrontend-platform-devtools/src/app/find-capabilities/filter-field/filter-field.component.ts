@@ -19,7 +19,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   templateUrl: './filter-field.component.html',
   styleUrls: ['./filter-field.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     A11yModule,

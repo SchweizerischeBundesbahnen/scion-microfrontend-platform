@@ -53,9 +53,15 @@ module.exports = function (config) {
     logLevel: config.LOG_INFO,
     autoWatch: true,
     browsers: [
-      !!process.env['CI'] ? 'ChromeHeadless' : 'Chrome',
+      !!process.env.CI ? 'ChromeHeadlessNoSandbox' : 'Chrome',
     ],
-    singleRun: !!process.env['CI'],
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox'],
+      },
+    },
+    singleRun: !!process.env.CI,
     restartOnFileChange: true,
   });
 };

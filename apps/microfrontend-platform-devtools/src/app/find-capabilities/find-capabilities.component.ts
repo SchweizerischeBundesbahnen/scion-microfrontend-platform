@@ -24,7 +24,6 @@ import {AsyncPipe} from '@angular/common';
   templateUrl: './find-capabilities.component.html',
   styleUrls: ['./find-capabilities.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     AsyncPipe,
     SciViewportComponent,

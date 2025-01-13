@@ -20,7 +20,7 @@ import {Pipe, PipeTransform} from '@angular/core';
  * - `null [null]`
  * - `undefined [undefined]`
  */
-@Pipe({name: 'appAppendParamDataType', standalone: true})
+@Pipe({name: 'appAppendParamDataType'})
 export class AppendParamDataTypePipe implements PipeTransform {
 
   public transform(params: Map<string, any> | undefined): Map<string, any> | undefined {

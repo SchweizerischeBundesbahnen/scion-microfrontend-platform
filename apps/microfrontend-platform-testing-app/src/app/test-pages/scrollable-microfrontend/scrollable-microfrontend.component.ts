@@ -15,7 +15,6 @@ import {SciViewportComponent} from '@scion/components/viewport';
   templateUrl: './scrollable-microfrontend.component.html',
   styleUrls: ['./scrollable-microfrontend.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [SciViewportComponent],
 })
 export default class ScrollableMicrofrontendComponent {

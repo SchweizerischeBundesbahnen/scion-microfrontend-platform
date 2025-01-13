@@ -14,7 +14,6 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
   templateUrl: './context-entry.component.html',
   styleUrls: ['./context-entry.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
 })
 export class ContextEntryComponent {
 

@@ -17,7 +17,6 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
   selector: 'app-clear-outlet-then-send-message-test-page',
   templateUrl: './clear-outlet-then-send-message-test-page.component.html',
   styleUrls: ['./clear-outlet-then-send-message-test-page.component.scss'],
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     SciFormFieldComponent,

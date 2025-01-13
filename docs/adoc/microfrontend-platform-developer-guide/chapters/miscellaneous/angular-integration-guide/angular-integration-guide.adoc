@@ -28,11 +28,11 @@ In this Chapter
 
 The platform should be started during the bootstrapping of the Angular application, that is, before displaying content to the user. Hence, we recommend starting the platform in an app initializer. See chapter <<chapter:angular-integration-guide:using-route-resolver-instead-app-initializer>> for an alternative approach.
 
-NOTE: Angular allows hooking into the process of initialization by providing an initializer to Angular's `APP_INITIALIZER` injection token. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
+NOTE: Angular allows hooking into the process of initialization by providing an initializer to Angular's `provideAppInitializer` function. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
 
 IMPORTANT: We recommend starting the platform outside the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
 
-The following listing illustrates how to configure an Angular `APP_INITIALIZER` to start the SCION Microfrontend Platform in the host application. Note that `APP_INITIALIZER` expects a higher order factory function to be specified.
+The following listing illustrates how to configure an Angular app initializer to start the SCION Microfrontend Platform in the host application.
 
 [source,typescript]
 ----
@@ -55,11 +55,11 @@ TIP: Refer to chapter <<chapter:configuration:starting-the-platform-in-host-appl
 === Connecting to the Host in an Angular App Initializer
 A micro application should connect to the platform host during the bootstrapping of the Angular application, that is, before displaying content to the user. Hence, we recommend connecting to the platform host in an app initializer. See chapter <<chapter:angular-integration-guide:using-route-resolver-instead-app-initializer>> for an alternative approach.
 
-NOTE: Angular allows hooking into the process of initialization by providing an initializer to Angular's `APP_INITIALIZER` injection token. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
+NOTE: Angular allows hooking into the process of initialization by providing an initializer to Angular's `provideAppInitializer` function. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
 
 IMPORTANT: We recommend connecting to the platform host outside the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
 
-The following listing illustrates how to configure an Angular `APP_INITIALIZER` to connect to the platform from a micro application.
+The following listing illustrates how to configure an Angular app initializer to connect to the platform from a micro application.
 
 [source,typescript]
 ----

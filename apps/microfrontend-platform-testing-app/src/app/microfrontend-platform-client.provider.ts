@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {APP_INITIALIZER, EnvironmentProviders, inject, makeEnvironmentProviders, NgZone} from '@angular/core';
+import {EnvironmentProviders, inject, makeEnvironmentProviders, NgZone, provideAppInitializer} from '@angular/core';
 import {MicrofrontendPlatformClient, ObservableDecorator} from '@scion/microfrontend-platform';
 import {environment} from '../environments/environment';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -24,24 +24,19 @@ export function provideMicrofrontendPlatformClient(): EnvironmentProviders | [] 
   }
 
   return makeEnvironmentProviders([
-    {
-      provide: APP_INITIALIZER,
-      useFactory: connectToHostFn,
-      multi: true,
-    },
+    provideAppInitializer(connectToHostFn),
   ]);
 }
 
 /**
  * Connects to the SCION Microfrontend Platform Host.
  */
-function connectToHostFn(): () => Promise<void> {
+async function connectToHostFn(): Promise<void> {
   const zone = inject(NgZone);
-  return (): Promise<void> => {
-    Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)});
-    const symbolicName = getCurrentTestingAppSymbolicName();
-    return zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect(symbolicName));
-  };
+
+  Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)});
+  const symbolicName = getCurrentTestingAppSymbolicName();
+  return zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect(symbolicName));
 }
 
 /**

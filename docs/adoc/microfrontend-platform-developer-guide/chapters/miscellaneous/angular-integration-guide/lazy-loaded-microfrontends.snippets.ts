@@ -1,7 +1,8 @@
-import {Component, EnvironmentProviders, makeEnvironmentProviders} from '@angular/core';
-import {Routes} from '@angular/router';
+import {Component} from '@angular/core';
+import {provideRouter, Routes, withHashLocation} from '@angular/router';
+import {bootstrapApplication} from '@angular/platform-browser';
 
-@Component({selector: 'app-root', template: '', standalone: true})
+@Component({selector: 'app-root', template: ''})
 class AppComponent {
 }
 
@@ -21,8 +22,9 @@ const appRoutes: Routes = [
   },
 ];
 
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideRouter(appRoutes, withHashLocation()), // <4>
+  ],
+});
 // end::routes[]
-
-function provideMicrofrontendPlatformClient(): EnvironmentProviders {
-  return makeEnvironmentProviders([]);
-}

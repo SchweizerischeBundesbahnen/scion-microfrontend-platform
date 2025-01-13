@@ -23,7 +23,6 @@ import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.intern
   selector: 'app-outlet-router',
   templateUrl: './outlet-router.component.html',
   styleUrls: ['./outlet-router.component.scss'],
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     SciFormFieldComponent,

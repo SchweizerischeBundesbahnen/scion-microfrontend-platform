@@ -26,7 +26,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'app-lookup-capability',
   templateUrl: './lookup-capability.component.html',
   styleUrls: ['./lookup-capability.component.scss'],
-  standalone: true,
   imports: [
     AsyncPipe,
     JsonPipe,

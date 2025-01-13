@@ -27,7 +27,6 @@ import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
   templateUrl: './capability-filter-result.component.html',
   styleUrls: ['./capability-filter-result.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     AsyncPipe,
     ReactiveFormsModule,

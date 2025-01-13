@@ -26,7 +26,6 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
   selector: 'app-shell',
   templateUrl: './app-shell.component.html',
   styleUrls: ['./app-shell.component.scss'],
-  standalone: true,
   imports: [
     AsyncPipe,
     RouterOutlet,

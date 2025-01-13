@@ -23,7 +23,6 @@ import {SciTabbarComponent, SciTabDirective} from '@scion/components.internal/ta
   templateUrl: './capability-accordion-panel.component.html',
   styleUrls: ['./capability-accordion-panel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     AsyncPipe,
     JsonPipe,

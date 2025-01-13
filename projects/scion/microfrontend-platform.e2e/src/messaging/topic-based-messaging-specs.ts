@@ -109,35 +109,35 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await publisherPO.clickPublish();
 
     const message1PO = await receiverPO.getFirstMessageOrElseReject();
-    await expect(await message1PO.getTopic()).toEqual('some-topic');
-    await expect(await message1PO.getBody()).toEqual('first message');
-    await expect(await message1PO.getReplyTo()).toBeUndefined();
+    await expect.poll(() => message1PO.getTopic()).toEqual('some-topic');
+    await expect.poll(() => message1PO.getBody()).toEqual('first message');
+    await expect.poll(() => message1PO.getReplyTo()).toBeUndefined();
 
     // clear the messages list
     await receiverPO.clickClearMessages();
-    await expect(await receiverPO.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO.getMessages()).toEqual([]);
 
     // publish a second message
     await publisherPO.enterMessage('second message');
     await publisherPO.clickPublish();
 
     const message2PO = await receiverPO.getFirstMessageOrElseReject();
-    await expect(await message2PO.getTopic()).toEqual('some-topic');
-    await expect(await message2PO.getBody()).toEqual('second message');
-    await expect(await message2PO.getReplyTo()).toBeUndefined();
+    await expect.poll(() => message2PO.getTopic()).toEqual('some-topic');
+    await expect.poll(() => message2PO.getBody()).toEqual('second message');
+    await expect.poll(() => message2PO.getReplyTo()).toBeUndefined();
 
     // clear the messages list
     await receiverPO.clickClearMessages();
-    await expect(await receiverPO.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO.getMessages()).toEqual([]);
 
     // publish a third message
     await publisherPO.enterMessage('third message');
     await publisherPO.clickPublish();
 
     const message3PO = await receiverPO.getFirstMessageOrElseReject();
-    await expect(await message3PO.getTopic()).toEqual('some-topic');
-    await expect(await message3PO.getBody()).toEqual('third message');
-    await expect(await message3PO.getReplyTo()).toBeUndefined();
+    await expect.poll(() => message3PO.getTopic()).toEqual('some-topic');
+    await expect.poll(() => message3PO.getBody()).toEqual('third message');
+    await expect.poll(() => message3PO.getReplyTo()).toBeUndefined();
   }
 
   /**
@@ -166,31 +166,31 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await messagePO.clickReply();
 
     const reply1PO = await publisherPO.getFirstReplyOrElseReject();
-    await expect(await reply1PO.getTopic()).toEqual(replyTo);
-    await expect(await reply1PO.getBody()).toEqual('this is a reply');
-    await expect(await reply1PO.getReplyTo()).toBeUndefined();
+    await expect.poll(() => reply1PO.getTopic()).toEqual(replyTo);
+    await expect.poll(() => reply1PO.getBody()).toEqual('this is a reply');
+    await expect.poll(() => reply1PO.getReplyTo()).toBeUndefined();
 
     // clear the replies list
     await publisherPO.clickClearReplies();
-    await expect(await publisherPO.getReplies()).toEqual([]);
+    await expect.poll(() => publisherPO.getReplies()).toEqual([]);
 
     // send a second reply
     await messagePO.clickReply();
     const reply2PO = await publisherPO.getFirstReplyOrElseReject();
-    await expect(await reply2PO.getTopic()).toEqual(replyTo);
-    await expect(await reply2PO.getBody()).toEqual('this is a reply');
-    await expect(await reply2PO.getReplyTo()).toBeUndefined();
+    await expect.poll(() => reply2PO.getTopic()).toEqual(replyTo);
+    await expect.poll(() => reply2PO.getBody()).toEqual('this is a reply');
+    await expect.poll(() => reply2PO.getReplyTo()).toBeUndefined();
 
     // clear the replies list
     await publisherPO.clickClearReplies();
-    await expect(await publisherPO.getReplies()).toEqual([]);
+    await expect.poll(() => publisherPO.getReplies()).toEqual([]);
 
     // send a third reply
     await messagePO.clickReply();
     const reply3PO = await publisherPO.getFirstReplyOrElseReject();
-    await expect(await reply3PO.getTopic()).toEqual(replyTo);
-    await expect(await reply3PO.getBody()).toEqual('this is a reply');
-    await expect(await reply3PO.getReplyTo()).toBeUndefined();
+    await expect.poll(() => reply3PO.getTopic()).toEqual(replyTo);
+    await expect.poll(() => reply3PO.getBody()).toEqual('this is a reply');
+    await expect.poll(() => reply3PO.getReplyTo()).toBeUndefined();
   }
 
   /**
@@ -227,9 +227,9 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await publisherPO.enterMessage('first message');
     await publisherPO.clickPublish();
 
-    await expect(await (await receiver1PO.getFirstMessageOrElseReject()).getBody()).toEqual('first message');
-    await expect(await (await receiver2PO.getFirstMessageOrElseReject()).getBody()).toEqual('first message');
-    await expect(await (await receiver3PO.getFirstMessageOrElseReject()).getBody()).toEqual('first message');
+    await expect.poll(() => receiver1PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('first message');
+    await expect.poll(() => receiver2PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('first message');
+    await expect.poll(() => receiver3PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('first message');
 
     // clear the messages
     await receiver1PO.clickClearMessages();
@@ -240,9 +240,9 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await publisherPO.enterMessage('second message');
     await publisherPO.clickPublish();
 
-    await expect(await (await receiver1PO.getFirstMessageOrElseReject()).getBody()).toEqual('second message');
-    await expect(await (await receiver2PO.getFirstMessageOrElseReject()).getBody()).toEqual('second message');
-    await expect(await (await receiver3PO.getFirstMessageOrElseReject()).getBody()).toEqual('second message');
+    await expect.poll(() => receiver1PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('second message');
+    await expect.poll(() => receiver2PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('second message');
+    await expect.poll(() => receiver3PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('second message');
   }
 
   /**
@@ -259,7 +259,7 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await publisherPO.toggleRequestReply(true);
     await publisherPO.clickPublish();
 
-    await expect(await publisherPO.getPublishError()).toContain('[MessagingError]');
+    await expect.poll(() => publisherPO.getPublishError()).toContain('[MessagingError]');
   }
 
   /**
@@ -299,15 +299,15 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
 
     // send a replies from every subscriber
     await (await receiver1PO.getFirstMessageOrElseReject()).clickReply();
-    await expect(await (await publisherPO.getFirstReplyOrElseReject()).getBody()).toEqual('this is a reply');
+    await expect.poll(() => publisherPO.getFirstReplyOrElseReject().then(message => message.getBody())).toEqual('this is a reply');
     await publisherPO.clickClearReplies();
 
     await (await receiver2PO.getFirstMessageOrElseReject()).clickReply();
-    await expect(await (await publisherPO.getFirstReplyOrElseReject()).getBody()).toEqual('this is a reply');
+    await expect.poll(() => publisherPO.getFirstReplyOrElseReject().then(message => message.getBody())).toEqual('this is a reply');
     await publisherPO.clickClearReplies();
 
     await (await receiver3PO.getFirstMessageOrElseReject()).clickReply();
-    await expect(await (await publisherPO.getFirstReplyOrElseReject()).getBody()).toEqual('this is a reply');
+    await expect.poll(() => publisherPO.getFirstReplyOrElseReject().then(message => message.getBody())).toEqual('this is a reply');
     await publisherPO.clickClearReplies();
   }
 
@@ -353,50 +353,50 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
 
     // assert subscriber count on 'topic-1'
     await publisherPO.enterTopic('topic-1');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(1);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(1);
 
     await receiver1PO.clickUnsubscribe();
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(0);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(0);
     await receiver1PO.clickSubscribe();
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(1);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(1);
 
     // assert subscriber count on 'topic-2'
     await publisherPO.enterTopic('topic-2');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(2);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(2);
 
     // assert subscriber count on 'topic-3'
     await publisherPO.enterTopic('topic-3');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(1);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(1);
 
     // unsubscribe 'receiver1'
     await receiver1PO.clickUnsubscribe();
 
     // assert subscriber count on 'topic-1'
     await publisherPO.enterTopic('topic-1');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(0);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(0);
 
     // assert subscriber count on 'topic-2'
     await publisherPO.enterTopic('topic-2');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(2);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(2);
 
     // assert subscriber count on 'topic-3'
     await publisherPO.enterTopic('topic-3');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(1);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(1);
 
     // unsubscribe 'receiver2'
     await receiver2PO.clickUnsubscribe();
 
     // assert subscriber count on 'topic-1'
     await publisherPO.enterTopic('topic-1');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(0);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(0);
 
     // assert subscriber count on 'topic-2'
     await publisherPO.enterTopic('topic-2');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(1);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(1);
 
     // assert subscriber count on 'topic-3'
     await publisherPO.enterTopic('topic-3');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(1);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(1);
 
     // unload page of 'receiver3'
     const outlet = pagePOs.get<BrowserOutletPO>('receiver3:outlet');
@@ -404,30 +404,30 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
 
     // assert subscriber count on 'topic-1'
     await publisherPO.enterTopic('topic-1');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(0);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(0);
 
     // assert subscriber count on 'topic-2'
     await publisherPO.enterTopic('topic-2');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(1);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(1);
 
     // assert subscriber count on 'topic-3'
     await publisherPO.enterTopic('topic-3');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(0);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(0);
 
     // unsubscribe 'receiver4'
     await receiver4PO.clickUnsubscribe();
 
     // assert subscriber count on 'topic-1'
     await publisherPO.enterTopic('topic-1');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(0);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(0);
 
     // assert subscriber count on 'topic-2'
     await publisherPO.enterTopic('topic-2');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(0);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(0);
 
     // assert subscriber count on 'topic-3'
     await publisherPO.enterTopic('topic-3');
-    await expect(await publisherPO.getTopicSubscriberCount()).toEqual(0);
+    await expect.poll(() => publisherPO.getTopicSubscriberCount()).toEqual(0);
   }
 
   /**
@@ -454,14 +454,14 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await receiverApp1PO.selectFlavor(MessagingFlavor.Topic);
     await receiverApp1PO.enterTopic('some-topic');
     await receiverApp1PO.clickSubscribe();
-    await expect(await (await receiverApp1PO.getFirstMessageOrElseReject()).getBody()).toEqual('retained message');
+    await expect.poll(() => receiverApp1PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('retained message');
 
     // test to receive retained message in app-2
     const receiverApp2PO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2});
     await receiverApp2PO.selectFlavor(MessagingFlavor.Topic);
     await receiverApp2PO.enterTopic('some-topic');
     await receiverApp2PO.clickSubscribe();
-    await expect(await (await receiverApp2PO.getFirstMessageOrElseReject()).getBody()).toEqual('retained message');
+    await expect.poll(() => receiverApp2PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('retained message');
     await receiverApp2PO.clickClearMessages();
 
     // clear the retained message
@@ -507,7 +507,7 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await receiverPO.clickSubscribe();
     const requestPO = await receiverPO.getFirstMessageOrElseReject();
     const replyTo = await requestPO.getReplyTo();
-    await expect(await requestPO.getBody()).toEqual('retained request');
+    await expect.poll(() => requestPO.getBody()).toEqual('retained request');
     await expect(replyTo).not.toBeUndefined();
 
     // send reply
@@ -515,20 +515,20 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
 
     // expect the reply to be received
     const reply1PO = await publisherPO.getFirstReplyOrElseReject();
-    await expect(await reply1PO.getTopic()).toEqual(replyTo);
-    await expect(await reply1PO.getBody()).toEqual('this is a reply');
-    await expect(await reply1PO.getReplyTo()).toBeUndefined();
+    await expect.poll(() => reply1PO.getTopic()).toEqual(replyTo);
+    await expect.poll(() => reply1PO.getBody()).toEqual('this is a reply');
+    await expect.poll(() => reply1PO.getReplyTo()).toBeUndefined();
 
     // clear the replies list
     await publisherPO.clickClearReplies();
-    await expect(await publisherPO.getReplies()).toEqual([]);
+    await expect.poll(() => publisherPO.getReplies()).toEqual([]);
 
     // send another reply
     await requestPO.clickReply();
     const replyPO = await publisherPO.getFirstReplyOrElseReject();
-    await expect(await replyPO.getTopic()).toEqual(replyTo);
-    await expect(await replyPO.getBody()).toEqual('this is a reply');
-    await expect(await replyPO.getReplyTo()).toBeUndefined();
+    await expect.poll(() => replyPO.getTopic()).toEqual(replyTo);
+    await expect.poll(() => replyPO.getBody()).toEqual('this is a reply');
+    await expect.poll(() => replyPO.getReplyTo()).toBeUndefined();
 
     // cancel subscription of requestor
     await publisherPO.clickCancel();
@@ -560,7 +560,7 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await publisherPO.enterTopic('some-topic');
     await publisherPO.clickPublish();
 
-    await expect(await (await receiverPO.getFirstMessageOrElseReject()).getTopic()).toEqual('some-topic');
+    await expect.poll(() => receiverPO.getFirstMessageOrElseReject().then(message => message.getTopic())).toEqual('some-topic');
   }
 
   /**
@@ -624,7 +624,7 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
       headers: new Map(),
     });
     // Verify receiver 4 subscribed to 'myhome/kitchen/:measurement'
-    await expect(await receiver4PO.getMessages()).toEqual([]);
+    await expect.poll(() => receiver4PO.getMessages()).toEqual([]);
 
     await receiver1PO.clickClearMessages();
     await receiver2PO.clickClearMessages();
@@ -638,7 +638,7 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await publisherPO.clickPublish();
 
     // Verify receiver 1 subscribed to 'myhome/livingroom/temperature'
-    await expect(await receiver1PO.getMessages()).toEqual([]);
+    await expect.poll(() => receiver1PO.getMessages()).toEqual([]);
     // Verify receiver 2 subscribed to 'myhome/:room/temperature'
     await expect(receiver2PO.getFirstMessageOrElseReject()).toMatchTopicMessage({
       topic: 'myhome/kitchen/temperature',
@@ -794,8 +794,8 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await publisherPO.enterMessage('payload');
     await publisherPO.clickPublish();
 
-    await expect(await publisherPO.getPublishError()).toEqual('Message rejected by interceptor');
-    await expect(await receiverPO.getMessages()).toEqual([]);
+    await expect.poll(() => publisherPO.getPublishError()).toEqual('Message rejected by interceptor');
+    await expect.poll(() => receiverPO.getMessages()).toEqual([]);
   }
 
   /**
@@ -819,8 +819,8 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await publisherPO.enterMessage('payload');
     await publisherPO.clickPublish();
 
-    await expect(await publisherPO.getPublishError()).toEqual('Message rejected (async) by interceptor');
-    await expect(await receiverPO.getMessages()).toEqual([]);
+    await expect.poll(() => publisherPO.getPublishError()).toEqual('Message rejected (async) by interceptor');
+    await expect.poll(() => receiverPO.getMessages()).toEqual([]);
   }
 
   /**
@@ -844,7 +844,7 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     await publisherPO.enterMessage('payload');
     await publisherPO.clickPublish();
 
-    await expect(await publisherPO.getPublishError()).toBeNull();
-    await expect(await receiverPO.getMessages()).toEqual([]);
+    await expect.poll(() => publisherPO.getPublishError()).toBeNull();
+    await expect.poll(() => receiverPO.getMessages()).toEqual([]);
   }
 }

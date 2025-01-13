@@ -20,7 +20,6 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
   templateUrl: './preferred-size.component.html',
   styleUrls: ['./preferred-size.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     SciFormFieldComponent,

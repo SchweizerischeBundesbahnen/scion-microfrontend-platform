@@ -35,7 +35,6 @@ import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
   templateUrl: './app-details.component.html',
   styleUrls: ['./app-details.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     AsyncPipe,
     ReactiveFormsModule,

@@ -21,7 +21,6 @@ import {SciListComponent, SciListItemDirective} from '@scion/components.internal
   templateUrl: './context.component.html',
   styleUrls: ['./context.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     AsyncPipe,
     KeyValuePipe,

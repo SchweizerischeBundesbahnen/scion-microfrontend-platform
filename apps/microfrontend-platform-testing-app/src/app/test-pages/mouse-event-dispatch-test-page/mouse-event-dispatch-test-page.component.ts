@@ -19,7 +19,6 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   selector: 'app-mouse-event-dispatch-test-page',
   templateUrl: './mouse-event-dispatch-test-page.component.html',
   styleUrls: ['./mouse-event-dispatch-test-page.component.scss'],
-  standalone: true,
   imports: [
     DatePipe,
     ReactiveFormsModule,

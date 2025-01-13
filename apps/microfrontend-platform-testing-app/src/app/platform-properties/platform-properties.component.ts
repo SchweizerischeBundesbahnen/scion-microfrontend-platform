@@ -16,7 +16,6 @@ import {SciKeyValueComponent} from '@scion/components.internal/key-value';
   selector: 'app-platform-properties',
   templateUrl: './platform-properties.component.html',
   styleUrls: ['./platform-properties.component.scss'],
-  standalone: true,
   imports: [SciKeyValueComponent],
 })
 export default class PlatformPropertiesComponent {

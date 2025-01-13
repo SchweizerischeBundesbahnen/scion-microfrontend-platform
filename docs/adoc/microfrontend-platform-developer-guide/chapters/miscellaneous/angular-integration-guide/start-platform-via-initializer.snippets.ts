@@ -1,4 +1,4 @@
-import {APP_INITIALIZER, Component, EnvironmentProviders, inject, makeEnvironmentProviders, NgZone} from '@angular/core';
+import {Component, EnvironmentProviders, inject, makeEnvironmentProviders, NgZone, provideAppInitializer} from '@angular/core';
 import {MicrofrontendPlatformClient, MicrofrontendPlatformConfig, MicrofrontendPlatformHost, ObservableDecorator} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Observable} from 'rxjs';
@@ -15,7 +15,7 @@ class NgZoneObservableDecorator implements ObservableDecorator {
   }
 }
 
-@Component({selector: 'app-root', template: '', standalone: true})
+@Component({selector: 'app-root', template: ''})
 class AppComponent {
 }
 
@@ -31,24 +31,18 @@ bootstrapApplication(AppComponent, {
 
 function provideMicrofrontendPlatformHost(): EnvironmentProviders {
   return makeEnvironmentProviders([
-    {
-      provide: APP_INITIALIZER,
-      useFactory: startHostFn, // <2>
-      multi: true,
-    },
+    provideAppInitializer(startHostFn), // <2>
   ]);
 }
 
 /**
  * Starts the SCION Microfrontend Platform in the host application.
  */
-function startHostFn(): () => Promise<void> {
+function startHostFn(): Promise<void> {
   const zone = inject(NgZone); // <3>
-  return (): Promise<void> => {
-    Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)}); // <4>
-    const config: MicrofrontendPlatformConfig = {applications: [...]}; // <5>
-    return zone.runOutsideAngular(() => MicrofrontendPlatformHost.start(config)); // <6>
-  };
+  Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)}); // <4>
+  const config: MicrofrontendPlatformConfig = {applications: [...]}; // <5>
+  return zone.runOutsideAngular(() => MicrofrontendPlatformHost.start(config)); // <6>
 }
 
 // end::host-app:startPlatformHost[]
@@ -63,23 +57,17 @@ bootstrapApplication(AppComponent, {
 
 function provideMicrofrontendPlatformClient(): EnvironmentProviders {
   return makeEnvironmentProviders([
-    {
-      provide: APP_INITIALIZER,
-      useFactory: connectToHostFn, // <2>
-      multi: true,
-    },
+    provideAppInitializer(connectToHostFn), // <2>
   ]);
 }
 
 /**
  * Connects to the host application.
  */
-function connectToHostFn(): () => Promise<void> {
+function connectToHostFn(): Promise<void> {
   const zone = inject(NgZone); // <3>
-  return (): Promise<void> => {
-    Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)}); // <4>
-    return zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect('APP_SYMBOLIC_NAME')); // <5>
-  };
+  Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)}); // <4>
+  return zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect('APP_SYMBOLIC_NAME')); // <5>
 }
 
 // end::micro-app:connectToHost[]

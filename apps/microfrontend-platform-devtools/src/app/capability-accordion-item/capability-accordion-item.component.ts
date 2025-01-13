@@ -19,7 +19,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   templateUrl: './capability-accordion-item.component.html',
   styleUrls: ['./capability-accordion-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     SciQualifierChipListComponent,
     SciMaterialIconDirective,

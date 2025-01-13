@@ -14,7 +14,7 @@ import {ParamDefinition} from '@scion/microfrontend-platform';
 /**
  * Filters required or optional parameters.
  */
-@Pipe({name: 'devtoolsParamsFilter', standalone: true})
+@Pipe({name: 'devtoolsParamsFilter'})
 export class ParamsFilterPipe implements PipeTransform {
 
   public transform(params: ParamDefinition[] | undefined | null, filter?: 'required' | 'optional'): ParamDefinition[] {

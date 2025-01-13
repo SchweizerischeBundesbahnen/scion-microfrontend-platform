@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {APP_INITIALIZER, EnvironmentProviders, inject, InjectionToken, Injector, makeEnvironmentProviders, NgZone, runInInjectionContext} from '@angular/core';
+import {EnvironmentProviders, inject, InjectionToken, Injector, makeEnvironmentProviders, NgZone, provideAppInitializer, runInInjectionContext} from '@angular/core';
 import {ContextService, IntentClient, ManifestService, MessageClient, MicrofrontendPlatformClient, ObservableDecorator, OutletRouter} from '@scion/microfrontend-platform';
 import {NgZoneObservableDecorator} from './ng-zone-observable-decorator';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -24,11 +24,7 @@ export const MICROFRONTEND_PLATFORM_POST_CONNECT = new InjectionToken<unknown>('
  */
 export function provideMicrofrontendPlatformClient(): EnvironmentProviders {
   return makeEnvironmentProviders([
-    {
-      provide: APP_INITIALIZER,
-      useFactory: connectToHostFn,
-      multi: true,
-    },
+    provideAppInitializer(connectToHostFn),
     {provide: MessageClient, useFactory: () => Beans.get(MessageClient)},
     {provide: IntentClient, useFactory: () => Beans.get(IntentClient)},
     {provide: OutletRouter, useFactory: () => Beans.get(OutletRouter)},
@@ -40,15 +36,12 @@ export function provideMicrofrontendPlatformClient(): EnvironmentProviders {
 /**
  * Connects devtools to the host.
  */
-function connectToHostFn(): () => Promise<void> {
+async function connectToHostFn(): Promise<void> {
   const zone = inject(NgZone);
   const injector = inject(Injector);
 
-  return async (): Promise<void> => {
-    Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)});
-    if (await zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect(environment.symbolicName).then(() => true).catch(() => false))) {
-      await runInInjectionContext(injector, () => inject(MICROFRONTEND_PLATFORM_POST_CONNECT, {optional: true}));
-    }
-  };
+  Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)});
+  if (await zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect(environment.symbolicName).then(() => true).catch(() => false))) {
+    await runInInjectionContext(injector, () => inject(MICROFRONTEND_PLATFORM_POST_CONNECT, {optional: true}));
+  }
 }
-

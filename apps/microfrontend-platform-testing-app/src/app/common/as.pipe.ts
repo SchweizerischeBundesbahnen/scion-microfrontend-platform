@@ -13,7 +13,7 @@ import {Pipe, PipeTransform, Type} from '@angular/core';
 /**
  * Casts given value to given type.
  */
-@Pipe({name: 'appAs', standalone: true})
+@Pipe({name: 'appAs'})
 export class AppAsPipe implements PipeTransform {
 
   public transform<T>(value: unknown, type: Type<T>): T {
