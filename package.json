@@ -94,7 +94,7 @@
     "asciidoctor-prism-extension": "2.0.7",
     "conventional-changelog-cli": "5.0.0",
     "cross-env": "7.0.3",
-    "esbuild": "0.24.2",
+    "esbuild": "0.25.0",
     "eslint": "8.57.0",
     "eslint-plugin-deprecation": "3.0.0",
     "eslint-plugin-rxjs": "5.0.3",
