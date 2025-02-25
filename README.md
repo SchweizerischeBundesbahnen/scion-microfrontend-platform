@@ -52,7 +52,7 @@ SCION Microfrontend Platform enables you to successfully implement a framework-a
 
 [link-download]: https://www.npmjs.com/package/@scion/microfrontend-platform
 [link-github-actions-workflow]: https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/actions
-[link-github-actions-workflow:status]: https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/workflows/Continuous%20Integration%20and%20Delivery/badge.svg?branch=master&event=push
+[link-github-actions-workflow:status]: https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/actions/workflows/workflow.yml/badge.svg
 
 [link-installation]: /docs/site/installation.md
 [link-microfrontend-architecture]: /docs/site/microfrontend-architecture.md
