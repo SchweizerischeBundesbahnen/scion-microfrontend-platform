@@ -2129,7 +2129,7 @@ describe('Messaging', () => {
         });
 
         await waitUntilStable(() => Beans.get(ClientRegistry).getByApplication('host-app').length);
-        const senderClientId = Beans.get(ClientRegistry).getByApplication('host-app')[0].id;
+        const senderClientId = Beans.get(ClientRegistry).getByApplication('host-app')[0]!.id;
 
         await Beans.get(MessageClient).publish('temperature', '18°C', {retain: true, headers: new Map().set('room', 'livingroom')});
 
@@ -3047,7 +3047,7 @@ describe('Messaging', () => {
         });
 
         await waitUntilStable(() => Beans.get(ClientRegistry).getByApplication('host-app').length);
-        const senderClientId = Beans.get(ClientRegistry).getByApplication('host-app')[0].id;
+        const senderClientId = Beans.get(ClientRegistry).getByApplication('host-app')[0]!.id;
 
         await Beans.get(IntentClient).publish({type: 'temperature'}, '22°C', {retain: true, headers: new Map().set('room', 'livingroom')});
 

@@ -76,7 +76,7 @@ export function parseTypedValue(value: unknown): unknown {
       return paramMatch.groups['value'];
     }
     case 'json': {
-      return JSON.parse(paramMatch.groups['value']);
+      return JSON.parse(paramMatch.groups['value']!);
     }
     default: {
       return value;

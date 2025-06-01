@@ -83,7 +83,7 @@ describe('MicrofrontendPlatform', () => {
 
     const clients = Beans.get(ClientRegistry).getByApplication('client');
     expect(clients.length).toBe(1);
-    const clientId = clients[0].id;
+    const clientId = clients[0]!.id;
 
     const clientIdCaptor = new ObserveCaptor();
     microfrontendFixture.message$.subscribe(clientIdCaptor);

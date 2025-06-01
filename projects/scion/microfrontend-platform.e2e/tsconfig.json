@@ -5,6 +5,7 @@
     "sourceMap": true,
     "strict": true,
     "noUnusedLocals": true,
+    "noUncheckedIndexedAccess": true,
     "isolatedModules": true,
     "experimentalDecorators": true,
     "moduleResolution": "bundler",

@@ -212,7 +212,7 @@ function provideStartupProgressMonitor(): void {
   Beans.register(StartupProgressMonitor, {useValue: monitor});
   Beans.register(ManifestLoadProgressMonitor, {useValue: manifestLoadProgressMonitor});
   Beans.register(ActivatorLoadProgressMonitor, {useValue: activatorLoadProgressMonitor});
-  MicrofrontendPlatform.whenState(PlatformState.Started).then(() => platformProgressMonitor.done());
+  MicrofrontendPlatform.whenState(PlatformState.Started).then(() => platformProgressMonitor!.done());
 }
 
 /**
