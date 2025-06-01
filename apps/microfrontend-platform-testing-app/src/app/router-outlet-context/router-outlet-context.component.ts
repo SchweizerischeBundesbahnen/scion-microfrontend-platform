@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, HostListener, Injector} from '@angular/core';
+import {Component, HostListener, inject, Injector} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
@@ -39,14 +39,16 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
 })
 export class RouterOutletContextComponent {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _overlay = inject(OverlayRef);
+  public readonly routerOutlet = inject(SciRouterOutletElement);
+
   public form = this._formBuilder.group({
     name: this._formBuilder.control('', Validators.required),
     value: this._formBuilder.control(''),
   });
 
-  constructor(private _formBuilder: NonNullableFormBuilder,
-              private _overlay: OverlayRef,
-              public routerOutlet: SciRouterOutletElement) {
+  constructor() {
     this._overlay.backdropClick()
       .pipe(takeUntilDestroyed())
       .subscribe(() => this._overlay.dispose());

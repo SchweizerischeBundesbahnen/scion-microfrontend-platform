@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {FormGroup, NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
@@ -37,6 +37,8 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
 })
 export default class LookupIntentionComponent {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+
   public form = this._formBuilder.group({
     id: this._formBuilder.control(''),
     type: this._formBuilder.control(''),
@@ -45,9 +47,6 @@ export default class LookupIntentionComponent {
     appSymbolicName: this._formBuilder.control(''),
   });
   public intentions$: Observable<Intention[]> | undefined;
-
-  constructor(private _formBuilder: NonNullableFormBuilder) {
-  }
 
   public onLookup(): void {
     const nilQualifierIfEmpty = this.form.controls.nilqualifierIfEmpty.value;

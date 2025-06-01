@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Capability} from '@scion/microfrontend-platform';
 import {CapabilityFilterSession} from '../find-capabilities/capability-filter-session.service';
@@ -40,12 +40,12 @@ import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
 })
 export default class CapabilityFilterResultComponent {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+
   public capabilities$: Observable<Capability[]>;
   public filterFormControl = this._formBuilder.control('');
 
-  constructor(private _formBuilder: NonNullableFormBuilder,
-              shellService: ShellService,
-              capabilityFilterSession: CapabilityFilterSession) {
+  constructor(shellService: ShellService, capabilityFilterSession: CapabilityFilterSession) {
     shellService.detailsTitle = 'Capabilities';
     this.capabilities$ = capabilityFilterSession.capabilities$()
       .pipe(
