@@ -9,4 +9,4 @@
  */
 
 export {PreferredSizeService} from './preferred-size-service';
-export {PreferredSize} from './preferred-size';
+export {type PreferredSize} from './preferred-size';

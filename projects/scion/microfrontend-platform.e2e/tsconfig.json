@@ -5,6 +5,7 @@
     "sourceMap": true,
     "strict": true,
     "noUnusedLocals": true,
+    "isolatedModules": true,
     "experimentalDecorators": true,
     "moduleResolution": "bundler",
     "target": "ES2022",
