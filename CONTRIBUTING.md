@@ -36,27 +36,46 @@ This section explains how to submit a pull request.
   <summary><strong>Development</strong></summary>
   <br>
 
-Make sure to use Node.js version 22.11.0 for contributing to SCION. We suggest using [Node Version Manager](https://github.com/nvm-sh/nvm) if you need different Node.js versions for other projects.
+Before you start development, we recommend that you build all projects using the `npm run build` command. Please make sure that path overrides are disabled in `tsconfig.json`.
 
-For development, you can uncomment the section `PATH-OVERRIDE-FOR-DEVELOPMENT` in `tsconfig.json`. This allows running tests or serving applications without having to build dependent modules first.
+**Node Version**
 
-The following is a summary of commands useful for development of `scion-microfrontend-platform`. See file `package.json` for a complete list of available NPM scripts.
- 
-### Commands for working on the microfrontend-platform library
- 
+Make sure to use Node.js version `22.11.0` for contributing to SCION. We recommend using [Node Version Manager](https://github.com/nvm-sh/nvm) if you need different Node.js versions for other projects.
+
+**Disable Angular Cache**
+
+When working with the testing application, we recommend disabling the Angular cache because we have experienced unexpected caching errors if starting multiple applications at once.
+```console
+ng cache disable
+```
+
+**Enable Hot Code Replacement**
+
+To enable hot code replacement for `@scion/microfrontend-platform`, uncomment the `PATH-OVERRIDE-FOR-DEVELOPMENT` section in the `tsconfig.json` file.
+
+*Optional*: To debug dependent SCION libraries:
+1. Clone dependent repositories into a directory at the same level as the microfrontend-platform checkout folder:
+   ``` 
+   ├── scion-microfrontend-platform
+   ├── scion-toolkit (git clone git@github.com:SchweizerischeBundesbahnen/scion-toolkit.git)
+   ```
+2. Run `npm run copy-src` to copy their source into the `src-lib` folder. This folder is referenced in the path overrides in `tsconfig.json`.
+
+**Commands for working on the @scion/microfrontend-platform library**
+
 - `npm run microfrontend-platform:lint`\
-  Lints the microfrontend-platform library.
+  Lints the microfrontend-platform source.
 
 - `npm run microfrontend-platform:build`\
-  Builds the microfrontend-platform library.
+  Builds the microfrontend-platform source.
 
 - `npm run microfrontend-platform:test`\
-  Runs unit tests of the microfrontend-platform library.
- 
+  Runs unit tests of the microfrontend-platform.
+
 - `npm run microfrontend-platform:analyze`\
   Displays the content of the library if installed in a client app. Use to verify the library to be tree shaken correctly, i.e., that the host module is not included.
 
-### Commands for running end-to-end tests
+**Commands for running end-to-end tests**
 
 - `npm run e2e:run`\
   Runs end-to-end tests of the microfrontend platform. Prior to test execution, starts four instances of the `microfrontend-platform-testing-app`.
@@ -67,7 +86,7 @@ The following is a summary of commands useful for development of `scion-microfro
 - `npm run e2e:lint`\
   Lints end-to-end tests.
 
-### Commands for working on the testing application and devtools
+**Commands for working on the testing application and devtools*
 
 - `npm run start`\
   Serves four instances of the `microfrontend-platform-testing-app` and the `microfrontend-platform-devtools`. Open the page http://localhost:4201 to load the microfrontend platform testing app into your browser.\
@@ -79,16 +98,16 @@ The following is a summary of commands useful for development of `scion-microfro
 - `npm run microfrontend-platform-devtools:lint`\
   Lints the `microfrontend-platform-devtools`.
 
-### Commands for generating the project documentation
+**Commands for generating the project documentation**
 
 - `npm run microfrontend-platform:adoc`\
   Use to build the Developer Guide, i.e., creates a HTML file from the AsciiDoc source files. The output is written to `dist/microfrontend-platform-developer-guide`.
-  
+
 - `npm run microfrontend-platform:typedoc`\
   Use to generate the TypeDoc for the SCION Microfrontend Platform library. The output is written to `dist/microfrontend-platform-api`.
-  
+
 - `npm run changelog`\
-  Use to generate the changelog based on the commit history. The output is written to `CHANGELOG.md`, which will be included in `docs/site/changelog/changelog.md` using the template `docs/site/changelog/changelog.template.md`. 
+  Use to generate the changelog based on the commit history. The output is written to `CHANGELOG.md`, which will be included in `docs/site/changelog/changelog.md` using the template `docs/site/changelog/changelog.template.md`.
 
 </details>
 

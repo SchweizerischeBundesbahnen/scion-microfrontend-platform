@@ -21,6 +21,11 @@
     "e2e:headless": "cross-env HEADLESS=true run-s \"**:e2e:run -- {@}\" --",
     "postinstall": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright install chromium",
 
+    "copy-src": "run-p copy-src:*",
+    "copy-src:scion-toolkit": "cpx --clean --watch --verbose ../scion-toolkit/projects/scion/toolkit/** ./src-lib/@scion/toolkit",
+    "copy-src:scion-components": "cpx --clean --watch --verbose ../scion-toolkit/projects/scion/components/** ./src-lib/@scion/components",
+    "copy-src:scion-components.internal": "cpx --clean --watch --verbose ../scion-toolkit/projects/scion/components.internal/** ./src-lib/@scion/components.internal",
+  
     "microfrontend-platform:build": "ng build --configuration production @scion/microfrontend-platform",
     "microfrontend-platform:lint": "ng lint @scion/microfrontend-platform",
     "microfrontend-platform:test": "ng test @scion/microfrontend-platform",
@@ -93,6 +98,7 @@
     "@typescript-eslint/parser": "7.13.0",
     "asciidoctor-prism-extension": "2.0.7",
     "conventional-changelog-cli": "5.0.0",
+    "cpx2": "8.0.0",
     "cross-env": "7.0.3",
     "esbuild": "0.24.2",
     "eslint": "8.57.0",
