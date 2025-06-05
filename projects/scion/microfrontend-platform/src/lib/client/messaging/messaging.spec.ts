@@ -1084,8 +1084,8 @@ describe('Messaging', () => {
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(headersCaptor);
 
     await headersCaptor.waitUntilEmitCount(1);
-    expect(headersCaptor.getLastValue().get(MessageHeaders.ClientId)).toBeDefined();
-    expect(headersCaptor.getLastValue().get(MessageHeaders.AppSymbolicName)).toEqual('host-app');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.ClientId)).toBeDefined();
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.AppSymbolicName)).toEqual('host-app');
   });
 
   it('should prevent overriding platform specific message headers [pub/sub]', async () => {
@@ -1104,10 +1104,10 @@ describe('Messaging', () => {
     );
 
     await headersCaptor.waitUntilEmitCount(1);
-    expect(headersCaptor.getLastValue().get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.ClientId)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.AppSymbolicName)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.ɵSubscriberId)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.ClientId)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.AppSymbolicName)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.ɵSubscriberId)).not.toEqual('should-not-be-set');
   });
 
   it('should prevent overriding platform specific message headers [request/reply]', async () => {
@@ -1126,10 +1126,10 @@ describe('Messaging', () => {
     ).subscribe();
 
     await headersCaptor.waitUntilEmitCount(1);
-    expect(headersCaptor.getLastValue().get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.ClientId)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.AppSymbolicName)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.ɵSubscriberId)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.ClientId)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.AppSymbolicName)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.ɵSubscriberId)).not.toEqual('should-not-be-set');
   });
 
   it('should prevent overriding platform specific intent message headers [pub/sub]', async () => {
@@ -1156,9 +1156,9 @@ describe('Messaging', () => {
     );
 
     await headersCaptor.waitUntilEmitCount(1);
-    expect(headersCaptor.getLastValue().get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.ClientId)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.AppSymbolicName)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.ClientId)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.AppSymbolicName)).not.toEqual('should-not-be-set');
   });
 
   it('should prevent overriding platform specific intent message headers [request/reply]', async () => {
@@ -1185,9 +1185,9 @@ describe('Messaging', () => {
     ).subscribe();
 
     await headersCaptor.waitUntilEmitCount(1);
-    expect(headersCaptor.getLastValue().get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.ClientId)).not.toEqual('should-not-be-set');
-    expect(headersCaptor.getLastValue().get(MessageHeaders.AppSymbolicName)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.ClientId)).not.toEqual('should-not-be-set');
+    expect(headersCaptor.getLastValue()!.get(MessageHeaders.AppSymbolicName)).not.toEqual('should-not-be-set');
   });
 
   it('should process 10_000 messages under 5 seconds', async () => {
@@ -2129,7 +2129,7 @@ describe('Messaging', () => {
         });
 
         await waitUntilStable(() => Beans.get(ClientRegistry).getByApplication('host-app').length);
-        const senderClientId = Beans.get(ClientRegistry).getByApplication('host-app')[0].id;
+        const senderClientId = Beans.get(ClientRegistry).getByApplication('host-app')[0]!.id;
 
         await Beans.get(MessageClient).publish('temperature', '18°C', {retain: true, headers: new Map().set('room', 'livingroom')});
 
@@ -3047,7 +3047,7 @@ describe('Messaging', () => {
         });
 
         await waitUntilStable(() => Beans.get(ClientRegistry).getByApplication('host-app').length);
-        const senderClientId = Beans.get(ClientRegistry).getByApplication('host-app')[0].id;
+        const senderClientId = Beans.get(ClientRegistry).getByApplication('host-app')[0]!.id;
 
         await Beans.get(IntentClient).publish({type: 'temperature'}, '22°C', {retain: true, headers: new Map().set('room', 'livingroom')});
 

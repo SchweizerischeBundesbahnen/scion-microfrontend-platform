@@ -11,6 +11,7 @@
     display: flex;
     align-items: center;
     gap: .25em;
+    margin: .25em 2px 2px 0; // to not crop outline of active buttons
 
     > input.url {
       @include sci-design.style-input-field();

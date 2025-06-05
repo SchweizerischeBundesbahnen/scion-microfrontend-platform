@@ -12,9 +12,16 @@ describe('Client Application Bundle', () => {
 
   it('should not contain files from the host module (tree shaking)', async () => {
     const files = await parseSourceMapExplorerStats();
-    const hostFiles = files
-      .filter(file => file.name.startsWith('webpack:///projects/scion/microfrontend-platform/src/lib/host'))
+    const clientFiles = files
+      .filter(file => file.name.startsWith('projects/scion/microfrontend-platform/src/lib/client'))
       .map(file => file.name);
+    const hostFiles = files
+      .filter(file => file.name.startsWith('projects/scion/microfrontend-platform/src/lib/host'))
+      .map(file => file.name);
+
+    expect(clientFiles.length)
+      .withContext(`Expected client application bundle to contain files from the client module: ${clientFiles}`)
+      .toBeGreaterThan(0);
 
     expect(hostFiles.length)
       .withContext(`Expected client application bundle not to contain files from the host module: ${hostFiles}`)
@@ -24,9 +31,12 @@ describe('Client Application Bundle', () => {
   it('should not be greater than 50 KB', async () => {
     const files = await parseSourceMapExplorerStats();
     const microfrontendPlatformBytes = files
-      .filter(file => file.name.startsWith('webpack:///projects/scion/microfrontend-platform'))
+      .filter(file => file.name.startsWith('projects/scion/microfrontend-platform'))
       .reduce((bytes, file) => bytes + file.size, 0);
 
+    expect(microfrontendPlatformBytes)
+      .withContext(`Expected raw size of '@scion/microfrontend-platform' in client application to be greater than 0`)
+      .toBeGreaterThan(0);
     expect(microfrontendPlatformBytes)
       .withContext(`Expected raw size of '@scion/microfrontend-platform' in client application not to exceed 50 KB, but was ${microfrontendPlatformBytes / 1000} KB`)
       .toBeLessThan(50_000);

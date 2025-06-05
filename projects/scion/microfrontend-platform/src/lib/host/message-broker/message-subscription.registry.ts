@@ -145,15 +145,15 @@ export class MessageSubscriptionRegistry<T extends MessageSubscription = Message
  * @internal
  */
 export class MessageSubscription {
-  /**
-   * Promise that resolves when the subscriber unsubscribes.
-   */
-  public readonly whenUnsubscribe = new Promise<void>(resolve => this.notifyUnsubscribe = resolve);
 
   /**
    * Notify when the subscriber unsubscribes.
    */
   public notifyUnsubscribe!: () => void;
+  /**
+   * Promise that resolves when the subscriber unsubscribes.
+   */
+  public readonly whenUnsubscribe = new Promise<void>(resolve => this.notifyUnsubscribe = resolve);
 
   constructor(public readonly subscriberId: string, public readonly client: Client) {
   }

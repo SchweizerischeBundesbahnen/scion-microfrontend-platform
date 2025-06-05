@@ -6,6 +6,7 @@
 {
   "extends": "./tsconfig.app.json",
   "include": [
-    "src/environments/*.ts"
+    "src/environments/*.ts",
+    "src/main.ts",
   ]
 }

@@ -18,7 +18,7 @@
     <span class="chip app-name">{{appSymbolicName}}</span>
     <div class="separator"></div>
     @if (devToolsFormControl.enabled) {
-      <label class="devtools-toggle">
+      <label class="devtools-toggle" title="Toggle DevTools">
         <sci-toggle-button [formControl]="devToolsFormControl" [class.selected]="devToolsFormControl.value"/>
         DevTools
       </label>

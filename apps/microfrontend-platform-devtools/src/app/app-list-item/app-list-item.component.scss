@@ -9,6 +9,7 @@
   align-items: start;
   padding: 1em 1.75em 1em 1em;
   position: relative; // positioning context for hover action
+  cursor: default;
 
   > span.app-name {
     grid-column: 1/2;
@@ -55,8 +56,8 @@
     color: var(--sci-color-accent);
   }
 
-  &:not(.active) {
-    cursor: pointer;
+  &:hover:not(.active) {
+    background-color: var(--sci-color-background-elevation-hover);
   }
 
   :is(&.active, &:not(:hover)) > span.action-indicator {

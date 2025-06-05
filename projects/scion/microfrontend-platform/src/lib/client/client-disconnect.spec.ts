@@ -297,7 +297,7 @@ describe('MicrofrontendPlatform', () => {
   async function getClientId(fixture: MicrofrontendFixture): Promise<string> {
     const captor = new ObserveCaptor<string>();
     fixture.message$.subscribe(captor);
-    return captor.getLastValue();
+    return captor.getLastValue()!;
   }
 
   function waitUntilClientUnregistered(clientId: string): Promise<void> {

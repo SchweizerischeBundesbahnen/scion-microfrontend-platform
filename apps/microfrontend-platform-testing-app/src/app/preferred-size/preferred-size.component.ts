@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, ElementRef} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, inject} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {PreferredSizeService} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -28,6 +28,9 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 })
 export default class PreferredSizeComponent {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _host = inject(ElementRef<HTMLElement>);
+
   public form = this._formBuilder.group({
     cssSize: this._formBuilder.group({
       width: this._formBuilder.control('', Validators.pattern(/^\d+px$/)),
@@ -42,7 +45,7 @@ export default class PreferredSizeComponent {
 
   public elementDimensionObservableBound: boolean | undefined;
 
-  constructor(private _formBuilder: NonNullableFormBuilder, private _host: ElementRef<HTMLElement>) {
+  constructor() {
     this.form.controls.useElementSize.valueChanges
       .pipe(takeUntilDestroyed())
       .subscribe(checked => {

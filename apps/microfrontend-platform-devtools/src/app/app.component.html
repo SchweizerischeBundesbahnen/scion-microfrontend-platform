@@ -4,11 +4,9 @@
       <ng-template sciSash size="1">
         <aside>
           <header>
-            <button class="menu" (click)="onOpenMenuClick()">
-              <span sciMaterialIcon>menu</span>
-              {{primaryTitle$ | async}}
-            </button>
-            @if (showPrimaryOutlet && showDetailsOutlet) {
+            <button class="menu" (click)="onOpenMenuClick()" sciMaterialIcon>menu</button>
+            <span class="title">{{primaryTitle$ | async}}</span>
+            @if (showDetailsOutlet) {
               <button class="collapse" (click)="onCollapsePrimaryClick()" sciMaterialIcon>keyboard_arrow_left</button>
             }
           </header>
@@ -22,8 +20,6 @@
           <header>
             @if (!showPrimaryOutlet) {
               <button class="menu" (click)="onOpenMenuClick()" sciMaterialIcon>menu</button>
-            }
-            @if (!showPrimaryOutlet && showDetailsOutlet) {
               <button class="expand" (click)="onExpandPrimaryClick()" sciMaterialIcon>keyboard_arrow_right</button>
             }
             <span class="title" (dblclick)="onDetailsDblClick()">{{detailsTitle$ | async}}</span>

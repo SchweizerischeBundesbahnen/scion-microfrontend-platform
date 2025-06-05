@@ -38,7 +38,7 @@ describe('ProgressMonitor', () => {
 
   it('should emit the current progress upon subscription, even after "done"', () => {
     const monitor = new ProgressMonitor();
-    const [mon1, mon2] = monitor.splitEven(2);
+    const [mon1, mon2] = monitor.splitEven(2) as [ProgressMonitor, ProgressMonitor];
 
     mon1.done();
 
@@ -64,11 +64,11 @@ describe('ProgressMonitor', () => {
     monitor.progress$.subscribe(captor);
 
     // split to 25% / 50% / 25%
-    const [mon1, mon2, mon3] = monitor.split(1, 2, 1);
+    const [mon1, mon2, mon3] = monitor.split(1, 2, 1) as [ProgressMonitor, ProgressMonitor, ProgressMonitor];
     // each monitor is 10%
-    const [mon2a, mon2b, mon2c, mon2d, mon2e] = mon2.splitEven(5);
+    const [mon2a, mon2b, mon2c, mon2d, mon2e] = mon2.splitEven(5) as [ProgressMonitor, ProgressMonitor, ProgressMonitor, ProgressMonitor, ProgressMonitor];
     // each monitor is 12.5%
-    const [mon3a, mon3b] = mon3.splitEven(2);
+    const [mon3a, mon3b] = mon3.splitEven(2) as [ProgressMonitor, ProgressMonitor];
 
     expect(captor.getLastValue()).toEqual(0);
 
@@ -105,8 +105,8 @@ describe('ProgressMonitor', () => {
     const captor = new ObserveCaptor<number>();
     monitor.progress$.subscribe(captor);
 
-    const [mon1, mon2] = monitor.split(1, 1);
-    const [mon2a, mon2b, mon2c, mon2d, mon2e] = mon2.splitEven(5);
+    const [mon1, mon2] = monitor.split(1, 1) as [ProgressMonitor, ProgressMonitor];
+    const [mon2a, mon2b, mon2c, mon2d, mon2e] = mon2.splitEven(5) as [ProgressMonitor, ProgressMonitor, ProgressMonitor, ProgressMonitor, ProgressMonitor];
 
     mon1.done();
     expect(captor.getLastValue()).toEqual(50);
@@ -144,7 +144,7 @@ describe('ProgressMonitor', () => {
     const captor = new ObserveCaptor<number>();
     monitor.progress$.subscribe(captor);
 
-    const [mon1, mon2, mon3] = monitor.splitEven(3);
+    const [mon1, mon2, mon3] = monitor.splitEven(3) as [ProgressMonitor, ProgressMonitor, ProgressMonitor];
 
     mon1.done();
     expect(captor.getLastValue()).toEqual(33.33);

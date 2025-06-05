@@ -58,6 +58,10 @@
       border-radius: 50%;
       border: 1px solid var(--sci-color-border);
       background-color: var(--sci-color-background-elevation);
+
+      &:hover {
+        background-color: var(--sci-color-gray-200);
+      }
     }
 
     > div.overlay.add-filter {
@@ -123,7 +127,6 @@
 
         &:hover {
           position: relative;
-          cursor: pointer;
 
           &::after {
             position: absolute;
@@ -131,8 +134,7 @@
             content: 'x';
             font-size: 1.25em;
             text-align: center;
-            background-color: var(--sci-color-accent);
-            color: var(--sci-color-accent-inverse);
+            background-color: var(--sci-color-gray-200);
           }
         }
       }

@@ -2,19 +2,20 @@
   display: grid;
   position: absolute;
   inset: 0;
-  padding: 0 .75em .5em .75em;
 
   > sci-sashbox {
-    --sci-sashbox-gap: .75em;
+    --sci-sashbox-gap: 0; // set padding in sash content to not crop the outline of left/right aligned buttons when active
 
     aside, main {
       display: grid;
       grid-template-rows: auto 1fr;
       row-gap: 1em;
+      padding: .25em .75em;
 
       > header {
         display: flex;
         align-items: center;
+        gap: .25em;
         height: 2.5em;
         white-space: nowrap;
         font-weight: bold;
@@ -29,17 +30,15 @@
     }
 
     aside > header {
-      > button.menu {
-        all: unset;
-        flex: auto;
-        display: flex;
-        align-items: center;
-        gap: 1em;
-        cursor: pointer;
+      display: flex;
+      gap: .75em;
 
-        &:hover {
-          color: var(--sci-color-accent);
-        }
+      > button.menu {
+        flex: none;
+      }
+
+      > span.title {
+        flex: auto;
       }
 
       > button.collapse {

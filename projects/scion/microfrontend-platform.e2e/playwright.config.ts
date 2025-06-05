@@ -8,13 +8,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {PlaywrightTestConfig} from '@playwright/test';
+import {defineConfig} from '@playwright/test';
 import {CustomMatchers} from './src/custom-matchers';
 
-const runInCI = !!process.env['CI'];
-const runHeadless = !!process.env['HEADLESS'];
+const runInCI = !!process.env.CI;
+const runHeadless = !!process.env.HEADLESS;
 
-const config: PlaywrightTestConfig = {
+export default defineConfig({
   forbidOnly: runInCI,
   fullyParallel: true,
   webServer: [
@@ -46,10 +46,8 @@ const config: PlaywrightTestConfig = {
     baseURL: 'http://localhost:4201',
   },
   maxFailures: runInCI ? 1 : undefined,
-  testMatch: /.*\.e2e-spec\.js/,
-};
-
-export default config;
+  testMatch: /.*\.e2e-spec\.ts/,
+});
 
 // Install SCION-specific matchers that can be used as expectations.
 CustomMatchers.install();

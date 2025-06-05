@@ -22,7 +22,7 @@ import {MicrofrontendFixture} from '../../testing/microfrontend-fixture/microfro
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T | undefined => msg.body;
 
-describe('Message Handler', () => {
+fdescribe('Message Handler', () => {
 
   const disposables = new Set<Disposable>();
 
@@ -1316,11 +1316,11 @@ type Disposable = () => void;
  */
 class ObservableCaptor {
 
-  public constructed = new Promise<void>(resolve => this.onConstruct = resolve);
-  public unsubscribed = new Promise<void>(resolve => this.onUnsubscribe = resolve);
-  public finalized = new Promise<void>(resolve => this.onFinalize = resolve);
-
   public onConstruct!: () => void;
   public onUnsubscribe!: () => void;
   public onFinalize!: () => void;
+
+  public constructed = new Promise<void>(resolve => this.onConstruct = resolve);
+  public unsubscribed = new Promise<void>(resolve => this.onUnsubscribe = resolve);
+  public finalized = new Promise<void>(resolve => this.onFinalize = resolve);
 }

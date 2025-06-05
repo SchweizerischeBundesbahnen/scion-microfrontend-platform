@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {FormGroup, NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Capability, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
@@ -41,6 +41,9 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export default class LookupCapabilityComponent {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _clipboard = inject(Clipboard);
+
   public form = this._formBuilder.group({
     id: this._formBuilder.control(''),
     type: this._formBuilder.control(''),
@@ -49,9 +52,6 @@ export default class LookupCapabilityComponent {
     appSymbolicName: this._formBuilder.control(''),
   });
   public capabilities$: Observable<Capability[]> | undefined;
-
-  constructor(private _formBuilder: NonNullableFormBuilder, private _clipboard: Clipboard) {
-  }
 
   public onLookup(): void {
     const nilQualifierIfEmpty = this.form.controls.nilqualifierIfEmpty.value;

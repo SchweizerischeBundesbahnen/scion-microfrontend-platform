@@ -1,3 +1,5 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
@@ -8,9 +10,12 @@
     "inlineSources": true,
     "types": []
   },
+    "include": [
+    "src/**/*.ts"
+  ],
   "exclude": [
-    "src/test.ts",
     "**/*.spec.ts",
-    "**/*.script.ts"
+    "**/*.script.ts",
+    "src/test.ts"
   ]
 }

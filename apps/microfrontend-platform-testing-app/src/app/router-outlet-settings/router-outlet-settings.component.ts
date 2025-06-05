@@ -12,7 +12,7 @@ import {PreferredSize, SciRouterOutletElement} from '@scion/microfrontend-platfo
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
 import {JsonPipe} from '@angular/common';
-import {A11yModule} from '@angular/cdk/a11y';
+import {CdkTrapFocus} from '@angular/cdk/a11y';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SciToggleButtonComponent} from '@scion/components.internal/toggle-button';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
@@ -25,7 +25,7 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
   styleUrls: ['./router-outlet-settings.component.scss'],
   imports: [
     JsonPipe,
-    A11yModule,
+    CdkTrapFocus,
     ReactiveFormsModule,
     SciToggleButtonComponent,
   ],

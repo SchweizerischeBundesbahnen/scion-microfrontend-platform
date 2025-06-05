@@ -521,7 +521,7 @@ describe('ManifestRegistry', () => {
     await Beans.get(ManifestRegistry).registerCapability({type: 'testee'}, 'host-app');
 
     // Expect the capability to be intercepted before its registration.
-    const actual = (await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({type: 'testee'})))[0];
+    const actual = (await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({type: 'testee'})))[0]!;
     expect(actual.metadata!.id).toEqual('1');
   });
 

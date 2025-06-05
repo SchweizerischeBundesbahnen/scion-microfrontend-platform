@@ -94,5 +94,5 @@ export async function waitUntilNavigationStable(page: Page): Promise<void> {
  */
 export function parseKeystroke(keystroke: string): {parts: string; flags: string} {
   const groups = keystroke.match(/(?<parts>[^{]*)({(?<flags>.*)})?/)!.groups;
-  return {parts: groups!['parts'], flags: groups!['flags']};
+  return {parts: groups!['parts']!, flags: groups!['flags']!};
 }

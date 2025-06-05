@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {Capability, ParamDefinition} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
 import {Observable, ReplaySubject} from 'rxjs';
@@ -50,6 +50,9 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export class RequiredCapabilitiesComponent implements OnChanges {
 
+  private readonly _router = inject(Router);
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+
   private _appChange$ = new ReplaySubject<void>(1);
 
   @Input({required: true})
@@ -59,9 +62,7 @@ export class RequiredCapabilitiesComponent implements OnChanges {
   public filterFormControl = this._formBuilder.control('');
   public selectedCapability: Capability | undefined;
 
-  constructor(manifestService: DevToolsManifestService,
-              private _router: Router,
-              private _formBuilder: NonNullableFormBuilder) {
+  constructor(manifestService: DevToolsManifestService) {
     this.capabilitiesByApp$ = this._appChange$
       .pipe(
         switchMap(() => manifestService.observeDependingCapabilities$(this.appSymbolicName)),
