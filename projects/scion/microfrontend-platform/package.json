@@ -19,28 +19,23 @@
   },
   "peerDependencies": {
     "rxjs": "^7.5.0",
-    "@scion/toolkit": "^1.2.1"
+    "@scion/toolkit": "^1.6.0 || ^2.0.0"
   },
   "keywords": [
     "scion",
+    "scion microfrontend platform",
     "microfrontend",
     "micro-frontend",
-    "micro frontend",
-    "microfrontend platform",
     "messaging",
     "communication",
     "routing",
     "cross-origin",
     "embedding",
     "iframe",
-    "web component",
     "webcomponent",
-    "web-component",
     "typescript",
     "javascript",
-    "framework-agnostic",
-    "intent",
-    "intention"
+    "framework-agnostic"
   ],
   "repository": {
     "type": "git",

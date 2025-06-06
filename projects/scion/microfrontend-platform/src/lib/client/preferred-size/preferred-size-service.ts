@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {fromDimension$} from '@scion/toolkit/observable';
+import {fromResize$} from '@scion/toolkit/observable';
 import {combineLatestWith, filter, takeUntil} from 'rxjs/operators';
 import {merge, Subject} from 'rxjs';
 import {ContextService} from '../context/context-service';
@@ -69,21 +69,21 @@ export class PreferredSizeService implements PreDestroy {
       return;
     }
 
-    fromDimension$(element)
+    fromResize$(element)
       .pipe(takeUntil(merge(this._fromDimensionElementChange$, this._destroy$)))
-      .subscribe(dimension => {
+      .subscribe(() => {
         // If the element is removed from the DOM, the preferred size is reset and reporting suspended until it is attached again.
-        if (!document.body.contains(dimension.element)) {
+        if (!document.body.contains(element)) {
           this.resetPreferredSize();
         }
         else {
           this.setPreferredSize({
-            minWidth: `${dimension.offsetWidth}px`,
-            width: `${dimension.offsetWidth}px`,
-            maxWidth: `${dimension.offsetWidth}px`,
-            minHeight: `${dimension.offsetHeight}px`,
-            height: `${dimension.offsetHeight}px`,
-            maxHeight: `${dimension.offsetHeight}px`,
+            minWidth: `${element.offsetWidth}px`,
+            width: `${element.offsetWidth}px`,
+            maxWidth: `${element.offsetWidth}px`,
+            minHeight: `${element.offsetHeight}px`,
+            height: `${element.offsetHeight}px`,
+            maxHeight: `${element.offsetHeight}px`,
           });
         }
       });
