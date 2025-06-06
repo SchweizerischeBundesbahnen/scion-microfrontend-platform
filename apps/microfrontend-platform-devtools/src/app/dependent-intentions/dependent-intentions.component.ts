@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {Intention} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
 import {Observable, ReplaySubject} from 'rxjs';
@@ -42,18 +42,16 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export class DependentIntentionsComponent implements OnInit, OnChanges {
 
-  private _appChange$ = new ReplaySubject<void>(1);
+  private readonly _router = inject(Router);
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _manifestService = inject(DevToolsManifestService);
+  private readonly _appChange$ = new ReplaySubject<void>(1);
 
   @Input({required: true})
   public appSymbolicName!: string;
 
   public intentionsByApp$: Observable<Map<string, Intention[]>> | undefined;
   public filterFormControl = this._formBuilder.control('');
-
-  constructor(private _router: Router,
-              private _formBuilder: NonNullableFormBuilder,
-              private _manifestService: DevToolsManifestService) {
-  }
 
   public ngOnInit(): void {
     this.intentionsByApp$ = this._appChange$

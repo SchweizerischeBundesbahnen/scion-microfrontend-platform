@@ -20,6 +20,7 @@
         "deprecation"
       ],
       "rules": {
+        "@angular-eslint/prefer-inject": "warn",
         "@typescript-eslint/ban-types": [
           "error",
           {

@@ -11,6 +11,8 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
+// Angular's built-in Karma config: node_modules/@angular/build/src/builders/karma/index.js
+
 // By setting `PLAYWRIGHT_BROWSERS_PATH=0`, chromium binaries are found in `node_modules`
 // https://playwright.dev/docs/ci#caching-browsers
 process.env.PLAYWRIGHT_BROWSERS_PATH = 0;
@@ -77,15 +79,13 @@ module.exports = function (config) {
     logLevel: config.LOG_INFO,
     autoWatch: true,
     browsers: [
-      process.env.HEADLESS ? 'ChromeHeadlessNoSandbox' : 'Chrome',
+      process.env.HEADLESS ? 'HeadlessChrome' : 'Chrome',
     ],
     customLaunchers: {
-      ChromeHeadlessNoSandbox: {
+      HeadlessChrome: {
         base: 'ChromeHeadless',
         flags: ['--no-sandbox'],
       },
     },
-    singleRun: !!process.env.HEADLESS,
-    restartOnFileChange: true,
   });
 };

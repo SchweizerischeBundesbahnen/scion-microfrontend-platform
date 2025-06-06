@@ -66,7 +66,7 @@ export class ReceiveMessagePagePO implements OutletPageObject {
   public async getFirstMessageOrElseReject(): Promise<MessageListItemPO> {
     const messages = await this.getMessages();
     if (messages.length > 0) {
-      return messages[0];
+      return messages[0]!;
     }
     throw Error('[NoMessageFoundError] No message was found.');
   }

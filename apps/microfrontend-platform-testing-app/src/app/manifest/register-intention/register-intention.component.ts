@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {APP_IDENTITY, Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
@@ -36,6 +36,8 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
 })
 export default class RegisterIntentionComponent {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+
   public registerForm = this._formBuilder.group({
     type: this._formBuilder.control('', Validators.required),
     qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
@@ -56,7 +58,7 @@ export default class RegisterIntentionComponent {
   public unregisterResponse: 'OK' | undefined;
   public unregisterError: string | undefined;
 
-  constructor(private _formBuilder: NonNullableFormBuilder) {
+  constructor() {
     this.intentions$ = Beans.get(ManifestService).lookupIntentions$({appSymbolicName: Beans.get<string>(APP_IDENTITY)});
   }
 

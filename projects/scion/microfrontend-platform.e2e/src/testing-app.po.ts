@@ -118,7 +118,7 @@ export class TestingAppPO {
   private async configureTestingApp(outlets: Outlets, locator: Page | FrameLocator): Promise<OutletPageObjectMap> {
     const outletPageObjectMap = new Map<string, OutletPageObject>();
     for (const outletName of Object.keys(outlets)) {
-      const outletDescriptor: string | OutletPageObjectConstructor | OutletPageObjectDescriptor | Outlets = outlets[outletName];
+      const outletDescriptor: string | OutletPageObjectConstructor | OutletPageObjectDescriptor | Outlets = outlets[outletName]!;
 
       const browserOutletPO = new BrowserOutletPO(locator, outletName);
 

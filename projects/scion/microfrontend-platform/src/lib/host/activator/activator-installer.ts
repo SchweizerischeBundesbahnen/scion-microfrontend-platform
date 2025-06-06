@@ -55,7 +55,7 @@ export class ActivatorInstaller implements Initializer {
     const activatorReadyPromises: Promise<void>[] = Array
       .from(activatorsGroupedByApp.entries())
       .reduce((acc, [appSymbolicName, appActivators], index) => {
-        return acc.concat(this.waitForActivatorsToSignalReady(appSymbolicName, appActivators, subMonitors[index]));
+        return acc.concat(this.waitForActivatorsToSignalReady(appSymbolicName, appActivators, subMonitors[index]!));
       }, [] as Promise<void>[]);
 
     // Mount activators in hidden iframes

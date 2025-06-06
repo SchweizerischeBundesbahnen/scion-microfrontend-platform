@@ -62,7 +62,7 @@ export class PlatformPropertyService implements Initializer {
   /**
    * Returns the properties map.
    */
-  public properties(): ReadonlyMap<string, any> {
+  public properties(): Map<string, any> {
     return this._properties;
   }
 }

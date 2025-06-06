@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NavigationOptions, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -33,6 +33,8 @@ import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.intern
 })
 export default class OutletRouterComponent {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+
   public form = this._formBuilder.group({
     outlet: this._formBuilder.control(''),
     useIntent: this._formBuilder.control(false),
@@ -47,7 +49,7 @@ export default class OutletRouterComponent {
   public UrlDestinationFormGroup = FormGroup<UrlDestination>;
   public IntentDestinationFormGroup = FormGroup<IntentDestination>;
 
-  constructor(private _formBuilder: NonNullableFormBuilder) {
+  constructor() {
     this.form.controls.useIntent.valueChanges
       .pipe(
         startWith(this.form.controls.useIntent.value),

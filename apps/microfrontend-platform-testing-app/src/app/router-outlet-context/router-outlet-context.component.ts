@@ -7,13 +7,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, HostListener, Injector} from '@angular/core';
+import {Component, HostListener, inject, Injector} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
 import {AsyncPipe, KeyValuePipe} from '@angular/common';
-import {A11yModule} from '@angular/cdk/a11y';
+import {CdkTrapFocus} from '@angular/cdk/a11y';
 import {ContextEntryComponent} from '../context-entry/context-entry.component';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
@@ -29,7 +29,7 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
   imports: [
     AsyncPipe,
     KeyValuePipe,
-    A11yModule,
+    CdkTrapFocus,
     ReactiveFormsModule,
     SciListComponent,
     SciListItemDirective,
@@ -39,14 +39,16 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
 })
 export class RouterOutletContextComponent {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _overlay = inject(OverlayRef);
+  public readonly routerOutlet = inject(SciRouterOutletElement);
+
   public form = this._formBuilder.group({
     name: this._formBuilder.control('', Validators.required),
     value: this._formBuilder.control(''),
   });
 
-  constructor(private _formBuilder: NonNullableFormBuilder,
-              private _overlay: OverlayRef,
-              public routerOutlet: SciRouterOutletElement) {
+  constructor() {
     this._overlay.backdropClick()
       .pipe(takeUntilDestroyed())
       .subscribe(() => this._overlay.dispose());

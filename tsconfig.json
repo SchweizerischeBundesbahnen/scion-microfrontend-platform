@@ -1,28 +1,21 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "outDir": "./dist/out-tsc",
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
-    "sourceMap": true,
-    "declaration": false,
+    "isolatedModules": true,
     "experimentalDecorators": true,
-    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
-    "module": "ES2022",
+    "module": "preserve",
     "noUnusedLocals": true,
-    "useDefineForClassFields": false,
-    "lib": [
-      "ES2022",
-      "dom"
-    ],
+    "noUncheckedIndexedAccess": true,
     "paths": {
       "@scion/microfrontend-platform": [
         "./dist/scion/microfrontend-platform"
@@ -65,6 +58,30 @@
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
+    "typeCheckHostBindings": true,
     "strictTemplates": true
-  }
+  },
+  "references": [
+    {
+      "path": "./projects/scion/microfrontend-platform/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/scion/microfrontend-platform/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/scion/microfrontend-platform/tsconfig.script.spec.json"
+    },
+    {
+      "path": "./projects/scion/microfrontend-platform.client-application-bundle-analyzer/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/scion/microfrontend-platform.client-application-bundle-analyzer/tsconfig.spec.json"
+    },
+    {
+      "path": "./apps/microfrontend-platform-testing-app/tsconfig.app.json"
+    },
+    {
+      "path": "./apps/microfrontend-platform-devtools/tsconfig.app.json"
+    }
+  ]
 }

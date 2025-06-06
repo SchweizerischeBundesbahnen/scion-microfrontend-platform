@@ -208,7 +208,7 @@ function provideHostStartupInitializers(symbolicName: string, config: Microfront
  */
 function provideStartupProgressMonitor(): void {
   const monitor = new ProgressMonitor();
-  const [platformProgressMonitor, manifestLoadProgressMonitor, activatorLoadProgressMonitor] = monitor.split(1, 3, 5);
+  const [platformProgressMonitor, manifestLoadProgressMonitor, activatorLoadProgressMonitor] = monitor.split(1, 3, 5) as [ProgressMonitor, ProgressMonitor, ProgressMonitor];
   Beans.register(StartupProgressMonitor, {useValue: monitor});
   Beans.register(ManifestLoadProgressMonitor, {useValue: manifestLoadProgressMonitor});
   Beans.register(ActivatorLoadProgressMonitor, {useValue: activatorLoadProgressMonitor});

@@ -31,7 +31,8 @@ $menu-width: 350px;
         align-items: center;
         gap: 1em;
         padding: 1em .5em;
-        cursor: pointer;
+        user-select: none;
+        cursor: default;
 
         &.active {
           background-color: var(--sci-color-accent);

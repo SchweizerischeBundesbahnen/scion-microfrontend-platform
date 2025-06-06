@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, ViewChild} from '@angular/core';
 import {combineLatestWith, Observable, Subject} from 'rxjs';
 import {Application, Capability, Intention} from '@scion/microfrontend-platform';
 import {distinctUntilChanged, expand, map, switchMap, take} from 'rxjs/operators';
@@ -56,6 +56,13 @@ import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 })
 export class AppDetailsComponent {
 
+  private readonly _shellService = inject(ShellService);
+  private readonly _route = inject(ActivatedRoute);
+  private readonly _router = inject(Router);
+  private readonly _manifestService = inject(DevToolsManifestService);
+  private readonly _cd = inject(ChangeDetectorRef);
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+
   public application$: Observable<Application>;
   public capabilities$: Observable<Capability[]>;
   public intentions$: Observable<Intention[]>;
@@ -65,12 +72,7 @@ export class AppDetailsComponent {
 
   private _tabbar$ = new Subject<SciTabbarComponent>();
 
-  constructor(private _shellService: ShellService,
-              private _route: ActivatedRoute,
-              private _router: Router,
-              private _manifestService: DevToolsManifestService,
-              private _cd: ChangeDetectorRef,
-              private _formBuilder: NonNullableFormBuilder) {
+  constructor() {
     this.application$ = this.observeApplication$();
     this.capabilities$ = this.observeCapabilities$();
     this.intentions$ = this.observeIntentions$();

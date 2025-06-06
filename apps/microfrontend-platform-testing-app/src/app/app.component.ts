@@ -29,12 +29,14 @@ export class AppComponent implements OnDestroy {
     this.installPropagatedKeyboardEventLogger();
   }
 
+  // TODO [Angular 21] Remove if cast is not required anymore.
   @HostListener('document:keydown.control.alt.shift.s', ['$event'])
-  public async onE2eTestKeyboardEvent(event: KeyboardEvent): Promise<void> {
+  public async onE2eTestKeyboardEvent(event: Event): Promise<void> {
+    const keyboardEvent = event as KeyboardEvent;
     // only log "real", aka trusted events and ignore synthetic events, e.g. keyboard events propagated across iframe boundaries.
-    if (event.isTrusted) {
+    if (keyboardEvent.isTrusted) {
       const outletContextName = (await this._outletContext)?.name ?? 'n/a';
-      console.debug(`[AppComponent::document:onkeydown] [TRUSTED] [outletContext=${outletContextName}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}, defaultPrevented=${event.defaultPrevented}]`);
+      console.debug(`[AppComponent::document:onkeydown] [TRUSTED] [outletContext=${outletContextName}, key='${keyboardEvent.key}', control=${keyboardEvent.ctrlKey}, shift=${keyboardEvent.shiftKey}, alt=${keyboardEvent.altKey}, meta=${keyboardEvent.metaKey}, defaultPrevented=${keyboardEvent.defaultPrevented}]`);
     }
   }
 

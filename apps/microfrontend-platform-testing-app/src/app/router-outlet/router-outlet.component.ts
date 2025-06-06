@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Injector, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, Injector, ViewChild} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
 import {Overlay} from '@angular/cdk/overlay';
@@ -33,6 +33,10 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export default class RouterOutletComponent {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _overlay = inject(Overlay);
+  private readonly _injector = inject(Injector);
+
   public form = this._formBuilder.group({
     outletName: this._formBuilder.control(''),
   });
@@ -46,11 +50,6 @@ export default class RouterOutletComponent {
 
   @ViewChild('router_outlet', {static: true})
   public _routerOutlet!: ElementRef<SciRouterOutletElement>;
-
-  constructor(private _formBuilder: NonNullableFormBuilder,
-              private _overlay: Overlay,
-              private _injector: Injector) {
-  }
 
   public onApplyClick(): boolean {
     this.outletName = this.form.controls.outletName.value || undefined;

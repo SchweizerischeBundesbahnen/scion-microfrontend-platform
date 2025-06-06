@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ContextService} from '@scion/microfrontend-platform';
@@ -33,6 +33,9 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 })
 export default class LookupContextValueComponent implements OnDestroy {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _cd = inject(ChangeDetectorRef);
+
   public form = this._formBuilder.group({
     key: this._formBuilder.control('', Validators.required),
     collect: this._formBuilder.control(false, Validators.required),
@@ -44,7 +47,7 @@ export default class LookupContextValueComponent implements OnDestroy {
   private _contextService: ContextService;
   private _subscription: Subscription | undefined;
 
-  constructor(private _formBuilder: NonNullableFormBuilder, private _cd: ChangeDetectorRef) {
+  constructor() {
     this._contextService = Beans.get(ContextService);
   }
 

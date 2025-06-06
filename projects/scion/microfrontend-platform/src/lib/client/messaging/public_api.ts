@@ -9,5 +9,5 @@
  */
 
 export {MessageClient, takeUntilUnsubscribe} from './message-client';
-export {IntentClient, IntentSelector} from './intent-client';
-export {PublishOptions, RequestOptions} from './publish-options';
+export {IntentClient, type IntentSelector} from './intent-client';
+export {type PublishOptions, type RequestOptions} from './publish-options';

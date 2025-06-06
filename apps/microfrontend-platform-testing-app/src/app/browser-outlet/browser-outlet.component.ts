@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, ElementRef, Injector, Input, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, ElementRef, inject, Injector, Input, OnInit, ViewChild} from '@angular/core';
 import {MessageClient, OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Overlay} from '@angular/cdk/overlay';
@@ -36,6 +36,12 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export class BrowserOutletComponent implements OnInit {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _activatedRoute = inject(ActivatedRoute);
+  private readonly _overlay = inject(Overlay);
+  private readonly _injector = inject(Injector);
+  private readonly _destroyRef = inject(DestroyRef);
+
   public form = this._formBuilder.group({
     url: this._formBuilder.control(null, Validators.required),
   });
@@ -53,11 +59,7 @@ export class BrowserOutletComponent implements OnInit {
   @ViewChild('router_outlet', {static: true})
   public routerOutlet!: ElementRef<SciRouterOutletElement>;
 
-  constructor(private _formBuilder: NonNullableFormBuilder,
-              private _activatedRoute: ActivatedRoute,
-              private _overlay: Overlay,
-              private _injector: Injector,
-              private _destroyRef: DestroyRef) {
+  constructor() {
     this.appEntryPoints = this.readAppEntryPoints();
   }
 
