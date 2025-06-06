@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, OnDestroy} from '@angular/core';
+import {Component, inject, OnDestroy} from '@angular/core';
 import {IntentClient, MessageClient, TopicMessage} from '@scion/microfrontend-platform';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
@@ -44,8 +44,10 @@ import {parseTypedValues} from '../../common/typed-value-parser.util';
 })
 export default class PublishMessageComponent implements OnDestroy {
 
-  private _messageClient: MessageClient;
-  private _intentClient: IntentClient;
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _messageClient = Beans.get(MessageClient);
+  private readonly _intentClient = Beans.get(IntentClient);
+
   private _requestResponseSubscription: Subscription | undefined;
 
   public form = this._formBuilder.group({
@@ -66,10 +68,7 @@ export default class PublishMessageComponent implements OnDestroy {
   public TopicMessageDestinationFormGroup = FormGroup<TopicMessageDestination>;
   public IntentMessageDestinationFromGroup = FormGroup<IntentMessageDestination>;
 
-  constructor(private _formBuilder: NonNullableFormBuilder) {
-    this._messageClient = Beans.get(MessageClient);
-    this._intentClient = Beans.get(IntentClient);
-
+  constructor() {
     this.form.controls.flavor.valueChanges
       .pipe(
         startWith(this.form.controls.flavor.value),

@@ -1,3 +1,5 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
   "extends": "../../../tsconfig.json",
   "compilerOptions": {
@@ -6,12 +8,8 @@
       "jasmine"
     ]
   },
-  "files": [
-    "src/test.ts"
-  ],
   "include": [
-    "**/*.spec.ts",
-    "**/*.d.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "**/*.script.ts" // "*.script.ts" files are included in a separate TypeScript config tsconfig.script.spec.json.

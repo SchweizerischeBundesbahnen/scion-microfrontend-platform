@@ -6,8 +6,10 @@
       --app-color-text-strong: var(--sci-color-text),
       // Use as the background color for primary chips displayed on an accordion panel (e.g., type chip in qualifier list)
       --app-accordion-panel-chip-primary-background-color: color-mix(in srgb, transparent 95%, var(--sci-static-color-black)),
+      --app-accordion-panel-chip-primary-background-color-hover: color-mix(in srgb, var(--app-accordion-panel-chip-primary-background-color) 95%, var(--sci-static-color-black)),
       // Use as the background color for secondary chips displayed on an accordion panel (e.g., qualifier chip in qualifier list)
       --app-accordion-panel-chip-secondary-background-color: var(--sci-color-background-primary),
+      --app-accordion-panel-chip-secondary-background-color-hover: color-mix(in srgb, var(--app-accordion-panel-chip-secondary-background-color) 95%, var(--sci-static-color-black)),
       // Use as the background color for a container displayed on an accordion panel
       --app-accordion-panel-container-background-color: var(--sci-color-background-primary),
     ),
@@ -16,8 +18,10 @@
       --app-color-text-strong: var(--sci-color-gray-800),
       // Use as the background color for primary chips displayed on an accordion panel (e.g., type chip in qualifier list)
       --app-accordion-panel-chip-primary-background-color: color-mix(in srgb, transparent 50%, var(--sci-color-background-primary)),
+      --app-accordion-panel-chip-primary-background-color-hover: color-mix(in srgb, var(--app-accordion-panel-chip-primary-background-color) 95%, var(--sci-static-color-white)),
       // Use as the background color for secondary chips displayed on an accordion panel (e.g., qualifier chip in qualifier list)
       --app-accordion-panel-chip-secondary-background-color: color-mix(in srgb, transparent 25%, var(--sci-color-background-primary)),
+      --app-accordion-panel-chip-secondary-background-color-hover: color-mix(in srgb, var(--app-accordion-panel-chip-secondary-background-color) 95%, var(--sci-static-color-white)),
       // Use as the background color for a container displayed on an accordion panel
       --app-accordion-panel-container-background-color: color-mix(in srgb, transparent 25%, var(--sci-color-background-primary)),
     )

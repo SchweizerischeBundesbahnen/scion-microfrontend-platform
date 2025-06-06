@@ -67,7 +67,7 @@ export namespace Topics {
     const segments = typeof topic === 'string' ? Topics.split(topic) : topic;
 
     if (segments.length === 1) {
-      return [segments[0], wildcardCharacter];
+      return [segments[0]!, wildcardCharacter];
     }
 
     return computeWildcardSegmentPermutations(segments.slice(1), wildcardCharacter).reduce((permutations, permutation) => {

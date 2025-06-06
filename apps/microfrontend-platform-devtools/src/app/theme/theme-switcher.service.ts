@@ -1,5 +1,4 @@
-import {EnvironmentProviders, inject, Injectable, makeEnvironmentProviders} from '@angular/core';
-import {DOCUMENT} from '@angular/common';
+import {EnvironmentProviders, inject, Injectable, makeEnvironmentProviders, DOCUMENT} from '@angular/core';
 import {ContextService} from '@scion/microfrontend-platform';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MICROFRONTEND_PLATFORM_POST_CONNECT} from '../microfrontend-platform-client/microfrontend-platform-client.provider';

@@ -278,7 +278,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
       const clientRegister$ = Beans.get(ClientRegistry).register$.pipe(filter(client => client.application.symbolicName === appSymbolicName));
       const platformVersion$ = defer(() => {
         const clients = Beans.get(ClientRegistry).getByApplication(appSymbolicName);
-        return clients.length ? of(clients[0].version) : EMPTY;
+        return clients.length ? of(clients[0]!.version) : EMPTY;
       });
       return platformVersion$
         .pipe(

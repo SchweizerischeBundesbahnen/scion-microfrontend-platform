@@ -7,11 +7,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, NgZone, OnInit, Output, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, inject, Input, NgZone, OnInit, Output, ViewChild} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
 import {KeyValuePair, LogicalOperator} from './filter-field';
-import {A11yModule, FocusOrigin} from '@angular/cdk/a11y';
+import {CdkMonitorFocus, FocusOrigin} from '@angular/cdk/a11y';
 import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 @Component({
@@ -21,11 +21,15 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
-    A11yModule,
+    CdkMonitorFocus,
     SciMaterialIconDirective,
   ],
 })
 export class FilterFieldComponent implements OnInit {
+
+  private readonly _cdRef = inject(ChangeDetectorRef);
+  private readonly _zone = inject(NgZone);
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
 
   public readonly autocompleteKeysDatalistId = UUID.randomUUID();  // generate random id for autocomplete list in order to support multiple filter fields in the same document
   public readonly autocompleteValuesDatalistId = UUID.randomUUID();  // generate random id for autocomplete list in order to support multiple filter fields in the same document
@@ -81,11 +85,6 @@ export class FilterFieldComponent implements OnInit {
   public showFilter = false;
 
   private _filters = new Set<KeyValuePair>();
-
-  constructor(private _cdRef: ChangeDetectorRef,
-              private _zone: NgZone,
-              private _formBuilder: NonNullableFormBuilder) {
-  }
 
   @HostListener('keydown.escape')
   public onEscape(): void {

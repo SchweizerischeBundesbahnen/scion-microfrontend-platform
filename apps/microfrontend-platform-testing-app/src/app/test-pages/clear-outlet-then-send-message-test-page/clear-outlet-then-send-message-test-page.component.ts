@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MessageClient, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -24,13 +24,12 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 })
 export default class ClearOutletThenSendMessageTestPageComponent {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+
   public form = this._formBuilder.group({
     outlet: this._formBuilder.control('', Validators.required),
     topic: this._formBuilder.control('', Validators.required),
   });
-
-  constructor(private _formBuilder: NonNullableFormBuilder) {
-  }
 
   public async onRunTestClick(): Promise<void> {
     // Clear the router outlet.

@@ -87,7 +87,7 @@ function computeProgress(ratio: number[]): OperatorFunction<number[], number> {
   const ratioSum = ratio.reduce((sum, weight) => sum + weight, 0);
   return map((subMonitorsProgress: number[]) => {
     return ratio.reduce((totalProgress, subMonitorWeight, subMonitorIndex) => {
-      return totalProgress + subMonitorsProgress[subMonitorIndex] * (subMonitorWeight / ratioSum);
+      return totalProgress + subMonitorsProgress[subMonitorIndex]! * (subMonitorWeight / ratioSum);
     }, 0);
   });
 }

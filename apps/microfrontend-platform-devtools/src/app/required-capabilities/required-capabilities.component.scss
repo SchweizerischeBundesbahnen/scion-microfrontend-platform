@@ -24,12 +24,16 @@
         flex-direction: column;
 
         > sci-qualifier-chip-list {
-          cursor: pointer;
           --sci-qualifier-chip-list-type-background-color: var(--app-accordion-panel-chip-primary-background-color);
           --sci-qualifier-chip-list-qualifier-background-color: var(--app-accordion-panel-chip-secondary-background-color);
 
           &:not(:last-child) {
             margin-bottom: .5em;
+          }
+
+          &:hover {
+            --sci-qualifier-chip-list-type-background-color: var(--app-accordion-panel-chip-primary-background-color-hover);
+            --sci-qualifier-chip-list-qualifier-background-color: var(--app-accordion-panel-chip-secondary-background-color-hover);
           }
 
           &.selected {

@@ -26,8 +26,11 @@
     }
 
     > button.close {
-      &:hover, &:active, &:focus {
-        color: inherit;
+      color: var(--sci-color-accent-inverse);
+
+      &:hover {
+        color: var(--sci-color-accent);
+        background-color: var(--sci-color-accent-inverse);
       }
     }
   }

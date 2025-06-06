@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {APP_IDENTITY, Capability, ManifestObjectFilter, ManifestService, ParamDefinition} from '@scion/microfrontend-platform';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
@@ -38,6 +38,8 @@ import {parseTypedValues} from '../../common/typed-value-parser.util';
 })
 export default class RegisterCapabilityComponent {
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+
   public paramsPlaceholder: ParamDefinition[] = [{name: 'param1', required: true}, {name: 'param2', required: true}];
   public registerForm = this._formBuilder.group({
     type: this._formBuilder.control('', Validators.required),
@@ -61,7 +63,7 @@ export default class RegisterCapabilityComponent {
   public unregisterResponse: 'OK' | undefined;
   public unregisterError: string | undefined;
 
-  constructor(private _formBuilder: NonNullableFormBuilder) {
+  constructor() {
     this.capabilities$ = Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: Beans.get<string>(APP_IDENTITY)});
   }
 

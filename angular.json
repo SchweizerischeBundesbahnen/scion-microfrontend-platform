@@ -10,10 +10,7 @@
       "prefix": "sci",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/scion/microfrontend-platform/ng-package.json"
-          },
+          "builder": "@angular/build:ng-packagr",
           "configurations": {
             "production": {
               "tsConfig": "projects/scion/microfrontend-platform/tsconfig.lib.prod.json"
@@ -29,8 +26,7 @@
           "options": {
             "main": "projects/scion/microfrontend-platform/src/test.ts",
             "tsConfig": "projects/scion/microfrontend-platform/tsconfig.spec.json",
-            "karmaConfig": "projects/scion/microfrontend-platform/karma.conf.js",
-            "inlineStyleLanguage": "scss"
+            "karmaConfig": "projects/scion/microfrontend-platform/karma.conf.js"
           }
         },
         "lint": {
@@ -64,31 +60,25 @@
       "sourceRoot": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular/build:application",
           "options": {
             "outputPath": "dist/microfrontend-platform-client-application-bundle-analyzer",
-            "index": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/index.html",
-            "main": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/main.ts",
+            "browser": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/main.ts",
             "polyfills": [
               "zone.js"
             ],
             "tsConfig": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/tsconfig.app.json",
             "outputHashing": "all",
-            "sourceMap": true,
-            "namedChunks": true,
-            "optimization": {
-              "styles": false,
-              "scripts": true,
-              "fonts": true
-            }
+            "sourceMap": true
           }
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular/build:karma",
           "options": {
             "main": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/test.ts",
             "tsConfig": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/tsconfig.spec.json",
-            "karmaConfig": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/karma.conf.js"
+            "karmaConfig": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/karma.conf.js",
+            "watch": false
           }
         },
         "lint": {
@@ -114,10 +104,8 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/microfrontend-platform-testing-app",
-            "index": "apps/microfrontend-platform-testing-app/src/index.html",
             "browser": "apps/microfrontend-platform-testing-app/src/main.ts",
             "polyfills": [
               "zone.js"
@@ -142,8 +130,7 @@
             ],
             "styles": [
               "apps/microfrontend-platform-testing-app/src/styles.scss"
-            ],
-            "scripts": []
+            ]
           },
           "configurations": {
             "production-vercel": {
@@ -155,8 +142,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kB",
-                  "maximumError": "4kB"
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
                 }
               ],
               "fileReplacements": [
@@ -177,8 +164,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kB",
-                  "maximumError": "4kB"
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
                 }
               ],
               "fileReplacements": [
@@ -199,7 +186,7 @@
           "defaultConfiguration": "development"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
               "buildTarget": "microfrontend-platform-testing-app:build:production-ci"
@@ -236,10 +223,8 @@
       "prefix": "devtools",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/microfrontend-platform-devtools",
-            "index": "apps/microfrontend-platform-devtools/src/index.html",
             "browser": "apps/microfrontend-platform-devtools/src/main.ts",
             "polyfills": [
               "zone.js"
@@ -269,8 +254,7 @@
             ],
             "styles": [
               "apps/microfrontend-platform-devtools/src/styles.scss"
-            ],
-            "scripts": []
+            ]
           },
           "configurations": {
             "production-vercel": {
@@ -282,8 +266,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kB",
-                  "maximumError": "4kB"
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
                 }
               ],
               "fileReplacements": [
@@ -304,7 +288,7 @@
           "defaultConfiguration": "development"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
               "buildTarget": "microfrontend-platform-devtools:build:production-vercel"
@@ -325,6 +309,37 @@
           }
         }
       }
+    }
+  },
+  "schematics": {
+    "@schematics/angular:component": {
+      "type": "component"
+    },
+    "@schematics/angular:directive": {
+      "type": "directive"
+    },
+    "@schematics/angular:service": {
+      "type": "service"
+    },
+    "@schematics/angular:guard": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:interceptor": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:module": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:pipe": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:resolver": {
+      "typeSeparator": "."
+    }
+  },
+  "cli": {
+    "cache": {
+      "enabled": false
     }
   }
 }

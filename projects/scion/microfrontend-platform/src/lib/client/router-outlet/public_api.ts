@@ -8,8 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-export {SciRouterOutletElement, OutletContext, OUTLET_CONTEXT, PRIMARY_OUTLET} from './router-outlet.element';
+export {SciRouterOutletElement, type OutletContext, OUTLET_CONTEXT, PRIMARY_OUTLET} from './router-outlet.element';
 export {OutletRouter} from './outlet-router';
 export {RelativePathResolver} from './relative-path-resolver';
-export {NavigationOptions, Navigation} from './metadata';
+export {type NavigationOptions, type Navigation} from './metadata';
 export {RouterOutletUrlAssigner} from './router-outlet-url-assigner';
