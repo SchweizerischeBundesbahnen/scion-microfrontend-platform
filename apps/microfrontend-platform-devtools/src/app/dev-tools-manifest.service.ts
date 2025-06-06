@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Application, Capability, Intention, ManifestObjectFilter, ManifestService, QualifierMatcher} from '@scion/microfrontend-platform';
 import {map} from 'rxjs/operators';
@@ -17,8 +17,9 @@ import {combineArray, distinctArray, filterArray, mapArray, sortArray} from '@sc
 export class DevToolsManifestService {
 
   private readonly _appsBySymbolicName: Map<string, Application>;
+  private readonly _manifestService = inject(ManifestService);
 
-  constructor(private _manifestService: ManifestService) {
+  constructor() {
     this._appsBySymbolicName = new Map<string, Application>(this.applications.map(app => [app.symbolicName, app]));
   }
 

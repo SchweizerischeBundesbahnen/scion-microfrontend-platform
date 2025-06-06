@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {Application} from '@scion/microfrontend-platform';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -35,11 +35,13 @@ import {SciListComponent, SciListItemDirective} from '@scion/components.internal
 })
 export class AppListComponent {
 
-  public applications$: Observable<Application[]>;
-  private _appFilter$ = new BehaviorSubject<string>('');
+  private readonly _appFilter$ = new BehaviorSubject<string>('');
+  private readonly _manifestService = inject(DevToolsManifestService);
 
-  constructor(shellService: ShellService, private _manifestService: DevToolsManifestService) {
-    shellService.primaryTitle = 'Micro Applications';
+  protected readonly applications$: Observable<Application[]>;
+
+  constructor() {
+    inject(ShellService).primaryTitle = 'Micro Applications';
 
     this.applications$ = this._appFilter$
       .pipe(
@@ -48,7 +50,7 @@ export class AppListComponent {
       );
   }
 
-  public onAppFilter(appFilter: string): void {
+  protected onAppFilter(appFilter: string): void {
     this._appFilter$.next(appFilter.toLowerCase());
   }
 }

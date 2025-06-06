@@ -7,37 +7,35 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
-import {Observable} from 'rxjs';
+import {ChangeDetectionStrategy, Component, inject, input, Signal} from '@angular/core';
+import {switchMap} from 'rxjs';
 import {Application, Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router} from '@angular/router';
-import {AsyncPipe} from '@angular/common';
+import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'devtools-intention-accordion-panel',
   templateUrl: './intention-accordion-panel.component.html',
   styleUrls: ['./intention-accordion-panel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AsyncPipe,
-  ],
 })
-export class IntentionAccordionPanelComponent implements OnInit {
+export class IntentionAccordionPanelComponent {
 
-  public applications$!: Observable<Application[]>;
+  public readonly intention = input.required<Intention>();
 
-  @Input({required: true})
-  public intention!: Intention;
+  protected readonly providers = this.computerProviders();
 
-  constructor(private _manifestService: DevToolsManifestService, private _router: Router) {
+  private readonly _router = inject(Router);
+
+  private computerProviders(): Signal<Application[]> {
+    const manifestService = inject(DevToolsManifestService);
+    const providers$ = toObservable(this.intention)
+      .pipe(switchMap(intention => manifestService.capabilityProviders$(intention)));
+    return toSignal(providers$, {initialValue: []});
   }
 
-  public ngOnInit(): void {
-    this.applications$ = this._manifestService.capabilityProviders$(this.intention);
-  }
-
-  public onProviderClick(application: Application): boolean {
+  protected onProviderClick(application: Application): boolean {
     this._router.navigate(['apps', {outlets: {details: [application.symbolicName, {activeTab: 'capabilities'}]}}]).then();
     return false;
   }

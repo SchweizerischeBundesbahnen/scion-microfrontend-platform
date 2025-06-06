@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {Observable, Subject} from 'rxjs';
 import {Capability, Qualifier} from '@scion/microfrontend-platform';
 import {expand, map, take} from 'rxjs/operators';
@@ -18,15 +18,15 @@ import {Arrays} from '@scion/toolkit/util';
 @Injectable({providedIn: 'root'})
 export class CapabilityFilterSession {
 
-  private _idFilters = new Set<string>();
-  private _typeFilters = new Set<string>();
-  private _qualifierFilters = new Array<KeyValuePair>();
-  private _appFilters = new Set<string>();
-  private _qualifierLogicalOperator: LogicalOperator = 'or';
-  private _filterChange$ = new Subject<void>();
+  private readonly _manifestService = inject(DevToolsManifestService);
 
-  constructor(private _manifestService: DevToolsManifestService) {
-  }
+  private readonly _idFilters = new Set<string>();
+  private readonly _typeFilters = new Set<string>();
+  private readonly _qualifierFilters = new Array<KeyValuePair>();
+  private readonly _appFilters = new Set<string>();
+  private readonly _filterChange$ = new Subject<void>();
+
+  private _qualifierLogicalOperator: LogicalOperator = 'or';
 
   public set qualifierLogicalOperator(value: LogicalOperator) {
     this._qualifierLogicalOperator = value;

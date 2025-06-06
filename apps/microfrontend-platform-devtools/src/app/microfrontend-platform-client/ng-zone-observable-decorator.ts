@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {NgZone} from '@angular/core';
+import {inject, NgZone} from '@angular/core';
 import {ObservableDecorator} from '@scion/microfrontend-platform';
 import {Observable} from 'rxjs';
 import {observeIn, subscribeIn} from '@scion/toolkit/operators';
@@ -18,8 +18,7 @@ import {observeIn, subscribeIn} from '@scion/toolkit/operators';
  */
 export class NgZoneObservableDecorator implements ObservableDecorator {
 
-  constructor(private _zone: NgZone) {
-  }
+  private readonly _zone = inject(NgZone);
 
   public decorate$<T>(source$: Observable<T>): Observable<T> {
     return new Observable<T>(observer => {

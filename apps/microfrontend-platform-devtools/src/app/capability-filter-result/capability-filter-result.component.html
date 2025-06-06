@@ -5,7 +5,7 @@
       <sci-accordion>
         @for (capability of capabilities; track capability) {
           <ng-template sciAccordionItem [panel]="panel">
-            <devtools-capability-accordion-item [capability]="capability" [appSymbolicName]="capability.metadata!.appSymbolicName"/>
+            <devtools-capability-accordion-item [capability]="capability"/>
           </ng-template>
           <ng-template #panel>
             <devtools-capability-accordion-panel [capability]="capability"/>

@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, input, OnInit} from '@angular/core';
 import {Application} from '@scion/microfrontend-platform';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -28,30 +28,30 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export class AppListItemComponent implements OnInit {
 
-  @Input({required: true})
-  public application!: Application;
-  public capabilityCount$!: Observable<number>;
-  public intentionCount$!: Observable<number>;
+  public readonly application = input.required<Application>();
 
-  constructor(private _manifestService: DevToolsManifestService, private _router: Router) {
-  }
+  private readonly _manifestService = inject(DevToolsManifestService);
+  private readonly _router = inject(Router);
+
+  protected capabilityCount$!: Observable<number>;
+  protected intentionCount$!: Observable<number>;
 
   public ngOnInit(): void {
-    this.capabilityCount$ = this._manifestService.capabilities$({appSymbolicName: this.application.symbolicName})
+    this.capabilityCount$ = this._manifestService.capabilities$({appSymbolicName: this.application().symbolicName})
       .pipe(map(capabilities => capabilities.length));
-    this.intentionCount$ = this._manifestService.intentions$({appSymbolicName: this.application.symbolicName})
+    this.intentionCount$ = this._manifestService.intentions$({appSymbolicName: this.application().symbolicName})
       .pipe(map(intentions => intentions.length));
   }
 
-  public onIntentionsClick(event: MouseEvent): boolean {
+  protected onIntentionsClick(event: MouseEvent): boolean {
     event.preventDefault(); // Prevent href navigation imposed by accessibility rules
-    this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'intentions'}]}}]).then();
+    this._router.navigate(['apps', {outlets: {details: [this.application().symbolicName, {activeTab: 'intentions'}]}}]).then();
     return true;
   }
 
-  public onCapabilitiesClick(event: MouseEvent): boolean {
+  protected onCapabilitiesClick(event: MouseEvent): boolean {
     event.preventDefault(); // Prevent href navigation imposed by accessibility rules
-    this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'capabilities'}]}}]).then();
+    this._router.navigate(['apps', {outlets: {details: [this.application().symbolicName, {activeTab: 'capabilities'}]}}]).then();
     return true;
   }
 }

@@ -1,4 +1,4 @@
-import {EnvironmentProviders, inject, Injectable, makeEnvironmentProviders, DOCUMENT} from '@angular/core';
+import {DOCUMENT, EnvironmentProviders, inject, Injectable, makeEnvironmentProviders} from '@angular/core';
 import {ContextService} from '@scion/microfrontend-platform';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MICROFRONTEND_PLATFORM_POST_CONNECT} from '../microfrontend-platform-client/microfrontend-platform-client.provider';
@@ -10,10 +10,10 @@ import {MICROFRONTEND_PLATFORM_POST_CONNECT} from '../microfrontend-platform-cli
 @Injectable(/* DO NOT PROVIDE via 'providedIn' metadata registered via APP_INITIALIZER. */)
 class ThemeSwitcher {
 
-  constructor(contextService: ContextService) {
+  constructor() {
     const documentRoot = inject<Document>(DOCUMENT).documentElement;
 
-    contextService.observe$<'light' | 'dark' | null>('color-scheme')
+    inject(ContextService).observe$<'light' | 'dark' | null>('color-scheme')
       .pipe(takeUntilDestroyed())
       .subscribe(colorScheme => {
         if (colorScheme) {

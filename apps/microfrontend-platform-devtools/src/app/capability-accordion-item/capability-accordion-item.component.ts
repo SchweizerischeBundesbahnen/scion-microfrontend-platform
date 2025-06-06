@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
 import {Clipboard} from '@angular/cdk/clipboard';
 import {Capability} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
@@ -26,26 +26,24 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export class CapabilityAccordionItemComponent {
 
-  @Input()
-  public appSymbolicName?: string | undefined;
+  public readonly capability = input.required<Capability>();
 
-  @Input({required: true})
-  public capability!: Capability;
+  private readonly _router = inject(Router);
+  private readonly _clipboard = inject(Clipboard);
 
-  constructor(private _router: Router, private _clipboard: Clipboard) {
-  }
+  protected readonly appSymbolicName = computed(() => this.capability().metadata!.appSymbolicName);
 
-  public onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
+  protected onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
     event.stopPropagation();
     event.preventDefault();
     this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
   }
 
-  public onCopyToClipboard(event: MouseEvent): void {
+  protected onCopyToClipboard(event: MouseEvent): void {
     event.stopPropagation();
     this._clipboard.copy(JSON.stringify({
-      type: this.capability.type,
-      qualifier: this.capability.qualifier,
+      type: this.capability().type,
+      qualifier: this.capability().qualifier,
     }, null, 2));
   }
 }

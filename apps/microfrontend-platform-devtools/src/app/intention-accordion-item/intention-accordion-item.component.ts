@@ -7,13 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {Observable} from 'rxjs';
-import {Intention} from '@scion/microfrontend-platform';
+import {ChangeDetectionStrategy, Component, inject, input, Signal} from '@angular/core';
+import {Application, Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
-import {map} from 'rxjs/operators';
-import {AsyncPipe} from '@angular/common';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
+import {toObservable, toSignal} from '@angular/core/rxjs-interop';
+import {switchMap} from 'rxjs';
 
 @Component({
   selector: 'devtools-intention-accordion-item',
@@ -21,22 +20,19 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
   styleUrls: ['./intention-accordion-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AsyncPipe,
     SciQualifierChipListComponent,
   ],
 })
-export class IntentionAccordionItemComponent implements OnChanges {
+export class IntentionAccordionItemComponent {
 
-  public nullProvider$!: Observable<boolean>;
+  public readonly intention = input.required<Intention>();
 
-  @Input({required: true})
-  public intention!: Intention;
+  protected readonly providers = this.computerProviders();
 
-  constructor(private _manifestService: DevToolsManifestService) {
-  }
-
-  public ngOnChanges(changes: SimpleChanges): void {
-    this.nullProvider$ = this._manifestService.capabilityProviders$(this.intention)
-      .pipe(map(apps => apps.length === 0));
+  private computerProviders(): Signal<Application[]> {
+    const manifestService = inject(DevToolsManifestService);
+    const providers$ = toObservable(this.intention)
+      .pipe(switchMap(intention => manifestService.capabilityProviders$(intention)));
+    return toSignal(providers$, {initialValue: []});
   }
 }

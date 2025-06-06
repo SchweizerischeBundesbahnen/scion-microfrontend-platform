@@ -1,10 +1,10 @@
 <header>Provided by:</header>
 <ul>
-  @for (application of applications$ | async; track application.symbolicName) {
+  @for (provider of providers(); track provider.symbolicName) {
     <li>
-      <a (click)="onProviderClick(application)" href=""
-         [class.self]="application.symbolicName === intention.metadata!.appSymbolicName">
-        {{application.name}}
+      <a (click)="onProviderClick(provider)" href=""
+         [class.self]="provider.symbolicName === intention().metadata!.appSymbolicName">
+        {{provider.name}}
       </a>
     </li>
   }

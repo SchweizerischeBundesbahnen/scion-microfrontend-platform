@@ -63,12 +63,12 @@ export class AppDetailsComponent {
   private readonly _cd = inject(ChangeDetectorRef);
   private readonly _formBuilder = inject(NonNullableFormBuilder);
 
-  public application$: Observable<Application>;
-  public capabilities$: Observable<Capability[]>;
-  public intentions$: Observable<Intention[]>;
+  protected application$: Observable<Application>;
+  protected capabilities$: Observable<Capability[]>;
+  protected intentions$: Observable<Intention[]>;
 
-  public capabilityFilterFormControl = this._formBuilder.control('');
-  public intentionFilterFormControl = this._formBuilder.control('');
+  protected capabilityFilterFormControl = this._formBuilder.control('');
+  protected intentionFilterFormControl = this._formBuilder.control('');
 
   private _tabbar$ = new Subject<SciTabbarComponent>();
 

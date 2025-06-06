@@ -1,6 +1,6 @@
-<span class="app-name">{{application.name}}</span>
-<span class="app-symbolic-name" title="Symbolic Name">{{application.symbolicName}}</span>
-<a [href]="application.baseUrl" target="_blank">{{application.baseUrl}}</a>
+<span class="app-name">{{application().name}}</span>
+<span class="app-symbolic-name" title="Symbolic Name">{{application().symbolicName}}</span>
+<a [href]="application().baseUrl" target="_blank">{{application().baseUrl}}</a>
 
 <section class="chips">
   <!-- Capabilities -->
@@ -22,7 +22,7 @@
   }
 
   <!-- Platform Version -->
-  @if (application.platformVersion | async; as version) {
+  @if (application().platformVersion | async; as version) {
     <a class="chip version"
       [href]="'https://www.npmjs.com/package/@scion/microfrontend-platform/v/' + version"
       [title]="'@scion/microfrontend-platform@' + version"

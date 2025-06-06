@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, inject, signal} from '@angular/core';
 import {Observable} from 'rxjs';
 import {ShellService} from './shell.service';
 import {ContextService, MicrofrontendPlatformClient, OUTLET_CONTEXT} from '@scion/microfrontend-platform';
@@ -35,15 +35,17 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export class AppComponent {
 
-  public showPrimaryOutlet = true;
-  public showDetailsOutlet = false;
-  public menuOpen = false;
-  public readonly connnectedToHost = MicrofrontendPlatformClient.isConnected();
+  private readonly _shellService = inject(ShellService);
+  private readonly _cd = inject(ChangeDetectorRef);
 
-  constructor(private _shellService: ShellService, private _cd: ChangeDetectorRef) {
+  protected readonly connnectedToHost = MicrofrontendPlatformClient.isConnected();
+  protected readonly showPrimaryOutlet = signal(true);
+  protected readonly showDetailsOutlet = signal(false);
+  protected readonly menuOpen = signal(false);
+
+  constructor() {
     this.installNavigationEndListener();
     this.signalReady().then();
-
   }
 
   /**
@@ -59,11 +61,11 @@ export class AppComponent {
     this._shellService.isDetailsOutletActive$()
       .pipe(takeUntilDestroyed())
       .subscribe(isDetailsOutletActive => {
-        this.showDetailsOutlet = isDetailsOutletActive;
+        this.showDetailsOutlet.set(isDetailsOutletActive);
 
         // Force showing primary outlet if details outlet is deactivated through navigation
         if (!isDetailsOutletActive) {
-          this.showPrimaryOutlet = true;
+          this.showPrimaryOutlet.set(true);
         }
 
         this._cd.markForCheck();
@@ -79,23 +81,23 @@ export class AppComponent {
   }
 
   public onCollapsePrimaryClick(): void {
-    this.showPrimaryOutlet = false;
+    this.showPrimaryOutlet.set(false);
   }
 
   public onExpandPrimaryClick(): void {
-    this.showPrimaryOutlet = true;
+    this.showPrimaryOutlet.set(true);
   }
 
   public onDetailsDblClick(): void {
-    this.showPrimaryOutlet = !this.showPrimaryOutlet;
+    this.showPrimaryOutlet.set(!this.showPrimaryOutlet);
   }
 
   public onOpenMenuClick(): void {
-    this.menuOpen = true;
+    this.menuOpen.set(true);
   }
 
   @HostListener('document:keydown.escape')
   public onMenuClose(): void {
-    this.menuOpen = false;
+    this.menuOpen.set(false);
   }
 }

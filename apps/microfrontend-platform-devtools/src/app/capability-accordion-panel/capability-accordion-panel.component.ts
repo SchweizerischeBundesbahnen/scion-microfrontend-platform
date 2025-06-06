@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, input, OnInit} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Application, Capability} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
@@ -36,19 +36,18 @@ import {SciTabbarComponent, SciTabDirective} from '@scion/components.internal/ta
 })
 export class CapabilityAccordionPanelComponent implements OnInit {
 
-  public applications$!: Observable<Application[]>;
+  public readonly capability = input.required<Capability>();
 
-  @Input({required: true})
-  public capability!: Capability;
+  private readonly _manifestService = inject(DevToolsManifestService);
+  private readonly _router = inject(Router);
 
-  constructor(private _manifestService: DevToolsManifestService, private _router: Router) {
-  }
+  protected applications$!: Observable<Application[]>;
 
   public ngOnInit(): void {
-    this.applications$ = this._manifestService.capabilityConsumers$(this.capability);
+    this.applications$ = this._manifestService.capabilityConsumers$(this.capability());
   }
 
-  public onConsumerClick(application: Application): boolean {
+  protected onConsumerClick(application: Application): boolean {
     this._router.navigate(['apps', {outlets: {details: [application.symbolicName, {activeTab: 'intentions'}]}}]).then();
     return false;
   }
