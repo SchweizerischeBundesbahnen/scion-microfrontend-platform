@@ -8,16 +8,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {EnvironmentProviders, inject, InjectionToken, Injector, makeEnvironmentProviders, NgZone, provideAppInitializer, runInInjectionContext} from '@angular/core';
+import {EnvironmentProviders, inject, Injector, makeEnvironmentProviders, NgZone, provideAppInitializer} from '@angular/core';
 import {ContextService, IntentClient, ManifestService, MessageClient, MicrofrontendPlatformClient, ObservableDecorator, OutletRouter} from '@scion/microfrontend-platform';
 import {NgZoneObservableDecorator} from './ng-zone-observable-decorator';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {environment} from '../../environments/environment';
-
-/**
- * DI token for injectables to be instantiated after connected to the host.
- */
-export const MICROFRONTEND_PLATFORM_POST_CONNECT = new InjectionToken<unknown>('MICROFRONTEND_PLATFORM_POST_CONNECT');
+import {MicrofrontendPlatformClientStartupPhase, runMicrofrontendPlatformClientInitializers} from './microfrontend-platform-client-initializer';
 
 /**
  * Registers a set of DI providers to set up SCION Microfrontend Platform Client.
@@ -41,7 +37,8 @@ async function connectToHostFn(): Promise<void> {
   const injector = inject(Injector);
 
   Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)});
+  await runMicrofrontendPlatformClientInitializers(MicrofrontendPlatformClientStartupPhase.PreConnect, injector);
   if (await zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect(environment.symbolicName).then(() => true).catch(() => false))) {
-    await runInInjectionContext(injector, () => inject(MICROFRONTEND_PLATFORM_POST_CONNECT, {optional: true}));
+    await runMicrofrontendPlatformClientInitializers(MicrofrontendPlatformClientStartupPhase.PostConnect, injector);
   }
 }
