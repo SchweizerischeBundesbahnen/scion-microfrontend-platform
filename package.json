@@ -11,7 +11,7 @@
     "name": "SCION contributors"
   },
   "scripts": {
-    "before-push": "run-s build lint test:headless e2e:headless",
+    "before-push": "run-s build lint \"test:headless -- --no-watch\" e2e:headless",
     "build": "run-s **:*:build **:*:typedoc",
     "start": "run-p -r microfrontend-platform-testing-app:*:serve microfrontend-platform-devtools:serve",
     "lint": "run-s **:*:lint",

@@ -61,6 +61,7 @@
     "typeCheckHostBindings": true,
     "strictTemplates": true
   },
+  "files": [],
   "references": [
     {
       "path": "./projects/scion/microfrontend-platform/tsconfig.lib.json"
