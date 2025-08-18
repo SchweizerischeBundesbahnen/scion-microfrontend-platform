@@ -348,7 +348,7 @@ export class SciRouterOutletElement extends HTMLElement {
    *                   Examples: `keydown.control.z{preventDefault=true}`, `keydown.escape`, `keyup.enter`, `keydown.control.alt.enter`, `keydown.control.space`.
    */
   public set keystrokes(keystrokes: string[]) {
-    if (keystrokes && keystrokes.length) {
+    if (keystrokes.length) {
       this.setAttribute(ATTR_KEYSTROKES, KeystrokesAttributeUtil.join(keystrokes));
     }
     else {
@@ -395,7 +395,7 @@ export class SciRouterOutletElement extends HTMLElement {
    * Resets the preferred size which may have been set by the embedded content.
    */
   public resetPreferredSize(): void {
-    Beans.get(MessageClient).publish(RouterOutlets.preferredSizeTopic(this._uid), null);
+    void Beans.get(MessageClient).publish(RouterOutlets.preferredSizeTopic(this._uid), null);
   }
 
   /**
@@ -437,7 +437,7 @@ export class SciRouterOutletElement extends HTMLElement {
     this._outletName$
       .pipe(
         switchMap(outlet => outletNavigate$(outlet).pipe(startWith(null! as Navigation))), // start with a `null` navigation in case no navigation took place yet
-        tap(navigation => this._empty$.next(!navigation || navigation.url === 'about:blank')),
+        tap((navigation: Navigation | null) => this._empty$.next(!navigation || navigation.url === 'about:blank')),
         pairwise(),
         takeUntil(this._disconnect$),
       )
@@ -445,13 +445,13 @@ export class SciRouterOutletElement extends HTMLElement {
         // Display splash if instructed by the navigator, but only if not navigating to the same capability, if any.
         // Otherwise, the micro app would have to signal readiness not only after loading the microfrontend, but also when the parameters change.
         // For example, the same microfrontend that displays data based on a path or query parameter.
-        if (!currNavigation?.capabilityId || currNavigation?.capabilityId !== prevNavigation?.capabilityId) {
+        if (!currNavigation?.capabilityId || currNavigation.capabilityId !== prevNavigation?.capabilityId) {
           currNavigation?.showSplash ? this._splash.attach() : this._splash.detach();
         }
         // Emit a page deactivate event, unless not having a previous navigation
         prevNavigation && this.dispatchEvent(new CustomEvent('deactivate', {detail: prevNavigation.url}));
         // Change the outlet URL
-        Beans.get(RouterOutletUrlAssigner).assign(this._iframe, currNavigation || {url: 'about:blank'}, prevNavigation);
+        Beans.get(RouterOutletUrlAssigner).assign(this._iframe, currNavigation ?? {url: 'about:blank'}, prevNavigation);
         // Emit a page activate event, unless not having a current navigation
         currNavigation && this.dispatchEvent(new CustomEvent('activate', {detail: currNavigation.url}));
       }));
@@ -499,7 +499,7 @@ export class SciRouterOutletElement extends HTMLElement {
     Beans.get(MessageClient).observe$<boolean>(RouterOutlets.focusWithinOutletTopic(this._uid))
       .pipe(
         mapToBody(),
-        skipWhile(focusWithin => focusWithin === false), // wait until first receiving the focus, otherwise, it would emit immediately.
+        skipWhile(focusWithin => !focusWithin), // wait until first receiving the focus, otherwise, it would emit immediately.
         takeUntil(this._disconnect$),
       )
       .subscribe((focusWithin: boolean) => {
@@ -737,10 +737,10 @@ function outletNavigate$(outlet: string): Observable<Navigation> {
   return Beans.get(MessageClient).observe$<string>(outletNavigationTopic)
     .pipe(map((navigateMessage: TopicMessage<string>): Navigation => {
       return {
-        url: navigateMessage.body || 'about:blank',
-        pushStateToSessionHistoryStack: Defined.orElse(navigateMessage.headers.get(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER), false),
-        showSplash: Defined.orElse(navigateMessage.headers.get(SHOW_SPLASH_MESSAGE_HEADER), false),
-        capabilityId: navigateMessage.headers.get(CAPABILITY_ID_MESSAGE_HEADER),
+        url: navigateMessage.body ?? 'about:blank',
+        pushStateToSessionHistoryStack: Defined.orElse(navigateMessage.headers.get(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER) as boolean | undefined, false),
+        showSplash: Defined.orElse(navigateMessage.headers.get(SHOW_SPLASH_MESSAGE_HEADER) as boolean | undefined, false),
+        capabilityId: navigateMessage.headers.get(CAPABILITY_ID_MESSAGE_HEADER) as string | undefined,
       };
     }));
 }
@@ -751,8 +751,8 @@ function outletNavigate$(outlet: string): Observable<Navigation> {
  * Specify styles to be modified by passing a dictionary containing CSS property names (hyphen case).
  * To remove a style, set its value to `null`.
  */
-function setStyle(element: HTMLElement, style: {[style: string]: any | null}): void {
-  Object.keys(style).forEach(key => element.style.setProperty(key, style[key]));
+function setStyle(element: HTMLElement, style: {[style: string]: string | null}): void {
+  Object.keys(style).forEach(key => element.style.setProperty(key, style[key]!));
 }
 
 /**

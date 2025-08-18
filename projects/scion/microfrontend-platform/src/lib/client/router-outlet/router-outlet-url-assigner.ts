@@ -90,7 +90,7 @@ export class RouterOutletUrlAssigner {
       }
 
       // Do not apply the fix when navigating within the same application using hash-based routing.
-      if (prevURL?.origin === currURL.origin && prevURL?.pathname === currURL.pathname) {
+      if (prevURL?.origin === currURL.origin && prevURL.pathname === currURL.pathname) {
         return currUrl;
       }
 

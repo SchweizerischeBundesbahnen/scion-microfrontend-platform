@@ -16,17 +16,17 @@ import {Locator} from '@playwright/test';
  */
 export class SciListPO {
 
-  private readonly _listItemLocator: Locator;
+  public readonly listItemLocator: Locator;
 
   constructor(sciListLocator: Locator) {
-    this._listItemLocator = sciListLocator.locator('sci-list-item');
+    this.listItemLocator = sciListLocator.locator('sci-list-item');
   }
 
   public async getListItems(): Promise<SciListItemPO[]> {
     const listItemPOs = [];
-    const count = await this._listItemLocator.count();
+    const count = await this.listItemLocator.count();
     for (let i = 0; i < count; i++) {
-      listItemPOs.push(new SciListItemPO(this._listItemLocator.nth(i)));
+      listItemPOs.push(new SciListItemPO(this.listItemLocator.nth(i)));
     }
     return listItemPOs;
   }

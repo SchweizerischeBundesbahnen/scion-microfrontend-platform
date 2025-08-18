@@ -38,5 +38,5 @@ export interface PublishOptions {
  *
  * @category Messaging
  */
-export interface RequestOptions extends PublishOptions { // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface RequestOptions extends PublishOptions { // eslint-disable-line @typescript-eslint/no-empty-object-type
 }

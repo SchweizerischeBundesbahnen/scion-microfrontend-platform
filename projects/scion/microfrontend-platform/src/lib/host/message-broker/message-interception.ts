@@ -152,19 +152,19 @@ export function chainInterceptors<T>(interceptors: Interceptor<T, Handler<T>>[],
     public handle(message: T): Promise<void> {
       return publisher(message);
     }
-  };
+  }();
 
   const handlerChain = interceptors.reduceRight((next, interceptor) => new class extends Handler<T> {
     public handle(element: T): Promise<void> {
       return interceptor.intercept(element, next);
     }
-  }, terminalHandler);
+  }(), terminalHandler);
 
   return new class implements PublishInterceptorChain<T> {
     public interceptAndPublish(element: T): Promise<void> {
       return handlerChain.handle(element);
     }
-  };
+  }();
 }
 
 /**

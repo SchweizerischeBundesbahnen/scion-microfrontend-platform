@@ -28,7 +28,7 @@ import CallInfo = jasmine.CallInfo;
  *
  * @see https://jasmine.github.io/api/3.5/async-matchers.html
  */
-export function expectPromise(actual: Promise<any>): PromiseMatcher {
+export function expectPromise(actual: Promise<unknown>): PromiseMatcher {
   return {
     toResolve: async (expected?: any): Promise<void> => {
       try {
@@ -92,13 +92,13 @@ export function waitForCondition(condition: () => boolean | Promise<boolean>, ti
         resolve();
       }
       else if (Date.now() > expiryDate) {
-        reject(`[SpecTimeoutError] Timeout elapsed. Condition not fulfilled within ${timeout}ms.`);
+        reject(Error(`[SpecTimeoutError] Timeout elapsed. Condition not fulfilled within ${timeout}ms.`));
       }
       else {
         setTimeout(periodicConditionCheckerFn, 10);
       }
     };
-    periodicConditionCheckerFn().then();
+    void periodicConditionCheckerFn();
   });
 }
 
@@ -126,13 +126,13 @@ export function expectEmissions<T = any, R = T>(captor: ObserveCaptor<T, R>): To
     toEqual: async (expected: R | R[]): Promise<void> => {
       const expectedValues = Arrays.coerce(expected);
       await captor.waitUntilEmitCount(expectedValues.length, 5000);
-      return expect(captor.getValues()).toEqual(expectedValues);
+      expect(captor.getValues()).toEqual(expectedValues);
     },
     not: {
       toEqual: async (expected: R | R[]): Promise<void> => {
         const expectedValues = Arrays.coerce(expected);
         await captor.waitUntilEmitCount(expectedValues.length, 5000);
-        return expect(captor.getValues()).not.toEqual(expectedValues);
+        expect(captor.getValues()).not.toEqual(expectedValues);
       },
     },
   };
@@ -153,7 +153,7 @@ export function installLoggerSpies(): void {
 export function readConsoleLog(severity: 'info' | 'warn' | 'error', options?: {filter?: RegExp; projectFn?: (call: CallInfo<any>) => string}): string[] {
   return getLoggerSpy(severity).calls
     .all()
-    .map(call => options?.projectFn ? options.projectFn(call) : call.args[0])
+    .map(call => options?.projectFn ? options.projectFn(call) : call.args[0] as string)
     .filter(msg => options?.filter ? msg.match(options.filter) !== null : true);
 }
 

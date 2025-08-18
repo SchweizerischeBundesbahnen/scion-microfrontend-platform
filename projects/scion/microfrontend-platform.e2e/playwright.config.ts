@@ -9,7 +9,7 @@
  */
 
 import {defineConfig} from '@playwright/test';
-import {CustomMatchers} from './src/custom-matchers';
+import {CustomMatchers} from './src/matchers/custom-matchers';
 
 const runInCI = !!process.env.CI;
 const runHeadless = !!process.env.HEADLESS;

@@ -39,12 +39,12 @@ test.describe('Mouse Event Dispatching', () => {
     await activeOutlet.mouseUp();
 
     // Expect no mouse events to be dispatched.
-    await expect(await activeOutlet.getReceivedEvents()).toEqual([]);
-    await expect(await inactiveOutlet.getReceivedEvents()).toEqual([]);
+    await expect.poll(() => activeOutlet.getReceivedEvents()).toEqual([]);
+    await expect.poll(() => inactiveOutlet.getReceivedEvents()).toEqual([]);
 
     // Expect focus ownership not to have changed.
-    await expect(await activeOutlet.hasFocus()).toBe(true);
-    await expect(await inactiveOutlet.hasFocus()).toBe(false);
+    await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+    await expect.poll(() => inactiveOutlet.hasFocus()).toBe(false);
   });
 
   test('should not dispatch "sci-mousemove" events when moving the mouse in the active outlet', async ({testingAppPO}) => {
@@ -67,12 +67,12 @@ test.describe('Mouse Event Dispatching', () => {
     await activeOutlet.moveMouseToElement({offsetY: -10});
 
     // Expect no mouse events to be dispatched.
-    await expect(await activeOutlet.getReceivedEvents()).toEqual([]);
-    await expect(await inactiveOutlet.getReceivedEvents()).toEqual([]);
+    await expect.poll(() => activeOutlet.getReceivedEvents()).toEqual([]);
+    await expect.poll(() => inactiveOutlet.getReceivedEvents()).toEqual([]);
 
     // Expect focus ownership not to have changed.
-    await expect(await activeOutlet.hasFocus()).toBe(true);
-    await expect(await inactiveOutlet.hasFocus()).toBe(false);
+    await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+    await expect.poll(() => inactiveOutlet.hasFocus()).toBe(false);
   });
 
   test('should not dispatch "sci-mousemove" events when moving the mouse in the inactive outlet', async ({testingAppPO}) => {
@@ -95,12 +95,12 @@ test.describe('Mouse Event Dispatching', () => {
     await inactiveOutlet.moveMouseToElement({offsetY: -10});
 
     // Expect no mouse events to be dispatched.
-    await expect(await activeOutlet.getReceivedEvents()).toEqual([]);
-    await expect(await inactiveOutlet.getReceivedEvents()).toEqual([]);
+    await expect.poll(() => activeOutlet.getReceivedEvents()).toEqual([]);
+    await expect.poll(() => inactiveOutlet.getReceivedEvents()).toEqual([]);
 
     // Expect focus ownership not to have changed.
-    await expect(await activeOutlet.hasFocus()).toBe(true);
-    await expect(await inactiveOutlet.hasFocus()).toBe(false);
+    await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+    await expect.poll(() => inactiveOutlet.hasFocus()).toBe(false);
   });
 
   test('should not dispatch "sci-mousemove" and "sci-mouseup" events when moving the mouse inside the active outlet and having the primary mouse button pressed', async ({testingAppPO}) => {
@@ -130,12 +130,12 @@ test.describe('Mouse Event Dispatching', () => {
       await activeOutlet.mouseUp();
 
       // Expect no mouse events to be dispatched.
-      await expect(await activeOutlet.getReceivedEvents()).toEqual([]);
-      await expect(await inactiveOutlet.getReceivedEvents()).toEqual([]);
+      await expect.poll(() => activeOutlet.getReceivedEvents()).toEqual([]);
+      await expect.poll(() => inactiveOutlet.getReceivedEvents()).toEqual([]);
 
       // Expect focus ownership not to have changed.
-      await expect(await activeOutlet.hasFocus()).toBe(true);
-      await expect(await inactiveOutlet.hasFocus()).toBe(false);
+      await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+      await expect.poll(() => inactiveOutlet.hasFocus()).toBe(false);
     });
 
     await test.step('mousedown.preventDefault=false', async () => {
@@ -153,12 +153,12 @@ test.describe('Mouse Event Dispatching', () => {
       await activeOutlet.mouseUp();
 
       // Expect no mouse events to be dispatched.
-      await expect(await activeOutlet.getReceivedEvents()).toEqual([]);
-      await expect(await inactiveOutlet.getReceivedEvents()).toEqual([]);
+      await expect.poll(() => activeOutlet.getReceivedEvents()).toEqual([]);
+      await expect.poll(() => inactiveOutlet.getReceivedEvents()).toEqual([]);
 
       // Expect focus ownership not to have changed.
-      await expect(await activeOutlet.hasFocus()).toBe(true);
-      await expect(await inactiveOutlet.hasFocus()).toBe(false);
+      await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+      await expect.poll(() => inactiveOutlet.hasFocus()).toBe(false);
     });
   });
 
@@ -196,14 +196,14 @@ test.describe('Mouse Event Dispatching', () => {
       await inactiveOutlet1.mouseUp();
 
       // Expect mousemove events to be transported to the active outlet only.
-      await expect(await activeOutlet.getReceivedEvents()).toEqual(expect.arrayContaining(['sci-mousemove', 'sci-mouseup']));
-      await expect(await inactiveOutlet1.getReceivedEvents()).toEqual([]);
-      await expect(await inactiveOutlet2.getReceivedEvents()).toEqual([]);
+      await expect.poll(() => activeOutlet.getReceivedEvents()).toEqual(expect.arrayContaining(['sci-mousemove', 'sci-mouseup']));
+      await expect.poll(() => inactiveOutlet1.getReceivedEvents()).toEqual([]);
+      await expect.poll(() => inactiveOutlet2.getReceivedEvents()).toEqual([]);
 
       // Expect focus ownership not to have changed.
-      await expect(await activeOutlet.hasFocus()).toBe(true);
-      await expect(await inactiveOutlet1.hasFocus()).toBe(false);
-      await expect(await inactiveOutlet2.hasFocus()).toBe(false);
+      await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+      await expect.poll(() => inactiveOutlet1.hasFocus()).toBe(false);
+      await expect.poll(() => inactiveOutlet2.hasFocus()).toBe(false);
 
       await activeOutlet.clearReceivedEvents();
     });
@@ -224,14 +224,14 @@ test.describe('Mouse Event Dispatching', () => {
       await inactiveOutlet1.mouseUp();
 
       // Expect no mousemove events to be transported.
-      await expect(await activeOutlet.getReceivedEvents()).toEqual([]);
-      await expect(await inactiveOutlet1.getReceivedEvents()).toEqual([]);
-      await expect(await inactiveOutlet2.getReceivedEvents()).toEqual([]);
+      await expect.poll(() => activeOutlet.getReceivedEvents()).toEqual([]);
+      await expect.poll(() => inactiveOutlet1.getReceivedEvents()).toEqual([]);
+      await expect.poll(() => inactiveOutlet2.getReceivedEvents()).toEqual([]);
 
       // Expect focus ownership not to have changed.
-      await expect(await activeOutlet.hasFocus()).toBe(true);
-      await expect(await inactiveOutlet1.hasFocus()).toBe(false);
-      await expect(await inactiveOutlet2.hasFocus()).toBe(false);
+      await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+      await expect.poll(() => inactiveOutlet1.hasFocus()).toBe(false);
+      await expect.poll(() => inactiveOutlet2.hasFocus()).toBe(false);
     });
   });
 });

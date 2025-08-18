@@ -31,7 +31,7 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 export class AppMenuComponent {
 
   @Output()
-  public close = new EventEmitter<void>();  // eslint-disable-line @angular-eslint/no-output-native
+  public close = new EventEmitter<void>(); // eslint-disable-line @angular-eslint/no-output-native
 
   @HostListener('document:keydown.escape')
   public onEscape(): void {

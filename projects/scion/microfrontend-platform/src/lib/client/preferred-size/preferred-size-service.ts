@@ -119,7 +119,7 @@ class PreferredSizePublisher {
       )
       .subscribe(([preferredSize, outletContext]) => runSafe(() => {
         const topic = RouterOutlets.preferredSizeTopic(outletContext.uid);
-        Beans.get(MessageClient).publish(topic, preferredSize);
+        void Beans.get(MessageClient).publish(topic, preferredSize);
       }));
   }
 

@@ -45,13 +45,13 @@ export class AppListItemComponent implements OnInit {
 
   public onIntentionsClick(event: MouseEvent): boolean {
     event.preventDefault(); // Prevent href navigation imposed by accessibility rules
-    this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'intentions'}]}}]).then();
+    void this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'intentions'}]}}]);
     return true;
   }
 
   public onCapabilitiesClick(event: MouseEvent): boolean {
     event.preventDefault(); // Prevent href navigation imposed by accessibility rules
-    this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'capabilities'}]}}]).then();
+    void this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'capabilities'}]}}]);
     return true;
   }
 }

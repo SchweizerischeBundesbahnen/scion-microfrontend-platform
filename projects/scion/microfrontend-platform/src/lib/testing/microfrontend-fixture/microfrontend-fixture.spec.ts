@@ -25,7 +25,7 @@ describe('MicrofrontendFixture', () => {
 
   it('should insert the iframe to the DOM', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    await fixture.insertIframe().setUrl('about:blank');
+    fixture.insertIframe().setUrl('about:blank');
     expect(Array.from(document.body.children).includes(fixture.iframe)).toBeTrue();
   });
 

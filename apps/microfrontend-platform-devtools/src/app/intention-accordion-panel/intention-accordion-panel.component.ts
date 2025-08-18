@@ -38,7 +38,7 @@ export class IntentionAccordionPanelComponent implements OnInit {
   }
 
   public onProviderClick(application: Application): boolean {
-    this._router.navigate(['apps', {outlets: {details: [application.symbolicName, {activeTab: 'capabilities'}]}}]).then();
+    void this._router.navigate(['apps', {outlets: {details: [application.symbolicName, {activeTab: 'capabilities'}]}}]);
     return false;
   }
 }

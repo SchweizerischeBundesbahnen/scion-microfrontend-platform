@@ -16,7 +16,7 @@ export class Microfrontend1PagePO extends MicrofrontendPagePO {
   public static readonly PATH = 'test-pages/microfrontend-1-test-page';
   public readonly path = Microfrontend1PagePO.PATH;
 
-  constructor(frameLocator: FrameLocator) {
+  constructor(frameLocator: FrameLocator) { // eslint-disable-line @typescript-eslint/no-useless-constructor
     super(frameLocator);
   }
 }

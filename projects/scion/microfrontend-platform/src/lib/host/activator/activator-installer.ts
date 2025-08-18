@@ -70,8 +70,8 @@ export class ActivatorInstaller implements Initializer {
   }
 
   private skipInvalidActivators(): (activator: ActivatorCapability) => boolean {
-    return (activator: ActivatorCapability): boolean => {
-      if (!activator.properties || !activator.properties.path) {
+    return (activator: Partial<ActivatorCapability>): boolean => {
+      if (!activator.properties?.path) {
         Beans.get(Logger).error(`[ActivatorError] Failed to activate the application '${activator.metadata!.appSymbolicName}'. Missing required 'path' property in the provided activator capability.`, activator);
         return false;
       }
@@ -88,23 +88,22 @@ export class ActivatorInstaller implements Initializer {
     const readinessPromises: Promise<void>[] = activators
       .reduce((acc, activator) => acc.concat(Arrays.coerce(activator.properties.readinessTopics)), new Array<string>()) // concat readiness topics
       .map(readinessTopic => {
-          const onReadinessTimeout = (): Observable<never> => {
-            Beans.get(Logger).error(`[ActivatorLoadTimeoutError] Timeout elapsed while waiting for application to signal readiness [app=${appSymbolicName}, timeout=${activatorLoadTimeout}ms, readinessTopic=${readinessTopic}].`);
-            return EMPTY;
-          };
-          return new Promise((resolve, reject) => {
-            return Beans.get(MessageClient).observe$<void>(readinessTopic)
-              .pipe(
-                first(msg => msg.headers.get(MessageHeaders.AppSymbolicName) === appSymbolicName),
-                activatorLoadTimeout ? timeout({first: activatorLoadTimeout, with: onReadinessTimeout}) : identity,
-              )
-              .subscribe({
-                error: reject,
-                complete: resolve,
-              });
-          });
-        },
-      );
+        const onReadinessTimeout = (): Observable<never> => {
+          Beans.get(Logger).error(`[ActivatorLoadTimeoutError] Timeout elapsed while waiting for application to signal readiness [app=${appSymbolicName}, timeout=${activatorLoadTimeout}ms, readinessTopic=${readinessTopic}].`);
+          return EMPTY;
+        };
+        return new Promise((resolve, reject) => {
+          return Beans.get(MessageClient).observe$<void>(readinessTopic)
+            .pipe(
+              first(msg => msg.headers.get(MessageHeaders.AppSymbolicName) === appSymbolicName),
+              activatorLoadTimeout ? timeout({first: activatorLoadTimeout, with: onReadinessTimeout}) : identity,
+            )
+            .subscribe({
+              error: reject,
+              complete: resolve,
+            });
+        });
+      });
 
     if (!readinessPromises.length) {
       monitor.done();
@@ -125,10 +124,10 @@ export class ActivatorInstaller implements Initializer {
     // Create the router outlet and navigate to the activator endpoint.
     const routerOutlet = document.createElement('sci-router-outlet') as SciRouterOutletElement;
     routerOutlet.name = UUID.randomUUID();
-    Beans.get(OutletRouter).navigate(activator.properties.path, {
+    void Beans.get(OutletRouter).navigate(activator.properties.path, {
       outlet: routerOutlet.name,
       relativeTo: application.baseUrl,
-    }).then();
+    });
 
     // Provide the activation context
     routerOutlet.setContextValue<ActivationContext>(ACTIVATION_CONTEXT, {primary, activator});
@@ -143,6 +142,6 @@ export class ActivatorInstaller implements Initializer {
     // Add the router outlet to the DOM
     document.body.appendChild(routerOutlet);
     // Unmount the router outlet on platform shutdown
-    MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => document.body.removeChild(routerOutlet));
+    void MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => document.body.removeChild(routerOutlet));
   }
 }

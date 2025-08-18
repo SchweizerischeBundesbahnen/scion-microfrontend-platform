@@ -78,7 +78,7 @@ export class BrowserOutletComponent implements OnInit {
   }
 
   private navigate(): void {
-    Beans.get(OutletRouter).navigate(this.form.controls.url.value, {outlet: this.outletName}).then();
+    void Beans.get(OutletRouter).navigate(this.form.controls.url.value, {outlet: this.outletName});
   }
 
   public onSettingsClick(): void {
@@ -116,7 +116,7 @@ export class BrowserOutletComponent implements OnInit {
       return endpoints.concat(this._activatedRoute.parent!.routeConfig!.children!
         .filter(route => !!route.data)
         .map(route => {
-          const matrixParams: Map<string, any> = route.data!['matrixParams'] || new Map();
+          const matrixParams = (route.data!['matrixParams'] ?? new Map()) as Map<string, unknown>;
           const matrixParamsEncoded = Array.from(matrixParams.keys())
             .reduce((encoded, paramKey) => encoded.concat(`;${paramKey}=${matrixParams.get(paramKey)}`), new Array<string>())
             .join();

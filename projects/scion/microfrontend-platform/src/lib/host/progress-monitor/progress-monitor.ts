@@ -70,7 +70,7 @@ export class ProgressMonitor {
     if (n <= 0) {
       throw Error(`[IllegalMonitorArgumentError] Monitor split count must be greater than 0, but was ${n}.`);
     }
-    return this.split(...new Array(n).fill(1));
+    return this.split(...new Array<number>(n).fill(1));
   }
 
   /**

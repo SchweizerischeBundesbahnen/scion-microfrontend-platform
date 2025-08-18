@@ -19,6 +19,7 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 import {parseTypedValues} from '../../common/typed-value-parser.util';
+import {stringifyError} from '../../common/stringify-error.util';
 
 @Component({
   selector: 'app-register-capability',
@@ -76,7 +77,7 @@ export default class RegisterCapabilityComponent {
     const capability: Capability = {
       type: this.registerForm.controls.type.value,
       qualifier: SciKeyValueFieldComponent.toDictionary(this.registerForm.controls.qualifier) ?? undefined,
-      params: params ? JSON.parse(params) : undefined,
+      params: params ? JSON.parse(params) as ParamDefinition[] : undefined,
       private: this.registerForm.controls.private.value,
       inactive: this.registerForm.controls.inactive.value,
       properties: parseTypedValues(SciKeyValueFieldComponent.toDictionary(this.registerForm.controls.properties)) ?? undefined,
@@ -86,8 +87,8 @@ export default class RegisterCapabilityComponent {
       .then(id => {
         this.registerResponse = id ?? '<null>';
       })
-      .catch(error => {
-        this.registerError = error;
+      .catch((error: unknown) => {
+        this.registerError = stringifyError(error);
       })
       .finally(() => {
         this.registerForm.reset();
@@ -114,8 +115,8 @@ export default class RegisterCapabilityComponent {
       .then(() => {
         this.unregisterResponse = 'OK';
       })
-      .catch(error => {
-        this.unregisterError = error;
+      .catch((error: unknown) => {
+        this.unregisterError = stringifyError(error);
       })
       .finally(() => {
         this.unregisterForm.reset();

@@ -67,16 +67,16 @@ export class ConsoleLogger implements Logger {
     this.log('error', message, args);
   }
 
-  private log(severity: 'debug' | 'info' | 'warn' | 'error', message: any, args: any[]): void {
-    const loggingContext: LoggingContext = args[0] instanceof LoggingContext ? args.shift() : {appSymbolicName: Beans.get(APP_IDENTITY), version: Beans.get(ɵVERSION)};
+  private log(severity: 'debug' | 'info' | 'warn' | 'error', message: any, args: unknown[]): void {
+    const loggingContext = (args[0] instanceof LoggingContext ? args.shift() : {appSymbolicName: Beans.get(APP_IDENTITY), version: Beans.get(ɵVERSION)}) as LoggingContext;
     const prefix = new Array<string>()
       .concat(loggingContext.version ? `[@scion/microfrontend-platform@${loggingContext.version}]` : '[@scion/microfrontend-platform]')
       .concat(`[${loggingContext.appSymbolicName}]`)
       .join('');
 
-    if (console && typeof console[severity] === 'function') {
+    if (console && typeof console[severity] === 'function') { // eslint-disable-line @typescript-eslint/no-unnecessary-condition
       const consoleFn = console[severity];
-      args?.length ? consoleFn(`${prefix} ${message}`, ...args) : consoleFn(`${prefix} ${message}`);
+      args?.length ? consoleFn(`${prefix} ${message}`, ...args) : consoleFn(`${prefix} ${message}`); // eslint-disable-line @typescript-eslint/no-unnecessary-condition
     }
   }
 }
@@ -103,7 +103,7 @@ export const NULL_LOGGER = new class extends Logger {
   public error(message?: any, ...args: any[]): void {
     // NOOP
   }
-};
+}();
 
 /**
  * Contextual information to add to the log message.
