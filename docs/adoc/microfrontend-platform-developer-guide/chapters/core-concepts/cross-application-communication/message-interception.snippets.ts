@@ -58,7 +58,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
     private topicMatcher: TopicMatcher;
     private schemaValidator: JsonSchemaValidator;
 
-    constructor(topic: string, jsonSchema: any) {
+    constructor(topic: string, jsonSchema: unknown) {
       this.topicMatcher = new TopicMatcher(topic); // <1>
       this.schemaValidator = new JsonSchemaValidator(jsonSchema); // <2>
     }
@@ -95,7 +95,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 
   class JsonSchemaValidator {
 
-    constructor(schema: any) {
+    constructor(schema: unknown) {
     }
 
     public isValid(json: string): boolean {

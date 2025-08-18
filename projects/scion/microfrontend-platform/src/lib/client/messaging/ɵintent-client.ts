@@ -35,7 +35,7 @@ export class ɵIntentClient implements IntentClient {
     return this._brokerGateway.postMessage(MessagingChannel.Intent, intentMessage);
   }
 
-  public request$<T>(intent: Intent, body?: any, options?: RequestOptions): Observable<TopicMessage<T>> {
+  public request$<T>(intent: Intent, body?: unknown, options?: RequestOptions): Observable<TopicMessage<T>> {
     // IMPORTANT:
     // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
     // to the returned Observable, each subscription must have its individual message instance and headers map.
@@ -49,7 +49,7 @@ export class ɵIntentClient implements IntentClient {
         capability: undefined!, /* set by the broker when dispatching the intent */
         body,
       };
-      return this._brokerGateway.requestReply$(MessagingChannel.Intent, intentMessage).pipe(throwOnErrorStatus());
+      return this._brokerGateway.requestReply$<T>(MessagingChannel.Intent, intentMessage).pipe(throwOnErrorStatus());
     });
   }
 

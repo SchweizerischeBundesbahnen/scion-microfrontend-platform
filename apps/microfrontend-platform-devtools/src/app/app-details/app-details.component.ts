@@ -126,7 +126,7 @@ export class AppDetailsComponent {
       )
       .subscribe(([tabToActivate, tabbar]) => {
         if (tabToActivate) {
-          this._router.navigate([], {replaceUrl: true, relativeTo: this._route}).then(); // remove 'activeTab' matrix param from URL
+          void this._router.navigate([], {replaceUrl: true, relativeTo: this._route}); // remove 'activeTab' matrix param from URL
           tabbar.activateTab(tabToActivate);
           this._cd.markForCheck();
         }
@@ -135,9 +135,7 @@ export class AppDetailsComponent {
 
   @ViewChild(SciTabbarComponent)
   public set injectTabbar(tabbar: SciTabbarComponent) {
-    if (tabbar) {
-      this._tabbar$.next(tabbar);
-      this._tabbar$.complete();
-    }
+    this._tabbar$.next(tabbar);
+    this._tabbar$.complete();
   }
 }

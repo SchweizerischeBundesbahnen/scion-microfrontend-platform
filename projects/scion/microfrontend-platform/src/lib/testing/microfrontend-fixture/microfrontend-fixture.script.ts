@@ -13,7 +13,8 @@ import {MatcherResult, TopicMatcher} from '../../topic-matcher.util';
 import {UUID} from '@scion/toolkit/uuid';
 import {Dictionary} from '@scion/toolkit/util';
 
-export function noop(): void { // eslint-disable-line @typescript-eslint/no-empty-function
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export function noop(): void {
 }
 
 export function testcase_1(): void {
@@ -34,7 +35,7 @@ export function testcase_3(params: Dictionary, observer: Observer<never>): void 
 }
 
 export function testcase_4(): void {
-  throw 'SCRIPT EXECUTION ERROR';
+  throw Error('SCRIPT EXECUTION ERROR');
 }
 
 export function testcase_5(params: Dictionary, observer: Observer<void>): void {

@@ -670,7 +670,7 @@ describe('ManifestService', () => {
             }
             return capability;
           }
-        },
+        }(),
       });
 
       // Start host.
@@ -1316,8 +1316,8 @@ describe('ManifestService', () => {
       expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-1', {capabilityId: publicCapabilityId}))).toBeTrue();
 
       // Expect app-2 NOT to be qualified (app-2 does NOT provide capability)
-      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
-      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeFalse();
     });
 
     it('should be qualified if application has intention', async () => {
@@ -1338,10 +1338,10 @@ describe('ManifestService', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'testee'}, 'app-2');
 
       // Expect app-2 NOT to be qualified (has intention BUT private capability)
-      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
 
       // Expect app-2 to be qualified (has intention and public capability)
-      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeTrue();
     });
 
     it('should be qualified if application has scope check disabled', async () => {
@@ -1360,7 +1360,7 @@ describe('ManifestService', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'testee'}, 'app-2');
 
       // Expect app-2 to be qualified (has intention and scope check disabled)
-      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeTrue();
     });
 
     it('should be qualified if application has intention check disabled', async () => {
@@ -1378,10 +1378,10 @@ describe('ManifestService', () => {
       const publicCapabilityId = (await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: false}, 'app-1'))!;
 
       // Expect app-2 NOT to be qualified (intention check disabled BUT private capability)
-      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
 
       // Expect app-2 to be qualified (intention check disabled and public capability)
-      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeTrue();
     });
 
     it('should be qualified if application has scope check and intention check disabled', async () => {
@@ -1397,7 +1397,7 @@ describe('ManifestService', () => {
       const privateCapabilityId = (await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: true}, 'app-1'))!;
 
       // Expect app-2 to be qualified (scope check and intention check disabled)
-      await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeTrue();
     });
 
     it('should not be qualified for inactive capabilities', async () => {
@@ -1711,7 +1711,7 @@ describe('ManifestService', () => {
 
       // Expect request to error because capability does not exist
       await captor.waitUntilCompletedOrErrored();
-      await expect(captor.getError()).toMatch(/NullManifestObjectError/);
+      expect(captor.getError()).toMatch(/NullManifestObjectError/);
     });
   });
 });

@@ -28,9 +28,9 @@ import CallInfo = jasmine.CallInfo;
  *
  * @see https://jasmine.github.io/api/3.5/async-matchers.html
  */
-export function expectPromise(actual: Promise<any>): PromiseMatcher {
+export function expectPromise(actual: Promise<unknown>): PromiseMatcher {
   return {
-    toResolve: async (expected?: any): Promise<void> => {
+    toResolve: async (expected?: unknown): Promise<void> => {
       try {
         const value = await actual;
         if (expected !== undefined) {
@@ -66,7 +66,7 @@ export interface PromiseMatcher {
    * Expects the Promise to resolve. If passing an expected value, also performs an equality test.
    * You can wrap your expectation inside the `objectContaining` or `mapContaining` matcher to test for partial equality.
    */
-  toResolve(expected?: any): Promise<void>;
+  toResolve(expected?: unknown): Promise<void>;
 
   /**
    * Expects the Promise to reject. If passing a regular expression, also tests the error to match the regex.
@@ -92,13 +92,13 @@ export function waitForCondition(condition: () => boolean | Promise<boolean>, ti
         resolve();
       }
       else if (Date.now() > expiryDate) {
-        reject(`[SpecTimeoutError] Timeout elapsed. Condition not fulfilled within ${timeout}ms.`);
+        reject(Error(`[SpecTimeoutError] Timeout elapsed. Condition not fulfilled within ${timeout}ms.`));
       }
       else {
         setTimeout(periodicConditionCheckerFn, 10);
       }
     };
-    periodicConditionCheckerFn().then();
+    void periodicConditionCheckerFn();
   });
 }
 
@@ -121,18 +121,18 @@ export async function waitUntilStable<A>(value: () => Promise<A> | A, options?: 
  * Expects the {@link ObserveCaptor} to capture given emissions. This expectation waits a maximum of 5 seconds until the expected element count
  * is captured.
  */
-export function expectEmissions<T = any, R = T>(captor: ObserveCaptor<T, R>): ToEqualMatcher<R | R[]> & {not: ToEqualMatcher<R | R[]>} {
+export function expectEmissions<T = unknown, R = T>(captor: ObserveCaptor<T, R>): ToEqualMatcher<R | R[]> & {not: ToEqualMatcher<R | R[]>} {
   return {
     toEqual: async (expected: R | R[]): Promise<void> => {
       const expectedValues = Arrays.coerce(expected);
       await captor.waitUntilEmitCount(expectedValues.length, 5000);
-      return expect(captor.getValues()).toEqual(expectedValues);
+      expect(captor.getValues()).toEqual(expectedValues);
     },
     not: {
       toEqual: async (expected: R | R[]): Promise<void> => {
         const expectedValues = Arrays.coerce(expected);
         await captor.waitUntilEmitCount(expectedValues.length, 5000);
-        return expect(captor.getValues()).not.toEqual(expectedValues);
+        expect(captor.getValues()).not.toEqual(expectedValues);
       },
     },
   };
@@ -153,7 +153,7 @@ export function installLoggerSpies(): void {
 export function readConsoleLog(severity: 'info' | 'warn' | 'error', options?: {filter?: RegExp; projectFn?: (call: CallInfo<any>) => string}): string[] {
   return getLoggerSpy(severity).calls
     .all()
-    .map(call => options?.projectFn ? options.projectFn(call) : call.args[0])
+    .map(call => options?.projectFn ? options.projectFn(call) : call.args[0] as string)
     .filter(msg => options?.filter ? msg.match(options.filter) !== null : true);
 }
 

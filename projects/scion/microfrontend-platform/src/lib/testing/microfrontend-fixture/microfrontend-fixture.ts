@@ -66,7 +66,7 @@ export class MicrofrontendFixture {
    * Each time a script is loaded into the iframe, a new Observable is created. Upon subscription,
    * any old messages that the script has already emitted will be "replayed".
    */
-  public message$: Observable<any> = NEVER;
+  public message$: Observable<unknown> = NEVER;
 
   /**
    * Constructs an instance of {@link MicrofrontendFixture} to load a microfrontend into a test.
@@ -171,14 +171,14 @@ export class MicrofrontendFixture {
       complete: `oncomplete@${uuid}`,
       load: `onload@${uuid}`,
     };
-    const html = this.createHtmlToInvokeScript(scriptPath.replace(/\.ts$/, '.js'), functionName, args || {}, channels);
+    const html = this.createHtmlToInvokeScript(scriptPath.replace(/\.ts$/, '.js'), functionName, args ?? {}, channels);
     const url = URL.createObjectURL(new Blob([html], {type: 'text/html'}));
     this._disposables.add(() => URL.revokeObjectURL(url));
 
     // Emit messages sent by the script to the fixture.
     const message$ = new ReplaySubject(Infinity);
     const next$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.next));
-    const error$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.error), mergeMap(error => throwError(() => Error(error))));
+    const error$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.error), mergeMap(error => throwError(() => (error instanceof Error) ? error : Error(error as string))));
     const complete$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.complete));
     const load$ = fromEvent<MessageEvent>(window, 'message').pipe(filterByChannel(channels.load));
     merge(next$, error$)
@@ -205,14 +205,9 @@ export class MicrofrontendFixture {
    */
   public setUrl(url: string): void {
     if (this._options?.useSciRouterOutlet) {
-      Beans.get(OutletRouter).navigate(url, {outlet: this._routerOutletName});
+      void Beans.get(OutletRouter).navigate(url, {outlet: this._routerOutletName});
     }
-    else if (this.iframe) {
-      this.iframe.setAttribute('src', url);
-    }
-    else {
-      throw Error('[MicrofrontendFixtureError] Iframe not found.');
-    }
+    this.iframe.setAttribute('src', url);
     this.message$ = NEVER;
   }
 
@@ -302,17 +297,22 @@ export class MicrofrontendFixture {
         if (value instanceof Set) {
           return {__type: 'Set', __value: [...value]};
         }
-        return value;
+        return value as string;
       });
     }
   }
 }
 
-function filterByChannel(channel: string): OperatorFunction<MessageEvent, any> {
+function filterByChannel(channel: string): OperatorFunction<MessageEvent<MessageEventData>, unknown> {
   return pipe(
     filter(message => message.data.channel === channel),
     map(message => message.data.value),
   );
+}
+
+interface MessageEventData {
+  channel: string;
+  value: unknown;
 }
 
 interface MessageChannels {

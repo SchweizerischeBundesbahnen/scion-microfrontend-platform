@@ -17,7 +17,7 @@ import {Application} from './platform.model';
  *
  * @internal
  */
-export interface ɵApplication extends Omit<Application, 'platformVersion'> { // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface ɵApplication extends Omit<Application, 'platformVersion'> {
   /**
    * Specifies the origin(s) where message from this application must originate from. Messages of a different origin will be rejected.
    */

@@ -61,7 +61,7 @@ export abstract class MessageClient {
    * @param  options - Controls how to publish the message and allows setting message headers.
    * @return A Promise that resolves when dispatched the message, or that rejects if the message could not be dispatched.
    */
-  public abstract publish<T = any>(topic: string, message?: T, options?: PublishOptions): Promise<void>;
+  public abstract publish<T = unknown>(topic: string, message?: T, options?: PublishOptions): Promise<void>;
 
   /**
    * Sends a request to the given topic and receives one or more replies.
@@ -82,7 +82,7 @@ export abstract class MessageClient {
    *         in the {@link MessageHeaders.Status} message header. Then, the Observable completes immediately after emitted the reply.
    *         The Observable errors if the request could not be dispatched. It will also error if the replier sets a status code greater than or equal to 400, e.g., {@link ResponseStatusCodes.ERROR}.
    */
-  public abstract request$<T>(topic: string, request?: any, options?: RequestOptions): Observable<TopicMessage<T>>;
+  public abstract request$<T>(topic: string, request?: unknown, options?: RequestOptions): Observable<TopicMessage<T>>;
 
   /**
    * Receives messages published to the given topic.

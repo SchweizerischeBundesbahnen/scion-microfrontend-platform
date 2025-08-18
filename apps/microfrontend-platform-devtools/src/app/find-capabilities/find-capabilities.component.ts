@@ -47,13 +47,13 @@ export default class FindCapabilitiesComponent {
     this.appSymbolicNames = manifestService.applications.map(app => app.symbolicName).sort();
     this.qualifierKeys$ = manifestService.capabilities$()
       .pipe(
-        map(capabilities => capabilities.reduce((acc, capability) => acc.concat(Object.keys(capability.qualifier || {})), new Array<string>())),
+        map(capabilities => capabilities.reduce((acc, capability) => acc.concat(Object.keys(capability.qualifier ?? {})), new Array<string>())),
         distinctArray(),
         sortArray((a, b) => a.localeCompare(b)),
       );
     this.qualifierValues$ = manifestService.capabilities$()
       .pipe(
-        map(capabilities => capabilities.reduce((acc, capability) => acc.concat(Object.values(capability.qualifier || {}) as Array<string>), new Array<string>())),
+        map(capabilities => capabilities.reduce((acc, capability) => acc.concat(Object.values(capability.qualifier ?? {}) as Array<string>), new Array<string>())),
         distinctArray(),
         sortArray((a, b) => a.localeCompare(b)),
       );

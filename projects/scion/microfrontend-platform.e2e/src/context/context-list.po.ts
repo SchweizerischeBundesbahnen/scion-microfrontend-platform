@@ -40,11 +40,11 @@ export class ContextListPO {
     }, {isStable: (a, b) => Object.keys(a).length === Object.keys(b).length});
   }
 
-  private parseJSON(value: string): any {
+  private parseJSON(value: string): string {
     try {
-      return JSON.parse(value);
+      return JSON.parse(value) as string;
     }
-    catch (error) {
+    catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
       return value;
     }
   }
