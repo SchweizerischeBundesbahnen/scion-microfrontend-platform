@@ -82,7 +82,7 @@ export default class RegisterCapabilityComponent {
 
     Beans.get(ManifestService).registerCapability(capability)
       .then(id => {
-        this.registerResponse = id;
+        this.registerResponse = id ?? '<null>';
       })
       .catch(error => {
         this.registerError = error;

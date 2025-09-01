@@ -14,7 +14,8 @@ import {Capability} from '../../platform.model';
  * Allows intercepting capabilities before their registration.
  *
  * Interceptors allow intercepting capabilities before they are registered, for example,
- * to perform validation checks, add metadata, or change properties.
+ * to perform validation checks, add metadata, change properties, or prevent registration
+ * based on user permissions.
  *
  * The following interceptor assigns a stable identifier to each microfrontend capability.
  *
@@ -25,10 +26,25 @@ import {Capability} from '../../platform.model';
  *     if (capability.type === 'microfrontend') {
  *       return {
  *         ...capability,
+ *         // `hash()` is illustrative and not part of the Microfrontend Platform API
  *         metadata: {...capability.metadata, id: hash(capability)},
  *       };
  *     }
  *     return capability;
+ *   }
+ * }
+ * ```
+ *
+ * The following interceptor rejects capabilities based on user permissions.
+ *
+ * ```ts
+ * class UserAuthorizedCapabilityInterceptor implements CapabilityInterceptor {
+ *
+ *   public async intercept(capability: Capability): Promise<Capability | null> {
+ *     const requiredRole = capability.properties?.['role'];
+ *
+ *     // `hasRole()` is illustrative and not part of the Microfrontend Platform API
+ *     return !requiredRole || hasRole(requiredRole) ? capability : null;
  *   }
  * }
  * ```
@@ -39,6 +55,7 @@ import {Capability} from '../../platform.model';
  *
  * ```ts
  * Beans.register(CapabilityInterceptor, {useClass: MicrofrontendCapabilityInterceptor, multi: true});
+ * Beans.register(CapabilityInterceptor, {useClass: UserAuthorizedCapabilityInterceptor, multi: true});
  * ```
  *
  * @category Intention API
@@ -49,6 +66,7 @@ export abstract class CapabilityInterceptor {
    * Intercepts a capability before being registered.
    *
    * @param capability - the capability to be intercepted
+   * @return Promise that resolves to the intercepted capability, or `null` to prevent registration.
    */
-  public abstract intercept(capability: Capability): Promise<Capability>;
+  public abstract intercept(capability: Capability): Promise<Capability | null>;
 }
