@@ -203,23 +203,39 @@ function hash(capability: Capability): string {
 }
 
 {
-  // tag::intercept-capability[]
+  // tag::intercept-capability:intercept[]
   class MicrofrontendCapabilityInterceptor implements CapabilityInterceptor {
 
     public async intercept(capability: Capability): Promise<Capability> {
       if (capability.type === 'microfrontend') {
         return {
           ...capability,
+          // `hash()` is illustrative and not part of the Microfrontend Platform API
           metadata: {...capability.metadata, id: hash(capability)},
         };
       }
       return capability;
     }
   }
-  // end::intercept-capability[]
+  // end::intercept-capability:intercept[]
+
+  const hasRole = (role: string) => true;
+
+  // tag::intercept-capability:reject[]
+  class UserAuthorizedCapabilityInterceptor implements CapabilityInterceptor {
+
+    public async intercept(capability: Capability): Promise<Capability | null> {
+      const requiredRole = capability.properties?.['role'];
+
+      // `hasRole()` is illustrative and not part of the Microfrontend Platform API
+      return !requiredRole || hasRole(requiredRole) ? capability : null;
+    }
+  }
+  // end::intercept-capability:reject[]
 
   // tag::register-capability-interceptor[]
   Beans.register(CapabilityInterceptor, {useClass: MicrofrontendCapabilityInterceptor}); // <1>
+  Beans.register(CapabilityInterceptor, {useClass: UserAuthorizedCapabilityInterceptor}); // <1>
 
   // Start the platform.
   MicrofrontendPlatformHost.start(...); // <2>

@@ -118,7 +118,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     }).length > 0;
   }
 
-  public async registerCapability(capability: Capability, appSymbolicName: string): Promise<string> {
+  public async registerCapability(capability: Capability, appSymbolicName: string): Promise<string | null> {
     if (!capability) {
       throw Error('[CapabilityRegisterError] Capability must not be null or undefined.');
     }
@@ -145,8 +145,11 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     });
 
     // Register the capability.
-    this._capabilityStore.add(capabilityToRegister);
-    return capabilityToRegister.metadata!.id;
+    if (capabilityToRegister) {
+      this._capabilityStore.add(capabilityToRegister);
+      return capabilityToRegister.metadata!.id;
+    }
+    return null;
   }
 
   public unregisterCapabilities(appSymbolicName: string, filter: ManifestObjectFilter): void {
@@ -183,7 +186,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   private installCapabilityRegisterRequestHandler(): void {
-    this._subscriptions.add(Beans.get(MessageClient).onMessage<Capability, string>(PlatformTopics.RegisterCapability, (request: TopicMessage<Capability>) => {
+    this._subscriptions.add(Beans.get(MessageClient).onMessage<Capability, string | null>(PlatformTopics.RegisterCapability, (request: TopicMessage<Capability>) => {
       const capability = request.body!;
       const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
       return this.registerCapability(capability, appSymbolicName);
@@ -335,10 +338,13 @@ function assertCapabilityParamDefinitions(params: ParamDefinition[] | undefined)
 /**
  * Intercepts capability before its registration.
  */
-async function interceptCapability(capability: Capability): Promise<Capability> {
-  const interceptors = Beans.all(CapabilityInterceptor);
-  for (const interceptor of interceptors) {
-    capability = await interceptor.intercept(capability);
+async function interceptCapability(capability: Capability): Promise<Capability | null> {
+  let effectiveCapability: Capability | null = capability;
+  for (const interceptor of Beans.all(CapabilityInterceptor)) {
+    effectiveCapability = await interceptor.intercept(capability);
+    if (effectiveCapability === null) {
+      break; // rejected by the interceptor
+    }
   }
-  return capability;
+  return effectiveCapability;
 }
