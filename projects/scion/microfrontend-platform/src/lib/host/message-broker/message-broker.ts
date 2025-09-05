@@ -580,8 +580,8 @@ export class MessageBroker implements Initializer, PreDestroy {
       return null;
     }
 
-    const subscriberId = Defined.orElseThrow(message.headers.get(MessageHeaders.ɵSubscriberId), () => Error('[MessagingError] Missing message header: subscriberId'));
-    const replyTo = message.headers.get(MessageHeaders.ReplyTo);
+    const subscriberId = Defined.orElseThrow(message.headers.get(MessageHeaders.ɵSubscriberId) as string | undefined, () => Error('[MessagingError] Missing message header: subscriberId'));
+    const replyTo = message.headers.get(MessageHeaders.ReplyTo) as string;
     const subscription = new TopicSubscription(replyTo, subscriberId, sender);
     this._topicSubscriptionRegistry.register(subscription);
     return subscription;
@@ -647,7 +647,7 @@ export class MessageBroker implements Initializer, PreDestroy {
  * Throws an error if the client could not be resolved.
  */
 function getSendingClient(event: MessageEvent<MessageEnvelope>): Client {
-  const clientId = event.data.message.headers.get(MessageHeaders.ClientId);
+  const clientId = event.data.message.headers.get(MessageHeaders.ClientId) as string;
   const client = Beans.get(ClientRegistry).getByClientId(clientId)!;
   if (!client) {
     throw Error(`[NullClientError] Client not found in client registry. [clientId=${clientId}]`);
@@ -661,8 +661,8 @@ function getSendingClient(event: MessageEvent<MessageEnvelope>): Client {
 function checkOriginTrusted<T extends Message>(): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
   return mergeMap((event: MessageEvent<MessageEnvelope<T>>): Observable<MessageEvent<MessageEnvelope<T>>> => {
     const envelope: MessageEnvelope = event.data;
-    const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
-    const clientId = envelope.message.headers.get(MessageHeaders.ClientId);
+    const messageId = envelope.message.headers.get(MessageHeaders.MessageId) as string;
+    const clientId = envelope.message.headers.get(MessageHeaders.ClientId) as string;
     const client = Beans.get(ClientRegistry).getByClientId(clientId)!;
 
     // Assert client registration.

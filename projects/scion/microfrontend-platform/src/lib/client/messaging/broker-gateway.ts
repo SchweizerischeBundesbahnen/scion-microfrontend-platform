@@ -201,7 +201,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   }
 
   public requestReply$<T = any>(channel: MessagingChannel, request: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
-    return new Observable((observer: Observer<TopicMessage>): TeardownLogic => {
+    return new Observable((observer: Observer<TopicMessage<T>>): TeardownLogic => {
       if (isPlatformStopped()) {
         observer.error(GatewayErrors.PLATFORM_STOPPED_ERROR);
         return noop;

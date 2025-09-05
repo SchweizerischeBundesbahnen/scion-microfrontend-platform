@@ -50,7 +50,7 @@ export class MessageHandler<MSG extends Message, REPLY> {
    * or a potential completion or error to the requestor.
    */
   private handleMessage(request: MSG): void {
-    const replyTo = request.headers.get(MessageHeaders.ReplyTo);
+    const replyTo = request.headers.get(MessageHeaders.ReplyTo) as string;
     const platformStopping$ = MicrofrontendPlatform.state$.pipe(filter(state => state === PlatformState.Stopping));
 
     // Invoke the callback to produce value(s).

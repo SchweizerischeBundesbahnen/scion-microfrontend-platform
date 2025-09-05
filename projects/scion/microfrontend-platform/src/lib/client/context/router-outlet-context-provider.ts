@@ -14,7 +14,7 @@ import {MessageEnvelope, MessagingChannel, MessagingTransport} from '../../ɵmes
 import {TopicMatcher} from '../../topic-matcher.util';
 import {MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from '../messaging/message-client';
-import {CONTEXT_LOOKUP_OPTIONS, Contexts} from './context.model';
+import {CONTEXT_LOOKUP_OPTIONS, ContextLookupOptions, Contexts} from './context.model';
 import {runSafe} from '../../safe-runner';
 import {IS_PLATFORM_HOST} from '../../platform.model';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -119,8 +119,8 @@ export class RouterOutletContextProvider {
 
         // The name has to be decoded here because it was encoded in `newContextValueLookupRequest` where the topic was created.
         const name = decodeURIComponent(encodedName);
-        const replyTo = lookupRequest.headers.get(MessageHeaders.ReplyTo);
-        const options = lookupRequest.headers.get(CONTEXT_LOOKUP_OPTIONS);
+        const replyTo = lookupRequest.headers.get(MessageHeaders.ReplyTo) as string;
+        const options = lookupRequest.headers.get(CONTEXT_LOOKUP_OPTIONS) as ContextLookupOptions | undefined;
         const entries = this._entries$.getValue();
 
         if (options?.collect) {
@@ -169,7 +169,7 @@ export class RouterOutletContextProvider {
         takeUntil(this._outletDisconnect$),
       )
       .subscribe((lookupRequest: TopicMessage<Set<string>>) => runSafe(() => {
-        const replyTo = lookupRequest.headers.get(MessageHeaders.ReplyTo);
+        const replyTo = lookupRequest.headers.get(MessageHeaders.ReplyTo) as string;
         const entries = this._entries$.getValue();
         const collectedNames = new Set<string>([...entries.keys(), ...(lookupRequest.body || [])]);
         if (Beans.get(IS_PLATFORM_HOST)) {
@@ -197,7 +197,7 @@ export class RouterOutletContextProvider {
         takeUntil(this._outletDisconnect$),
       )
       .subscribe((observeRequest: TopicMessage<void>) => runSafe(() => {
-        const replyTo = observeRequest.headers.get(MessageHeaders.ReplyTo);
+        const replyTo = observeRequest.headers.get(MessageHeaders.ReplyTo) as string;
 
         this._entryChange$
           .pipe(

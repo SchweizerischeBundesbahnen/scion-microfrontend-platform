@@ -31,7 +31,7 @@ export namespace Qualifiers {
     if (options.exactQualifier && Object.entries(qualifier).some(([key, value]) => key === '*' || value === '*')) {
       return Error(`[IllegalQualifierError] Qualifier must be exact, i.e., not contain wildcards. [qualifier='${JSON.stringify(qualifier)}']`);
     }
-    if (Object.values(qualifier).some(value => value === '' || value === null || value === undefined)) {
+    if (Object.values(qualifier).some(value => value === '' || value === null || value === undefined)) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition
       return Error(`[IllegalQualifierError] Qualifier must not contain empty, \`null\`, or \`undefined\` entries. [qualifier='${JSON.stringify(qualifier)}']`);
     }
     if (Object.values(qualifier).some(value => !ALLOWED_VALUE_TYPES.has(typeof value))) {

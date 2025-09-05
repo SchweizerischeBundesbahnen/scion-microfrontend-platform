@@ -86,7 +86,7 @@ describe('MicrofrontendPlatform', () => {
     await microfrontendFixture.loadScript('lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: '3.0.0'});
 
     const application = Beans.get(ManifestService).applications.find(application => application.symbolicName === 'client')!;
-    await expect(await application.platformVersion).toEqual('3.0.0');
+    expect(await application.platformVersion).toEqual('3.0.0');
   });
 
   /**

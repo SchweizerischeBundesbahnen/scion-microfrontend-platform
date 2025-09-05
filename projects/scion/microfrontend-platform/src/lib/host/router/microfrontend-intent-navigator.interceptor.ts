@@ -33,7 +33,7 @@ export class MicrofrontendIntentNavigator implements IntentInterceptor {
    */
   public intercept(intentMessage: IntentMessage, next: Handler<IntentMessage>): Promise<void> {
     if (intentMessage.intent.type === PlatformCapabilityTypes.Microfrontend) {
-      return this.consumeMicrofrontendIntent(intentMessage);
+      return this.consumeMicrofrontendIntent(intentMessage as IntentMessage<NavigationOptions>);
     }
     else {
       return next.handle(intentMessage);
@@ -41,7 +41,7 @@ export class MicrofrontendIntentNavigator implements IntentInterceptor {
   }
 
   private async consumeMicrofrontendIntent(message: IntentMessage<NavigationOptions>): Promise<void> {
-    const replyTo = message.headers.get(MessageHeaders.ReplyTo);
+    const replyTo = message.headers.get(MessageHeaders.ReplyTo) as string;
     await this.navigate(message);
     await Beans.get(MessageClient).publish(replyTo, null, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
   }
@@ -89,7 +89,7 @@ export class MicrofrontendIntentNavigator implements IntentInterceptor {
     if (microfrontendCapability.properties.outlet) {
       return microfrontendCapability.properties.outlet;
     }
-    const contextualOutlet = message.headers.get(ROUTING_CONTEXT_MESSAGE_HEADER)?.[ROUTING_CONTEXT_OUTLET];
+    const contextualOutlet = (message.headers.get(ROUTING_CONTEXT_MESSAGE_HEADER) as {[ROUTING_CONTEXT_OUTLET]: string} | undefined)?.[ROUTING_CONTEXT_OUTLET];
     if (contextualOutlet) {
       return contextualOutlet;
     }

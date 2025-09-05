@@ -737,10 +737,10 @@ function outletNavigate$(outlet: string): Observable<Navigation> {
   return Beans.get(MessageClient).observe$<string>(outletNavigationTopic)
     .pipe(map((navigateMessage: TopicMessage<string>): Navigation => {
       return {
-        url: navigateMessage.body || 'about:blank',
-        pushStateToSessionHistoryStack: Defined.orElse(navigateMessage.headers.get(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER), false),
-        showSplash: Defined.orElse(navigateMessage.headers.get(SHOW_SPLASH_MESSAGE_HEADER), false),
-        capabilityId: navigateMessage.headers.get(CAPABILITY_ID_MESSAGE_HEADER),
+        url: navigateMessage.body ?? 'about:blank',
+        pushStateToSessionHistoryStack: Defined.orElse(navigateMessage.headers.get(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER) as boolean | undefined, false),
+        showSplash: Defined.orElse(navigateMessage.headers.get(SHOW_SPLASH_MESSAGE_HEADER) as boolean | undefined, false),
+        capabilityId: navigateMessage.headers.get(CAPABILITY_ID_MESSAGE_HEADER) as string | undefined,
       };
     }));
 }

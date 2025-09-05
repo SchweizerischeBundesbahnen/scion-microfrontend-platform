@@ -17,7 +17,7 @@ import {Arrays} from '@scion/toolkit/util';
 /** @internal */
 export function filterByTransport(transport: MessagingTransport): OperatorFunction<MessageEvent, MessageEvent<MessageEnvelope>> {
   return filter((event: MessageEvent): event is MessageEvent<MessageEnvelope> => {
-    const envelope: MessageEnvelope | undefined = event.data;
+    const envelope = event.data as MessageEnvelope | undefined;
     return envelope?.transport === transport && !!envelope.channel && !!envelope.message?.headers;
   });
 }
