@@ -205,12 +205,12 @@ export class RouterOutletContextProvider {
             takeUntil(this._outletDisconnect$),
           )
           .subscribe((event: Contexts.ContextTreeChangeEvent) => { // eslint-disable-line rxjs/no-nested-subscribe
-            Beans.get(MessageClient).publish<Contexts.ContextTreeChangeEvent>(replyTo, event);
+            void Beans.get(MessageClient).publish<Contexts.ContextTreeChangeEvent>(replyTo, event);
           });
 
         if (Beans.get(IS_PLATFORM_HOST)) {
           // Notify that the subscriber subscribed to the root context.
-          Beans.get(MessageClient).publish<Contexts.RootContextSubscribeEventType>(replyTo, Contexts.RootContextSubscribeEvent);
+          void Beans.get(MessageClient).publish<Contexts.RootContextSubscribeEventType>(replyTo, Contexts.RootContextSubscribeEvent);
         }
         else {
           // Pass on the registration request to the parent context.

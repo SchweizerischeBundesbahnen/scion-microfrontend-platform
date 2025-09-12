@@ -88,23 +88,22 @@ export class ActivatorInstaller implements Initializer {
     const readinessPromises: Promise<void>[] = activators
       .reduce((acc, activator) => acc.concat(Arrays.coerce(activator.properties.readinessTopics)), new Array<string>()) // concat readiness topics
       .map(readinessTopic => {
-          const onReadinessTimeout = (): Observable<never> => {
-            Beans.get(Logger).error(`[ActivatorLoadTimeoutError] Timeout elapsed while waiting for application to signal readiness [app=${appSymbolicName}, timeout=${activatorLoadTimeout}ms, readinessTopic=${readinessTopic}].`);
-            return EMPTY;
-          };
-          return new Promise((resolve, reject) => {
-            return Beans.get(MessageClient).observe$<void>(readinessTopic)
-              .pipe(
-                first(msg => msg.headers.get(MessageHeaders.AppSymbolicName) === appSymbolicName),
-                activatorLoadTimeout ? timeout({first: activatorLoadTimeout, with: onReadinessTimeout}) : identity,
-              )
-              .subscribe({
-                error: reject,
-                complete: resolve,
-              });
-          });
-        },
-      );
+        const onReadinessTimeout = (): Observable<never> => {
+          Beans.get(Logger).error(`[ActivatorLoadTimeoutError] Timeout elapsed while waiting for application to signal readiness [app=${appSymbolicName}, timeout=${activatorLoadTimeout}ms, readinessTopic=${readinessTopic}].`);
+          return EMPTY;
+        };
+        return new Promise((resolve, reject) => {
+          return Beans.get(MessageClient).observe$<void>(readinessTopic)
+            .pipe(
+              first(msg => msg.headers.get(MessageHeaders.AppSymbolicName) === appSymbolicName),
+              activatorLoadTimeout ? timeout({first: activatorLoadTimeout, with: onReadinessTimeout}) : identity,
+            )
+            .subscribe({
+              error: reject,
+              complete: resolve,
+            });
+        });
+      });
 
     if (!readinessPromises.length) {
       monitor.done();

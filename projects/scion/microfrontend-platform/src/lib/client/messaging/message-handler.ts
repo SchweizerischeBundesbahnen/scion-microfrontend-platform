@@ -42,7 +42,7 @@ export class MessageHandler<MSG extends Message, REPLY> {
    * The requestor has initiated a fire-and-forget communication, thus we simply pass the message to the callback and ignore response(s).
    */
   private consumeMessage(message: MSG): void {
-    runSafe(() => this._callback(message));
+    void runSafe(() => this._callback(message));
   }
 
   /**
@@ -76,7 +76,7 @@ export class MessageHandler<MSG extends Message, REPLY> {
           if (observableStatus === 'alive') {
             // Terminate the communication when the handler is being unsubscribed.
             const replyHeaders = new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL);
-            this._messageClient.publish(replyTo, undefined, {headers: replyHeaders});
+            void this._messageClient.publish(replyTo, undefined, {headers: replyHeaders});
           }
         }),
       )
@@ -84,19 +84,19 @@ export class MessageHandler<MSG extends Message, REPLY> {
         next: next => {
           // Transport the value to the requestor.
           const replyHeaders = new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK);
-          this._messageClient.publish(replyTo, next, {headers: replyHeaders});
+          void this._messageClient.publish(replyTo, next, {headers: replyHeaders});
         },
         error: error => {
           observableStatus = 'errored';
           // Transport the error to the requestor.
           const replyHeaders = new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR);
-          this._messageClient.publish(replyTo, stringifyError(error), {headers: replyHeaders});
+          void this._messageClient.publish(replyTo, stringifyError(error), {headers: replyHeaders});
         },
         complete: () => {
           observableStatus = 'completed';
           // Terminate the communication when finished producing responses.
           const replyHeaders = new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL);
-          this._messageClient.publish(replyTo, undefined, {headers: replyHeaders});
+          void this._messageClient.publish(replyTo, undefined, {headers: replyHeaders});
         },
       }));
   }

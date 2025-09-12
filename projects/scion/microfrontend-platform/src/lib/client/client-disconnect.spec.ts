@@ -269,7 +269,7 @@ describe('MicrofrontendPlatform', () => {
       ],
       liveness: {
         interval: .5, // 500ms
-        timeout: .1,  // 100ms
+        timeout: .1, // 100ms
       },
     });
 
