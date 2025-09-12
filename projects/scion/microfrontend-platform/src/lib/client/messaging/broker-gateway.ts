@@ -120,7 +120,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   });
   private _selectMessagesBySubscriberIdHeader = new MessageSelector({
     source$: this._message$,
-    keySelector: event => event.data.message.headers.get(MessageHeaders.ɵSubscriberId),
+    keySelector: event => event.data.message.headers.get(MessageHeaders.ɵSubscriberId) as string,
   });
 
   constructor(connectOptions?: ConnectOptions) {
@@ -322,8 +322,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     Beans.get(MessageClient).observe$(PlatformTopics.ping(session.clientId))
       .pipe(takeUntil(this._platformStopping$))
       .subscribe(request => runSafe(() => {
-        const replyTo = request.headers.get(MessageHeaders.ReplyTo);
-        Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)}).then();
+        const replyTo = request.headers.get(MessageHeaders.ReplyTo) as string;
+        Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
       }));
   }
 

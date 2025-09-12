@@ -47,12 +47,12 @@ export class MicrofrontendIntentNavigator implements IntentInterceptor {
   }
 
   private async navigate(message: IntentMessage<NavigationOptions>): Promise<void> {
-    const microfrontendCapability = message.capability as MicrofrontendCapability;
+    const microfrontendCapability = message.capability as Partial<MicrofrontendCapability>;
     const options = message.body;
     const intent = message.intent;
 
     const microfrontendPath = microfrontendCapability.properties?.path;
-    if (microfrontendPath === undefined || microfrontendPath === null) { // empty path is a valid path
+    if (!microfrontendPath && microfrontendPath !== '') { // empty path is a valid path
       throw Error(`[OutletRouterError][NullPathError] Microfrontend capability has no path to the microfrontend defined. [capability=${JSON.stringify(microfrontendCapability)}]`);
     }
     const appSymbolicName = microfrontendCapability.metadata!.appSymbolicName;
@@ -66,7 +66,7 @@ export class MicrofrontendIntentNavigator implements IntentInterceptor {
       outlet: this.resolveTargetOutlet(message),
       relativeTo: application.baseUrl,
       params: {...intent.qualifier, ...Dictionaries.coerce(intent.params)},
-      showSplash: microfrontendCapability.properties.showSplash,
+      showSplash: microfrontendCapability.properties?.showSplash,
       ɵcapabilityId: microfrontendCapability.metadata!.id,
     });
   }

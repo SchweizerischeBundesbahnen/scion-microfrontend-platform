@@ -23,7 +23,7 @@ export class ParamMatcher {
 
   constructor(definitions: ParamDefinition[]) {
     definitions.forEach(paramDef => {
-      if (paramDef.required ?? true) {
+      if (paramDef.required ?? true) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition
         this._requiredParamDefs.push(paramDef);
       }
       else {

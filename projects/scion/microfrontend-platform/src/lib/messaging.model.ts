@@ -22,7 +22,7 @@ export interface Message {
    *
    * Header values must be JSON serializable. If no headers are set, the `Map` is empty.
    */
-  headers: Map<string, any>; // TODO unknown
+  headers: Map<string, unknown>;
   /**
    * Indicates whether this message is retained on the broker for late subscribers.
    */

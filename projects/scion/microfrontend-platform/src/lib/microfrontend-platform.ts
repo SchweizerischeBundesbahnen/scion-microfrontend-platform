@@ -101,7 +101,6 @@ export class MicrofrontendPlatform {
       await this.enterState(PlatformState.Starting);
       await Beans.start({eagerBeanConstructRunlevel: Runlevel.One, initializerDefaultRunlevel: Runlevel.Two});
       await this.enterState(PlatformState.Started);
-      return Promise.resolve();
     }
     catch (error) {
       await this.destroy();

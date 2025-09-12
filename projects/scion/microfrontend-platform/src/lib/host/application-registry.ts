@@ -50,7 +50,7 @@ export class ApplicationRegistry {
     const baseUrl = this.computeBaseUrl(applicationConfig, manifest);
     this._applications.set(applicationConfig.symbolicName, {
       symbolicName: applicationConfig.symbolicName,
-      name: manifest.name ?? applicationConfig.symbolicName,
+      name: manifest.name ?? applicationConfig.symbolicName, // eslint-disable-line @typescript-eslint/no-unnecessary-condition
       baseUrl: baseUrl,
       manifestUrl: Urls.newUrl(applicationConfig.manifestUrl, Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? applicationConfig.manifestUrl : window.origin).toString(),
       manifestLoadTimeout: applicationConfig.manifestLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).manifestLoadTimeout,
@@ -140,4 +140,3 @@ export class ApplicationRegistry {
     }
   }
 }
-

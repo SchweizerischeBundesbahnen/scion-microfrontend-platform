@@ -33,7 +33,7 @@ export class KeyboardEventDispatcher implements PreDestroy {
   constructor() {
     // IMPORTANT: For Angular applications, the platform is started outside the Angular zone. To avoid excessive change detection cycles,
     // this dispatcher is eagerly set up at platform startup and installed only for regular microfrontends, not activator microfrontends.
-    this.installKeystrokeDispatcher().then();
+    this.installKeystrokeDispatcher();
   }
 
   /**

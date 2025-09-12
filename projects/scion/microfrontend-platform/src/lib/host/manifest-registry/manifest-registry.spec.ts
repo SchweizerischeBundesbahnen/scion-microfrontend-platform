@@ -75,7 +75,7 @@ describe('ManifestRegistry', () => {
       });
 
       // Register intention
-      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1');
+      Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1');
 
       // Expect app-1 to have an intention
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
@@ -99,7 +99,7 @@ describe('ManifestRegistry', () => {
       });
 
       // Register intention
-      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'app-1');
+      Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'app-1');
 
       // Expect app-1 to have an intention
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
@@ -122,7 +122,7 @@ describe('ManifestRegistry', () => {
       });
 
       // Register intention
-      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'app-1');
+      Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'app-1');
 
       // Expect app-1 to have an intention
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
@@ -364,7 +364,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] Parameter 'param' must be explicitly defined as required or optional.`,
       ]));
     });
@@ -400,7 +400,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`,
       ]));
     });
@@ -426,7 +426,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`,
       ]));
     });
@@ -478,7 +478,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] The deprecated parameter 'param1' defines an invalid substitute 'paramX'. Valid substitutes are: [param2,param3]`,
       ]));
     });
@@ -514,7 +514,7 @@ describe('ManifestRegistry', () => {
             metadata: {...capability.metadata!, id: '1'},
           };
         }
-      },
+      }(),
     });
 
     // Register capability.
@@ -540,7 +540,7 @@ describe('ManifestRegistry', () => {
           }
           return capability;
         }
-      },
+      }(),
     });
 
     // Register capability 1 (reject).

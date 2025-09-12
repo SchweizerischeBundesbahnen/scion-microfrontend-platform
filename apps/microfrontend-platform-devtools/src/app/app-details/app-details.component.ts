@@ -126,7 +126,7 @@ export class AppDetailsComponent {
       )
       .subscribe(([tabToActivate, tabbar]) => {
         if (tabToActivate) {
-          this._router.navigate([], {replaceUrl: true, relativeTo: this._route}).then(); // remove 'activeTab' matrix param from URL
+          this._router.navigate([], {replaceUrl: true, relativeTo: this._route}); // remove 'activeTab' matrix param from URL
           tabbar.activateTab(tabToActivate);
           this._cd.markForCheck();
         }

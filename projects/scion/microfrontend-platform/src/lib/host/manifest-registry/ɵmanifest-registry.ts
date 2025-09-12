@@ -65,7 +65,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
       throw illegalQualifierError;
     }
 
-    const filter: ManifestObjectFilter = {type: intent.type, qualifier: intent.qualifier || {}};
+    const filter: ManifestObjectFilter = {type: intent.type, qualifier: intent.qualifier ?? {}};
     return this._capabilityStore.find(filter)
       .filter(capability => this.isApplicationQualifiedForCapability(appSymbolicName, capability));
   }
@@ -83,7 +83,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     return (
       Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName) ||
       this._intentionStore.find({...filter, qualifier: intentionQualifier => new QualifierMatcher(intentionQualifier).matches(intent.qualifier)}).length > 0 ||
-      this._capabilityStore.find({...filter, qualifier: intent.qualifier || {}}).length > 0  // An app has an implicit intention if it provides the capability itself
+      this._capabilityStore.find({...filter, qualifier: intent.qualifier ?? {}}).length > 0 // An app has an implicit intention if it provides the capability itself
     );
   }
 
@@ -119,7 +119,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   public async registerCapability(capability: Capability, appSymbolicName: string): Promise<string | null> {
-    if (!capability) {
+    if (!capability) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition
       throw Error('[CapabilityRegisterError] Capability must not be null or undefined.');
     }
     if (!capability.type) {
@@ -157,7 +157,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   }
 
   public registerIntention(intention: Intention, appSymbolicName: string): string {
-    if (!intention) {
+    if (!intention) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition
       throw Error('[IntentionRegisterError] Intention must not be null or undefined.');
     }
     if (!intention.type) {
@@ -188,15 +188,15 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   private installCapabilityRegisterRequestHandler(): void {
     this._subscriptions.add(Beans.get(MessageClient).onMessage<Capability, string | null>(PlatformTopics.RegisterCapability, (request: TopicMessage<Capability>) => {
       const capability = request.body!;
-      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
+      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName) as string;
       return this.registerCapability(capability, appSymbolicName);
     }));
   }
 
   private installCapabilityUnregisterRequestHandler(): void {
     this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, void>(PlatformTopics.UnregisterCapabilities, (request: TopicMessage<ManifestObjectFilter>) => {
-      const capabilityFilter = request.body || {};
-      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
+      const capabilityFilter = request.body ?? {};
+      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName) as string;
       this.unregisterCapabilities(appSymbolicName, capabilityFilter);
     }));
   }
@@ -204,7 +204,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
   private installIntentionRegisterRequestHandler(): void {
     this._subscriptions.add(Beans.get(MessageClient).onMessage<Intention, string>(PlatformTopics.RegisterIntention, (request: TopicMessage<Intention>) => {
       const intention = request.body!;
-      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
+      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName) as string;
       assertIntentionRegisterApiEnabled(appSymbolicName);
       return this.registerIntention(intention, appSymbolicName);
     }));
@@ -212,8 +212,8 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
   private installIntentionUnregisterRequestHandler(): void {
     this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, void>(PlatformTopics.UnregisterIntentions, (request: TopicMessage<ManifestObjectFilter>) => {
-      const intentFilter = request.body || {};
-      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
+      const intentFilter = request.body ?? {};
+      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName) as string;
       assertIntentionRegisterApiEnabled(appSymbolicName);
       this.unregisterIntention(appSymbolicName, intentFilter);
     }));
@@ -221,8 +221,8 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
   private installCapabilitiesLookupRequestHandler(): void {
     this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, Capability[]>(PlatformTopics.LookupCapabilities, (request: TopicMessage<ManifestObjectFilter>) => {
-      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName);
-      const lookupFilter = request.body || {};
+      const appSymbolicName = request.headers.get(MessageHeaders.AppSymbolicName) as string;
+      const lookupFilter = request.body ?? {};
 
       const illegalQualifierError = Qualifiers.validateQualifier(lookupFilter.qualifier, {exactQualifier: false});
       if (illegalQualifierError) {
@@ -244,7 +244,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
 
   private installIntentionsLookupRequestHandler(): void {
     this._subscriptions.add(Beans.get(MessageClient).onMessage<ManifestObjectFilter, Intention[]>(PlatformTopics.LookupIntentions, (request: TopicMessage<ManifestObjectFilter>) => {
-      const lookupFilter = request.body || {};
+      const lookupFilter = request.body ?? {};
 
       const illegalQualifierError = Qualifiers.validateQualifier(lookupFilter.qualifier, {exactQualifier: false});
       if (illegalQualifierError) {
@@ -308,7 +308,7 @@ function assertIntentionRegisterApiEnabled(appSymbolicName: string): void {
 /**
  * Asserts given parameter definitions to be valid.
  */
-function assertCapabilityParamDefinitions(params: ParamDefinition[] | undefined): void {
+function assertCapabilityParamDefinitions(params: Partial<ParamDefinition>[] | undefined): void {
   if (!params?.length) {
     return;
   }

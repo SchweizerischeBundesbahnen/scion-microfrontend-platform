@@ -72,7 +72,7 @@ export class ManifestObjectStore<T extends ManifestObject> {
           return true;
         }
         if (typeof filter.qualifier === 'function') {
-          return filter.qualifier(object.qualifier || {});
+          return filter.qualifier(object.qualifier ?? {});
         }
 
         return new QualifierMatcher(filter.qualifier).matches(object.qualifier);

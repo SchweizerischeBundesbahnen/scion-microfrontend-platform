@@ -128,7 +128,7 @@ export class ActivatorInstaller implements Initializer {
     Beans.get(OutletRouter).navigate(activator.properties.path, {
       outlet: routerOutlet.name,
       relativeTo: application.baseUrl,
-    }).then();
+    });
 
     // Provide the activation context
     routerOutlet.setContextValue<ActivationContext>(ACTIVATION_CONTEXT, {primary, activator});

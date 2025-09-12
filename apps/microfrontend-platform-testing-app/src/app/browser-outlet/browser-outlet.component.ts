@@ -78,7 +78,7 @@ export class BrowserOutletComponent implements OnInit {
   }
 
   private navigate(): void {
-    Beans.get(OutletRouter).navigate(this.form.controls.url.value, {outlet: this.outletName}).then();
+    Beans.get(OutletRouter).navigate(this.form.controls.url.value, {outlet: this.outletName});
   }
 
   public onSettingsClick(): void {
