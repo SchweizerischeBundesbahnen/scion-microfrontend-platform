@@ -31,7 +31,7 @@ export class RelativePathResolver {
     const relativeTo = Urls.newUrl(options.relativeTo);
 
     // Check if hash-based routing is used
-    if (relativeTo.hash?.startsWith('#/')) {
+    if (relativeTo.hash.startsWith('#/')) {
       // Apply navigational symbols only to the path of the hash-based route, and not to the context path before the hash, if any.
       // For that reason, we temporarily remove the context path when constructing the URL.
       const {pathname, search, hash} = Urls.newUrl(path, `${relativeTo.origin}${relativeTo.hash.substring(1)}`);
@@ -42,4 +42,3 @@ export class RelativePathResolver {
     }
   }
 }
-

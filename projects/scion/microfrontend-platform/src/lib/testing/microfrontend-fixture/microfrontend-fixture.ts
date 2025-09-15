@@ -66,7 +66,7 @@ export class MicrofrontendFixture {
    * Each time a script is loaded into the iframe, a new Observable is created. Upon subscription,
    * any old messages that the script has already emitted will be "replayed".
    */
-  public message$: Observable<any> = NEVER;
+  public message$: Observable<unknown> = NEVER;
 
   /**
    * Constructs an instance of {@link MicrofrontendFixture} to load a microfrontend into a test.

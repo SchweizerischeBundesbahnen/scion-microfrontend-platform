@@ -49,7 +49,7 @@ export class ɵIntentClient implements IntentClient {
         capability: undefined!, /* set by the broker when dispatching the intent */
         body,
       };
-      return this._brokerGateway.requestReply$(MessagingChannel.Intent, intentMessage).pipe(throwOnErrorStatus());
+      return this._brokerGateway.requestReply$<T>(MessagingChannel.Intent, intentMessage).pipe(throwOnErrorStatus());
     });
   }
 

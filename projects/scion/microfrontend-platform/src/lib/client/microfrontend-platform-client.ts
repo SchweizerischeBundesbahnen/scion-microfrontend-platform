@@ -97,7 +97,7 @@ export class MicrofrontendPlatformClient {
    * @see NavigationOptions.showSplash
    */
   public static signalReady(): void {
-    Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT).then(outletContext => {
+    void Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT).then(outletContext => {
       if (!outletContext) {
         return Promise.reject(Error('[NullOutletContextError] not running in the context of a <sci-router-outlet>.'));
       }

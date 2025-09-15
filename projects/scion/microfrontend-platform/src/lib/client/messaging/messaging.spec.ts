@@ -945,12 +945,12 @@ describe('Messaging', () => {
     // Mount client that monitors the topic message channel and subscribes to the test topic.
     const microfrontend1 = registerFixture(new MicrofrontendFixture());
     await microfrontend1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'client', topic: 'test/topic', monitorTopicMessageChannel: true});
-    const microfrontend1TopicMessageChannel = new ObserveCaptor<TopicMessage>();
+    const microfrontend1TopicMessageChannel = new ObserveCaptor<unknown>();
 
     // Mount client that monitors the topic message channel but DOES NOT subscribe to the test topic.
     const microfrontend2 = registerFixture(new MicrofrontendFixture());
     await microfrontend2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'monitorTopicMessageChannel', {symbolicName: 'client'});
-    const microfrontend2TopicMessageChannel = new ObserveCaptor<TopicMessage>();
+    const microfrontend2TopicMessageChannel = new ObserveCaptor<unknown>();
 
     // Publish message to the test topic.
     await Beans.get(MessageClient).publish('test/topic', 'Topic message');
@@ -1000,12 +1000,12 @@ describe('Messaging', () => {
     // Mount client that monitors the intent message channel and subscribes to the test intent.
     const microfrontend1 = registerFixture(new MicrofrontendFixture());
     await microfrontend1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'client', intent: {type: 'testee'}, monitorIntentMessageChannel: true});
-    const microfrontend1IntentMessageChannel = new ObserveCaptor<IntentMessage>();
+    const microfrontend1IntentMessageChannel = new ObserveCaptor<unknown>();
 
     // Mount client that monitors the intent message channel but DOES NOT subscribe to the test intent.
     const microfrontend2 = registerFixture(new MicrofrontendFixture());
     await microfrontend2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'monitorIntentMessageChannel', {symbolicName: 'client'});
-    const microfrontend2IntentMessageChannel = new ObserveCaptor<IntentMessage>();
+    const microfrontend2IntentMessageChannel = new ObserveCaptor<unknown>();
 
     // Publish test intent.
     await Beans.get(IntentClient).publish({type: 'testee'}, 'Intent message');

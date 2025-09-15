@@ -70,8 +70,8 @@ export class ActivatorInstaller implements Initializer {
   }
 
   private skipInvalidActivators(): (activator: ActivatorCapability) => boolean {
-    return (activator: ActivatorCapability): boolean => {
-      if (!activator.properties || !activator.properties.path) {
+    return (activator: Partial<ActivatorCapability>): boolean => {
+      if (!activator.properties?.path) {
         Beans.get(Logger).error(`[ActivatorError] Failed to activate the application '${activator.metadata!.appSymbolicName}'. Missing required 'path' property in the provided activator capability.`, activator);
         return false;
       }
@@ -124,7 +124,7 @@ export class ActivatorInstaller implements Initializer {
     // Create the router outlet and navigate to the activator endpoint.
     const routerOutlet = document.createElement('sci-router-outlet') as SciRouterOutletElement;
     routerOutlet.name = UUID.randomUUID();
-    Beans.get(OutletRouter).navigate(activator.properties.path, {
+    void Beans.get(OutletRouter).navigate(activator.properties.path, {
       outlet: routerOutlet.name,
       relativeTo: application.baseUrl,
     });
@@ -142,6 +142,6 @@ export class ActivatorInstaller implements Initializer {
     // Add the router outlet to the DOM
     document.body.appendChild(routerOutlet);
     // Unmount the router outlet on platform shutdown
-    MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => document.body.removeChild(routerOutlet));
+    void MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => document.body.removeChild(routerOutlet));
   }
 }
