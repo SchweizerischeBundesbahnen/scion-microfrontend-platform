@@ -160,7 +160,7 @@ export interface Capability {
    * Arbitrary metadata to be associated with the capability.
    */
   properties?: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
   /**
    * Metadata about the capability (read-only, exclusively managed by the platform).
@@ -326,7 +326,7 @@ export interface ActivatorCapability extends Capability {
     /**
      * Arbitrary metadata to be associated with the capability.
      */
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -398,7 +398,7 @@ export interface MicrofrontendCapability extends Capability {
     /**
      * Arbitrary metadata to be associated with the capability.
      */
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -433,7 +433,7 @@ export interface ParamDefinition {
   /**
    * Allows the declaration of additional metadata that can be interpreted in an interceptor, for example.
    */
-  [property: string]: any;
+  [property: string]: unknown;
 }
 
 /**
