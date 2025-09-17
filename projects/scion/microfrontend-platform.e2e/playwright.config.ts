@@ -44,8 +44,9 @@ export default defineConfig({
     headless: runHeadless,
     viewport: {width: 2048, height: 1536},
     baseURL: 'http://localhost:4201',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
-  maxFailures: runInCI ? 1 : undefined,
   testMatch: /.*\.e2e-spec\.ts/,
 });
 
