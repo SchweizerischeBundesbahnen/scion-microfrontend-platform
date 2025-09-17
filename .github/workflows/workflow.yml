@@ -148,7 +148,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        shard: [ 1/10, 2/10, 3/10, 4/10, 5/10, 6/10, 7/10, 8/10, 9/10, 10/10 ]
+        shardIndex: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        shardTotal: [ 10 ]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -169,7 +170,15 @@ jobs:
         with:
           path: ./node_modules
           key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      - run: npm run e2e:headless -- --shard=${{ matrix.shard }}
+      - name: Run shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: npm run e2e:headless -- --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+      - name: Upload Playwright results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results-${{ matrix.shardIndex }}
+          path: test-results/
+          retention-days: 7
   release-guard:
     name: 'Should release?'
     if: github.ref == 'refs/heads/master'
