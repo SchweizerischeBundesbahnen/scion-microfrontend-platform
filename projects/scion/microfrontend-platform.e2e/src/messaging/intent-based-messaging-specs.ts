@@ -932,28 +932,28 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await expect.poll(() => capabilityId_app2).not.toEqual(capabilityId_app3);
 
     // verify intent received in app-2 with resolved capability `capabilityId_app2` (client-1)
-    await expect.poll(() => receiver1_app2.getFirstMessageOrElseReject()).toMatchIntentMessage({
+    await expect(receiver1_app2.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
       capability: capability_app2,
     });
 
     // verify intent received in app-2 with resolved capability `capabilityId_app2` (client-2)
-    await expect.poll(() => receiver2_app2.getFirstMessageOrElseReject()).toMatchIntentMessage({
+    await expect(receiver2_app2.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
       capability: capability_app2,
     });
 
     // verify intent received in app-3 with resolved capability `capabilityId_app3` (client-1)
-    await expect.poll(() => receiver1_app3.getFirstMessageOrElseReject()).toMatchIntentMessage({
+    await expect(receiver1_app3.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
       capability: capability_app3,
     });
 
     // verify intent received in app-3 with resolved capability `capabilityId_app3` (client-2)
-    await expect.poll(() => receiver2_app3.getFirstMessageOrElseReject()).toMatchIntentMessage({
+    await expect(receiver2_app3.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testing', qualifier: {key: 'value'}},
       headers: new Map(),
       capability: capability_app3,
@@ -1146,7 +1146,7 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO.clickPublish();
 
     // verify the interceptor to have replaced the message body with the stringified capability.
-    await expect.poll(() => receiver_app2.getFirstMessageOrElseReject()).toMatchIntentMessage({
+    await expect(receiver_app2.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testee', qualifier: {}},
       body: JSON.stringify(capability_app2),
       headers: new Map(),
@@ -1154,7 +1154,7 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     });
 
     // verify the interceptor to have replaced the message body with the stringified capability.
-    await expect.poll(() => receiver_app3.getFirstMessageOrElseReject()).toMatchIntentMessage({
+    await expect(receiver_app3.getFirstMessageOrElseReject()).toMatchIntentMessage({
       intent: {type: 'testee', qualifier: {}},
       body: JSON.stringify(capability_app3),
       headers: new Map(),
