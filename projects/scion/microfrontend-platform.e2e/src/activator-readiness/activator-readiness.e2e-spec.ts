@@ -24,7 +24,7 @@ test.describe('Activator Readiness', () => {
     // app-4-manifest-activator-readiness.json - has 1 activator with 1 readiness topic
     await testingAppPO.navigateTo({}, {queryParams: new Map().set('manifestClassifier', 'activator-readiness')});
 
-    await expect(await consoleLogs.get({filter: /ActivatorLoadTimeoutError|PlatformInitializer::activator:onactivate/})).toEqual(expect.arrayContaining([
+    await expect.poll(() => consoleLogs.get({filter: /ActivatorLoadTimeoutError|PlatformInitializer::activator:onactivate/})).toEqual(expect.arrayContaining([
       expect.stringMatching(/\[ActivatorLoadTimeoutError].*\[app=app-3, timeout=800ms, readinessTopic=activator\/ready]/),
       '[PlatformInitializer::activator:onactivate] [app=app-1, pingReply=app-1 [primary: true, X-APP-NAME: app-1]]',
       '[PlatformInitializer::activator:onactivate] [app=app-1, pingReply=app-1 [primary: false, X-APP-NAME: app-1]]',

@@ -34,7 +34,7 @@ export class ContextListPO {
       for (const listItemPO of contextListItemPOs) {
         const key = await listItemPO.getKey();
         const value = await listItemPO.getValue();
-        context[key] = this.parseJSON(value);
+        context[key] = this.parseJSON(value) as string;
       }
       return context;
     }, {isStable: (a, b) => Object.keys(a).length === Object.keys(b).length});
@@ -44,7 +44,7 @@ export class ContextListPO {
     try {
       return JSON.parse(value);
     }
-    catch (error) {
+    catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
       return value;
     }
   }
