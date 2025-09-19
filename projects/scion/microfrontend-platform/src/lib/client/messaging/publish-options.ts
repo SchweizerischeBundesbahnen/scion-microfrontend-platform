@@ -38,4 +38,5 @@ export interface PublishOptions {
  *
  * @category Messaging
  */
-export type RequestOptions = PublishOptions;
+export interface RequestOptions extends PublishOptions { // eslint-disable-line @typescript-eslint/no-empty-object-type
+}

@@ -139,7 +139,7 @@ export default class PublishMessageComponent implements OnDestroy {
           .pipe(finalize(() => this.markPublishing(false)))
           .subscribe({
             next: reply => this.replies.push(reply),
-            error: (error: unknown) => stringifyError(error),
+            error: error => this.publishError = stringifyError(error),
           });
       }
       else {

@@ -648,8 +648,8 @@ export class MessageBroker implements Initializer, PreDestroy {
  */
 function getSendingClient(event: MessageEvent<MessageEnvelope>): Client {
   const clientId = event.data.message.headers.get(MessageHeaders.ClientId) as string;
-  const client = Beans.get(ClientRegistry).getByClientId(clientId)!;
-  if (!client) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition
+  const client = Beans.get(ClientRegistry).getByClientId(clientId);
+  if (!client) {
     throw Error(`[NullClientError] Client not found in client registry. [clientId=${clientId}]`);
   }
   return client;
@@ -663,10 +663,10 @@ function checkOriginTrusted<T extends Message>(): MonoTypeOperatorFunction<Messa
     const envelope: MessageEnvelope = event.data;
     const messageId = envelope.message.headers.get(MessageHeaders.MessageId) as string;
     const clientId = envelope.message.headers.get(MessageHeaders.ClientId) as string;
-    const client = Beans.get(ClientRegistry).getByClientId(clientId)!;
+    const client = Beans.get(ClientRegistry).getByClientId(clientId);
 
     // Assert client registration.
-    if (!client) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition
+    if (!client) {
       if (event.source !== null) {
         const sender = new MessageTarget(event);
         const error = `[MessagingError] Message rejected: Client not registered [origin=${event.origin}]`;
