@@ -12,12 +12,12 @@ import packageJson from '../../../../package.json';
 import {ApplicationConfig} from '@scion/microfrontend-platform';
 
 const version = packageJson.version.replace(/\./g, '-');
-const devtools: ApplicationConfig | null = {
+const devtools = {
   symbolicName: 'devtools',
   manifestUrl: `https://microfrontend-platform-devtools-v${version}.scion.vercel.app/manifest.json`,
   intentionCheckDisabled: true,
   scopeCheckDisabled: true,
-};
+} as ApplicationConfig | null;
 
 /**
  * Environment used when packaging the app for Vercel.

@@ -16,6 +16,7 @@ import {JsonPipe} from '@angular/common';
 import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
+import {stringifyError} from '../../common/stringify-error.util';
 
 @Component({
   selector: 'app-context-value-lookup',
@@ -64,8 +65,8 @@ export default class LookupContextValueComponent implements OnDestroy {
           this.observeValue = next;
           this._cd.markForCheck();
         },
-        error: error => {
-          this.subscribeError = error;
+        error: (error: unknown) => {
+          this.subscribeError = stringifyError(error);
           this._cd.markForCheck();
         },
       });
@@ -73,7 +74,7 @@ export default class LookupContextValueComponent implements OnDestroy {
     // Lookup
     this._contextService.lookup(key, options)
       .then(value => this.lookupValue = value)
-      .catch(error => this.subscribeError = error)
+      .catch((error: unknown) => this.subscribeError = stringifyError(error))
       .finally(() => this._cd.markForCheck());
   }
 

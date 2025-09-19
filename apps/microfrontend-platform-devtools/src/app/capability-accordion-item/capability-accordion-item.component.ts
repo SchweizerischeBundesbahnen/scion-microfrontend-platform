@@ -38,7 +38,7 @@ export class CapabilityAccordionItemComponent {
   public onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
     event.stopPropagation();
     event.preventDefault();
-    this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
+    void this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
   }
 
   public onCopyToClipboard(event: MouseEvent): void {

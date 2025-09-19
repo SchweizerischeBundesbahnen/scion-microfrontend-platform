@@ -31,8 +31,8 @@ export class FilterFieldComponent implements OnInit {
   private readonly _zone = inject(NgZone);
   private readonly _formBuilder = inject(NonNullableFormBuilder);
 
-  public readonly autocompleteKeysDatalistId = UUID.randomUUID();  // generate random id for autocomplete list in order to support multiple filter fields in the same document
-  public readonly autocompleteValuesDatalistId = UUID.randomUUID();  // generate random id for autocomplete list in order to support multiple filter fields in the same document
+  public readonly autocompleteKeysDatalistId = UUID.randomUUID(); // generate random id for autocomplete list in order to support multiple filter fields in the same document
+  public readonly autocompleteValuesDatalistId = UUID.randomUUID(); // generate random id for autocomplete list in order to support multiple filter fields in the same document
   public readonly OR = 'or';
   public readonly AND = 'and';
 
