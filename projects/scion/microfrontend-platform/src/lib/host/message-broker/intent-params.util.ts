@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Intent, IntentMessage, MessageHeaders} from '../../messaging.model';
-import {ParamMatcher, ParamsMatcherResult} from './param-matcher';
+import {ParamMatcher, ParamMatcherResult} from '../../param-matcher';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Logger, LoggingContext} from '../../logger';
 import {ParamDefinition} from '../../platform.model';
@@ -43,7 +43,7 @@ export class IntentParams {
     });
 
     // Test params passed with the intent to match expected params as declared on the capability.
-    const paramMatcherResult = new ParamMatcher(capability.params || []).match(intent.params);
+    const paramMatcherResult = new ParamMatcher(capability.params).match(intent.params);
     if (!paramMatcherResult.matches) {
       const error = toParamValidationError(paramMatcherResult, intent);
       throw Error(`[IntentParamValidationError] ${error}`);
@@ -61,7 +61,7 @@ export class IntentParams {
   }
 }
 
-function toParamValidationError(paramsMatcherResult: ParamsMatcherResult, intent: Intent): string {
+function toParamValidationError(paramsMatcherResult: ParamMatcherResult, intent: Intent): string {
   const intentStringified = JSON.stringify(intent, (key, value) => (key === 'params') ? undefined : value);
   const missingParams = paramsMatcherResult.missingParams.map(param => param.name);
   const unexpectedParams = paramsMatcherResult.unexpectedParams;
