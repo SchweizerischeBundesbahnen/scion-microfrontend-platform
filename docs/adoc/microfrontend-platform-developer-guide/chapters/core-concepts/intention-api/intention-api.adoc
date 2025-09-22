@@ -369,22 +369,22 @@ Similar to <<chapter:intention-api:capability-registration,registering a capabil
 
 [[chapter:intention-api:capability-interception]]
 === Intercepting Capabilities
-The platform allows intercepting capabilities before they are registered, for example, to perform validation checks, add metadata, or change properties.
+The platform allows intercepting capabilities before they are registered, for example, to perform validation checks, add metadata, change properties, or prevent registration based on user permissions.
 
-An interceptor must implement the `intercept` method of the `CapabilityInterceptor` interface. Interceptors are registered in the bean manager of the host application under the symbol `CapabilityInterceptor` as `multi` bean. Multiple interceptors can be registered, forming a chain in which each interceptor is called one by one in registration order.
-
-[source,typescript]
-----
-include::intention-api.snippets.ts[tags=register-capability-interceptor]
-----
-<1> Registers an interceptor to intercept capabilities before they are registered in the platform.
-<2> Starts the platform.
+An interceptor must implement the `intercept` method of the `CapabilityInterceptor` interface.
 
 The following interceptor assigns a stable identifier to each microfrontend capability.
 
 [source,typescript]
 ----
-include::intention-api.snippets.ts[tags=intercept-capability]
+include::intention-api.snippets.ts[tags=intercept-capability:intercept]
+----
+
+The following interceptor rejects capabilities based on user permissions.
+
+[source,typescript]
+----
+include::intention-api.snippets.ts[tags=intercept-capability:reject]
 ----
 
 An interceptor can add extra capabilities and intentions to the manifest of the intercepted capability. This may be necessary to migrate capabilities.
@@ -395,3 +395,14 @@ The following interceptor extracts user information to a new capability.
 ----
 include::intention-api.snippets.ts[tags=intercept-capability:manifest]
 ----
+
+
+Interceptors are registered in the bean manager of the host application under the symbol `CapabilityInterceptor` as `multi` bean. Multiple interceptors can be registered, forming a chain in which each interceptor is called one by one in registration order.
+
+[source,typescript]
+----
+include::intention-api.snippets.ts[tags=register-capability-interceptor]
+----
+<1> Registers an interceptor to intercept capabilities. Interceptor must be registered before starting the platform.
+<2> Starts the platform.
+
