@@ -337,8 +337,20 @@ function assertCapabilityParamDefinitions(params: ParamDefinition[] | undefined)
  */
 async function interceptCapability(capability: Capability): Promise<Capability> {
   const interceptors = Beans.all(CapabilityInterceptor);
+
+  const appSymbolicName = capability.metadata!.appSymbolicName;
+  const manifest = new class implements CapabilityInterceptor.Manifest {
+    public addCapability(capability: Capability): Promise<string> {
+      return Beans.get(ManifestRegistry).registerCapability(capability, appSymbolicName);
+    }
+
+    public async addIntention(intention: Intention): Promise<string> {
+      return Beans.get(ManifestRegistry).registerIntention(intention, appSymbolicName);
+    }
+  }();
+
   for (const interceptor of interceptors) {
-    capability = await interceptor.intercept(capability);
+    capability = await interceptor.intercept(capability, manifest);
   }
   return capability;
 }
