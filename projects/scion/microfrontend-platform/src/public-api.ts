@@ -22,4 +22,5 @@ export * from './lib/platform-state';
 export * from './lib/logger';
 export * from './lib/topic-matcher.util';
 export * from './lib/qualifier-matcher';
+export * from './lib/param-matcher';
 export * from './lib/observable-decorator';
