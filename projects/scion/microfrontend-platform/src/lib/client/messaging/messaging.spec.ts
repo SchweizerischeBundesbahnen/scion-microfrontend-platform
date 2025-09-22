@@ -917,7 +917,7 @@ describe('Messaging', () => {
     await MicrofrontendPlatformHost.start({applications: []});
 
     // Register capability
-    const capabilityId = await Beans.get(ManifestService).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}});
+    const capabilityId = (await Beans.get(ManifestService).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}}))!;
 
     // Subscribe for intents
     const intentCaptor = new ObserveCaptor(capabilityIdExtractFn);

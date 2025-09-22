@@ -14,7 +14,8 @@ import {Capability, Intention} from '../../platform.model';
  * Enables modification of capabilities before they are registered.
  *
  * Interceptors can intercept capabilities before they are registered, for example,
- * to perform validation checks, add metadata, or change properties.
+ * to perform validation checks, add metadata, change properties, or prevent registration
+ * based on user permissions.
  *
  * The following interceptor assigns a stable identifier to each microfrontend capability.
  *
@@ -25,10 +26,25 @@ import {Capability, Intention} from '../../platform.model';
  *     if (capability.type === 'microfrontend') {
  *       return {
  *         ...capability,
+ *         // `hash()` is illustrative and not part of the Microfrontend Platform API
  *         metadata: {...capability.metadata, id: hash(capability)},
  *       };
  *     }
  *     return capability;
+ *   }
+ * }
+ * ```
+ *
+ * The following interceptor rejects capabilities based on user permissions.
+ *
+ * ```ts
+ * class UserAuthorizedCapabilityInterceptor implements CapabilityInterceptor {
+ *
+ *   public async intercept(capability: Capability): Promise<Capability | null> {
+ *     const requiredRole = capability.properties?.['role'];
+ *
+ *     // `hasRole()` is illustrative and not part of the Microfrontend Platform API
+ *     return !requiredRole || hasRole(requiredRole) ? capability : null;
  *   }
  * }
  * ```
@@ -61,6 +77,7 @@ import {Capability, Intention} from '../../platform.model';
  *
  * ```ts
  * Beans.register(CapabilityInterceptor, {useClass: MicrofrontendCapabilityInterceptor, multi: true});
+ * Beans.register(CapabilityInterceptor, {useClass: UserAuthorizedCapabilityInterceptor, multi: true});
  * Beans.register(CapabilityInterceptor, {useClass: UserCapabilityMigrator, multi: true});
  * ```
  *
@@ -75,8 +92,9 @@ export abstract class CapabilityInterceptor {
    *
    * @param capability - Capability to be intercepted.
    * @param manifest - Manifest of the application that provides the intercepted capability, allowing for the registration of extra capabilities and intentions.
+   * @return Promise that resolves to the intercepted capability, or `null` to prevent registration.
    */
-  public abstract intercept(capability: Capability, manifest: CapabilityInterceptor.Manifest): Promise<Capability>;
+  public abstract intercept(capability: Capability, manifest: CapabilityInterceptor.Manifest): Promise<Capability | null>;
 }
 
 /**
@@ -92,7 +110,7 @@ export namespace CapabilityInterceptor {
     /**
      * Adds specified capability to the application of the intercepted capability.
      */
-    addCapability(capability: Capability): Promise<string>;
+    addCapability(capability: Capability): Promise<string | null>;
 
     /**
      * Adds specified intention to the application of the intercepted capability.
