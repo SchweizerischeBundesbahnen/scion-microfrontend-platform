@@ -19,7 +19,7 @@ import {ConsoleLogger, Logger} from './logger';
 /**
  * Current version of the SCION Microfrontend Platform.
  */
-const version = '1.4.0';
+const version = '1.5.0';
 
 /**
  * The central class of the SCION Microfrontend Platform. This class cannot be instantiated. All functionality is provided by static methods.
