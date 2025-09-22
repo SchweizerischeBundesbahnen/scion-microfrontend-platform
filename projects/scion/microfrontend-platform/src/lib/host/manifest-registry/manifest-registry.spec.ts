@@ -12,7 +12,7 @@ import {MicrofrontendPlatformHost} from '../microfrontend-platform-host';
 import {expectEmissions, installLoggerSpies, readConsoleLog} from '../../testing/spec.util.spec';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestRegistry} from './manifest-registry';
-import {Capability} from '../../platform.model';
+import {Capability, Intention} from '../../platform.model';
 import {ManifestService} from '../../client/manifest-registry/manifest-service';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
@@ -499,7 +499,7 @@ describe('ManifestRegistry', () => {
     });
   });
 
-  it('should allow intercepting capabilities', async () => {
+  it('should support intercepting capabilities', async () => {
     await MicrofrontendPlatformHost.start({
       host: {symbolicName: 'host-app'},
       applications: [],
@@ -514,7 +514,8 @@ describe('ManifestRegistry', () => {
             metadata: {...capability.metadata!, id: '1'},
           };
         }
-      },
+      }(),
+      multi: true,
     });
 
     // Register a capability.
@@ -523,6 +524,148 @@ describe('ManifestRegistry', () => {
     // Expect the capability to be intercepted before its registration.
     const actual = (await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({type: 'testee'})))[0]!;
     expect(actual.metadata!.id).toEqual('1');
+  });
+
+  it('should support registering capabilities when intercepting capability', async () => {
+    await MicrofrontendPlatformHost.start({
+      host: {
+        symbolicName: 'host-app',
+        intentionCheckDisabled: true,
+        scopeCheckDisabled: true,
+      },
+      applications: [
+        {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+        {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
+      ],
+    });
+
+    // Register a capability interceptor.
+    Beans.register(CapabilityInterceptor, {
+      useValue: new class implements CapabilityInterceptor {
+        public async intercept(capability: Capability, manifest: CapabilityInterceptor.Manifest): Promise<Capability> {
+          switch (capability.type) {
+            case 'testee-1': {
+              await manifest.addCapability({
+                type: 'testee-1a',
+              });
+              break;
+            }
+            case 'testee-2': {
+              await manifest.addCapability({
+                type: 'testee-2a',
+              });
+              break;
+            }
+            case 'testee-3': {
+              await manifest.addCapability({
+                type: 'testee-3a',
+              });
+              break;
+            }
+          }
+          return {
+            ...capability,
+            properties: {
+              intercepted: true,
+            },
+          };
+        }
+      }(),
+      multi: true,
+    });
+
+    // Register capabilities.
+    await Beans.get(ManifestRegistry).registerCapability({type: 'testee-1'}, 'host-app');
+    await Beans.get(ManifestRegistry).registerCapability({type: 'testee-2'}, 'app-1');
+    await Beans.get(ManifestRegistry).registerCapability({type: 'testee-3'}, 'app-2');
+
+    // Expect capabilities of the host app.
+    const capabilitiesHostApp = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: 'host-app'}));
+    expect(capabilitiesHostApp.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
+      jasmine.objectContaining({type: 'testee-1', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
+      jasmine.objectContaining({type: 'testee-1a', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
+    ]));
+
+    // Expect capabilities of 'app-1'.
+    const capabilitiesApp1 = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: 'app-1'}));
+    expect(capabilitiesApp1.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
+      jasmine.objectContaining({type: 'testee-2', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
+      jasmine.objectContaining({type: 'testee-2a', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
+    ]));
+
+    // Expect capabilities of 'app-2'.
+    const capabilitiesApp2 = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: 'app-2'}));
+    expect(capabilitiesApp2.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
+      jasmine.objectContaining({type: 'testee-3', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
+      jasmine.objectContaining({type: 'testee-3a', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
+    ]));
+  });
+
+  it('should support registering intentions when intercepting capability', async () => {
+    await MicrofrontendPlatformHost.start({
+      host: {
+        symbolicName: 'host-app',
+        intentionCheckDisabled: true,
+        scopeCheckDisabled: true,
+      },
+      applications: [
+        {symbolicName: 'app-1', manifestUrl: new ManifestFixture({name: 'App 1'}).serve()},
+        {symbolicName: 'app-2', manifestUrl: new ManifestFixture({name: 'App 2'}).serve()},
+      ],
+    });
+
+    // Register a capability interceptor.
+    Beans.register(CapabilityInterceptor, {
+      useValue: new class implements CapabilityInterceptor {
+        public async intercept(capability: Capability, manifest: CapabilityInterceptor.Manifest): Promise<Capability> {
+          switch (capability.type) {
+            case 'testee-1': {
+              await manifest.addIntention({
+                type: 'testee-1a',
+              });
+              break;
+            }
+            case 'testee-2': {
+              await manifest.addIntention({
+                type: 'testee-2a',
+              });
+              break;
+            }
+            case 'testee-3': {
+              await manifest.addIntention({
+                type: 'testee-3a',
+              });
+              break;
+            }
+          }
+          return capability;
+        }
+      }(),
+      multi: true,
+    });
+
+    // Register capabilities.
+    await Beans.get(ManifestRegistry).registerCapability({type: 'testee-1'}, 'host-app');
+    await Beans.get(ManifestRegistry).registerCapability({type: 'testee-2'}, 'app-1');
+    await Beans.get(ManifestRegistry).registerCapability({type: 'testee-3'}, 'app-2');
+
+    // Expect intentions of the host app.
+    const intentionsHostApp = await firstValueFrom(Beans.get(ManifestService).lookupIntentions$({appSymbolicName: 'host-app'}));
+    expect(intentionsHostApp.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
+      jasmine.objectContaining({type: 'testee-1a'} satisfies Intention),
+    ]));
+
+    // Expect intentions of 'app-1'.
+    const intentionsApp1 = await firstValueFrom(Beans.get(ManifestService).lookupIntentions$({appSymbolicName: 'app-1'}));
+    expect(intentionsApp1.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
+      jasmine.objectContaining({type: 'testee-2a'} satisfies Intention),
+    ]));
+
+    // Expect intentions of 'app-2'.
+    const intentionsApp2 = await firstValueFrom(Beans.get(ManifestService).lookupIntentions$({appSymbolicName: 'app-2'}));
+    expect(intentionsApp2.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
+      jasmine.objectContaining({type: 'testee-3a'} satisfies Intention),
+    ]));
   });
 
   it('should use a unique identifier for capability ID', async () => {

@@ -218,8 +218,29 @@ function hash(capability: Capability): string {
   }
   // end::intercept-capability[]
 
+  // tag::intercept-capability:manifest[]
+  class UserCapabilityMigrator implements CapabilityInterceptor {
+
+    public async intercept(capability: Capability, manifest: CapabilityInterceptor.Manifest): Promise<Capability> {
+      if (capability.type === 'user' && capability.properties['info']) {
+        // Move user info to new capability.
+        await manifest.addCapability({
+          type: 'user-info',
+          properties: {
+            ...capability.properties['info'],
+          },
+        });
+        // Remove info on intercepted capability.
+        delete capability.properties['info'];
+      }
+      return capability;
+    }
+  }
+  // end::intercept-capability:manifest[]
+
   // tag::register-capability-interceptor[]
-  Beans.register(CapabilityInterceptor, {useClass: MicrofrontendCapabilityInterceptor}); // <1>
+  Beans.register(CapabilityInterceptor, {useClass: MicrofrontendCapabilityInterceptor, multi: true}); // <1>
+  Beans.register(CapabilityInterceptor, {useClass: UserCapabilityMigrator, multi: true}); // <1>
 
   // Start the platform.
   MicrofrontendPlatformHost.start(...); // <2>

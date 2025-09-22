@@ -386,3 +386,12 @@ The following interceptor assigns a stable identifier to each microfrontend capa
 ----
 include::intention-api.snippets.ts[tags=intercept-capability]
 ----
+
+An interceptor can add extra capabilities and intentions to the manifest of the intercepted capability. This may be necessary to migrate capabilities.
+
+The following interceptor extracts user information to a new capability.
+
+[source,typescript]
+----
+include::intention-api.snippets.ts[tags=intercept-capability:manifest]
+----

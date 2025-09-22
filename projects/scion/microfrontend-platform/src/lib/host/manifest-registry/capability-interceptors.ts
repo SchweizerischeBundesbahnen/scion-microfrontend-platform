@@ -8,12 +8,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Capability} from '../../platform.model';
+import {Capability, Intention} from '../../platform.model';
 
 /**
- * Allows intercepting capabilities before their registration.
+ * Enables modification of capabilities before they are registered.
  *
- * Interceptors allow intercepting capabilities before they are registered, for example,
+ * Interceptors can intercept capabilities before they are registered, for example,
  * to perform validation checks, add metadata, or change properties.
  *
  * The following interceptor assigns a stable identifier to each microfrontend capability.
@@ -33,12 +33,35 @@ import {Capability} from '../../platform.model';
  * }
  * ```
  *
+ * The following interceptor extracts user information to a new capability.
+ *
+ * ```ts
+ * class UserCapabilityMigrator implements CapabilityInterceptor {
+ *
+ *   public async intercept(capability: Capability, manifest: CapabilityInterceptor.Manifest): Promise<Capability> {
+ *     if (capability.type === 'user' && capability.properties['info']) {
+ *       // Move user info to new capability.
+ *       await manifest.addCapability({
+ *         type: 'user-info',
+ *         properties: {
+ *           ...capability.properties['info'],
+ *         },
+ *       });
+ *       // Remove info on intercepted capability.
+ *       delete capability.properties['info'];
+ *     }
+ *     return capability;
+ *   }
+ * }
+ * ```
+ *
  * #### Registering Interceptors
  * Interceptors are registered in the bean manager of the host application under the symbol `CapabilityInterceptor` as multi bean.
  * Multiple interceptors can be registered, forming a chain in which each interceptor is called one by one in registration order.
  *
  * ```ts
  * Beans.register(CapabilityInterceptor, {useClass: MicrofrontendCapabilityInterceptor, multi: true});
+ * Beans.register(CapabilityInterceptor, {useClass: UserCapabilityMigrator, multi: true});
  * ```
  *
  * @category Intention API
@@ -48,7 +71,32 @@ export abstract class CapabilityInterceptor {
   /**
    * Intercepts a capability before being registered.
    *
-   * @param capability - the capability to be intercepted
+   * An interceptor can add extra capabilities and intentions to the manifest of the intercepted capability. This may be necessary to migrate capabilities.
+   *
+   * @param capability - Capability to be intercepted.
+   * @param manifest - Manifest of the application that provides the intercepted capability, allowing for the registration of extra capabilities and intentions.
    */
-  public abstract intercept(capability: Capability): Promise<Capability>;
+  public abstract intercept(capability: Capability, manifest: CapabilityInterceptor.Manifest): Promise<Capability>;
+}
+
+/**
+ * Declares objects local to CapabilityInterceptor.
+ */
+export namespace CapabilityInterceptor {
+
+  /**
+   * Manifest of the application that provides the intercepted capability.
+   */
+  export interface Manifest {
+
+    /**
+     * Adds specified capability to the application of the intercepted capability.
+     */
+    addCapability(capability: Capability): Promise<string>;
+
+    /**
+     * Adds specified intention to the application of the intercepted capability.
+     */
+    addIntention(intention: Intention): Promise<string>;
+  }
 }
