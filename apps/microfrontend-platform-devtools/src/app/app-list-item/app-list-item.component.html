@@ -1,32 +1,32 @@
-<span class="app-name">{{application.name}}</span>
-<span class="app-symbolic-name" title="Symbolic Name">{{application.symbolicName}}</span>
-<a [href]="application.baseUrl" target="_blank">{{application.baseUrl}}</a>
+<span class="app-name">{{application().name}}</span>
+<span class="app-symbolic-name" title="Symbolic Name">{{application().symbolicName}}</span>
+<a [href]="application().baseUrl" target="_blank">{{application().baseUrl}}</a>
 
 <section class="chips">
   <!-- Capabilities -->
-  @if (capabilityCount$ | async; as capabilityCount) {
+  @if (capabilityCount()) {
     <a class="chip"
        (click)="onCapabilitiesClick($event)"
        href="">
-      {{capabilityCount}} {{capabilityCount === 1 ? 'capability' : 'capabilities'}}
+      {{capabilityCount()}} {{capabilityCount() === 1 ? 'capability' : 'capabilities'}}
     </a>
   }
 
   <!-- Intentions -->
-  @if (intentionCount$ | async; as intentionCount) {
+  @if (intentionCount()) {
     <a class="chip"
        (click)="onIntentionsClick($event)"
        href="">
-      {{intentionCount}} {{intentionCount === 1 ? 'intention' : 'intentions'}}
+      {{intentionCount()}} {{intentionCount() === 1 ? 'intention' : 'intentions'}}
     </a>
   }
 
   <!-- Platform Version -->
-  @if (application.platformVersion | async; as version) {
+  @if (application().platformVersion | async; as version) {
     <a class="chip version"
-      [href]="'https://www.npmjs.com/package/@scion/microfrontend-platform/v/' + version"
-      [title]="'@scion/microfrontend-platform@' + version"
-      target="_blank">
+       [href]="'https://www.npmjs.com/package/@scion/microfrontend-platform/v/' + version"
+       [title]="'@scion/microfrontend-platform@' + version"
+       target="_blank">
       v{{version}}
     </a>
   }
