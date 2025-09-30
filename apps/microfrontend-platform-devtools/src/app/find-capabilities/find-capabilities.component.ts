@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {KeyValuePair, LogicalOperator} from './filter-field/filter-field';
 import {CapabilityFilterSession} from './capability-filter-session.service';
 import {Observable} from 'rxjs';
@@ -34,14 +34,17 @@ import {VisibilityFilterFieldComponent} from './visibility-filter-field/visibili
 })
 export default class FindCapabilitiesComponent {
 
-  public capabilityIds$: Observable<string[]>;
-  public capabilityTypes$: Observable<string[]>;
-  public appSymbolicNames: string[];
-  public qualifierKeys$: Observable<string[]>;
-  public qualifierValues$: Observable<string[]>;
+  protected readonly capabilityFilterSession = inject(CapabilityFilterSession);
+  protected readonly capabilityIds$: Observable<string[]>;
+  protected readonly capabilityTypes$: Observable<string[]>;
+  protected readonly appSymbolicNames: string[];
+  protected readonly qualifierKeys$: Observable<string[]>;
+  protected readonly qualifierValues$: Observable<string[]>;
 
-  constructor(shellService: ShellService, public capabilityFilterSession: CapabilityFilterSession, manifestService: DevToolsManifestService) {
-    shellService.primaryTitle = 'Capability Browser';
+  constructor() {
+    inject(ShellService).primaryTitle = 'Capability Browser';
+
+    const manifestService = inject(DevToolsManifestService);
     this.capabilityIds$ = manifestService.capabilities$().pipe(mapArray(capability => capability.metadata!.id));
     this.capabilityTypes$ = manifestService.capabilityTypes$();
     this.appSymbolicNames = manifestService.applications.map(app => app.symbolicName).sort();
