@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, EventEmitter, HostListener, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, HostListener, output} from '@angular/core';
 import {animate, AnimationMetadata, style, transition, trigger} from '@angular/animations';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {SciViewportComponent} from '@scion/components/viewport';
@@ -30,25 +30,24 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export class AppMenuComponent {
 
-  @Output()
-  public close = new EventEmitter<void>(); // eslint-disable-line @angular-eslint/no-output-native
+  public readonly close = output<void>(); // eslint-disable-line @angular-eslint/no-output-native
 
   @HostListener('document:keydown.escape')
-  public onEscape(): void {
+  protected onEscape(): void {
     this.close.emit();
   }
 
   @HostListener('mousedown', ['$event'])
-  public onHostCloseEvent(event: Event): void {
+  protected onHostCloseEvent(event: Event): void {
     event.stopPropagation(); // Prevent closing this overlay if emitted from a child of this overlay.
   }
 
   @HostListener('document:mousedown')
-  public onDocumentCloseEvent(): void {
+  protected onDocumentCloseEvent(): void {
     this.close.emit();
   }
 
-  public onMenuItemClick(event: MouseEvent): void {
+  protected onMenuItemClick(event: MouseEvent): void {
     event.preventDefault(); // Prevent href navigation imposed by accessibility rules
     this.close.emit();
   }
