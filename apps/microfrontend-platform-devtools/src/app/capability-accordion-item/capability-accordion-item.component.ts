@@ -26,8 +26,8 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export class CapabilityAccordionItemComponent {
 
-  public readonly appSymbolicName = input<string | undefined>();
   public readonly capability = input.required<Capability>();
+  public readonly appSymbolicName = input<string>();
 
   private readonly _router = inject(Router);
   private readonly _clipboard = inject(Clipboard);

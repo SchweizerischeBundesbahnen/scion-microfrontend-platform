@@ -1,6 +1,6 @@
 <sci-filter-field [formControl]="filterFormControl" placeholder="Filter by type and qualifier, with multiple filter terms separated by space."/>
 <sci-accordion>
-  @for (capabilitiesByApp of capabilitiesByApp$ | async | keyvalue; track capabilitiesByApp.key) {
+  @for (capabilitiesByApp of capabilitiesByApp() | keyvalue; track capabilitiesByApp.key) {
     <ng-template sciAccordionItem [panel]="panel" [key]="capabilitiesByApp.key">
       <header>
         {{capabilitiesByApp.key | devtoolsAppName}}
@@ -9,6 +9,7 @@
     </ng-template>
 
     <ng-template #panel>
+      @let selectedCapability = this.selectedCapability();
       <section class="panel">
         <section class="capability-list">
           @for (capability of capabilitiesByApp.value; track capability.metadata!.id) {
