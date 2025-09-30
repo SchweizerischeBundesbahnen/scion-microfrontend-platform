@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, ElementRef, inject, Injector, Input, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, effect, ElementRef, inject, Injector, input, untracked, ViewChild} from '@angular/core';
 import {MessageClient, OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Overlay} from '@angular/cdk/overlay';
@@ -34,21 +34,9 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
 })
-export class BrowserOutletComponent implements OnInit {
+export class BrowserOutletComponent {
 
-  private readonly _formBuilder = inject(NonNullableFormBuilder);
-  private readonly _activatedRoute = inject(ActivatedRoute);
-  private readonly _overlay = inject(Overlay);
-  private readonly _injector = inject(Injector);
-  private readonly _destroyRef = inject(DestroyRef);
-
-  public form = this._formBuilder.group({
-    url: this._formBuilder.control(null, Validators.required),
-  });
-  public appEntryPoints: AppEndpoint[];
-
-  @Input({required: true})
-  public outletName!: string;
+  public readonly outletName = input.required<string>();
 
   @ViewChild('settings_button', {static: true})
   public settingsButton!: ElementRef<HTMLButtonElement>;
@@ -59,29 +47,38 @@ export class BrowserOutletComponent implements OnInit {
   @ViewChild('router_outlet', {static: true})
   public routerOutlet!: ElementRef<SciRouterOutletElement>;
 
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _activatedRoute = inject(ActivatedRoute);
+  private readonly _overlay = inject(Overlay);
+  private readonly _injector = inject(Injector);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  protected readonly form = this._formBuilder.group({
+    url: this._formBuilder.control(null, Validators.required),
+  });
+  protected readonly appEntryPoints: AppEndpoint[];
+
   constructor() {
     this.appEntryPoints = this.readAppEntryPoints();
+    effect(() => {
+      const outletName = this.outletName();
+      untracked(() => {
+        this.installOutletContextUpdateHandler(outletName);
+      });
+    });
   }
 
-  public ngOnInit(): void {
-    this.installOutletContextUpdateHandler(this.outletName);
-  }
-
-  public onUrlClearClick(): void {
+  protected onUrlClearClick(): void {
     this.form.reset();
     this.navigate();
   }
 
-  public onNavigateClick(): boolean {
+  protected onNavigateClick(): boolean {
     this.navigate();
     return false;
   }
 
-  private navigate(): void {
-    void Beans.get(OutletRouter).navigate(this.form.controls.url.value, {outlet: this.outletName});
-  }
-
-  public onSettingsClick(): void {
+  protected onSettingsClick(): void {
     RouterOutletSettingsComponent.openAsOverlay({
       anchor: this.settingsButton.nativeElement,
       overlay: this._overlay,
@@ -90,7 +87,7 @@ export class BrowserOutletComponent implements OnInit {
     });
   }
 
-  public onContextDefineClick(): void {
+  protected onContextDefineClick(): void {
     RouterOutletContextComponent.openAsOverlay({
       anchor: this.contextDefineButton.nativeElement,
       overlay: this._overlay,
@@ -99,16 +96,20 @@ export class BrowserOutletComponent implements OnInit {
     });
   }
 
-  public onActivate(event: Event): void {
-    console.debug(`[BrowserOutletComponent::sci-router-outlet:onactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`);
+  protected onActivate(event: Event): void {
+    console.debug(`[BrowserOutletComponent::sci-router-outlet:onactivate] [outlet=${this.outletName()}, url=${(event as CustomEvent).detail}]`);
   }
 
-  public onDeactivate(event: Event): void {
-    console.debug(`[BrowserOutletComponent::sci-router-outlet:ondeactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`);
+  protected onDeactivate(event: Event): void {
+    console.debug(`[BrowserOutletComponent::sci-router-outlet:ondeactivate] [outlet=${this.outletName()}, url=${(event as CustomEvent).detail}]`);
   }
 
-  public onFocusWithin(event: Event): void {
-    console.debug(`[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`);
+  protected onFocusWithin(event: Event): void {
+    console.debug(`[BrowserOutletComponent::sci-router-outlet:onfocuswithin] [outlet=${this.outletName()}, focuswithin=${(event as CustomEvent).detail}]`);
+  }
+
+  private navigate(): void {
+    void Beans.get(OutletRouter).navigate(this.form.controls.url.value, {outlet: this.outletName()});
   }
 
   private readAppEntryPoints(): AppEndpoint[] {
