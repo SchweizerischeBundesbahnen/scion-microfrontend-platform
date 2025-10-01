@@ -1,12 +1,18 @@
-@if (capability.private) {
-  <span class="visibility private" title="Private API - This capability is not visible to other applications." sciMaterialIcon>visibility_off</span>
-} @else {
-  <span class="visibility public" title="Public API - This capability has public scope. Other applications can interact with this capability." sciMaterialIcon>visibility</span>
-}
+<span class="visibility"
+      [class.private]="capability().private"
+      [class.inactive]="capability().inactive"
+      [attr.title]="tooltip()"
+      sciMaterialIcon>
+  @if (capability().private) {
+    visibility_off
+  } @else {
+    visibility
+  }
+</span>
 
-<sci-qualifier-chip-list [type]="capability.type" [qualifier]="capability.qualifier"/>
+<sci-qualifier-chip-list [type]="capability().type" [qualifier]="capability().qualifier"/>
 <div class="actions">
-  @if (appSymbolicName) {
+  @if (appSymbolicName(); as appSymbolicName) {
     <a href="" class="app-symbolic-name" (click)="onOpenAppClick($event, appSymbolicName)" title="Navigate to details of {{appSymbolicName}}.">
       {{appSymbolicName}}
     </a>

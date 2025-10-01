@@ -196,6 +196,14 @@ test.describe('Messaging', () => {
       await IntendBasedMessagingSpecs.receiveRetainedRequestsSpec(testingAppPO);
     });
 
+    test('should not dispatch intent to inactive capabilities', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.rejectDispatchingIntentToInactiveCapabilitySpec(testingAppPO);
+    });
+
+    test('should dispatch intent to inactive capabilities if "Capability Active Check" is disabled"', async ({testingAppPO}) => {
+      await IntendBasedMessagingSpecs.dispatchIntentToInactiveCapabilitySpec(testingAppPO);
+    });
+
     test.describe('intent-interception', () => {
 
       test('allows intercepting intents', async ({testingAppPO}) => {

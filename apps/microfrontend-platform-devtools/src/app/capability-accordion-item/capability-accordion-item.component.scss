@@ -4,12 +4,14 @@
   align-items: center;
   gap: 1em;
 
-  > span.visibility {
-    &.private {
-      color: var(--sci-color-text-subtlest)
-    }
+  &:has(span.visibility.inactive) :is(sci-qualifier-chip-list, span.visibility) {
+    opacity: .5;
+  }
 
-    &.public {
+  > span.visibility {
+    color: var(--sci-color-text-subtle);
+
+    &:not(.private):not(.inactive) {
       color: var(--sci-color-accent)
     }
   }

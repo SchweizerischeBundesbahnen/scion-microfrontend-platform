@@ -1,5 +1,5 @@
 <section class="register e2e-register">
-  <header>Register a capability</header>
+  <header>Register Capability</header>
   <form autocomplete="off" [formGroup]="registerForm">
     <sci-form-field label="Type *" direction="column">
       <input [formControl]="registerForm.controls.type" class="e2e-type">
@@ -10,9 +10,14 @@
     <sci-form-field label="Params" direction="column">
       <input [formControl]="registerForm.controls.params" class="e2e-params" placeholder="JSON Array, e.g., {{paramsPlaceholder | json}}">
     </sci-form-field>
-    <sci-form-field label="Private" direction="column">
-      <sci-checkbox [formControl]="registerForm.controls.private" class="e2e-private"/>
-    </sci-form-field>
+    <div class="flags">
+      <sci-form-field label="Private" direction="column">
+        <sci-checkbox [formControl]="registerForm.controls.private" class="e2e-private"/>
+      </sci-form-field>
+      <sci-form-field label="Inactive" direction="column">
+        <sci-checkbox [formControl]="registerForm.controls.inactive" class="e2e-inactive"/>
+      </sci-form-field>
+    </div>
     <sci-form-field label="Properties" direction="column">
       <sci-key-value-field [keyValueFormArray]="registerForm.controls.properties" [addable]="true" [removable]="true" class="e2e-properties"/>
     </sci-form-field>
@@ -32,7 +37,7 @@
 </section>
 
 <section class="unregister e2e-unregister">
-  <header>Unregister capability(-ies)</header>
+  <header>Unregister Capability</header>
   <form autocomplete="off" [formGroup]="unregisterForm">
     <sci-form-field label="ID" direction="column">
       <input [formControl]="unregisterForm.controls.id" class="e2e-id">

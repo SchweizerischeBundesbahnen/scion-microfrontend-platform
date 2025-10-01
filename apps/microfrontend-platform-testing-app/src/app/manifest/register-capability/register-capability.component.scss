@@ -24,6 +24,11 @@
       grid-auto-rows: min-content;
       row-gap: .75em;
 
+      > div.flags {
+        display: flex;
+        gap: 1em;
+      }
+
       > button[type="submit"] {
         margin-top: 1em;
       }

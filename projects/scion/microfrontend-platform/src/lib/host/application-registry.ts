@@ -59,6 +59,7 @@ export class ApplicationRegistry {
       scopeCheckDisabled: Defined.orElse(applicationConfig.scopeCheckDisabled, false),
       intentionCheckDisabled: Defined.orElse(applicationConfig.intentionCheckDisabled, false),
       intentionRegisterApiDisabled: Defined.orElse(applicationConfig.intentionRegisterApiDisabled, true),
+      capabilityActiveCheckDisabled: Defined.orElse(applicationConfig.capabilityActiveCheckDisabled, false),
     });
 
     for (const capability of manifest.capabilities ?? []) {
@@ -98,24 +99,31 @@ export class ApplicationRegistry {
   }
 
   /**
-   * Returns whether the specified application can interact with private capabilities of other applications.
+   * Indicates whether the specified application is allowed to access private capabilities of other applications.
    */
   public isScopeCheckDisabled(appSymbolicName: string): boolean {
     return Defined.orElseThrow(this._applications.get(appSymbolicName), () => Error(`[NullApplicationError] No application registered under the symbolic name '${appSymbolicName}'.`)).scopeCheckDisabled;
   }
 
   /**
-   * Returns whether the specified application can register and unregister intentions dynamically at runtime.
-   */
-  public isIntentionRegisterApiDisabled(appSymbolicName: string): boolean {
-    return Defined.orElseThrow(this._applications.get(appSymbolicName), () => Error(`[NullApplicationError] No application registered under the symbolic name '${appSymbolicName}'.`)).intentionRegisterApiDisabled;
-  }
-
-  /**
-   * Returns whether the specified application can interact with capabilities of other applications without having to declare respective intentions.
+   * Indicates whether the specified application is allowed to access public capabilities of other applications without declaring an intention.
    */
   public isIntentionCheckDisabled(appSymbolicName: string): boolean {
     return Defined.orElseThrow(this._applications.get(appSymbolicName), () => Error(`[NullApplicationError] No application registered under the symbolic name '${appSymbolicName}'.`)).intentionCheckDisabled;
+  }
+
+  /**
+   * Indicates whether the specified application is allowed to access inactive capabilities.
+   */
+  public isCapabilityActiveCheckDisabled(appSymbolicName: string): boolean {
+    return Defined.orElseThrow(this._applications.get(appSymbolicName), () => Error(`[NullApplicationError] No application registered under the symbolic name '${appSymbolicName}'.`)).capabilityActiveCheckDisabled;
+  }
+
+  /**
+   * Indicates whether the specified application is allowed to register and unregister intentions at runtime.
+   */
+  public isIntentionRegisterApiDisabled(appSymbolicName: string): boolean {
+    return Defined.orElseThrow(this._applications.get(appSymbolicName), () => Error(`[NullApplicationError] No application registered under the symbolic name '${appSymbolicName}'.`)).intentionRegisterApiDisabled;
   }
 
   /**

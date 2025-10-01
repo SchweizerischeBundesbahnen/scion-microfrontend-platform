@@ -1161,4 +1161,70 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
       capability: capability_app3,
     });
   }
+
+  /**
+   * Tests that an application cannot send intents to inactive capabilities.
+   */
+  export async function rejectDispatchingIntentToInactiveCapabilitySpec(testingAppPO: TestingAppPO): Promise<void> {
+    const pagePOs = await testingAppPO.navigateTo({
+      registerCapability: RegisterCapabilityPagePO,
+      publisher: PublishMessagePagePO,
+      receiver: ReceiveMessagePagePO,
+    });
+
+    // Register inactive capability.
+    const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
+    await registerCapabilityPO.registerCapability({type: 'testee', inactive: true});
+
+    // Receive intents.
+    const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
+    await receiverPO.selectFlavor(MessagingFlavor.Intent);
+    await receiverPO.enterIntentSelector('testee');
+    await receiverPO.clickSubscribe();
+
+    // Publish intent.
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
+    await publisherPO.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO.enterIntent('testee');
+    await publisherPO.clickPublish();
+
+    // Expect intent not to be dispatched.
+    await expect.poll(() => publisherPO.getPublishError()).toContain('[NotQualifiedError]');
+
+    // Expect intent not to be received.
+    await expect.poll(() => receiverPO.getMessages()).toEqual([]);
+  }
+
+  /**
+   * Tests that an application can send intents to inactive capabilities if "Capability Active Check" is disabled".
+   */
+  export async function dispatchIntentToInactiveCapabilitySpec(testingAppPO: TestingAppPO): Promise<void> {
+    const pagePOs = await testingAppPO.navigateTo({
+      registerCapability: RegisterCapabilityPagePO,
+      publisher: PublishMessagePagePO,
+      receiver: ReceiveMessagePagePO,
+    }, {queryParams: new Map().set('capabilityActiveCheckDisabled', 'app-1')});
+
+    // Register inactive capability.
+    const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
+    await registerCapabilityPO.registerCapability({type: 'testee'});
+
+    // Receive intents.
+    const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
+    await receiverPO.selectFlavor(MessagingFlavor.Intent);
+    await receiverPO.enterIntentSelector('testee');
+    await receiverPO.clickSubscribe();
+
+    // Publish intent.
+    const publisherPO = pagePOs.get<PublishMessagePagePO>('publisher');
+    await publisherPO.selectFlavor(MessagingFlavor.Intent);
+    await publisherPO.enterIntent('testee');
+    await publisherPO.clickPublish();
+
+    // Expect intent to be published.
+    await expect.poll(() => publisherPO.getPublishError()).toBeNull();
+
+    // Expect intent to be received.
+    await expect.poll(() => receiverPO.getMessages()).toHaveLength(1);
+  }
 }

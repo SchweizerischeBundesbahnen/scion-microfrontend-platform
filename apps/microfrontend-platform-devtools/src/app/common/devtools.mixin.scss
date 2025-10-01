@@ -1,0 +1,30 @@
+@use '@scion/components.internal/design' as sci-design;
+
+@mixin toggleButtonGroup() {
+  display: flex;
+  gap: 1px;
+  border: 1px solid var(--sci-color-border);
+  border-radius: var(--sci-corner-small);
+  background-color: var(--sci-color-border);
+  overflow: hidden;
+
+  > button {
+    @include sci-design.style-button();
+    border-radius: 0;
+    border: none;
+    color: var(--sci-color-text-subtlest);
+    background-color: var(--sci-color-background-input);
+    padding-left: 1em;
+    padding-right: 1em;
+    user-select: none;
+
+    &.active {
+      color: var(--sci-color-accent-inverse);
+      background-color: var(--sci-color-accent);
+
+      &:hover {
+        background-color: color-mix(in srgb, var(--sci-color-accent) 95%, #{light-dark}(var(--sci-static-color-black), var(--sci-static-color-white)));
+      }
+    }
+  }
+}

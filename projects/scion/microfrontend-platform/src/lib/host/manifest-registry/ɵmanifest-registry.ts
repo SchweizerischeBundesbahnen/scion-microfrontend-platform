@@ -80,31 +80,53 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
     }
 
     const filter: ManifestObjectFilter = {appSymbolicName, type: intent.type};
-    return (
-      Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName) ||
-      this._intentionStore.find({...filter, qualifier: intentionQualifier => new QualifierMatcher(intentionQualifier).matches(intent.qualifier)}).length > 0 ||
-      this._capabilityStore.find({...filter, qualifier: intent.qualifier || {}}).length > 0  // An app has an implicit intention if it provides the capability itself
-    );
+    const isIntentionCheckDisabled = Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName);
+    const isCapabilityActiveCheckDisabled = Beans.get(ApplicationRegistry).isCapabilityActiveCheckDisabled(appSymbolicName);
+
+    // Tests if the app has declared an intention.
+    const hasIntention = (): boolean => this._intentionStore.find({...filter, qualifier: intentionQualifier => new QualifierMatcher(intentionQualifier).matches(intent.qualifier)}).length > 0;
+    // Tests if the app has an implicit intention if it provides the capability.
+    const hasImplicitIntention = (): boolean => this._capabilityStore.find({...filter, qualifier: intent.qualifier || {}})
+      .filter(capability => isCapabilityActiveCheckDisabled || !capability.inactive)
+      .length > 0;
+
+    return isIntentionCheckDisabled || hasIntention() || hasImplicitIntention();
   }
 
   /**
-   * Tests if the specified micro app is qualified to interact with the given capability.
+   * Tests whether the specified application is qualified to access the given capability.
    *
-   * A micro app is qualified if it meets either of the following criteria:
-   * - The capability is provided by the application itself.
-   * - The capability is provided by another application, but only if the capability is publicly visible (1),
-   *   and the micro app has declared an intention (2) to use the capability.
+   * An application is qualified if following criteria are met:
+   * - The capability is active (1).
+   * - The capability is provided by the application, or provided by another application with
+   *   public visibility (2), and the application has an intention (3) for the capability.
    *
-   * (1) Unless 'scope check' is disabled for the specified micro app.
-   * (2) Unless 'intention check' is disabled for the specified micro app.
+   * (1) Unless 'Capability Active Check' is disabled for the application.
+   * (2) Unless 'Scope Check' is disabled for the application.
+   * (3) Unless 'Intention Check' is disabled for the application.
    */
   private isApplicationQualifiedForCapability(appSymbolicName: string, capability: Capability): boolean {
-    if (capability.metadata!.appSymbolicName === appSymbolicName) {
-      return true;
-    }
     const isScopeCheckDisabled = Beans.get(ApplicationRegistry).isScopeCheckDisabled(appSymbolicName);
     const isIntentionCheckDisabled = Beans.get(ApplicationRegistry).isIntentionCheckDisabled(appSymbolicName);
-    return (isScopeCheckDisabled || !capability.private) && (isIntentionCheckDisabled || this.hasIntentionForCapability(appSymbolicName, capability));
+    const isCapabilityActiveCheckDisabled = Beans.get(ApplicationRegistry).isCapabilityActiveCheckDisabled(appSymbolicName);
+    const isCapabilityProvider = capability.metadata!.appSymbolicName === appSymbolicName;
+
+    // Perform active check.
+    if (capability.inactive && !isCapabilityActiveCheckDisabled) {
+      return false;
+    }
+
+    // Perform scope check.
+    if (!isCapabilityProvider && capability.private && !isScopeCheckDisabled) {
+      return false;
+    }
+
+    // Perform intention check.
+    if (!isCapabilityProvider && !this.hasIntentionForCapability(appSymbolicName, capability) && !isIntentionCheckDisabled) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -138,6 +160,7 @@ export class ɵManifestRegistry implements ManifestRegistry, PreDestroy {
       qualifier: capability.qualifier ?? {},
       params: capability.params ?? [],
       private: capability.private ?? true,
+      inactive: capability.inactive ?? false,
       metadata: {
         id: UUID.randomUUID(),
         appSymbolicName: appSymbolicName,
@@ -340,7 +363,7 @@ async function interceptCapability(capability: Capability): Promise<Capability> 
 
   const appSymbolicName = capability.metadata!.appSymbolicName;
   const manifest = new class implements CapabilityInterceptor.Manifest {
-    public addCapability(capability: Capability): Promise<string> {
+    public addCapability<T extends Capability>(capability: T): Promise<string> {
       return Beans.get(ManifestRegistry).registerCapability(capability, appSymbolicName);
     }
 

@@ -17,6 +17,7 @@ const devtools: ApplicationConfig | null = {
   manifestUrl: `https://microfrontend-platform-devtools-v${version}.scion.vercel.app/manifest.json`,
   intentionCheckDisabled: true,
   scopeCheckDisabled: true,
+  capabilityActiveCheckDisabled: true,
 };
 
 /**

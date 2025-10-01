@@ -46,6 +46,7 @@ export default class RegisterCapabilityComponent {
     qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
     params: this._formBuilder.control(''),
     private: this._formBuilder.control(false),
+    inactive: this._formBuilder.control(false),
     properties: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
   });
   public unregisterForm = this._formBuilder.group({
@@ -77,6 +78,7 @@ export default class RegisterCapabilityComponent {
       qualifier: SciKeyValueFieldComponent.toDictionary(this.registerForm.controls.qualifier) ?? undefined,
       params: params ? JSON.parse(params) : undefined,
       private: this.registerForm.controls.private.value,
+      inactive: this.registerForm.controls.inactive.value,
       properties: parseTypedValues(SciKeyValueFieldComponent.toDictionary(this.registerForm.controls.properties)) ?? undefined,
     };
 

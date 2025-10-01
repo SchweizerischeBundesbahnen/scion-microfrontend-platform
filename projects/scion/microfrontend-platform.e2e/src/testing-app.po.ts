@@ -75,6 +75,8 @@ export class TestingAppPO {
    * ### Query params to instrument the 'Testing App':
    * - intentionRegisterApiDisabled:
    *   Provide a comma-separated list of app symbolic names for which to disable the 'Intention Register API'.
+   * - capabilityActiveCheckDisabled:
+   *   Provide a comma-separated list of app symbolic names for which to disable the 'Capability Active Check'.
    * - manifestClassifier:
    *   Control which manifest files to collect by providing a classifier which is appended to the manifest filename.
    *   E.g. if setting the classifier 'activator', the manifest 'app-1-manifest-activator.json' is collected instead of 'app-1-manifest.json'.

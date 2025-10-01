@@ -30,6 +30,55 @@ describe('ManifestRegistry', () => {
   });
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
+  describe('Capability Registration', () => {
+
+    it('should default to private capability', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {
+          symbolicName: 'host-app',
+          manifest: {
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'testee',
+              },
+            ],
+          },
+        },
+        applications: [],
+      });
+
+      const captor = new ObserveCaptor();
+      Beans.get(ManifestService).lookupCapabilities$({type: 'testee'}).subscribe(captor);
+      await expectEmissions(captor).toEqual([
+        [jasmine.objectContaining({type: 'testee', private: true} satisfies Partial<Capability>)],
+      ]);
+    });
+
+    it('should default to active capability', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {
+          symbolicName: 'host-app',
+          manifest: {
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'testee',
+              },
+            ],
+          },
+        },
+        applications: [],
+      });
+
+      const captor = new ObserveCaptor();
+      Beans.get(ManifestService).lookupCapabilities$({type: 'testee'}).subscribe(captor);
+      await expectEmissions(captor).toEqual([
+        [jasmine.objectContaining({type: 'testee', inactive: false} satisfies Partial<Capability>)],
+      ]);
+    });
+  });
+
   describe('hasIntention', () => {
 
     it('should error if not passing an exact qualifier', async () => {
@@ -134,6 +183,71 @@ describe('ManifestRegistry', () => {
 
       // Expect app-2 to not have an intention
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBeFalse();
+    });
+
+    it('should not have implicit intention for own inactive capabilities', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {
+          symbolicName: 'host-app',
+          manifest: {
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'testee',
+                qualifier: {inactive: 'false'},
+                inactive: false,
+              },
+              {
+                type: 'testee',
+                qualifier: {inactive: 'true'},
+                inactive: true,
+              },
+              {
+                type: 'testee',
+                qualifier: {inactive: 'default'},
+              },
+            ],
+          },
+        },
+        applications: [],
+      });
+
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'false'}}, 'host-app')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'true'}}, 'host-app')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'default'}}, 'host-app')).toBeTrue();
+    });
+
+    it('should have implicit intention for own inactive capabilities if "Capability Active Check" is disabled', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {
+          intentionCheckDisabled: true,
+          symbolicName: 'host-app',
+          manifest: {
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'testee',
+                qualifier: {inactive: 'false'},
+                inactive: false,
+              },
+              {
+                type: 'testee',
+                qualifier: {inactive: 'true'},
+                inactive: true,
+              },
+              {
+                type: 'testee',
+                qualifier: {inactive: 'default'},
+              },
+            ],
+          },
+        },
+        applications: [],
+      });
+
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'false'}}, 'host-app')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'true'}}, 'host-app')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'default'}}, 'host-app')).toBeTrue();
     });
   });
 

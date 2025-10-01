@@ -25,7 +25,7 @@ import {ɵApplication} from '../../ɵplatform.model';
  * which are also publicly available. Capabilities that the app provides itself are always visible to the app.
  *
  * The app can also provide new capabilities or remove existing ones. If the *Intention Registration API* is enabled
- * for the app, the app can also manage its intentions, which, however, is strongly discouraged. Instead, apps should
+ * for the app, the app can also manage its intentions, which, however, is discouraged. Instead, apps should
  * declare the required functionality in their manifests using wildcard intentions.
  *
  * @category Intention API
@@ -180,19 +180,20 @@ export class ManifestService implements Initializer {
   }
 
   /**
-   * Tests if the specified micro app is qualified to interact with the given capability.
+   * Tests whether the specified application is qualified to access the given capability.
    *
-   * A micro app is qualified if it meets either of the following criteria:
-   * - The capability is provided by the application itself.
-   * - The capability is provided by another application, but only if the capability is publicly visible (1),
-   *   and the micro app has declared an intention (2) to use the capability.
+   * An application is qualified if following criteria are met:
+   * - The capability is active (1).
+   * - The capability is provided by the application, or provided by another application with
+   *   public visibility (2), and the application has an intention (3) for the capability.
    *
-   * (1) Unless 'scope check' is disabled for the specified micro app.
-   * (2) Unless 'intention check' is disabled for the specified micro app.
+   * (1) Unless 'Capability Active Check' is disabled for the application.
+   * (2) Unless 'Scope Check' is disabled for the application.
+   * (3) Unless 'Intention Check' is disabled for the application.
    *
-   * @param appSymbolicName - Specifies the symbolic name of the application under test.
+   * @param appSymbolicName - Symbolic name of the application under test.
    * @param qualifiedFor
-   *        @property capabilityId - Identifies the capability to test.
+   * @param qualifiedFor.capabilityId - Identifies the capability to test.
    * @return An Observable that, when subscribed, emits the qualification of specified application.
    *         It never completes and emits continuously when capabilites or intentions are registered or unregistered.
    */

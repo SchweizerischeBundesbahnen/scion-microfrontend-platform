@@ -46,6 +46,7 @@ export class RegisterCapabilityPagePO implements OutletPageObject {
     }
 
     await new SciCheckboxPO(this._registerSectionLocator.locator('sci-checkbox.e2e-private')).toggle(capability.private ?? true);
+    await new SciCheckboxPO(this._registerSectionLocator.locator('sci-checkbox.e2e-inactive')).toggle(capability.inactive ?? false);
     await this._registerSectionLocator.locator('button.e2e-register').click();
 
     // Evaluate the response: resolves the promise on success, or rejects it on error.

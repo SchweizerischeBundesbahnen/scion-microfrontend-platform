@@ -51,21 +51,27 @@ export interface ApplicationConfig {
    */
   exclude?: boolean;
   /**
-   * Controls whether this micro application can interact with private capabilities of other micro applications.
+   * Allows this application to access private capabilities of other applications.
    *
-   * By default, scope check is enabled. Disabling scope check is strongly discouraged.
+   * Disabling this check is discouraged. Enabled by default.
    */
   scopeCheckDisabled?: boolean;
   /**
-   * Controls whether this micro application can interact with the capabilities of other apps without having to declare respective intentions.
+   * Allows this application to access public capabilities of other applications without declaring an intention.
    *
-   * By default, intention check is enabled. Disabling intention check is strongly discouraged.
+   * Disabling this check is discouraged. Enabled by default.
    */
   intentionCheckDisabled?: boolean;
   /**
-   * Controls whether this micro application can register and unregister intentions dynamically at runtime.
+   * Allows this application to access inactive capabilities.
    *
-   * By default, this API is disabled. Enabling this API is strongly discouraged.
+   * Disabling this check is discouraged. Enabled by default.
+   */
+  capabilityActiveCheckDisabled?: boolean;
+  /**
+   * Allows this application to register and unregister intentions at runtime.
+   *
+   * Enabling this API is discouraged. Disabled by default.
    */
   intentionRegisterApiDisabled?: boolean;
 }

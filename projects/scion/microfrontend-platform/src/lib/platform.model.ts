@@ -89,15 +89,19 @@ export interface Application {
    */
   activatorLoadTimeout?: number;
   /**
-   * Indicates whether this application can interact with private capabilities of other applications.
+   * Indicates whether this application is allowed to access private capabilities of other applications.
    */
   scopeCheckDisabled: boolean;
   /**
-   * Indicates whether this application can interact with capabilities of other applications without having to declare respective intentions.
+   * Indicates whether this application is allowed to access public capabilities of other applications without declaring an intention.
    */
   intentionCheckDisabled: boolean;
   /**
-   * Indicates whether this application can register and unregister intentions dynamically at runtime.
+   * Indicates whether this application is allowed to access inactive capabilities.
+   */
+  capabilityActiveCheckDisabled: boolean;
+  /**
+   * Indicates whether this application is allowed to register and unregister intentions at runtime.
    */
   intentionRegisterApiDisabled: boolean;
   /**
@@ -148,10 +152,22 @@ export interface Capability {
    */
   params?: ParamDefinition[];
   /**
-   * Controls if this capability is visible to other micro applications. If private, which is by default, the capability is not visible
-   * to other micro applications; thus, it can only be invoked or looked up by the providing micro application.
+   * Controls whether this capability is private. Defaults to `true`.
+   *
+   * If private, the capability is not visible to other applications and can only be accessed by the providing application.
+   *
+   * Note: Applications configured with `scopeCheckDisabled` can still access private capabilities (discouraged).
    */
   private?: boolean;
+  /**
+   * Controls whether this capability is inactive. Defaults to `false`.
+   *
+   * Capabilities can be marked as inactive in a capability interceptor, for example, based on user permissions.
+   * Inactive capabilities are unavailable to applications but still visible in the SCION DevTools for discovery.
+   *
+   * Note: Applications configured with `capabilityActiveCheckDisabled` can still access inactive capabilities (discouraged).
+   */
+  inactive?: boolean;
   /**
    * A short description to explain the capability.
    */
