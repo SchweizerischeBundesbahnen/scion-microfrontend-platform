@@ -32,8 +32,10 @@ export abstract class ManifestRegistry {
 
   /**
    * Registers the given capability for the given application.
+   *
+   * @return unique identity of the capability, if registered, or `null` if rejected by a {@link CapabilityInterceptor}.
    */
-  public abstract registerCapability(capability: Capability, appSymbolicName: string): Promise<string>;
+  public abstract registerCapability(capability: Capability, appSymbolicName: string): Promise<string | null>;
 
   /**
    * Registers the given intention for the given application.

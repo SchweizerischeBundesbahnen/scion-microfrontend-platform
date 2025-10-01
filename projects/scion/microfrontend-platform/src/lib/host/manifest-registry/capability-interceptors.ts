@@ -52,6 +52,20 @@ import {Capability, Intention} from '../../platform.model';
  *   }
  * }
  * ```
+ * Alternatively, the capability can be rejected. Unlike inactive capabilities, rejected capabilities are not listed in the SCION DevTools.
+ *
+ * ```ts
+ * class UserAuthorizedCapabilityInterceptor implements CapabilityInterceptor {
+ *
+ *   public async intercept(capability: Capability): Promise<Capability | null> {
+ *     // Read required role from capability properties.
+ *     const requiredRole = capability.properties?.['role'];
+ *
+ *     // `hasRole()` is illustrative and not part of the Microfrontend Platform API.
+ *     return !requiredRole || hasRole(requiredRole) ? capability : null;
+ *   }
+ * }
+ * ```
  *
  * The following interceptor extracts user information to a new capability.
  *
@@ -96,8 +110,9 @@ export abstract class CapabilityInterceptor {
    *
    * @param capability - Capability to be intercepted.
    * @param manifest - Manifest of the application that provides the intercepted capability, allowing for the registration of extra capabilities and intentions.
+   * @return Promise that resolves to the intercepted capability, or `null` to prevent registration.
    */
-  public abstract intercept(capability: Capability, manifest: CapabilityInterceptor.Manifest): Promise<Capability>;
+  public abstract intercept(capability: Capability, manifest: CapabilityInterceptor.Manifest): Promise<Capability | null>;
 }
 
 /**

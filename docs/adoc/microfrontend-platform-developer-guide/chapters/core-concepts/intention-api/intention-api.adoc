@@ -400,6 +400,13 @@ The following interceptor marks capabilities as inactive based on user permissio
 include::intention-api.snippets.ts[tags=intercept-capability:mark-inactive]
 ----
 
+Alternatively, the capability can be rejected. Unlike inactive capabilities, rejected capabilities are not listed in the SCION DevTools.
+
+[source,typescript]
+----
+include::intention-api.snippets.ts[tags=intercept-capability:reject]
+----
+
 An interceptor can add extra capabilities and intentions to the manifest of the intercepted capability. This may be necessary to migrate capabilities.
 
 The following interceptor extracts user information to a new capability.

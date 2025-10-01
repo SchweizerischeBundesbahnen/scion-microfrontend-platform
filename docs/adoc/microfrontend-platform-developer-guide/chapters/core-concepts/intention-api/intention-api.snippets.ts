@@ -237,6 +237,19 @@ function hash(capability: Capability): string {
   }
   // end::intercept-capability:mark-inactive[]
 
+  // tag::intercept-capability:reject[]
+  class UserAuthorizedCapabilityInterceptor implements CapabilityInterceptor {
+
+    public async intercept(capability: Capability): Promise<Capability | null> {
+      // Read required role from capability properties.
+      const requiredRole = capability.properties?.['role'];
+
+      // `hasRole()` is illustrative and not part of the Microfrontend Platform API
+      return !requiredRole || hasRole(requiredRole) ? capability : null;
+    }
+  }
+  // end::intercept-capability:reject[]
+
   // tag::intercept-capability:manifest[]
   class UserCapabilityMigrator implements CapabilityInterceptor {
 
