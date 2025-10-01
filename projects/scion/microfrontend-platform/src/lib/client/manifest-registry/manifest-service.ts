@@ -107,10 +107,10 @@ export class ManifestService implements Initializer {
   /**
    * Registers given capability. If the capability has public visibility, other applications can browse the capability and interact with it.
    *
-   * @return A Promise that resolves to the identity of the registered capability,
-   *         or that rejects if the registration failed.
+   * @return A Promise that resolves to the identity of the registered capability, if registered, or `null` if rejected by a {@link CapabilityInterceptor}.
+   *         The promise rejects if the registration failed.
    */
-  public registerCapability<T extends Capability>(capability: T): Promise<string> {
+  public registerCapability<T extends Capability>(capability: T): Promise<string | null> {
     const register$ = Beans.get(MessageClient).request$<string>(PlatformTopics.RegisterCapability, capability);
     return lastValueFrom(register$.pipe(mapToBody()));
   }
