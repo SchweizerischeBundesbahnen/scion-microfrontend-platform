@@ -203,20 +203,39 @@ function hash(capability: Capability): string {
 }
 
 {
-  // tag::intercept-capability[]
+  // tag::intercept-capability:intercept[]
   class MicrofrontendCapabilityInterceptor implements CapabilityInterceptor {
 
     public async intercept(capability: Capability): Promise<Capability> {
       if (capability.type === 'microfrontend') {
         return {
           ...capability,
+          // `hash()` is illustrative and not part of the Microfrontend Platform API.
           metadata: {...capability.metadata, id: hash(capability)},
         };
       }
       return capability;
     }
   }
-  // end::intercept-capability[]
+  // end::intercept-capability:intercept[]
+
+  const hasRole = (role: string) => true;
+
+  // tag::intercept-capability:mark-inactive[]
+  class UserAuthorizedCapabilityInterceptor implements CapabilityInterceptor {
+
+    public async intercept(capability: Capability): Promise<Capability> {
+      // Read required role from capability properties.
+      const requiredRole = capability.properties?.['role'];
+
+      // Mark capability as inactive if the user has no permission.
+      // `hasRole()` is illustrative and not part of the Microfrontend Platform API.
+      capability.inactive = requiredRole && !hasRole(requiredRole);
+
+      return capability;
+    }
+  }
+  // end::intercept-capability:mark-inactive[]
 
   // tag::intercept-capability:manifest[]
   class UserCapabilityMigrator implements CapabilityInterceptor {
@@ -240,6 +259,7 @@ function hash(capability: Capability): string {
 
   // tag::register-capability-interceptor[]
   Beans.register(CapabilityInterceptor, {useClass: MicrofrontendCapabilityInterceptor, multi: true}); // <1>
+  Beans.register(CapabilityInterceptor, {useClass: UserAuthorizedCapabilityInterceptor, multi: true}); // <1>
   Beans.register(CapabilityInterceptor, {useClass: UserCapabilityMigrator, multi: true}); // <1>
 
   // Start the platform.

@@ -38,6 +38,7 @@ export class HostAppConfigProvider {
       scopeCheckDisabled: hostConfig.scopeCheckDisabled,
       intentionCheckDisabled: hostConfig.intentionCheckDisabled,
       intentionRegisterApiDisabled: hostConfig.intentionRegisterApiDisabled,
+      capabilityActiveCheckDisabled: hostConfig.capabilityActiveCheckDisabled,
     };
   }
 

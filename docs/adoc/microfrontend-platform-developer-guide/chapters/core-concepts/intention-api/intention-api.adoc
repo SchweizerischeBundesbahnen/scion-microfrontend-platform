@@ -132,7 +132,20 @@ A parameter needs to declare its name and whether it is required or optional, as
 | private
 a| `boolean`
 | no
-| Controls if this capability is visible to other micro applications. If _private_, which is by default, the capability is not visible to other micro applications; thus, it can only be invoked or browsed by the providing micro application.
+a| Controls whether this capability is private. Defaults to `true`.
+
+If private, the capability is not visible to other applications and can only be accessed by the providing application.
+
+Note: Applications configured with `scopeCheckDisabled` can still access private capabilities (discouraged).
+
+| inactive
+a| `boolean`
+| no
+a| Controls whether this capability is inactive. Defaults to `false`.
+
+Capabilities can be marked as inactive in a capability interceptor, for example, based on user permissions. Inactive capabilities are unavailable to applications but still visible in the SCION DevTools for discovery.
+
+Note: Applications configured with `capabilityActiveCheckDisabled` can still access inactive capabilities (discouraged).
 
 | description
 a| `string`
@@ -355,7 +368,7 @@ For more information about how observing capabilities, see chapter <<chapter:int
 === Registering Intentions
 The platform allows registering or unregistering intentions at runtime. Note that this API is disabled by default.
 
-IMPORTANT: It is strongly discouraged to enable this API for a micro application. Instead, micro applications should declare their required functionality upfront in their manifest and use wildcards in their intention declarations. Otherwise, the advantage of the _Intention API_ would be weakened, since you no longer can statically inspect requirements of applications.
+IMPORTANT: It is discouraged to enable this API for a micro application. Instead, micro applications should declare their required functionality upfront in their manifest and use wildcards in their intention declarations. Otherwise, the advantage of the _Intention API_ would be weakened, since you no longer can statically inspect requirements of applications.
 
 To enable this API for a specific micro application, unset the flag `intentionRegisterApiDisabled` when registering the app.
 
@@ -369,22 +382,22 @@ Similar to <<chapter:intention-api:capability-registration,registering a capabil
 
 [[chapter:intention-api:capability-interception]]
 === Intercepting Capabilities
-The platform allows intercepting capabilities before they are registered, for example, to perform validation checks, add metadata, or change properties.
+The platform allows intercepting capabilities before they are registered, for example, to perform validation checks, add metadata, change properties, or prevent registration based on user permissions.
 
-An interceptor must implement the `intercept` method of the `CapabilityInterceptor` interface. Interceptors are registered in the bean manager of the host application under the symbol `CapabilityInterceptor` as `multi` bean. Multiple interceptors can be registered, forming a chain in which each interceptor is called one by one in registration order.
-
-[source,typescript]
-----
-include::intention-api.snippets.ts[tags=register-capability-interceptor]
-----
-<1> Registers an interceptor to intercept capabilities before they are registered in the platform.
-<2> Starts the platform.
+An interceptor must implement the `intercept` method of the `CapabilityInterceptor` interface.
 
 The following interceptor assigns a stable identifier to each microfrontend capability.
 
 [source,typescript]
 ----
-include::intention-api.snippets.ts[tags=intercept-capability]
+include::intention-api.snippets.ts[tags=intercept-capability:intercept]
+----
+
+The following interceptor marks capabilities as inactive based on user permissions.
+
+[source,typescript]
+----
+include::intention-api.snippets.ts[tags=intercept-capability:mark-inactive]
 ----
 
 An interceptor can add extra capabilities and intentions to the manifest of the intercepted capability. This may be necessary to migrate capabilities.
@@ -395,3 +408,14 @@ The following interceptor extracts user information to a new capability.
 ----
 include::intention-api.snippets.ts[tags=intercept-capability:manifest]
 ----
+
+
+Interceptors are registered in the bean manager of the host application under the symbol `CapabilityInterceptor` as `multi` bean. Multiple interceptors can be registered, forming a chain in which each interceptor is called one by one in registration order.
+
+[source,typescript]
+----
+include::intention-api.snippets.ts[tags=register-capability-interceptor]
+----
+<1> Registers an interceptor to intercept capabilities. Interceptor must be registered before starting the platform.
+<2> Starts the platform.
+

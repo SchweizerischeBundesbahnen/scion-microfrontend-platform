@@ -32,21 +32,27 @@ export abstract class HostConfig {
    */
   public abstract readonly manifest?: Manifest | string;
   /**
-   * Controls whether the host can interact with private capabilities of other micro applications.
+   * Allows the host to access private capabilities of other applications.
    *
-   * By default, scope check is enabled. Disabling scope check is strongly discouraged.
+   * Disabling this check is discouraged. Enabled by default.
    */
   public abstract readonly scopeCheckDisabled?: boolean;
   /**
-   * Controls whether the host can interact with the capabilities of other apps without having to declare respective intentions.
+   * Allows the host to access public capabilities of other applications without declaring an intention.
    *
-   * By default, intention check is enabled. Disabling intention check is strongly discouraged.
+   * Disabling this check is discouraged. Enabled by default.
    */
   public abstract readonly intentionCheckDisabled?: boolean;
   /**
-   * Controls whether the host can register and unregister intentions dynamically at runtime.
+   * Allows the host to access inactive capabilities.
    *
-   * By default, this API is disabled. Enabling this API is strongly discouraged.
+   * Disabling this check is discouraged. Enabled by default.
+   */
+  public abstract readonly capabilityActiveCheckDisabled?: boolean;
+  /**
+   * Allows the host to register and unregister intentions at runtime.
+   *
+   * Enabling this API is discouraged. Disabled by default.
    */
   public abstract readonly intentionRegisterApiDisabled?: boolean;
   /**

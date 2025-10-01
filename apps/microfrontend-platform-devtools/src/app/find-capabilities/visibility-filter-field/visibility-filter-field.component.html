@@ -1,0 +1,12 @@
+<header>Filter By Visibility</header>
+<section class="flags">
+  <span class="toggle-button-group">
+    <button [class.active]="private() === true" (click)="onPrivateToggle(true)">Private</button>
+    <button [class.active]="private() === false" (click)="onPrivateToggle(false)">Public</button>
+  </span>
+
+  <span class="toggle-button-group">
+    <button [class.active]="inactive() === false" (click)="onInactiveToggle(false)">Active</button>
+    <button [class.active]="inactive() === true" (click)="onInactiveToggle(true)">Inactive</button>
+  </span>
+</section>

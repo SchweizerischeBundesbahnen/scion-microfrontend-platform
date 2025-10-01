@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input, Signal} from '@angular/core';
 import {Clipboard} from '@angular/cdk/clipboard';
 import {Capability} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
@@ -26,26 +26,44 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export class CapabilityAccordionItemComponent {
 
-  @Input()
-  public appSymbolicName?: string | undefined;
+  public readonly appSymbolicName = input<string | undefined>();
+  public readonly capability = input.required<Capability>();
 
-  @Input({required: true})
-  public capability!: Capability;
+  private readonly _router = inject(Router);
+  private readonly _clipboard = inject(Clipboard);
 
-  constructor(private _router: Router, private _clipboard: Clipboard) {
-  }
+  protected readonly tooltip = this.computeTooltip();
 
-  public onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
+  protected onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
     event.stopPropagation();
     event.preventDefault();
-    this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
+    void this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
   }
 
-  public onCopyToClipboard(event: MouseEvent): void {
+  protected onCopyToClipboard(event: MouseEvent): void {
     event.stopPropagation();
     this._clipboard.copy(JSON.stringify({
-      type: this.capability.type,
-      qualifier: this.capability.qualifier,
+      type: this.capability().type,
+      qualifier: this.capability().qualifier,
     }, null, 2));
+  }
+
+  private computeTooltip(): Signal<string> {
+    return computed(() => {
+      const tooltip = new Array<string>();
+
+      if (this.capability().inactive) {
+        tooltip.push('Inactive Capability: Only available to applications with the application flag "capabilityActiveCheckDisabled" enabled (discouraged)');
+      }
+
+      if (this.capability().private) {
+        tooltip.push('Private Capability: Hidden from other applications except for applications with the application flag "scopeCheckDisabled" enabled (discouraged)');
+      }
+      else {
+        tooltip.push('Public Capability: Visible to other applications if an intention is declared.');
+      }
+
+      return tooltip.join('\n');
+    });
   }
 }

@@ -18,6 +18,7 @@ import {ManifestRegistry} from '../../host/manifest-registry/manifest-registry';
 import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 import {firstValueFrom} from 'rxjs';
 import {ɵManifestRegistry} from '../../host/manifest-registry/ɵmanifest-registry';
+import {CapabilityInterceptor} from '../../host/public_api';
 
 const manifestObjectIdsExtractFn = (manifestObjects: Array<Capability | Intention>): string[] => manifestObjects.map(manifestObject => manifestObject.metadata!.id);
 
@@ -494,6 +495,169 @@ describe('ManifestService', () => {
       // Lookup all capabilities
       Beans.get(ManifestService).lookupCapabilities$({}).subscribe(captor.reset());
       await expectEmissions(captor).toEqual([[capabilityId]]);
+    });
+
+    it('should not look up inactive capabilities', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {
+          symbolicName: 'host-app',
+          manifest: {
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'testee-1',
+                qualifier: {inactive: 'false'},
+                inactive: false,
+              },
+              {
+                type: 'testee-2',
+                qualifier: {inactive: 'true'},
+                inactive: true,
+              },
+              {
+                type: 'testee-3',
+                qualifier: {inactive: 'default'},
+              },
+            ],
+            intentions: [
+              {
+                type: 'testee-4',
+                qualifier: {'*': '*'},
+              },
+              {
+                type: 'testee-5',
+                qualifier: {'*': '*'},
+              },
+              {
+                type: 'testee-6',
+                qualifier: {'*': '*'},
+              },
+            ],
+          },
+        },
+        applications: [
+          {
+            symbolicName: 'app-1',
+            manifestUrl: new ManifestFixture({
+              name: 'App 1',
+              capabilities: [
+                {
+                  type: 'testee-4',
+                  qualifier: {inactive: 'false'},
+                  private: false,
+                  inactive: false,
+                },
+                {
+                  type: 'testee-5',
+                  qualifier: {inactive: 'true'},
+                  private: false,
+                  inactive: true,
+                },
+                {
+                  type: 'testee-6',
+                  private: false,
+                  qualifier: {inactive: 'default'},
+                },
+              ],
+            }).serve(),
+          },
+        ],
+      });
+
+      // Lookup capabilities
+      const captor = new ObserveCaptor();
+      Beans.get(ManifestService).lookupCapabilities$({qualifier: {inactive: '*'}}).subscribe(captor);
+      await expectEmissions(captor).toEqual([
+        jasmine.arrayWithExactContents([
+          jasmine.objectContaining({type: 'testee-1'} satisfies Partial<Capability>),
+          jasmine.objectContaining({type: 'testee-3'} satisfies Partial<Capability>),
+          jasmine.objectContaining({type: 'testee-4'} satisfies Partial<Capability>),
+          jasmine.objectContaining({type: 'testee-6'} satisfies Partial<Capability>),
+        ]),
+      ]);
+    });
+
+    it('should look up inactive capabilities if "Capability Active Check" is disabled', async () => {
+      await MicrofrontendPlatformHost.start({
+        host: {
+          symbolicName: 'host-app',
+          capabilityActiveCheckDisabled: true,
+          manifest: {
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'testee-1',
+                qualifier: {inactive: 'false'},
+                inactive: false,
+              },
+              {
+                type: 'testee-2',
+                qualifier: {inactive: 'true'},
+                inactive: true,
+              },
+              {
+                type: 'testee-3',
+                qualifier: {inactive: 'default'},
+              },
+            ],
+            intentions: [
+              {
+                type: 'testee-4',
+                qualifier: {'*': '*'},
+              },
+              {
+                type: 'testee-5',
+                qualifier: {'*': '*'},
+              },
+              {
+                type: 'testee-6',
+                qualifier: {'*': '*'},
+              },
+            ],
+          },
+        },
+        applications: [
+          {
+            symbolicName: 'app-1',
+            manifestUrl: new ManifestFixture({
+              name: 'App 1',
+              capabilities: [
+                {
+                  type: 'testee-4',
+                  qualifier: {inactive: 'false'},
+                  private: false,
+                  inactive: false,
+                },
+                {
+                  type: 'testee-5',
+                  qualifier: {inactive: 'true'},
+                  private: false,
+                  inactive: true,
+                },
+                {
+                  type: 'testee-6',
+                  private: false,
+                  qualifier: {inactive: 'default'},
+                },
+              ],
+            }).serve(),
+          },
+        ],
+      });
+
+      // Lookup capabilities
+      const captor = new ObserveCaptor();
+      Beans.get(ManifestService).lookupCapabilities$({qualifier: {inactive: '*'}}).subscribe(captor);
+      await expectEmissions(captor).toEqual([
+        jasmine.arrayWithExactContents([
+          jasmine.objectContaining({type: 'testee-1'} satisfies Partial<Capability>),
+          jasmine.objectContaining({type: 'testee-2'} satisfies Partial<Capability>),
+          jasmine.objectContaining({type: 'testee-3'} satisfies Partial<Capability>),
+          jasmine.objectContaining({type: 'testee-4'} satisfies Partial<Capability>),
+          jasmine.objectContaining({type: 'testee-5'} satisfies Partial<Capability>),
+          jasmine.objectContaining({type: 'testee-6'} satisfies Partial<Capability>),
+        ]),
+      ]);
     });
   });
 
@@ -1188,6 +1352,259 @@ describe('ManifestService', () => {
       await expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeTrue();
     });
 
+    it('should not be qualified for inactive capabilities', async () => {
+      // Use capability type as capability id.
+      Beans.register(CapabilityInterceptor, {useClass: UseTypeAsIdCapabilityInterceptor, multi: true});
+
+      await MicrofrontendPlatformHost.start({
+        host: {
+          symbolicName: 'host-app',
+          manifest: {
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'testee-1',
+                qualifier: {inactive: 'false'},
+                inactive: false,
+              },
+              {
+                type: 'testee-2',
+                qualifier: {inactive: 'true'},
+                inactive: true,
+              },
+              {
+                type: 'testee-3',
+                qualifier: {inactive: 'default'},
+              },
+            ],
+            intentions: [
+              {
+                type: 'testee-4',
+                qualifier: {'*': '*'},
+              },
+              {
+                type: 'testee-5',
+                qualifier: {'*': '*'},
+              },
+              {
+                type: 'testee-6',
+                qualifier: {'*': '*'},
+              },
+            ],
+          },
+        },
+        applications: [
+          {
+            symbolicName: 'app-1',
+            manifestUrl: new ManifestFixture({
+              name: 'App 1',
+              capabilities: [
+                {
+                  type: 'testee-4',
+                  qualifier: {inactive: 'false'},
+                  private: false,
+                  inactive: false,
+                },
+                {
+                  type: 'testee-5',
+                  qualifier: {inactive: 'true'},
+                  private: false,
+                  inactive: true,
+                },
+                {
+                  type: 'testee-6',
+                  private: false,
+                  qualifier: {inactive: 'default'},
+                },
+              ],
+            }).serve(),
+          },
+          {
+            symbolicName: 'app-2',
+            manifestUrl: new ManifestFixture({
+              name: 'App 2',
+              capabilities: [
+                {
+                  type: 'testee-7',
+                  qualifier: {inactive: 'false'},
+                  private: false,
+                  inactive: false,
+                },
+                {
+                  type: 'testee-8',
+                  qualifier: {inactive: 'true'},
+                  private: false,
+                  inactive: true,
+                },
+                {
+                  type: 'testee-9',
+                  private: false,
+                  qualifier: {inactive: 'default'},
+                },
+              ],
+            }).serve(),
+          },
+        ],
+      });
+
+      // ## Test qualification of own capabilities.
+      // Capability 'testee-1' is active [inactive=false, provider=host-app].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-1'}))).toBeTrue();
+
+      // Capability 'testee-2' is inactive [inactive=true, provider=host-app].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-2'}))).toBeFalse();
+
+      // Capability 'testee-3' is active [inactive=default, provider=host-app].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-3'}))).toBeTrue();
+
+      // ## Test qualification of capabilities provided by app-1.
+      // Capability 'testee-4' is active [inactive=false, provider=app-1].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-4'}))).toBeTrue();
+
+      // Capability 'testee-5' is inactive [inactive=true, provider=app-1].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-5'}))).toBeFalse();
+
+      // Capability 'testee-6' is active [inactive=default, provider=app-1].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-6'}))).toBeTrue();
+
+      // ## Test qualification of capabilities provided by app-2 without having an intention.
+      // Capability 'testee-7' is active [inactive=false, provider=app-2].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-7'}))).toBeFalse();
+
+      // Capability 'testee-8' is inactive [inactive=true, provider=app-2].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-8'}))).toBeFalse();
+
+      // Capability 'testee-9' is active [inactive=default, provider=app-2].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-9'}))).toBeFalse();
+    });
+
+    it('should be qualified for inactive capabilities if "Capability Active Check" is disabled', async () => {
+      // Use capability type as capability id.
+      Beans.register(CapabilityInterceptor, {useClass: UseTypeAsIdCapabilityInterceptor, multi: true});
+
+      await MicrofrontendPlatformHost.start({
+        host: {
+          capabilityActiveCheckDisabled: true,
+          symbolicName: 'host-app',
+          manifest: {
+            name: 'Host',
+            capabilities: [
+              {
+                type: 'testee-1',
+                qualifier: {inactive: 'false'},
+                inactive: false,
+              },
+              {
+                type: 'testee-2',
+                qualifier: {inactive: 'true'},
+                inactive: true,
+              },
+              {
+                type: 'testee-3',
+                qualifier: {inactive: 'default'},
+              },
+            ],
+            intentions: [
+              {
+                type: 'testee-4',
+                qualifier: {'*': '*'},
+              },
+              {
+                type: 'testee-5',
+                qualifier: {'*': '*'},
+              },
+              {
+                type: 'testee-6',
+                qualifier: {'*': '*'},
+              },
+            ],
+          },
+        },
+        applications: [
+          {
+            symbolicName: 'app-1',
+            manifestUrl: new ManifestFixture({
+              name: 'App 1',
+              capabilities: [
+                {
+                  type: 'testee-4',
+                  qualifier: {inactive: 'false'},
+                  private: false,
+                  inactive: false,
+                },
+                {
+                  type: 'testee-5',
+                  qualifier: {inactive: 'true'},
+                  private: false,
+                  inactive: true,
+                },
+                {
+                  type: 'testee-6',
+                  private: false,
+                  qualifier: {inactive: 'default'},
+                },
+              ],
+            }).serve(),
+          },
+          {
+            symbolicName: 'app-2',
+            manifestUrl: new ManifestFixture({
+              name: 'App 2',
+              capabilities: [
+                {
+                  type: 'testee-7',
+                  qualifier: {inactive: 'false'},
+                  private: false,
+                  inactive: false,
+                },
+                {
+                  type: 'testee-8',
+                  qualifier: {inactive: 'true'},
+                  private: false,
+                  inactive: true,
+                },
+                {
+                  type: 'testee-9',
+                  private: false,
+                  qualifier: {inactive: 'default'},
+                },
+              ],
+            }).serve(),
+          },
+        ],
+      });
+
+      // ## Test qualification of own capabilities.
+      // Capability 'testee-1' is active [inactive=false, provider=host-app].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-1'}))).toBeTrue();
+
+      // Capability 'testee-2' is inactive [inactive=true, provider=host-app].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-2'}))).toBeTrue();
+
+      // Capability 'testee-3' is active [inactive=default, provider=host-app].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-3'}))).toBeTrue();
+
+      // ## Test qualification of capabilities provided by app-1.
+      // Capability 'testee-4' is active [inactive=false, provider=app-1].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-4'}))).toBeTrue();
+
+      // Capability 'testee-5' is inactive [inactive=true, provider=app-1].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-5'}))).toBeTrue();
+
+      // Capability 'testee-6' is active [inactive=default, provider=app-1].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-6'}))).toBeTrue();
+
+      // ## Test qualification of capabilities provided by app-2 without having an intention.
+      // Capability 'testee-7' is active [inactive=false, provider=app-2].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-7'}))).toBeFalse();
+
+      // Capability 'testee-8' is inactive [inactive=true, provider=app-2].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-8'}))).toBeFalse();
+
+      // Capability 'testee-9' is active [inactive=default, provider=app-2].
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-9'}))).toBeFalse();
+    });
+
     it('should error if requesting the qualification for a non-existing capability', async () => {
       await MicrofrontendPlatformHost.start({
         host: {symbolicName: 'host-app'},
@@ -1250,3 +1667,18 @@ describe('ManifestService', () => {
     });
   });
 });
+
+/**
+ * Uses the capability type as capability id.
+ */
+class UseTypeAsIdCapabilityInterceptor implements CapabilityInterceptor {
+  public async intercept(capability: Capability): Promise<Capability> {
+    return {
+      ...capability,
+      metadata: {
+        ...capability.metadata!,
+        id: capability.type,
+      },
+    };
+  }
+}

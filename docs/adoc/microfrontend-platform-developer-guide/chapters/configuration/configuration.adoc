@@ -185,31 +185,39 @@ If set, overrides the global timeout as configured in <<objects::microfrontend-p
 a| `boolean`
 | no
 a| `false`
-| Excludes this micro application from registration, e.g. to not register it in a specific environment.
+| Excludes this application from registration, e.g. to not register it in a specific environment.
 
 | scopeCheckDisabled
 a| `boolean`
 | no
 a| `false`
-| Controls whether this micro application can interact with private capabilities of other micro applications.
+| Allows this application to access private capabilities of other applications.
 
-By default, scope check is enabled. Disabling scope check is strongly discouraged.
+Disabling this check is discouraged. Enabled by default.
 
 | intentionCheckDisabled
 a| `boolean`
 | no
 a| `false`
-| Controls whether this micro application can interact with the capabilities of other apps without having to declare respective intentions.
+| Allows this application to access public capabilities of other applications without declaring an intention.
 
-By default, intention check is enabled. Disabling intention check is strongly discouraged.
+Disabling this check is discouraged. Enabled by default.
+
+| capabilityActiveCheckDisabled
+a| `boolean`
+| no
+a| `false`
+| Allows this application to access inactive capabilities.
+
+Disabling this check is discouraged. Enabled by default.
 
 | intentionRegisterApiDisabled
 a| `boolean`
 | no
 a| `true`
-| Controls whether this micro application can register and unregister intentions dynamically at runtime.
+| Allows this application to register and unregister intentions at runtime.
 
-By default, this API is disabled. Enabling this API is strongly discouraged.
+Enabling this API is discouraged. Disabled by default.
 
 |===
 
@@ -244,25 +252,33 @@ See <<objects::manifest,Manifest>> for an overview of the properties of the mani
 a| `boolean`
 | no
 a| `false`
-| Controls whether the host can interact with private capabilities of other micro applications.
+| Allows the host to access private capabilities of other applications.
 
-By default, scope check is enabled. Disabling scope check is strongly discouraged.
+Disabling this check is discouraged. Enabled by default.
 
 | intentionCheckDisabled
 a| `boolean`
 | no
 a| `false`
-| Controls whether the host can interact with the capabilities of other apps without having to declare respective intentions.
+| Allows the host to access public capabilities of other applications without declaring an intention.
 
-By default, intention check is enabled. Disabling intention check is strongly discouraged.
+Disabling this check is discouraged. Enabled by default.
+
+| capabilityActiveCheckDisabled
+a| `boolean`
+| no
+a| `false`
+| Allows the host to access inactive capabilities.
+
+Disabling this check is discouraged. Enabled by default.
 
 | intentionRegisterApiDisabled
 a| `boolean`
 | no
 a| `true`
-| Controls whether the host can register and unregister intentions dynamically at runtime.
+| Allows the host to register and unregister intentions at runtime.
 
-By default, this API is disabled. Enabling this API is strongly discouraged.
+Enabling this API is discouraged. Disabled by default.
 
 | messageDeliveryTimeout
 a| `number`

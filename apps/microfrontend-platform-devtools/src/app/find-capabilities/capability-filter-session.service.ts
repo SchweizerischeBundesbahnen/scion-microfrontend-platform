@@ -23,6 +23,8 @@ export class CapabilityFilterSession {
   private _qualifierFilters = new Array<KeyValuePair>();
   private _appFilters = new Set<string>();
   private _qualifierLogicalOperator: LogicalOperator = 'or';
+  private _capabilityPrivateFilter: boolean | undefined;
+  private _capabilityInactiveFilter: boolean | undefined;
   private _filterChange$ = new Subject<void>();
 
   constructor(private _manifestService: DevToolsManifestService) {
@@ -51,6 +53,8 @@ export class CapabilityFilterSession {
       .filter(capability => this._typeFilters.size === 0 || this.filterByType(capability))
       .filter(capability => this._qualifierFilters.length === 0 || this.filterByQualifier(capability.qualifier))
       .filter(capability => this._appFilters.size === 0 || this.filterAppByName(capability))
+      .filter(capability => this._capabilityPrivateFilter === undefined || capability.private === this._capabilityPrivateFilter)
+      .filter(capability => this._capabilityInactiveFilter === undefined || capability.inactive === this._capabilityInactiveFilter)
       .sort(capabilityComparator);
   }
 
@@ -160,6 +164,16 @@ export class CapabilityFilterSession {
 
   public get appFilters(): string[] {
     return Array.from(this._appFilters);
+  }
+
+  public setCapabilityPrivateFilter(enabled: boolean | undefined): void {
+    this._capabilityPrivateFilter = enabled;
+    this._filterChange$.next();
+  }
+
+  public setCapabilityInactiveFilter(enabled: boolean | undefined): void {
+    this._capabilityInactiveFilter = enabled;
+    this._filterChange$.next();
   }
 }
 

@@ -13,6 +13,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
         manifestUrl: 'https://microfrontend-platform-devtools-<version>.scion.vercel.app/manifest.json',
         intentionCheckDisabled: true,
         scopeCheckDisabled: true,
+        capabilityActiveCheckDisabled: true,
       },
     ],
   });

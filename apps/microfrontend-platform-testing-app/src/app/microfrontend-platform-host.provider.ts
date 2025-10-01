@@ -46,6 +46,7 @@ async function startMicrofrontendPlatformHost(): Promise<void> {
   const manifestClassifier = queryParams.has('manifestClassifier') ? `-${queryParams.get('manifestClassifier')}` : '';
   const activatorApiDisabled = coerceBooleanProperty(queryParams.get('activatorApiDisabled'));
   const intentionRegisterApiDisabled = new Set((queryParams.get('intentionRegisterApiDisabled') || '').split(','));
+  const capabilityActiveCheckDisabled = new Set((queryParams.get('capabilityActiveCheckDisabled') || '').split(','));
   const hasDevTools = !!environment.devtools && (!queryParams.has('devtools') || coerceBooleanProperty(queryParams.get('devtools')));
 
   installMessageInterceptors(queryParams);
@@ -58,6 +59,7 @@ async function startMicrofrontendPlatformHost(): Promise<void> {
       activatorLoadTimeout: app.activatorLoadTimeout,
       symbolicName: app.symbolicName,
       intentionRegisterApiDisabled: intentionRegisterApiDisabled.has(app.symbolicName),
+      capabilityActiveCheckDisabled: capabilityActiveCheckDisabled.has(app.symbolicName),
     };
   });
 

@@ -1,0 +1,33 @@
+@use '@scion/components.internal/design' as sci-design;
+@use '../../common/devtools.mixin';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--sci-color-border);
+  border-radius: var(--sci-corner);
+  user-select: none;
+  overflow: hidden;
+
+  > header {
+    display: flex;
+    place-items: center;
+    background-color: var(--sci-color-background-secondary);
+    color: var(--app-color-text-strong);
+    font-weight: bold;
+    padding: 0 .75em;
+    border-bottom: 1px solid var(--sci-color-border);
+    height: 3em;
+  }
+
+  > section.flags {
+    padding: .75em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+
+    > span.toggle-button-group {
+      @include devtools.toggleButtonGroup();
+    }
+  }
+}

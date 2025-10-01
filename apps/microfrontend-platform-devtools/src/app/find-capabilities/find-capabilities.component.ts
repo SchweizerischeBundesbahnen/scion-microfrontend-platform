@@ -18,6 +18,7 @@ import {distinctArray, mapArray, sortArray} from '@scion/toolkit/operators';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {FilterFieldComponent} from './filter-field/filter-field.component';
 import {AsyncPipe} from '@angular/common';
+import {VisibilityFilterFieldComponent} from './visibility-filter-field/visibility-filter-field.component';
 
 @Component({
   selector: 'devtools-find-capabilities',
@@ -28,6 +29,7 @@ import {AsyncPipe} from '@angular/common';
     AsyncPipe,
     SciViewportComponent,
     FilterFieldComponent,
+    VisibilityFilterFieldComponent,
   ],
 })
 export default class FindCapabilitiesComponent {

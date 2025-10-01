@@ -15,6 +15,7 @@ const devtools: ApplicationConfig | null = {
   manifestUrl: 'http://localhost:5200/manifest.json',
   intentionCheckDisabled: true,
   scopeCheckDisabled: true,
+  capabilityActiveCheckDisabled: true,
 };
 
 /**

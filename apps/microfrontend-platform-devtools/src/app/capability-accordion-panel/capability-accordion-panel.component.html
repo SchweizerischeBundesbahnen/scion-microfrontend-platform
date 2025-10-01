@@ -6,6 +6,8 @@
       }
       <span class="label">Provider:</span><a [routerLink]="['/apps', {outlets: {details: [capability.metadata!.appSymbolicName]}}]">{{capability.metadata!.appSymbolicName | devtoolsAppName}} ({{capability.metadata!.appSymbolicName}})</a>
       <span class="label">ID:</span><span>{{capability.metadata!.id}}</span>
+      <span class="label">Private:</span><span>{{capability.private}}</span>
+      <span class="label">Inactive:</span><span>{{capability.inactive}}</span>
     </section>
   </ng-template>
   @if (capability.properties) {

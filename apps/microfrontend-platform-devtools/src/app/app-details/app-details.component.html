@@ -85,14 +85,46 @@
         <section class="scope-check">
           <header>Scope Check</header>
           <span class="description">
-            Controls whether this application can interact with the private capabilities of other apps. Disabling scope check is strongly discouraged. By default, scope check is enabled.
+            Indicates whether this application is allowed to access private capabilities of other applications. Disabling this check is discouraged. Enabled by default.
           </span>
           @if (application.scopeCheckDisabled) {
-            <span class="chip" title="Scope check is disabled for this application. This application can interact with private capabilities of other applications.">
+            <span class="chip" title="WARNING: Scope Check is disabled for this application. This application can access private capabilities of other applications.">
             Disabled
           </span>
           } @else {
-            <span class="chip default" title="Scope check is enabled for this application. This application cannot interact with private capabilities of other applications.">
+            <span class="chip default" title="Scope Check is enabled for this application. This application cannot access private capabilities of other applications.">
+              Default (enabled)
+            </span>
+          }
+        </section>
+
+        <section class="intention-check">
+          <header>Intention Check</header>
+          <span class="description">
+            Indicates whether this application is allowed to access public capabilities of other applications without declaring an intention. Disabling this check is discouraged. Enabled by default.
+          </span>
+          @if (application.intentionCheckDisabled) {
+            <span class="chip" title="WARNING: Intention Check is disabled for this application. This application can access public capabilities of other applications without declaring an intention.">
+            Disabled
+          </span>
+          } @else {
+            <span class="chip default" title="Intention Check is enabled for this application. This application can access public capabilities of other applications only if declaring an intention.">
+              Default (enabled)
+            </span>
+          }
+        </section>
+
+        <section class="intention-check">
+          <header>Capability Active Check</header>
+          <span class="description">
+            Indicates whether this application is allowed to access inactive capabilities. Disabling this check is discouraged. Enabled by default.
+          </span>
+          @if (application.capabilityActiveCheckDisabled) {
+            <span class="chip" title="WARNING: Capability Active Check is disabled for this application. This application can access inactive capabilities.">
+            Disabled
+          </span>
+          } @else {
+            <span class="chip default" title="Capability Active Check is enabled for this application. This application cannot access inactive capabilities.">
               Default (enabled)
             </span>
           }
@@ -101,31 +133,15 @@
         <section class="intent-register-api">
           <header>Intention Register API</header>
           <span class="description">
-            Controls whether this application can register and unregister intentions dynamically at runtime. Enabling this API is strongly discouraged. By default, this API is disabled.
+            Indicates whether this application is allowed to register and unregister intentions at runtime. Enabling this API is discouraged. Disabled by default.
           </span>
           @if (application.intentionRegisterApiDisabled) {
-            <span class="chip default" title="Intention register API is disabled for this application. This application has to declare intentions in its manifest.">
+            <span class="chip default" title="Intention Register API is disabled for this application. This application cannot register intentions at runtime, only in its manifest.">
             Default (disabled)
           </span>
           } @else {
-            <span class="chip" title="Intention register API is enabled for this application. This application can register intentions dynamically at runtime.">
+            <span class="chip" title="Intention Register API is enabled for this application. This application can register intentions at runtime.">
               Enabled
-            </span>
-          }
-        </section>
-
-        <section class="intention-check">
-          <header>Intention Check</header>
-          <span class="description">
-            Controls whether this application can interact with the capabilities of other apps without having to declare respective intentions. Disabling intention check is strongly discouraged. By default, intention check is enabled.
-          </span>
-          @if (application.intentionCheckDisabled) {
-            <span class="chip" title="Intention check is disabled for this application. This application can issue intents for which it has not declared any intention.">
-            Disabled
-          </span>
-          } @else {
-            <span class="chip default" title="Intention check is enabled for this application. This application can only issue intents for which it has declared an intention in its manifest.">
-              Default (enabled)
             </span>
           }
         </section>

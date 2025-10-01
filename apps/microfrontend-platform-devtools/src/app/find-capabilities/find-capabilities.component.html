@@ -9,4 +9,5 @@
   <devtools-filter-field [title]="'Filter by ID'" type="value" placeholder="ID" [autocompleteValues]="(capabilityIds$ | async) ?? []"
                          (addValueFilter)="onIdFilterAdd($event)" (removeValueFilter)="onIdFilterRemove($event)"
                          [initialFilters]="idFilters"/>
+  <devtools-visibility-filter-field/>
 </sci-viewport>
