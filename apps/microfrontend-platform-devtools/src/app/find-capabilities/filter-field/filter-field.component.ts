@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, ElementRef, EventEmitter, HostListener, inject, input, linkedSignal, NgZone, Output, signal, untracked, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, ElementRef, HostListener, inject, input, linkedSignal, NgZone, output, signal, untracked, ViewChild} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
 import {KeyValuePair, LogicalOperator} from './filter-field';
@@ -34,6 +34,11 @@ export class FilterFieldComponent {
   public readonly autocompleteKeys = input<string[]>();
   public readonly autocompleteValues = input<string[]>();
   public readonly initialFilters = input<KeyValuePair[] | string[]>();
+  public readonly addValueFilter = output<string>();
+  public readonly addKeyValueFilter = output<KeyValuePair>();
+  public readonly removeValueFilter = output<string>();
+  public readonly removeKeyValueFilter = output<KeyValuePair>();
+  public readonly changeLogicalOperator = output<LogicalOperator>();
 
   private readonly _cdRef = inject(ChangeDetectorRef);
   private readonly _zone = inject(NgZone);
@@ -45,21 +50,6 @@ export class FilterFieldComponent {
   protected readonly autocompleteValuesDatalistId = UUID.randomUUID(); // generate random id for autocomplete list in order to support multiple filter fields in the same document
   protected readonly OR = 'or';
   protected readonly AND = 'and';
-
-  @Output()
-  public addValueFilter = new EventEmitter<string>();
-
-  @Output()
-  public addKeyValueFilter = new EventEmitter<KeyValuePair>();
-
-  @Output()
-  public removeValueFilter = new EventEmitter<string>();
-
-  @Output()
-  public removeKeyValueFilter: EventEmitter<KeyValuePair> = new EventEmitter<KeyValuePair>();
-
-  @Output()
-  public changeLogicalOperator: EventEmitter<LogicalOperator> = new EventEmitter<LogicalOperator>();
 
   @ViewChild('key', {read: ElementRef})
   private _keyElement: ElementRef<HTMLElement> | undefined;
@@ -117,7 +107,7 @@ export class FilterFieldComponent {
     }
     const newFilter = this.add(this.keyFormControl.value, this.valueFormControl.value);
     if (newFilter) {
-      this.addValueFilter.emit(newFilter.value);
+      this.addValueFilter.emit(newFilter.value!);
       this.addKeyValueFilter.emit(newFilter);
     }
     this.keyFormControl.reset();
@@ -127,7 +117,7 @@ export class FilterFieldComponent {
 
   protected onRemoveFilterClick(removedFilter: KeyValuePair): void {
     this._filters().delete(removedFilter);
-    this.removeValueFilter.emit(removedFilter.value);
+    this.removeValueFilter.emit(removedFilter.value!);
     this.removeKeyValueFilter.emit(removedFilter);
   }
 
