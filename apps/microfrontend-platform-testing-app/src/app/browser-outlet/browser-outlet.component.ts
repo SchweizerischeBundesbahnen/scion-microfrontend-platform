@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, effect, ElementRef, inject, Injector, input, untracked, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, effect, ElementRef, inject, Injector, input, untracked, viewChild} from '@angular/core';
 import {MessageClient, OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Overlay} from '@angular/cdk/overlay';
@@ -17,7 +17,6 @@ import {ActivatedRoute} from '@angular/router';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {environment} from '../../environments/environment';
 import {TestingAppTopics} from '../testing-app.topics';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
 
 /**
@@ -38,34 +37,22 @@ export class BrowserOutletComponent {
 
   public readonly outletName = input.required<string>();
 
-  @ViewChild('settings_button', {static: true})
-  public settingsButton!: ElementRef<HTMLButtonElement>;
-
-  @ViewChild('context_define_button', {static: true})
-  public contextDefineButton!: ElementRef<HTMLButtonElement>;
-
-  @ViewChild('router_outlet', {static: true})
-  public routerOutlet!: ElementRef<SciRouterOutletElement>;
-
   private readonly _formBuilder = inject(NonNullableFormBuilder);
   private readonly _activatedRoute = inject(ActivatedRoute);
   private readonly _overlay = inject(Overlay);
   private readonly _injector = inject(Injector);
-  private readonly _destroyRef = inject(DestroyRef);
+  private readonly _settingsButton = viewChild.required<ElementRef<HTMLButtonElement>>('settings_button');
+  private readonly _contextDefineButton = viewChild.required<ElementRef<HTMLButtonElement>>('context_define_button');
+  private readonly _routerOutlet = viewChild.required<ElementRef<SciRouterOutletElement>>('router_outlet');
 
+  protected readonly appEntryPoints: AppEndpoint[];
   protected readonly form = this._formBuilder.group({
     url: this._formBuilder.control(null, Validators.required),
   });
-  protected readonly appEntryPoints: AppEndpoint[];
 
   constructor() {
     this.appEntryPoints = this.readAppEntryPoints();
-    effect(() => {
-      const outletName = this.outletName();
-      untracked(() => {
-        this.installOutletContextUpdateHandler(outletName);
-      });
-    });
+    this.installOutletContextUpdateHandler();
   }
 
   protected onUrlClearClick(): void {
@@ -80,18 +67,18 @@ export class BrowserOutletComponent {
 
   protected onSettingsClick(): void {
     RouterOutletSettingsComponent.openAsOverlay({
-      anchor: this.settingsButton.nativeElement,
+      anchor: this._settingsButton().nativeElement,
       overlay: this._overlay,
-      routerOutlet: this.routerOutlet.nativeElement,
+      routerOutlet: this._routerOutlet().nativeElement,
       injector: this._injector,
     });
   }
 
   protected onContextDefineClick(): void {
     RouterOutletContextComponent.openAsOverlay({
-      anchor: this.contextDefineButton.nativeElement,
+      anchor: this._contextDefineButton().nativeElement,
       overlay: this._overlay,
-      routerOutlet: this.routerOutlet.nativeElement,
+      routerOutlet: this._routerOutlet().nativeElement,
       injector: this._injector,
     });
   }
@@ -132,12 +119,18 @@ export class BrowserOutletComponent {
   /**
    * Listens for messages to update the context of this outlet.
    */
-  private installOutletContextUpdateHandler(outletName: string): void {
-    Beans.get(MessageClient).observe$(TestingAppTopics.routerOutletContextUpdateTopic(outletName, ':key'))
-      .pipe(takeUntilDestroyed(this._destroyRef))
-      .subscribe(message => {
-        this.routerOutlet.nativeElement.setContextValue(message.params!.get('key')!, message.body);
+  private installOutletContextUpdateHandler(): void {
+    effect(onCleanup => {
+      const outletName = this.outletName();
+      const routerOutlet = this._routerOutlet();
+
+      untracked(() => {
+        const subscription = Beans.get(MessageClient).observe$(TestingAppTopics.routerOutletContextUpdateTopic(outletName, ':key'))
+          .subscribe(message => routerOutlet.nativeElement.setContextValue(message.params!.get('key')!, message.body));
+
+        onCleanup(() => subscription.unsubscribe());
       });
+    });
   }
 }
 

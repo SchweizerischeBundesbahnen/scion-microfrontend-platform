@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, ElementRef, HostListener, inject, input, linkedSignal, NgZone, output, signal, untracked, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, ElementRef, HostListener, inject, input, linkedSignal, NgZone, output, Signal, signal, untracked, viewChild} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
 import {KeyValuePair, LogicalOperator} from './filter-field';
@@ -44,24 +44,19 @@ export class FilterFieldComponent {
   private readonly _zone = inject(NgZone);
   private readonly _formBuilder = inject(NonNullableFormBuilder);
   private readonly _filters = signal(new Set<KeyValuePair>());
+  private readonly _keyElement = viewChild('key', {read: ElementRef<HTMLElement>});
+  private readonly _valueElement = viewChild('value', {read: ElementRef<HTMLElement>});
 
   protected readonly logicalOperator = linkedSignal(() => this.initialLogicalOperator());
+  protected readonly isAddButtonDisabled = this.computeIsAddButtonDisabled();
+  protected readonly keyFormControl = this._formBuilder.control('');
+  protected readonly valueFormControl = this._formBuilder.control('');
   protected readonly autocompleteKeysDatalistId = UUID.randomUUID(); // generate random id for autocomplete list in order to support multiple filter fields in the same document
   protected readonly autocompleteValuesDatalistId = UUID.randomUUID(); // generate random id for autocomplete list in order to support multiple filter fields in the same document
   protected readonly OR = 'or';
   protected readonly AND = 'and';
 
-  @ViewChild('key', {read: ElementRef})
-  private _keyElement: ElementRef<HTMLElement> | undefined;
-
-  public keyFormControl = this._formBuilder.control('');
-
-  @ViewChild('value', {read: ElementRef})
-  private _valueElement: ElementRef<HTMLElement> | undefined;
-
-  public valueFormControl = this._formBuilder.control('');
-
-  public showFilter = false;
+  protected showFilter = false;
 
   constructor() {
     effect(() => {
@@ -75,11 +70,11 @@ export class FilterFieldComponent {
   }
 
   @HostListener('keydown.escape')
-  public onEscape(): void {
+  protected onEscape(): void {
     this.showFilter = false;
   }
 
-  public onFocusChange(origin: FocusOrigin): void {
+  protected onFocusChange(origin: FocusOrigin): void {
     if (origin === null) {
       this.showFilter = false;
       // Workaround for the fact that (cdkFocusChange) emits outside NgZone.
@@ -121,11 +116,13 @@ export class FilterFieldComponent {
     this.removeKeyValueFilter.emit(removedFilter);
   }
 
-  protected isAddButtonDisabled(): boolean {
-    if (this.type() === 'value') {
-      return !this.valueFormControl.value;
-    }
-    return !this.keyFormControl.value && !this.valueFormControl.value;
+  private computeIsAddButtonDisabled(): Signal<boolean> {
+    return computed(() => {
+      if (this.type() === 'value') {
+        return !this.valueFormControl.value;
+      }
+      return !this.keyFormControl.value && !this.valueFormControl.value;
+    });
   }
 
   private add(key: string, value: string): KeyValuePair | false {
@@ -144,10 +141,10 @@ export class FilterFieldComponent {
 
   private focusInput(): void {
     if (this.type() === 'value') {
-      this._valueElement!.nativeElement.focus();
+      (this._valueElement()!.nativeElement as HTMLElement).focus();
     }
     else if (this.type() === 'key-value') {
-      this._keyElement!.nativeElement.focus();
+      (this._keyElement()!.nativeElement as HTMLElement).focus();
     }
   }
 }
