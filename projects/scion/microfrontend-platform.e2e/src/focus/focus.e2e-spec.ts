@@ -41,93 +41,93 @@ test.describe('Focus Tracker', () => {
 
     // Focus outlet 1 (contained in the root document)
     await outlet1.focusUrl();
-    await expect(await testingAppPO.isFocusWithin()).toBe(true);
-    await expect(await outlet1.isFocusWithinIframe()).toBe(false);
-    await expect(await outlet2.isFocusWithinIframe()).toBe(false);
-    await expect(await microfrontend1a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend1b.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2b.isFocusWithin()).toBe(false);
+    await expect.poll(() => testingAppPO.isFocusWithin()).toBe(true);
+    await expect.poll(() => outlet1.isFocusWithinIframe()).toBe(false);
+    await expect.poll(() => outlet2.isFocusWithinIframe()).toBe(false);
+    await expect.poll(() => microfrontend1a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend1b.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus outlet 1a
     await outlet1a.focusUrl();
-    await expect(await testingAppPO.isFocusWithin()).toBe(true);
-    await expect(await outlet1.isFocusWithinIframe()).toBe(true);
-    await expect(await outlet2.isFocusWithinIframe()).toBe(false);
-    await expect(await microfrontend1a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend1b.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2b.isFocusWithin()).toBe(false);
+    await expect.poll(() => testingAppPO.isFocusWithin()).toBe(true);
+    await expect.poll(() => outlet1.isFocusWithinIframe()).toBe(true);
+    await expect.poll(() => outlet2.isFocusWithinIframe()).toBe(false);
+    await expect.poll(() => microfrontend1a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend1b.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus outlet 2a
     await outlet2a.focusUrl();
-    await expect(await testingAppPO.isFocusWithin()).toBe(true);
-    await expect(await outlet1.isFocusWithinIframe()).toBe(false);
-    await expect(await outlet2.isFocusWithinIframe()).toBe(true);
-    await expect(await microfrontend1a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend1b.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2b.isFocusWithin()).toBe(false);
+    await expect.poll(() => testingAppPO.isFocusWithin()).toBe(true);
+    await expect.poll(() => outlet1.isFocusWithinIframe()).toBe(false);
+    await expect.poll(() => outlet2.isFocusWithinIframe()).toBe(true);
+    await expect.poll(() => microfrontend1a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend1b.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus outlet 1b
     await outlet1b.focusUrl();
-    await expect(await testingAppPO.isFocusWithin()).toBe(true);
-    await expect(await outlet1.isFocusWithinIframe()).toBe(true);
-    await expect(await outlet2.isFocusWithinIframe()).toBe(false);
-    await expect(await microfrontend1a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend1b.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2b.isFocusWithin()).toBe(false);
+    await expect.poll(() => testingAppPO.isFocusWithin()).toBe(true);
+    await expect.poll(() => outlet1.isFocusWithinIframe()).toBe(true);
+    await expect.poll(() => outlet2.isFocusWithinIframe()).toBe(false);
+    await expect.poll(() => microfrontend1a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend1b.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus outlet 2b
     await outlet2b.focusUrl();
-    await expect(await testingAppPO.isFocusWithin()).toBe(true);
-    await expect(await outlet1.isFocusWithinIframe()).toBe(false);
-    await expect(await outlet2.isFocusWithinIframe()).toBe(true);
-    await expect(await microfrontend1a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend1b.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2b.isFocusWithin()).toBe(false);
+    await expect.poll(() => testingAppPO.isFocusWithin()).toBe(true);
+    await expect.poll(() => outlet1.isFocusWithinIframe()).toBe(false);
+    await expect.poll(() => outlet2.isFocusWithinIframe()).toBe(true);
+    await expect.poll(() => microfrontend1a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend1b.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus microfrontend 1a
     await microfrontend1a.inputFieldPO.focus();
-    await expect(await testingAppPO.isFocusWithin()).toBe(true);
-    await expect(await outlet1.isFocusWithinIframe()).toBe(true);
-    await expect(await outlet2.isFocusWithinIframe()).toBe(false);
-    await expect(await microfrontend1a.isFocusWithin()).toBe(true);
-    await expect(await microfrontend1b.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2b.isFocusWithin()).toBe(false);
+    await expect.poll(() => testingAppPO.isFocusWithin()).toBe(true);
+    await expect.poll(() => outlet1.isFocusWithinIframe()).toBe(true);
+    await expect.poll(() => outlet2.isFocusWithinIframe()).toBe(false);
+    await expect.poll(() => microfrontend1a.isFocusWithin()).toBe(true);
+    await expect.poll(() => microfrontend1b.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus microfrontend 2a
     await microfrontend2a.inputFieldPO.focus();
-    await expect(await testingAppPO.isFocusWithin()).toBe(true);
-    await expect(await outlet1.isFocusWithinIframe()).toBe(false);
-    await expect(await outlet2.isFocusWithinIframe()).toBe(true);
-    await expect(await microfrontend1a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend1b.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2a.isFocusWithin()).toBe(true);
-    await expect(await microfrontend2b.isFocusWithin()).toBe(false);
+    await expect.poll(() => testingAppPO.isFocusWithin()).toBe(true);
+    await expect.poll(() => outlet1.isFocusWithinIframe()).toBe(false);
+    await expect.poll(() => outlet2.isFocusWithinIframe()).toBe(true);
+    await expect.poll(() => microfrontend1a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend1b.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2a.isFocusWithin()).toBe(true);
+    await expect.poll(() => microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus microfrontend 1b
     await microfrontend1b.inputFieldPO.focus();
-    await expect(await testingAppPO.isFocusWithin()).toBe(true);
-    await expect(await outlet1.isFocusWithinIframe()).toBe(true);
-    await expect(await outlet2.isFocusWithinIframe()).toBe(false);
-    await expect(await microfrontend1a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend1b.isFocusWithin()).toBe(true);
-    await expect(await microfrontend2a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2b.isFocusWithin()).toBe(false);
+    await expect.poll(() => testingAppPO.isFocusWithin()).toBe(true);
+    await expect.poll(() => outlet1.isFocusWithinIframe()).toBe(true);
+    await expect.poll(() => outlet2.isFocusWithinIframe()).toBe(false);
+    await expect.poll(() => microfrontend1a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend1b.isFocusWithin()).toBe(true);
+    await expect.poll(() => microfrontend2a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2b.isFocusWithin()).toBe(false);
 
     // Focus microfrontend 2b
     await microfrontend2b.inputFieldPO.focus();
-    await expect(await testingAppPO.isFocusWithin()).toBe(true);
-    await expect(await outlet1.isFocusWithinIframe()).toBe(false);
-    await expect(await outlet2.isFocusWithinIframe()).toBe(true);
-    await expect(await microfrontend1a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend1b.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2a.isFocusWithin()).toBe(false);
-    await expect(await microfrontend2b.isFocusWithin()).toBe(true);
+    await expect.poll(() => testingAppPO.isFocusWithin()).toBe(true);
+    await expect.poll(() => outlet1.isFocusWithinIframe()).toBe(false);
+    await expect.poll(() => outlet2.isFocusWithinIframe()).toBe(true);
+    await expect.poll(() => microfrontend1a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend1b.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2a.isFocusWithin()).toBe(false);
+    await expect.poll(() => microfrontend2b.isFocusWithin()).toBe(true);
   });
 
   test('should track the focus across microfrontends (has-focus)', async ({testingAppPO}) => {
@@ -144,39 +144,38 @@ test.describe('Focus Tracker', () => {
 
     // Focus outlet of microfrontend 1 (contained in the root document)
     await microfrontend1Outlet.focusUrl();
-    await expect(await testingAppPO.hasFocus()).toBe(true);
-    await expect(await microfrontend1.hasFocus()).toBe(false);
-    await expect(await microfrontend2.hasFocus()).toBe(false);
+    await expect.poll(() => testingAppPO.hasFocus()).toBe(true);
+    await expect.poll(() => microfrontend1.hasFocus()).toBe(false);
+    await expect.poll(() => microfrontend2.hasFocus()).toBe(false);
 
     // Click focusable element in microfrontend 1
     await microfrontend1.clickFocusableElement();
-    await expect(await testingAppPO.hasFocus()).toBe(false);
-    await expect(await microfrontend1.hasFocus()).toBe(true);
-    await expect(await microfrontend2.hasFocus()).toBe(false);
+    await expect.poll(() => testingAppPO.hasFocus()).toBe(false);
+    await expect.poll(() => microfrontend1.hasFocus()).toBe(true);
+    await expect.poll(() => microfrontend2.hasFocus()).toBe(false);
 
     // Click focusable element in microfrontend 2
     await microfrontend2.clickFocusableElement();
-    await expect(await testingAppPO.hasFocus()).toBe(false);
-    await expect(await microfrontend1.hasFocus()).toBe(false);
-    await expect(await microfrontend2.hasFocus()).toBe(true);
+    await expect.poll(() => testingAppPO.hasFocus()).toBe(false);
+    await expect.poll(() => microfrontend1.hasFocus()).toBe(false);
+    await expect.poll(() => microfrontend2.hasFocus()).toBe(true);
 
     // Click non-focusable element in microfrontend 1
     await microfrontend1.clickNonFocusableElement();
-    await expect(await testingAppPO.hasFocus()).toBe(false);
-    await expect(await microfrontend1.hasFocus()).toBe(true);
-    await expect(await microfrontend2.hasFocus()).toBe(false);
+    await expect.poll(() => testingAppPO.hasFocus()).toBe(false);
+    await expect.poll(() => microfrontend1.hasFocus()).toBe(true);
+    await expect.poll(() => microfrontend2.hasFocus()).toBe(false);
 
     // Click non-focusable element in microfrontend 2
     await microfrontend2.clickNonFocusableElement();
-    await expect(await testingAppPO.hasFocus()).toBe(false);
-    await expect(await microfrontend1.hasFocus()).toBe(false);
-    await expect(await microfrontend2.hasFocus()).toBe(true);
+    await expect.poll(() => testingAppPO.hasFocus()).toBe(false);
+    await expect.poll(() => microfrontend1.hasFocus()).toBe(false);
+    await expect.poll(() => microfrontend2.hasFocus()).toBe(true);
 
     // Focus outlet of microfrontend 2 (contained in the root document)
     await microfrontend2Outlet.focusUrl();
-    await expect(await testingAppPO.hasFocus()).toBe(true);
-    await expect(await microfrontend1.hasFocus()).toBe(false);
-    await expect(await microfrontend2.hasFocus()).toBe(false);
+    await expect.poll(() => testingAppPO.hasFocus()).toBe(true);
+    await expect.poll(() => microfrontend1.hasFocus()).toBe(false);
+    await expect.poll(() => microfrontend2.hasFocus()).toBe(false);
   });
 });
-

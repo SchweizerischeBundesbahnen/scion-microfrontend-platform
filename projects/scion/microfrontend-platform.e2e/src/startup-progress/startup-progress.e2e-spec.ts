@@ -25,7 +25,7 @@ test.describe('Startup Progress', () => {
     // devtools manifest.json with 0 activators are only configured for environment.ts and disabled for CI.
     await testingAppPO.navigateTo({}, {queryParams: new Map().set('manifestClassifier', 'activator-progress')});
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /PlatformInitializer::host:progress/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /PlatformInitializer::host:progress/})).toEqualIgnoreOrder([
       '[PlatformInitializer::host:progress] 0%',
       '[PlatformInitializer::host:progress] 6.67%',
       '[PlatformInitializer::host:progress] 13.33%',
@@ -44,7 +44,7 @@ test.describe('Startup Progress', () => {
   test('should report startup progress and complete if no activators are present', async ({testingAppPO, consoleLogs}) => {
     await testingAppPO.navigateTo({}, {queryParams: new Map().set('activatorApiDisabled', true)});
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /PlatformInitializer::host:progress/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /PlatformInitializer::host:progress/})).toEqualIgnoreOrder([
       '[PlatformInitializer::host:progress] 0%',
       '[PlatformInitializer::host:progress] 6.67%',
       '[PlatformInitializer::host:progress] 13.33%',

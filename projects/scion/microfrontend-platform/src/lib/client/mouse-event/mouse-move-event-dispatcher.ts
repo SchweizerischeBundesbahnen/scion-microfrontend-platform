@@ -34,7 +34,7 @@ export class MouseMoveEventDispatcher implements PreDestroy {
   constructor() {
     // IMPORTANT: For Angular applications, the platform is started outside the Angular zone. To avoid excessive change detection cycles,
     // this dispatcher is eagerly set up at platform startup and installed only for regular microfrontends, not activator microfrontends.
-    this.installMouseEventDispatcher().then();
+    void this.installMouseEventDispatcher();
   }
 
   /**
@@ -63,7 +63,7 @@ export class MouseMoveEventDispatcher implements PreDestroy {
       )
       .subscribe((event: MouseEvent) => {
         const options = {headers: new Map().set(DISPATCHER_ID_HEADER, this._dispatcherId)};
-        Beans.get(MessageClient).publish(MOUSEMOVE_EVENT_TOPIC, [event.screenX, event.screenY], options);
+        void Beans.get(MessageClient).publish(MOUSEMOVE_EVENT_TOPIC, [event.screenX, event.screenY], options);
       });
   }
 
@@ -80,7 +80,7 @@ export class MouseMoveEventDispatcher implements PreDestroy {
         takeUntil(this._destroy$),
       )
       .subscribe(([screenX, screenY]: [number, number]) => {
-        const sciMouseEvent: any = new Event('sci-mousemove');
+        const sciMouseEvent = new Event('sci-mousemove') as Event & {screenX: number; screenY: number};
         sciMouseEvent.screenX = screenX;
         sciMouseEvent.screenY = screenY;
         document.dispatchEvent(sciMouseEvent);

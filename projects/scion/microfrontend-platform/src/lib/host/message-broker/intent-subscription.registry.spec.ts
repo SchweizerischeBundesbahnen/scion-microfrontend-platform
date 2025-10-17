@@ -170,5 +170,5 @@ function newClient(): Client {
     public readonly id = UUID.randomUUID();
     public readonly application = {symbolicName: 'app'} as ɵApplication;
     public readonly dispose = noop;
-  } as Client;
+  }() as Client;
 }

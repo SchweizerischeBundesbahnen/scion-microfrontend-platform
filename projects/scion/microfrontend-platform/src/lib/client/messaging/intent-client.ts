@@ -98,7 +98,7 @@ export abstract class IntentClient {
    *         in the {@link MessageHeaders.Status} message header. Then, the Observable completes immediately after emitted the reply.
    *         The Observable errors if the request could not be dispatched. It will also error if the replier sets a status code greater than or equal to 400, e.g., {@link ResponseStatusCodes.ERROR}.
    */
-  public abstract request$<T>(intent: Intent, body?: any, options?: RequestOptions): Observable<TopicMessage<T>>;
+  public abstract request$<T>(intent: Intent, body?: unknown, options?: RequestOptions): Observable<TopicMessage<T>>;
 
   /**
    * Receives an intent when some micro application wants to collaborate with this micro application.

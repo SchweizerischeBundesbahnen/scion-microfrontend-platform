@@ -130,8 +130,8 @@ export default class AppShellComponent implements OnInit {
    * </ng-template>
    */
   public onRouteActivate(route: ActivatedRoute): void {
-    const isPageTitleVisible = Defined.orElse(route.snapshot.data['pageTitleVisible'], true);
-    asapScheduler.schedule(() => this.pageTitle = isPageTitleVisible ? route.snapshot.data['pageTitle'] : null);
+    const isPageTitleVisible = Defined.orElse(route.snapshot.data['pageTitleVisible'] as boolean | undefined, true);
+    asapScheduler.schedule(() => this.pageTitle = isPageTitleVisible ? route.snapshot.data['pageTitle'] as string : undefined);
     this._routeActivate$.next();
   }
 

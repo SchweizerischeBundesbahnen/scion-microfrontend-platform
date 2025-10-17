@@ -9,7 +9,7 @@
  */
 
 import {NgModule} from '@angular/core';
-import {APP_IDENTITY, MessageClient, OutletRouter} from '@scion/microfrontend-platform';
+import {APP_IDENTITY, MessageClient, OutletRouter, Qualifier} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 /**
@@ -26,16 +26,16 @@ export default class ActivatorRoutingModule {
 
     Beans.get(MessageClient).observe$('activators/navigate-via-url')
       .subscribe(message => {
-        const path = message.headers.get('path');
-        const outlet = message.headers.get('outlet');
-        Beans.get(OutletRouter).navigate(path, {outlet});
+        const path = message.headers.get('path') as string;
+        const outlet = message.headers.get('outlet') as string | undefined;
+        void Beans.get(OutletRouter).navigate(path, {outlet});
       });
 
     Beans.get(MessageClient).observe$('activators/navigate-via-intent')
       .subscribe(message => {
-        const qualifier = JSON.parse(message.headers.get('qualifier'));
-        const outlet = message.headers.get('outlet');
-        Beans.get(OutletRouter).navigate(qualifier, {outlet});
+        const qualifier = JSON.parse(message.headers.get('qualifier') as string) as Qualifier;
+        const outlet = message.headers.get('outlet') as string | undefined;
+        void Beans.get(OutletRouter).navigate(qualifier, {outlet});
       });
   }
 }

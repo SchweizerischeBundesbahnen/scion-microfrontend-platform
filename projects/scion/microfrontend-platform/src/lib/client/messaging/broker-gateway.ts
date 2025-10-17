@@ -54,7 +54,7 @@ export abstract class BrokerGateway {
   /**
    * Posts a message to the message broker and receives replies. The Observable never completes.
    */
-  public abstract requestReply$<T = any>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>>;
+  public abstract requestReply$<T = unknown>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>>;
 
   /**
    * Subscribes to described destination, unless the platform has been stopped at the time of subscription.
@@ -87,7 +87,7 @@ export class NullBrokerGateway implements BrokerGateway {
     return Promise.resolve();
   }
 
-  public requestReply$<T = any>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
+  public requestReply$<T = unknown>(channel: MessagingChannel, message: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
     return NEVER;
   }
 
@@ -120,7 +120,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
   });
   private _selectMessagesBySubscriberIdHeader = new MessageSelector({
     source$: this._message$,
-    keySelector: event => event.data.message.headers.get(MessageHeaders.ɵSubscriberId),
+    keySelector: event => event.data.message.headers.get(MessageHeaders.ɵSubscriberId) as string,
   });
 
   constructor(connectOptions?: ConnectOptions) {
@@ -159,7 +159,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
 
     // If not connected to the broker, wait until connected. If connected, continue execution immediately
     // without spawning a microtask. Otherwise, messages cannot be published during platform shutdown.
-    const session = this._session || await lastValueFrom(this._session$);
+    const session = this._session ?? await lastValueFrom(this._session$);
 
     const messageId = UUID.randomUUID();
     const envelope: MessageEnvelope = {
@@ -200,8 +200,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     await whenPosted;
   }
 
-  public requestReply$<T = any>(channel: MessagingChannel, request: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
-    return new Observable((observer: Observer<TopicMessage>): TeardownLogic => {
+  public requestReply$<T = unknown>(channel: MessagingChannel, request: IntentMessage | TopicMessage): Observable<TopicMessage<T>> {
+    return new Observable((observer: Observer<TopicMessage<T>>): TeardownLogic => {
       if (isPlatformStopped()) {
         observer.error(GatewayErrors.PLATFORM_STOPPED_ERROR);
         return noop;
@@ -223,7 +223,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
           pluckMessage(),
           decorateObservable(),
           takeUntil(merge(this._platformStopping$, unsubscribe$)),
-          finalize(() => this.unsubscribe({unsubscribeChannel: MessagingChannel.TopicUnsubscribe, subscriberId, logContext: `[subscriberId=${subscriberId}, topic=${replyTo}]`})),
+          finalize(() => void this.unsubscribe({unsubscribeChannel: MessagingChannel.TopicUnsubscribe, subscriberId, logContext: `[subscriberId=${subscriberId}, topic=${replyTo}]`})),
         )
         .subscribe({
           next: reply => observer.next(reply),
@@ -233,7 +233,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
 
       // Post the request to the broker.
       this.postMessage(channel, request)
-        .catch(error => requestError$.error(error));
+        .catch((error: unknown) => requestError$.error(error));
 
       return (): void => unsubscribe$.next();
     });
@@ -259,7 +259,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
           pluckMessage(),
           decorateObservable(),
           takeUntil(merge(this._platformStopping$, unsubscribe$)),
-          finalize(() => this.unsubscribe({unsubscribeChannel, subscriberId, logContext: JSON.stringify(newSubscribeCommand(subscriberId))})),
+          finalize(() => void this.unsubscribe({unsubscribeChannel, subscriberId, logContext: JSON.stringify(newSubscribeCommand(subscriberId))})),
         )
         .subscribe({
           next: message => observer.next(message),
@@ -269,7 +269,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
 
       // Post the subscription to the broker.
       this.postMessage(subscribeChannel, newSubscribeCommand(subscriberId))
-        .catch(error => subscribeError$.error(error));
+        .catch((error: unknown) => subscribeError$.error(error));
 
       return (): void => unsubscribe$.next();
     });
@@ -289,7 +289,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       await this.postMessage(unsubscribeChannel, unsubscribeCommand);
     }
     catch (error) {
-      Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(`[UnsubscribeError] Failed to unsubscribe from destination: '${logContext}'. Caused by: ${error}`);  // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
+      Beans.get(Logger, {orElseGet: NULL_LOGGER}).error(`[UnsubscribeError] Failed to unsubscribe from destination: '${logContext}'. Caused by: ${error}`); // Fall back using NULL_LOGGER, e.g., when the platform is stopping.
     }
   }
 
@@ -322,8 +322,8 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
     Beans.get(MessageClient).observe$(PlatformTopics.ping(session.clientId))
       .pipe(takeUntil(this._platformStopping$))
       .subscribe(request => runSafe(() => {
-        const replyTo = request.headers.get(MessageHeaders.ReplyTo);
-        Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)}).then();
+        const replyTo = request.headers.get(MessageHeaders.ReplyTo) as string;
+        void Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
       }));
   }
 
@@ -364,7 +364,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       transport: MessagingTransport.ClientToBroker,
       channel: MessagingChannel.ClientConnect,
       message: {
-        headers: new Map()
+        headers: new Map<string, unknown>()
           .set(MessageHeaders.MessageId, UUID.randomUUID())
           .set(MessageHeaders.Timestamp, Date.now())
           .set(MessageHeaders.AppSymbolicName, this._appSymbolicName)
@@ -408,7 +408,7 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
       transport: MessagingTransport.ClientToBroker,
       channel: MessagingChannel.ClientDisconnect,
       message: {
-        headers: new Map()
+        headers: new Map<string, unknown>()
           .set(MessageHeaders.MessageId, UUID.randomUUID())
           .set(MessageHeaders.Timestamp, Date.now())
           .set(MessageHeaders.AppSymbolicName, this._appSymbolicName)
@@ -467,15 +467,15 @@ export class ɵBrokerGateway implements BrokerGateway, PreDestroy, Initializer {
 function fixMapObjects<T extends Message>(): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
   return map((event: MessageEvent<MessageEnvelope<T>>): MessageEvent<MessageEnvelope<T>> => {
     const envelope: MessageEnvelope = event.data;
-    envelope.message.headers = new Map(envelope.message.headers || []);
+    envelope.message.headers = new Map(envelope.message.headers);
 
     if (envelope.channel === MessagingChannel.Intent) {
       const intentMessage = envelope.message as IntentMessage;
-      intentMessage.intent.params = new Map(intentMessage.intent.params || []);
+      intentMessage.intent.params = new Map(intentMessage.intent.params ?? []);
     }
     if (envelope.channel === MessagingChannel.Topic) {
       const topicMessage = envelope.message as TopicMessage;
-      topicMessage.params = new Map(topicMessage.params || []);
+      topicMessage.params = new Map(topicMessage.params ?? []);
     }
     return event;
   });
@@ -485,7 +485,7 @@ function fixMapObjects<T extends Message>(): MonoTypeOperatorFunction<MessageEve
  * Creates a string representation of the given {@link MessageEnvelope}.
  */
 function stringifyEnvelope(envelope: MessageEnvelope): string {
-  return JSON.stringify(envelope, (key, value) => (value instanceof Map) ? Dictionaries.coerce(value) : value);
+  return JSON.stringify(envelope, (key: string, value: unknown) => (value instanceof Map) ? Dictionaries.coerce(value) : value);
 }
 
 function isPlatformStopped(): boolean {

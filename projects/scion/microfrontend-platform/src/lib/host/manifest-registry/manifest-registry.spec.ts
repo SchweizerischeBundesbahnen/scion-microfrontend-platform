@@ -19,6 +19,7 @@ import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 import {firstValueFrom} from 'rxjs';
 import {CapabilityInterceptor} from './capability-interceptors';
 import CallInfo = jasmine.CallInfo;
+import Func = jasmine.Func;
 
 const capabilityIdExtractFn = (capability: Capability): string => capability.metadata!.id;
 
@@ -124,7 +125,7 @@ describe('ManifestRegistry', () => {
       });
 
       // Register intention
-      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1');
+      Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1');
 
       // Expect app-1 to have an intention
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
@@ -148,7 +149,7 @@ describe('ManifestRegistry', () => {
       });
 
       // Register intention
-      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'app-1');
+      Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'app-1');
 
       // Expect app-1 to have an intention
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
@@ -171,7 +172,7 @@ describe('ManifestRegistry', () => {
       });
 
       // Register intention
-      await Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'app-1');
+      Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'app-1');
 
       // Expect app-1 to have an intention
       expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
@@ -478,7 +479,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<Func>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] Parameter 'param' must be explicitly defined as required or optional.`,
       ]));
     });
@@ -514,7 +515,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<Func>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`,
       ]));
     });
@@ -540,7 +541,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<Func>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`,
       ]));
     });
@@ -592,7 +593,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<any>) => (call.args[1] as Error)?.message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<Func>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
         `[CapabilityParamError] The deprecated parameter 'param1' defines an invalid substitute 'paramX'. Valid substitutes are: [param2,param3]`,
       ]));
     });
@@ -702,7 +703,7 @@ describe('ManifestRegistry', () => {
           }
           return capability;
         }
-      },
+      }(),
     });
 
     // Register capability 1 (reject).
@@ -776,22 +777,22 @@ describe('ManifestRegistry', () => {
     // Expect capabilities of the host app.
     const capabilitiesHostApp = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: 'host-app'}));
     expect(capabilitiesHostApp.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
-      jasmine.objectContaining({type: 'testee-1', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
-      jasmine.objectContaining({type: 'testee-1a', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
+      jasmine.objectContaining({type: 'testee-1', properties: {intercepted: true}} satisfies Capability),
+      jasmine.objectContaining({type: 'testee-1a', properties: {intercepted: true}} satisfies Capability),
     ]));
 
     // Expect capabilities of 'app-1'.
     const capabilitiesApp1 = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: 'app-1'}));
     expect(capabilitiesApp1.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
-      jasmine.objectContaining({type: 'testee-2', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
-      jasmine.objectContaining({type: 'testee-2a', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
+      jasmine.objectContaining({type: 'testee-2', properties: {intercepted: true}} satisfies Capability),
+      jasmine.objectContaining({type: 'testee-2a', properties: {intercepted: true}} satisfies Capability),
     ]));
 
     // Expect capabilities of 'app-2'.
     const capabilitiesApp2 = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: 'app-2'}));
     expect(capabilitiesApp2.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
-      jasmine.objectContaining({type: 'testee-3', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
-      jasmine.objectContaining({type: 'testee-3a', properties: jasmine.objectContaining({intercepted: true})} satisfies Capability),
+      jasmine.objectContaining({type: 'testee-3', properties: {intercepted: true}} satisfies Capability),
+      jasmine.objectContaining({type: 'testee-3a', properties: {intercepted: true}} satisfies Capability),
     ]));
   });
 
