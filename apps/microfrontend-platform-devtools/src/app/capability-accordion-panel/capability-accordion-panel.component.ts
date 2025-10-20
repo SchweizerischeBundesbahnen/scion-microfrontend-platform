@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, Input, OnInit} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Application, Capability} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
@@ -41,8 +41,8 @@ export class CapabilityAccordionPanelComponent implements OnInit {
   @Input({required: true})
   public capability!: Capability;
 
-  constructor(private _manifestService: DevToolsManifestService, private _router: Router) {
-  }
+  private readonly _manifestService = inject(DevToolsManifestService);
+  private readonly _router = inject(Router);
 
   public ngOnInit(): void {
     this.applications$ = this._manifestService.capabilityConsumers$(this.capability);
