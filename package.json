@@ -92,7 +92,7 @@
     "@angular/compiler-cli": "20.0.2",
     "@asciidoctor/cli": "3.5.0",
     "@asciidoctor/core": "2.2.8",
-    "@playwright/test": "1.51.1",
+    "@playwright/test": "1.56.1",
     "@types/jasmine": "5.1.8",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
