@@ -50,19 +50,21 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export class RequiredCapabilitiesComponent implements OnChanges {
 
-  private readonly _router = inject(Router);
-  private readonly _formBuilder = inject(NonNullableFormBuilder);
-
-  private _appChange$ = new ReplaySubject<void>(1);
-
   @Input({required: true})
   public appSymbolicName!: string;
 
-  public capabilitiesByApp$: Observable<Map<string, Capability[]>>;
-  public filterFormControl = this._formBuilder.control('');
-  public selectedCapability: Capability | undefined;
+  private readonly _router = inject(Router);
+  private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _appChange$ = new ReplaySubject<void>(1);
 
-  constructor(manifestService: DevToolsManifestService) {
+  protected readonly capabilitiesByApp$: Observable<Map<string, Capability[]>>;
+  protected readonly filterFormControl = this._formBuilder.control('');
+
+  protected selectedCapability: Capability | undefined;
+
+  constructor() {
+    const manifestService = inject(DevToolsManifestService);
+
     this.capabilitiesByApp$ = this._appChange$
       .pipe(
         switchMap(() => manifestService.observeDependingCapabilities$(this.appSymbolicName)),

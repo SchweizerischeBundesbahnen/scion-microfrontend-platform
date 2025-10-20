@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, Input, OnInit} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Application, Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
@@ -30,8 +30,8 @@ export class IntentionAccordionPanelComponent implements OnInit {
   @Input({required: true})
   public intention!: Intention;
 
-  constructor(private _manifestService: DevToolsManifestService, private _router: Router) {
-  }
+  private readonly _manifestService = inject(DevToolsManifestService);
+  private readonly _router = inject(Router);
 
   public ngOnInit(): void {
     this.applications$ = this._manifestService.capabilityProviders$(this.intention);
