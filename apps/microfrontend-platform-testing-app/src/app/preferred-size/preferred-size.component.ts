@@ -29,7 +29,7 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 export default class PreferredSizeComponent {
 
   private readonly _formBuilder = inject(NonNullableFormBuilder);
-  private readonly _host = inject(ElementRef<HTMLElement>);
+  private readonly _host = inject(ElementRef).nativeElement as HTMLElement;
 
   public form = this._formBuilder.group({
     cssSize: this._formBuilder.group({
@@ -82,7 +82,7 @@ export default class PreferredSizeComponent {
 
   public onElementObservableBind(): void {
     this.elementDimensionObservableBound = true;
-    Beans.get(PreferredSizeService).fromDimension(this._host.nativeElement);
+    Beans.get(PreferredSizeService).fromDimension(this._host);
   }
 
   public onElementObservableUnbind(): void {
@@ -91,7 +91,7 @@ export default class PreferredSizeComponent {
   }
 
   public onElementUnmount(): void {
-    this._host.nativeElement.parentElement!.removeChild(this._host.nativeElement);
+    this._host.parentElement!.removeChild(this._host);
   }
 
   public onResetClick(): void {
@@ -108,11 +108,11 @@ export default class PreferredSizeComponent {
   }
 }
 
-function setCssVariable(element: ElementRef<HTMLElement>, key: string, value?: any): void {
+function setCssVariable(element: HTMLElement, key: string, value?: string | null): void {
   if (value === undefined || value === null) {
-    element.nativeElement.style.removeProperty(key);
+    element.style.removeProperty(key);
   }
   else {
-    element.nativeElement.style.setProperty(key, value);
+    element.style.setProperty(key, value);
   }
 }

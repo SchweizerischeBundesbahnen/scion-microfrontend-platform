@@ -214,9 +214,7 @@ export interface OutletPageObject {
 /**
  * Required constructor of a page object in order to be used as outlet in the test setup.
  */
-export interface OutletPageObjectConstructor<T extends OutletPageObject = OutletPageObject> extends Function { // eslint-disable-line @typescript-eslint/ban-types
-  new(frameLocator: FrameLocator): T;
-}
+export type OutletPageObjectConstructor<T extends OutletPageObject = OutletPageObject> = new(frameLocator: FrameLocator) => T;
 
 /**
  * Describes the microfrontend to load in an outlet.

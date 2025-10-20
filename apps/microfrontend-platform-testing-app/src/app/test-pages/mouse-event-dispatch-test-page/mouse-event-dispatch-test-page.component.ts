@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectorRef, Component, DestroyRef, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, effect, inject, untracked, viewChild} from '@angular/core';
 import {fromEvent, merge} from 'rxjs';
 import {DatePipe} from '@angular/common';
 import {SciViewportComponent} from '@scion/components/viewport';
@@ -26,31 +26,41 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
     SciCheckboxComponent,
   ],
 })
-export default class MouseEventDispatchTestPageComponent implements OnInit {
+export default class MouseEventDispatchTestPageComponent {
 
-  public dispatchedEvents = new Array<DispatchedEvent>();
-  public followTailFormControl = new FormControl<boolean>(true);
+  private readonly _cd = inject(ChangeDetectorRef);
+  private readonly _destroyRef = inject(DestroyRef);
+  private readonly _viewport = viewChild.required(SciViewportComponent);
 
-  @ViewChild(SciViewportComponent, {static: true})
-  private _viewport!: SciViewportComponent;
+  protected readonly dispatchedEvents = new Array<DispatchedEvent>();
+  protected readonly followTailFormControl = new FormControl<boolean>(true);
 
-  constructor(private _cd: ChangeDetectorRef, private _destroyRef: DestroyRef) {
+  constructor() {
+    this.installEventsListener();
   }
 
-  public ngOnInit(): void {
-    merge(fromEvent(document, 'sci-mousemove'), fromEvent(document, 'sci-mouseup'))
-      .pipe(takeUntilDestroyed(this._destroyRef))
-      .subscribe(event => {
-        this.dispatchedEvents.push({type: event.type, timestamp: Date.now()});
-        if (this.followTailFormControl.value) {
-          this._cd.detectChanges();
-          this._viewport.scrollTop = this._viewport.scrollHeight;
-        }
-      });
-  }
-
-  public onClearDispatchedEvent(): void {
+  protected onClearDispatchedEvent(): void {
     this.dispatchedEvents.length = 0;
+  }
+
+  private installEventsListener(): void {
+    effect(onCleanup => {
+      const viewport = this._viewport();
+
+      untracked(() => {
+        const subscription = merge(fromEvent(document, 'sci-mousemove'), fromEvent(document, 'sci-mouseup'))
+          .pipe(takeUntilDestroyed(this._destroyRef))
+          .subscribe(event => {
+            this.dispatchedEvents.push({type: event.type, timestamp: Date.now()});
+            if (this.followTailFormControl.value) {
+              this._cd.detectChanges();
+              viewport.scrollTop = viewport.scrollHeight;
+            }
+          });
+
+        onCleanup(() => subscription.unsubscribe());
+      });
+    });
   }
 }
 

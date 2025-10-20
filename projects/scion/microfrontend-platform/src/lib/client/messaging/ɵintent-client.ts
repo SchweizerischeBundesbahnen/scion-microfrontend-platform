@@ -24,7 +24,7 @@ export class ɵIntentClient implements IntentClient {
 
   private readonly _brokerGateway = Beans.get(BrokerGateway);
 
-  public publish<T = any>(intent: Intent, body?: T, options?: PublishOptions): Promise<void> {
+  public publish<T = unknown>(intent: Intent, body?: T, options?: PublishOptions): Promise<void> {
     const intentMessage: IntentMessage = {
       intent,
       retain: options?.retain ?? false,
@@ -35,7 +35,7 @@ export class ɵIntentClient implements IntentClient {
     return this._brokerGateway.postMessage(MessagingChannel.Intent, intentMessage);
   }
 
-  public request$<T>(intent: Intent, body?: any, options?: RequestOptions): Observable<TopicMessage<T>> {
+  public request$<T>(intent: Intent, body?: unknown, options?: RequestOptions): Observable<TopicMessage<T>> {
     // IMPORTANT:
     // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
     // to the returned Observable, each subscription must have its individual message instance and headers map.
@@ -49,7 +49,7 @@ export class ɵIntentClient implements IntentClient {
         capability: undefined!, /* set by the broker when dispatching the intent */
         body,
       };
-      return this._brokerGateway.requestReply$(MessagingChannel.Intent, intentMessage).pipe(throwOnErrorStatus());
+      return this._brokerGateway.requestReply$<T>(MessagingChannel.Intent, intentMessage).pipe(throwOnErrorStatus());
     });
   }
 
@@ -62,7 +62,7 @@ export class ɵIntentClient implements IntentClient {
     });
   }
 
-  public onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
+  public onIntent<IN = unknown, OUT = unknown>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
     return new MessageHandler(Beans.get(IntentClient).observe$<IN>(selector), callback).subscription;
   }
 }

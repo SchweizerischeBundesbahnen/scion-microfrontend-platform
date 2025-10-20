@@ -21,7 +21,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keydown.m',
       keysToPress: ['m'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='m', control=false, shift=false, alt=false, meta=false]`,
     ]);
 
@@ -29,7 +29,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keyup.m',
       keysToPress: ['m'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='m', control=false, shift=false, alt=false, meta=false]`,
     ]);
   });
@@ -39,7 +39,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keydown.control.m',
       keysToPress: ['Control', 'm'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='m', control=true, shift=false, alt=false, meta=false]`,
     ]);
 
@@ -47,7 +47,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keyup.control.m',
       keysToPress: ['Control', 'm'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='m', control=true, shift=false, alt=false, meta=false]`,
     ]);
   });
@@ -57,7 +57,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keydown.control.shift.m',
       keysToPress: ['Control', 'Shift', 'M'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=false, meta=false]`,
     ]);
 
@@ -65,7 +65,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keyup.control.shift.m',
       keysToPress: ['Control', 'Shift', 'M'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=false, meta=false]`,
     ]);
   });
@@ -75,7 +75,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keydown.control.alt.shift.m',
       keysToPress: ['Control', 'Shift', 'Alt', 'M'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=true, meta=false]`,
     ]);
 
@@ -83,7 +83,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keyup.control.alt.shift.m',
       keysToPress: ['Control', 'Shift', 'Alt', 'M'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=true, meta=false]`,
     ]);
   });
@@ -93,7 +93,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keydown.control.alt.shift.meta.m',
       keysToPress: ['Control', 'Shift', 'Alt', 'Meta', 'M'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=true, meta=true]`,
     ]);
 
@@ -101,7 +101,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keyup.control.alt.shift.meta.m',
       keysToPress: ['Control', 'Shift', 'Alt', 'Meta', 'M'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='M', control=true, shift=true, alt=true, meta=true]`,
     ]);
   });
@@ -111,7 +111,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keydown.dot',
       keysToPress: ['.'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='.', control=false, shift=false, alt=false, meta=false]`,
     ]);
 
@@ -119,7 +119,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keyup.dot',
       keysToPress: ['.'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='.', control=false, shift=false, alt=false, meta=false]`,
     ]);
   });
@@ -129,7 +129,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keydown.space',
       keysToPress: [' '],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key=' ', control=false, shift=false, alt=false, meta=false]`,
     ]);
 
@@ -137,7 +137,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keyup.space',
       keysToPress: [' '],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key=' ', control=false, shift=false, alt=false, meta=false]`,
     ]);
   });
@@ -147,7 +147,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keydown.escape',
       keysToPress: ['Escape'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='Escape', control=false, shift=false, alt=false, meta=false]`,
     ]);
 
@@ -155,7 +155,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keyup.escape',
       keysToPress: ['Escape'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='Escape', control=false, shift=false, alt=false, meta=false]`,
     ]);
   });
@@ -165,7 +165,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keydown.enter',
       keysToPress: ['Enter'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='Enter', control=false, shift=false, alt=false, meta=false]`,
     ]);
 
@@ -173,7 +173,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keyup.enter',
       keysToPress: ['Enter'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='Enter', control=false, shift=false, alt=false, meta=false]`,
     ]);
   });
@@ -183,7 +183,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keydown.f7',
       keysToPress: ['F7'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='F7', control=false, shift=false, alt=false, meta=false]`,
     ]);
 
@@ -191,7 +191,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keyup.f7',
       keysToPress: ['F7'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='F7', control=false, shift=false, alt=false, meta=false]`,
     ]);
   });
@@ -201,7 +201,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keydown.backspace',
       keysToPress: ['Backspace'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='Backspace', control=false, shift=false, alt=false, meta=false]`,
     ]);
 
@@ -209,7 +209,7 @@ test.describe('KeyboardEvent', () => {
       keystrokeToRegister: 'keyup.backspace',
       keysToPress: ['Backspace'],
     });
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeyup] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeyup] [SYNTHETIC] [outletContext=n/a, key='Backspace', control=false, shift=false, alt=false, meta=false]`,
     ]);
   });
@@ -231,7 +231,7 @@ test.describe('KeyboardEvent', () => {
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.inputFieldPO.press('Control+m');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet3, key='m', control=true, shift=false, alt=false, meta=false]`,
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet2, key='m', control=true, shift=false, alt=false, meta=false]`,
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet1, key='m', control=true, shift=false, alt=false, meta=false]`,
@@ -256,7 +256,7 @@ test.describe('KeyboardEvent', () => {
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.inputFieldPO.press('Control+m');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet3, key='m', control=true, shift=false, alt=false, meta=false]`,
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet2, key='m', control=true, shift=false, alt=false, meta=false]`,
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=outlet1, key='m', control=true, shift=false, alt=false, meta=false]`,
@@ -275,7 +275,7 @@ test.describe('KeyboardEvent', () => {
     await microfrontendPagePO.inputFieldPO.press('Alt+x');
     await microfrontendPagePO.inputFieldPO.press('Alt+v');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='x', control=false, shift=false, alt=true, meta=false]`,
     ]);
   });
@@ -297,7 +297,7 @@ test.describe('KeyboardEvent', () => {
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.inputFieldPO.press('Control+Alt+Shift+S');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=false]`,
     ]);
   });
@@ -319,7 +319,7 @@ test.describe('KeyboardEvent', () => {
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.inputFieldPO.press('Control+Alt+Shift+S');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=false]`,
     ]);
   });
@@ -341,7 +341,7 @@ test.describe('KeyboardEvent', () => {
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.inputFieldPO.press('Control+Alt+Shift+S');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=true]`,
     ]);
   });
@@ -365,7 +365,7 @@ test.describe('KeyboardEvent', () => {
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.inputFieldPO.press('Control+Alt+Shift+S');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=true]`,
     ]);
   });
@@ -389,7 +389,7 @@ test.describe('KeyboardEvent', () => {
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.inputFieldPO.press('Control+Alt+Shift+S');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=true]`,
     ]);
   });
@@ -413,7 +413,7 @@ test.describe('KeyboardEvent', () => {
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.inputFieldPO.press('Control+Alt+Shift+S');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=true]`,
     ]);
   });
@@ -437,7 +437,7 @@ test.describe('KeyboardEvent', () => {
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.inputFieldPO.press('Control+Alt+Shift+S');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=false]`,
     ]);
   });
@@ -461,7 +461,7 @@ test.describe('KeyboardEvent', () => {
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.inputFieldPO.press('Control+Alt+Shift+S');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=false]`,
     ]);
   });
@@ -485,7 +485,7 @@ test.describe('KeyboardEvent', () => {
     const microfrontendPagePO = pagePOs.get<Microfrontend1PagePO>('microfrontend');
     await microfrontendPagePO.inputFieldPO.press('Control+Alt+Shift+S');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[TRUSTED]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [TRUSTED] [outletContext=microfrontend, key='S', control=true, shift=true, alt=true, meta=false, defaultPrevented=false]`,
     ]);
   });
@@ -503,7 +503,7 @@ test.describe('KeyboardEvent', () => {
     await microfrontendPagePO.inputFieldPO.press('Alt+x');
     await microfrontendPagePO.inputFieldPO.press('Alt+y');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='y', control=false, shift=false, alt=true, meta=false]`,
     ]);
   });
@@ -521,7 +521,7 @@ test.describe('KeyboardEvent', () => {
     await microfrontendPagePO.inputFieldPO.press('Alt+y');
     await microfrontendPagePO.inputFieldPO.press('m');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='x', control=false, shift=false, alt=true, meta=false]`,
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='y', control=false, shift=false, alt=true, meta=false]`,
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='m', control=false, shift=false, alt=false, meta=false]`,
@@ -541,7 +541,7 @@ test.describe('KeyboardEvent', () => {
     await microfrontendPagePO.inputFieldPO.press('Alt+y');
     await microfrontendPagePO.inputFieldPO.press('m');
 
-    await expect(await consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
+    await expect.poll(() => consoleLogs.get({severity: 'debug', filter: /AppComponent::document:onkeydown] \[SYNTHETIC]/})).toEqualIgnoreOrder([
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='x', control=false, shift=false, alt=true, meta=false]`,
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='y', control=false, shift=false, alt=true, meta=false]`,
       `[AppComponent::document:onkeydown] [SYNTHETIC] [outletContext=n/a, key='m', control=false, shift=false, alt=false, meta=false]`,

@@ -24,7 +24,7 @@ export class ɵMessageClient implements MessageClient {
 
   private readonly _brokerGateway = Beans.get(BrokerGateway);
 
-  public publish<T = any>(topic: string, message?: T, options?: PublishOptions): Promise<void> {
+  public publish<T = unknown>(topic: string, message?: T, options?: PublishOptions): Promise<void> {
     const topicMessage: TopicMessage = {
       topic,
       retain: options?.retain ?? false,
@@ -34,7 +34,7 @@ export class ɵMessageClient implements MessageClient {
     return this._brokerGateway.postMessage(MessagingChannel.Topic, topicMessage);
   }
 
-  public request$<T>(topic: string, request?: any, options?: RequestOptions): Observable<TopicMessage<T>> {
+  public request$<T>(topic: string, request?: unknown, options?: RequestOptions): Observable<TopicMessage<T>> {
     // IMPORTANT:
     // When sending a request, the platform adds various headers to the message. Therefore, to support multiple subscriptions
     // to the returned Observable, each subscription must have its individual message instance and headers map.
@@ -47,7 +47,7 @@ export class ɵMessageClient implements MessageClient {
         headers: new Map(headers), /* make a copy for each subscription to support multiple subscriptions */
         body: request,
       };
-      return this._brokerGateway.requestReply$(MessagingChannel.Topic, topicMessage).pipe(throwOnErrorStatus());
+      return this._brokerGateway.requestReply$<T>(MessagingChannel.Topic, topicMessage).pipe(throwOnErrorStatus());
     });
   }
 
@@ -60,7 +60,7 @@ export class ɵMessageClient implements MessageClient {
     });
   }
 
-  public onMessage<IN = any, OUT = any>(topic: string, callback: (message: TopicMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
+  public onMessage<IN = unknown, OUT = unknown>(topic: string, callback: (message: TopicMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription {
     return new MessageHandler(Beans.get(MessageClient).observe$<IN>(topic), callback).subscription;
   }
 

@@ -23,7 +23,7 @@ import {Pipe, PipeTransform} from '@angular/core';
 @Pipe({name: 'appAppendParamDataType'})
 export class AppendParamDataTypePipe implements PipeTransform {
 
-  public transform(params: Map<string, any> | undefined): Map<string, any> | undefined {
+  public transform(params: Map<string, unknown> | undefined): Map<string, unknown> | undefined {
     if (params === undefined) {
       return undefined;
     }
@@ -33,7 +33,7 @@ export class AppendParamDataTypePipe implements PipeTransform {
   }
 }
 
-function typeOf(value: any): string {
+function typeOf(value: unknown): string {
   if (value === null) {
     return 'null';
   }

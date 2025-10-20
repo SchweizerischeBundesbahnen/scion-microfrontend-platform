@@ -19,6 +19,7 @@ import {UUID} from '@scion/toolkit/uuid';
 import {Logger, NULL_LOGGER} from '../../logger';
 import {ɵApplication} from '../../ɵplatform.model';
 import {map} from 'rxjs/operators';
+import Expected = jasmine.Expected;
 
 describe('TopicSubscriptionRegistry', () => {
 
@@ -397,17 +398,17 @@ describe('TopicSubscriptionRegistry', () => {
 
   function expectSubscriptionCount(topic: string): {toBe: (expected: number) => Promise<void>} {
     return {
-      toBe: async (expected: any): Promise<void> => {
-        await expect(await firstValueFrom(Beans.get(TopicSubscriptionRegistry).subscriptionCount$(topic))).withContext(`topic: ${topic}`).toBe(expected);
+      toBe: async (expected: Expected<number>): Promise<void> => {
+        expect(await firstValueFrom(Beans.get(TopicSubscriptionRegistry).subscriptionCount$(topic))).withContext(`topic: ${topic}`).toBe(expected);
       },
     };
   }
 });
 
-function newClient(descriptor: {id: string; appSymbolicName?: string}): Client {
+function newClient(descriptor: {id?: string; appSymbolicName?: string}): Client {
   return new class implements Partial<Client> {
     public readonly application = {symbolicName: descriptor.appSymbolicName} as ɵApplication;
     public readonly id = descriptor.id ?? UUID.randomUUID();
     public readonly dispose = noop;
-  } as Client;
+  }() as Client;
 }

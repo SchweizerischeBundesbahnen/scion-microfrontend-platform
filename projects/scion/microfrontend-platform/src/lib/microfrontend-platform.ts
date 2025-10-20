@@ -101,7 +101,6 @@ export class MicrofrontendPlatform {
       await this.enterState(PlatformState.Starting);
       await Beans.start({eagerBeanConstructRunlevel: Runlevel.One, initializerDefaultRunlevel: Runlevel.Two});
       await this.enterState(PlatformState.Started);
-      return Promise.resolve();
     }
     catch (error) {
       await this.destroy();
@@ -189,13 +188,13 @@ export enum BeanDestroyOrders {
   /**
    * Use for core platform beans which should be destroyed as the very last beans.
    */
-  CORE = Number.MAX_SAFE_INTEGER,
+  CORE = 1_000_000_000,
   /**
    * Use for the {@link MessageBroker}.
    */
-  BROKER = CORE - 1,
+  BROKER = 999_999_999,
   /**
    * Use for messaging-related beans.
    */
-  MESSAGING = BROKER - 1
+  MESSAGING = 999_999_998,
 }

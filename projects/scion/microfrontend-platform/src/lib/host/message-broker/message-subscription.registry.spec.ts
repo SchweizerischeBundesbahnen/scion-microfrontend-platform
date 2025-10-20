@@ -323,11 +323,10 @@ describe('MessageSubscriptionRegistry', () => {
   });
 });
 
-function newClient(descriptor: {id: string; appSymbolicName?: string}): Client {
+function newClient(descriptor: {id?: string; appSymbolicName?: string}): Client {
   return new class implements Partial<Client> {
     public readonly id = descriptor.id ?? UUID.randomUUID();
     public readonly application = {symbolicName: descriptor.appSymbolicName} as ɵApplication;
     public readonly dispose = noop;
-  } as Client;
+  }() as Client;
 }
-

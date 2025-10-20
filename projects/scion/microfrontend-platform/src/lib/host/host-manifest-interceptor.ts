@@ -77,7 +77,7 @@ export class ɵHostManifestInterceptor implements HostManifestInterceptor {
 
   public intercept(hostManifest: Manifest): void {
     hostManifest.intentions = [
-      ...hostManifest.intentions || [],
+      ...hostManifest.intentions ?? [],
       ...provideActivatorIntentionIfEnabled(),
     ];
   }

@@ -191,7 +191,7 @@ export class ContextService implements PreDestroy {
       // Send the request.
       Promise.all([whenSubscribedToReplyTopic(replyTo), this._whenContextTreeChangeListenerInstalled])
         .then(() => window.parent.postMessage(contextValueLookupRequest, '*'))
-        .catch(error => observer.error(error));
+        .catch((error: unknown) => observer.error(error));
 
       return (): void => unsubscribe$.next();
     });
@@ -220,7 +220,7 @@ export class ContextService implements PreDestroy {
       // Send the request.
       Promise.all([whenSubscribedToReplyTopic(replyTo), this._whenContextTreeChangeListenerInstalled])
         .then(() => window.parent.postMessage(contextNamesLookupRequest, '*'))
-        .catch(error => observer.error(error));
+        .catch((error: unknown) => observer.error(error));
       return (): void => unsubscribe$.next();
     });
   }
@@ -256,7 +256,7 @@ export class ContextService implements PreDestroy {
       // Send the observe request.
       whenSubscribedToReplyTopic(replyTo)
         .then(() => window.parent.postMessage(contextObserveRequest, '*'))
-        .catch(error => reject(error));
+        .catch((error: unknown) => reject(error as Error));
     });
   }
 

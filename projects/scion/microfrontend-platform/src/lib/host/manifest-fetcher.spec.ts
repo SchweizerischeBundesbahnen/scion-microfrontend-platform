@@ -23,7 +23,7 @@ describe('ManifestFetcher', () => {
     const manifest: Manifest = {name: 'Application'};
 
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj(HttpClient.name, ['fetch']);
+    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
     httpClientSpy.fetch.withArgs('http://app/manifest').and.returnValue(okAnswer({body: manifest, delay: 100}));
     Beans.register(HttpClient, {useValue: httpClientSpy});
     Beans.register(MicrofrontendPlatformConfig, {useValue: platformConfig});
@@ -36,7 +36,7 @@ describe('ManifestFetcher', () => {
     const platformConfig: MicrofrontendPlatformConfig = {applications: []};
 
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj(HttpClient.name, ['fetch']);
+    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
     httpClientSpy.fetch.withArgs('http://app/manifest').and.returnValue(nokAnswer({status: 500, delay: 100}));
     Beans.register(HttpClient, {useValue: httpClientSpy});
     Beans.register(MicrofrontendPlatformConfig, {useValue: platformConfig});
@@ -49,7 +49,7 @@ describe('ManifestFetcher', () => {
     const platformConfig: MicrofrontendPlatformConfig = {applications: []};
 
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj(HttpClient.name, ['fetch']);
+    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
     httpClientSpy.fetch.withArgs('http://app/manifest').and.returnValue(okAnswer({body: {name: 'Application'}, delay: 1000})); // greater than the app-specific manifestLoadTimeout
     Beans.register(HttpClient, {useValue: httpClientSpy});
     Beans.register(MicrofrontendPlatformConfig, {useValue: platformConfig});
@@ -62,7 +62,7 @@ describe('ManifestFetcher', () => {
     const platformConfig: MicrofrontendPlatformConfig = {applications: [], manifestLoadTimeout: 300};
 
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj(HttpClient.name, ['fetch']);
+    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
     httpClientSpy.fetch.withArgs('http://app/manifest').and.returnValue(okAnswer({body: {name: 'Application'}, delay: 1000})); // greater than the global manifestLoadTimeout
     Beans.register(HttpClient, {useValue: httpClientSpy});
     Beans.register(MicrofrontendPlatformConfig, {useValue: platformConfig});
@@ -79,21 +79,21 @@ describe('ManifestFetcher', () => {
   });
 });
 
-function okAnswer(answer: {body: Manifest; delay: number}): Promise<Partial<Response>> {
-  const response: Partial<Response> = {
+function okAnswer(answer: {body: Manifest; delay: number}): Promise<Response> {
+  const response = {
     ok: true,
-    json: (): Promise<any> => Promise.resolve(answer.body),
-  };
+    json: (): Promise<unknown> => Promise.resolve(answer.body),
+  } as Response;
   return new Promise(resolve => {
     setTimeout(() => resolve(response), answer.delay);
   });
 }
 
-function nokAnswer(answer: {status: number; delay: number}): Promise<Partial<Response>> {
-  const response: Partial<Response> = {
+function nokAnswer(answer: {status: number; delay: number}): Promise<Response> {
+  const response = {
     ok: false,
     status: answer.status,
-  };
+  } as Response;
   return new Promise(resolve => {
     setTimeout(() => resolve(response), answer.delay);
   });

@@ -17,21 +17,21 @@ import {Beans} from '@scion/toolkit/bean-manager';
  *
  * @internal
  */
-export function runSafe<T = void>(runnable: () => T): T {
+export function runSafe<T = void>(runnable: () => T): T | undefined {
   let result: T;
   try {
     result = runnable();
   }
   catch (error) {
     Beans.opt(Logger)?.error('[UnexpectedError] An unexpected error occurred.', error);
-    return undefined!;
+    return undefined;
   }
 
   if (result instanceof Promise) {
-    return result.catch(error => {
+    return result.catch((error: unknown) => {
       Beans.opt(Logger)?.error('[UnexpectedError] An unexpected error occurred.', error);
       return undefined;
-    }) as any;
+    }) as T;
   }
   return result;
 }
