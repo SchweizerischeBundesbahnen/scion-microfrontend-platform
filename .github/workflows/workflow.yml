@@ -203,6 +203,9 @@ jobs:
   release:
     name: 'Releasing'
     if: ${{ needs.release-guard.outputs.should-release == 'true' }}
+    permissions:
+      id-token: write  # Required for OIDC. See also https://docs.npmjs.com/trusted-publishers
+      contents: read
     needs: [release-guard, build-platform]
     runs-on: ubuntu-latest
     steps:
@@ -270,11 +273,7 @@ jobs:
             microfrontend-platform-developer-guide.scion.vercel.app,
             microfrontend-platform-developer-guide-v%v.scion.vercel.app
       - name: 'Releasing @scion/microfrontend-platform to NPM'
-        uses: SchweizerischeBundesbahnen/scion-toolkit/.github/actions/npm-publish@master
-        with:
-          dist-folder: dist/scion/microfrontend-platform
-          npm-token: ${{ secrets.NPM_TOKEN }}
-          dry-run: false
+        run: npm publish dist/scion/microfrontend-platform
       - name: 'Creating GitHub Release'
         run: gh release create $VERSION --title $VERSION --notes-file CHANGELOG_LATEST.md --verify-tag
         env:
