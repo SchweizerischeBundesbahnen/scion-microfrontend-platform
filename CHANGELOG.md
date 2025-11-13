@@ -69,7 +69,7 @@
 
   The URL of previous releases has not changed. The current version (`1.3.1`) is available at the previous and new URL. New releases will be available only at the new URL.
   
-  To migrate, load the DevTools from https://microfrontend-platform-devtools.scion.vercel.app (latest) or http://microfrontend-platform-devtools-vx-y-z.scion.vercel.app (versioned). Previously, DevTools were available at https://scion-microfrontend-platform-devtools.vercel.app and https://scion-microfrontend-platform-devtools-vx-y-x.vercel.app.
+  To migrate, load the DevTools from https://microfrontend-platform-devtools.scion.vercel.app (latest) or http://microfrontend-platform-devtools-vx-y-z.scion.vercel.app (versioned).
 
 
 # [1.3.0](https://github.com/SchweizerischeBundesbahnen/scion-microfrontend-platform/compare/1.2.2...1.3.0) (2024-06-04)
@@ -269,8 +269,6 @@
   To migrate:
   - Remove decorators for `MessageClient` and `IntentClient` including their registration in the bean manager (e.g., `NgZoneMessageClientDecorator` and `NgZoneIntentClientDecorator`).
   - Provide a `NgZoneObservableDecorator` and register it in the bean manager before starting the platform. Note to register it as a bean, not as a decorator.
-
-  For a complete example and detailed instructions, see https://scion-microfrontend-platform-developer-guide.vercel.app/#chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone.
 
   #### Example of a decorator for synchronizing the Angular zone
   ```ts
@@ -917,9 +915,9 @@ applies to the `@scion/microfrontend-platform` version.
 * URLs of applications deployed on Vercel now end with `*.vercel.app` instead of `*.now.sh`
 
   To migrate:
-  - If using the `SCION Microfrontend Platform DevTools`, load them from https://scion-microfrontend-platform-devtools.vercel.app or from the versioned URL https://scion-microfrontend-platform-devtools-v1-0-0-beta-12.vercel.app.
-  - The Developer Guide is now available under https://scion-microfrontend-platform-developer-guide.vercel.app
-  - The TypeDoc is now available under https://scion-microfrontend-platform-api.vercel.app
+  - If using the `SCION Microfrontend Platform DevTools`, load them from https://microfrontend-platform-devtools.scion.vercel.app.
+  - The Developer Guide is now available under https://microfrontend-platform-developer-guide.scion.vercel.app
+  - The TypeDoc is now available under https://microfrontend-platform-api.scion.vercel.app
 
   See https://vercel.com/changelog/urls-are-becoming-consistent for more information.
 
@@ -948,7 +946,6 @@ applies to the `@scion/microfrontend-platform` version.
          return messageClient.onMessage(topic, callback);
        }
        ```
-       See https://scion-microfrontend-platform-developer-guide-v1-0-0-rc-10.vercel.app/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular for more information.
     
     - If an Angular project, add the method `onIntent` to your `NgZone` intent client decorator, as following:
        ```typescript
@@ -956,7 +953,6 @@ applies to the `@scion/microfrontend-platform` version.
          return intentClient.onIntent(selector, callback);
        }
        ```
-       See https://scion-microfrontend-platform-developer-guide-v1-0-0-rc-10.vercel.app/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular for more information.
 * **platform:** Enabling the message/intent replier to control the requestor’s Observable lifecycle introduced a breaking change in the host/client communication protocol.
     
     > Note: The messaging protocol between host and client HAS CHANGED for registering/unregistering capabilities/intentions using the `ManifestService`. Therefore, you must update the host and affected clients to the new version together. The API has not changed; the breaking change only applies to the `@scion/microfrontend-platform` version.
@@ -1081,7 +1077,7 @@ Renamed options object of the following methods:
 - _IntentClient#request$_: _MessageOptions_ -> _IntentOptions_
 
 #### Breaking change for decorating MessageClient and IntentClient bean
-For Angular developers, see [Preparing the MessageClient and IntentClient for use with Angular](https://scion-microfrontend-platform-developer-guide-v1-0-0-rc-10.vercel.app/#chapter:angular-integration-guide:preparing-messaging-for-use-with-angular) how to decorate the `MessageClient` and `IntentClient` for making Observables to emit inside the Angular zone.
+For Angular developers, see [Synchronizing RxJS Observables with the Angular Zone](https://microfrontend-platform-developer-guide.scion.vercel.app/#chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone) how to decorate the `MessageClient` and `IntentClient` for making Observables to emit inside the Angular zone.
 
 #### Breaking change for disabling messaging in tests
 Messaging can now be deactivated via options object when starting the platform. Previously you had to register a `NullMessageClient` bean.
