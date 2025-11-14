@@ -64,14 +64,13 @@ export class MicrofrontendPlatformClient {
    */
   public static connect(symbolicName: string, connectOptions?: ConnectOptions): Promise<void> {
     return MicrofrontendPlatform.startPlatform(() => {
-        // Provide environment for running the platform as client.
-        providePlatformEnvironment({symbolicName, isPlatformHost: false});
-        provideClientEnvironment({...connectOptions, connectRunlevel: Runlevel.Zero});
+      // Provide environment for running the platform as client.
+      providePlatformEnvironment({symbolicName, isPlatformHost: false});
+      provideClientEnvironment({...connectOptions, connectRunlevel: Runlevel.Zero});
 
-        // Provide initializers to start the platform as client.
-        provideClientStartupInitializers();
-      },
-    );
+      // Provide initializers to start the platform as client.
+      provideClientStartupInitializers();
+    });
   }
 
   /**
@@ -98,7 +97,7 @@ export class MicrofrontendPlatformClient {
    * @see NavigationOptions.showSplash
    */
   public static signalReady(): void {
-    Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT).then(outletContext => {
+    void Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT).then(outletContext => {
       if (!outletContext) {
         return Promise.reject(Error('[NullOutletContextError] not running in the context of a <sci-router-outlet>.'));
       }

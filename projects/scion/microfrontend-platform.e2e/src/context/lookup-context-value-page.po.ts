@@ -43,7 +43,7 @@ export class LookupContextValuePagePO implements OutletPageObject {
     // Evaluate the response: resolves the promise on success, or rejects it on error.
     const valueLocator = this._locator.locator('output.e2e-observe-value');
     const errorLocator = this._locator.locator('output.e2e-observe-error');
-    return Promise.race([
+    return Promise.race<string>([
       valueLocator.waitFor({state: 'attached'}).then(() => valueLocator.innerText()).then(value => Promise.resolve(JSON.parse(value))),
       errorLocator.waitFor({state: 'attached'}).then(() => errorLocator.innerText()).then(error => Promise.reject(Error(error))),
     ]);
@@ -53,7 +53,7 @@ export class LookupContextValuePagePO implements OutletPageObject {
     // Evaluate the response: resolves the promise on success, or rejects it on error.
     const valueLocator = this._locator.locator('output.e2e-lookup-value');
     const errorLocator = this._locator.locator('output.e2e-lookup-error');
-    return Promise.race([
+    return Promise.race<T>([
       valueLocator.waitFor({state: 'attached'}).then(() => valueLocator.innerText()).then(value => Promise.resolve(JSON.parse(value))),
       errorLocator.waitFor({state: 'attached'}).then(() => errorLocator.innerText()).then(error => Promise.reject(Error(error))),
     ]);

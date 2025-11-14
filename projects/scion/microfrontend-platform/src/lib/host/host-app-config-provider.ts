@@ -54,11 +54,11 @@ function provideHostManifestUrl(hostManifest: string | Manifest | undefined): st
   if (typeof hostManifest === 'string') {
     return hostManifest; // URL specified
   }
-  return serveHostManifest(hostManifest || {name: 'Host Application'});
+  return serveHostManifest(hostManifest ?? {name: 'Host Application'});
 }
 
 function serveHostManifest(manifest: Manifest): string {
   const url = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
-  MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => URL.revokeObjectURL(url));
+  void MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => URL.revokeObjectURL(url));
   return url;
 }

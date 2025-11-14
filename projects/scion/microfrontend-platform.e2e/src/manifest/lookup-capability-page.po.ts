@@ -70,7 +70,7 @@ export class LookupCapabilityPagePO implements OutletPageObject {
     const capabilities: Capability[] = [];
     for (const listItemPO of listItemPOs) {
       const capability = (await listItemPO.contentLocator.locator('[data-e2e-capability]').getAttribute('data-e2e-capability'))!;
-      capabilities.push(JSON.parse(capability));
+      capabilities.push(JSON.parse(capability) as Capability);
     }
     return capabilities;
   }

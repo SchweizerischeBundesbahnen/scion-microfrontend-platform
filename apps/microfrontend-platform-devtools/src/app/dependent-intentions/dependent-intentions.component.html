@@ -1,6 +1,6 @@
 <sci-filter-field [formControl]="filterFormControl" placeholder="Filter by type and qualifier, with multiple filter terms separated by space."/>
 <sci-accordion>
-  @for (intentionsByApp of intentionsByApp$ | async | keyvalue; track intentionsByApp.key) {
+  @for (intentionsByApp of intentionsByApp() | keyvalue; track intentionsByApp.key) {
     <ng-template sciAccordionItem [panel]="panel" [key]="intentionsByApp.key">
       <header>
         {{intentionsByApp.key | devtoolsAppName}}

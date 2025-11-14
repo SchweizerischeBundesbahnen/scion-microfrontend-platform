@@ -1,28 +1,28 @@
 <sci-tabbar>
   <ng-template sciTab label="General">
     <section class="tab general">
-      @if (capability.description) {
-        <span class="description">{{capability.description}}</span>
+      @if (capability().description) {
+        <span class="description">{{capability().description}}</span>
       }
-      <span class="label">Provider:</span><a [routerLink]="['/apps', {outlets: {details: [capability.metadata!.appSymbolicName]}}]">{{capability.metadata!.appSymbolicName | devtoolsAppName}} ({{capability.metadata!.appSymbolicName}})</a>
-      <span class="label">ID:</span><span>{{capability.metadata!.id}}</span>
-      <span class="label">Private:</span><span>{{capability.private}}</span>
-      <span class="label">Inactive:</span><span>{{capability.inactive}}</span>
+      <span class="label">Provider:</span><a [routerLink]="['/apps', {outlets: {details: [capability().metadata!.appSymbolicName]}}]">{{capability().metadata!.appSymbolicName | devtoolsAppName}} ({{capability().metadata!.appSymbolicName}})</a>
+      <span class="label">ID:</span><span>{{capability().metadata!.id}}</span>
+      <span class="label">Private:</span><span>{{capability().private}}</span>
+      <span class="label">Inactive:</span><span>{{capability().inactive}}</span>
     </section>
   </ng-template>
-  @if (capability.properties) {
+  @if (capability().properties) {
     <ng-template sciTab label="Properties">
       <section class="tab properties">
         <span class="explanation">Metadata associated with this capability.</span>
-        <sci-key-value [object]="capability.properties"/>
+        <sci-key-value [object]="capability().properties"/>
       </section>
     </ng-template>
   }
-  @if (capability.params?.length) {
+  @if (capability().params?.length) {
     <ng-template sciTab label="Parameters">
       <section class="tab params">
         <span class="explanation">Parameters to be passed when interacting with this capability via an intent.</span>
-        @for (param of capability.params; track param) {
+        @for (param of capability().params; track param) {
           <header>
             <span class="name" [class.deprecated]="param.deprecated">{{param.name}}</span>
             @if (param.required) {
@@ -61,10 +61,10 @@
     <section class="tab dependent-applications">
       <span class="explanation">Applications that depend on this capability at runtime.</span>
       <ul>
-        @for (application of applications$ | async; track application.symbolicName) {
+        @for (application of applications(); track application.symbolicName) {
           <li>
             <a (click)="onConsumerClick(application)" href=""
-               [class.self]="application.symbolicName === capability.metadata!.appSymbolicName">
+               [class.self]="application.symbolicName === capability().metadata!.appSymbolicName">
               {{application.name}} ({{application.symbolicName}})
             </a>
           </li>

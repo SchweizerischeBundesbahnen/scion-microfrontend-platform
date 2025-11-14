@@ -17,7 +17,7 @@ import {ConsoleLogs} from './console-logs';
  *
  * @see https://playwright.dev/docs/test-fixtures
  */
-export type TestFixtures = {
+export interface TestFixtures {
   /**
    * Central PO to interact with the testing app.
    */
@@ -26,7 +26,7 @@ export type TestFixtures = {
    * Provides messages logged to the browser console.
    */
   consoleLogs: ConsoleLogs;
-};
+}
 
 export const test = base.extend<TestFixtures>({
   testingAppPO: async ({page}, use) => {

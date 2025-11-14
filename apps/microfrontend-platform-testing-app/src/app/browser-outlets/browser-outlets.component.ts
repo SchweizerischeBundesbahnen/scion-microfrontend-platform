@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {Observable} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {map} from 'rxjs/operators';
@@ -30,10 +30,10 @@ import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
 })
 export default class BrowserOutletsComponent {
 
-  public outletNames$: Observable<string[]>;
+  protected readonly outletNames$: Observable<string[]>;
 
-  constructor(route: ActivatedRoute) {
-    this.outletNames$ = route.paramMap.pipe(map(params => {
+  constructor() {
+    this.outletNames$ = inject(ActivatedRoute).paramMap.pipe(map(params => {
       if (params.has('names')) {
         return params.get('names')!.split(',');
       }

@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {chainInterceptors, Handler, IntentInterceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
+import {chainInterceptors, Handler, IntentInterceptor, Interceptor, MessageInterceptor, PublishInterceptorChain} from './message-interception';
 import {IntentMessage, TopicMessage} from '../../messaging.model';
 import {expectPromise} from '../../testing/spec.util.spec';
 import any = jasmine.any;
@@ -28,13 +28,13 @@ describe('Message Interception', () => {
   let publishChain: PublishInterceptorChain<TopicMessage>;
 
   beforeEach(() => {
-    interceptor1 = createSpyObj('interceptor-1', ['intercept']);
+    interceptor1 = createSpyObj<Interceptor<unknown, Handler<TopicMessage>>>('interceptor-1', ['intercept']);
     interceptor1.intercept.and.callFake((message: TopicMessage, next: Handler<TopicMessage>) => next.handle(message));
 
-    interceptor2 = createSpyObj('interceptor-2', ['intercept']);
+    interceptor2 = createSpyObj<Interceptor<unknown, Handler<TopicMessage>>>('interceptor-2', ['intercept']);
     interceptor2.intercept.and.callFake((message: TopicMessage, next: Handler<TopicMessage>) => next.handle(message));
 
-    interceptor3 = createSpyObj('interceptor-3', ['intercept']);
+    interceptor3 = createSpyObj<Interceptor<unknown, Handler<TopicMessage>>>('interceptor-3', ['intercept']);
     interceptor3.intercept.and.callFake((message: TopicMessage, next: Handler<TopicMessage>) => next.handle(message));
 
     publisher = createSpy('publisher');
@@ -43,7 +43,7 @@ describe('Message Interception', () => {
 
   it('should invoke the publisher even if no interceptors are given', async () => {
     publisher = createSpy('publisher');
-    publishChain = chainInterceptors([], publisher);
+    publishChain = chainInterceptors(new Array<Interceptor<unknown, Handler<unknown>>>(), publisher);
     const message: TopicMessage = {headers: new Map(), topic: 'topic'};
 
     await publishChain.interceptAndPublish(message);
@@ -141,7 +141,7 @@ describe('Message Interception', () => {
     expect(interceptor3.intercept).toHaveBeenCalledWith(message, any(Handler));
     expect(publisher).toHaveBeenCalledWith({
       body: ['INTERCEPTOR_1', 'INTERCEPTOR_2', 'INTERCEPTOR_3'],
-      headers: new Map().set('HEADER_INTERCEPTOR_1', true).set('HEADER_INTERCEPTOR_2', true).set('HEADER_INTERCEPTOR_3', true),
+      headers: new Map<string, boolean>().set('HEADER_INTERCEPTOR_1', true).set('HEADER_INTERCEPTOR_2', true).set('HEADER_INTERCEPTOR_3', true),
       topic: 'topic',
     } as TopicMessage);
   });
@@ -156,13 +156,13 @@ describe('Intent Interception', () => {
   let publishChain: PublishInterceptorChain<IntentMessage>;
 
   beforeEach(() => {
-    interceptor1 = createSpyObj('interceptor-1', ['intercept']);
+    interceptor1 = createSpyObj<Interceptor<unknown, Handler<IntentMessage>>>('interceptor-1', ['intercept']);
     interceptor1.intercept.and.callFake((intent: IntentMessage, next: Handler<IntentMessage>) => next.handle(intent));
 
-    interceptor2 = createSpyObj('interceptor-2', ['intercept']);
+    interceptor2 = createSpyObj<Interceptor<unknown, Handler<IntentMessage>>>('interceptor-2', ['intercept']);
     interceptor2.intercept.and.callFake((intent: IntentMessage, next: Handler<IntentMessage>) => next.handle(intent));
 
-    interceptor3 = createSpyObj('interceptor-3', ['intercept']);
+    interceptor3 = createSpyObj<Interceptor<unknown, Handler<IntentMessage>>>('interceptor-3', ['intercept']);
     interceptor3.intercept.and.callFake((intent: IntentMessage, next: Handler<IntentMessage>) => next.handle(intent));
 
     publisher = createSpy('publisher');
@@ -171,7 +171,7 @@ describe('Intent Interception', () => {
 
   it('should invoke the publisher even if no interceptors are given', async () => {
     publisher = createSpy('publisher');
-    publishChain = chainInterceptors([], publisher);
+    publishChain = chainInterceptors(new Array<Interceptor<unknown, Handler<unknown>>>(), publisher);
     const intent: IntentMessage = {headers: new Map(), intent: {type: 'type'}, capability: undefined!};
 
     await publishChain.interceptAndPublish(intent);
@@ -269,11 +269,9 @@ describe('Intent Interception', () => {
     expect(interceptor3.intercept).toHaveBeenCalledWith(intent, any(Handler));
     expect(publisher).toHaveBeenCalledWith({
       body: ['INTERCEPTOR_1', 'INTERCEPTOR_2', 'INTERCEPTOR_3'],
-      headers: new Map().set('HEADER_INTERCEPTOR_1', true).set('HEADER_INTERCEPTOR_2', true).set('HEADER_INTERCEPTOR_3', true),
+      headers: new Map<string, boolean>().set('HEADER_INTERCEPTOR_1', true).set('HEADER_INTERCEPTOR_2', true).set('HEADER_INTERCEPTOR_3', true),
       intent: {type: 'type'},
       capability: undefined!,
     } as IntentMessage);
   });
 });
-
-

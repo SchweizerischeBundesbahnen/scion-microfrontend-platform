@@ -42,12 +42,12 @@ export default class CapabilityFilterResultComponent {
 
   private readonly _formBuilder = inject(NonNullableFormBuilder);
 
-  public capabilities$: Observable<Capability[]>;
-  public filterFormControl = this._formBuilder.control('');
+  protected readonly capabilities$: Observable<Capability[]>;
+  protected readonly filterFormControl = this._formBuilder.control('');
 
-  constructor(shellService: ShellService, capabilityFilterSession: CapabilityFilterSession) {
-    shellService.detailsTitle = 'Capabilities';
-    this.capabilities$ = capabilityFilterSession.capabilities$()
+  constructor() {
+    inject(ShellService).detailsTitle = 'Capabilities';
+    this.capabilities$ = inject(CapabilityFilterSession).capabilities$()
       .pipe(
         expand(capabilities => this.filterFormControl.valueChanges.pipe(take(1), map(() => capabilities))),
         map(capabilities => filterManifestObjects(capabilities, this.filterFormControl.value)),

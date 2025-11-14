@@ -45,8 +45,8 @@ async function startMicrofrontendPlatformHost(): Promise<void> {
   // Read the config from the query params
   const manifestClassifier = queryParams.has('manifestClassifier') ? `-${queryParams.get('manifestClassifier')}` : '';
   const activatorApiDisabled = coerceBooleanProperty(queryParams.get('activatorApiDisabled'));
-  const intentionRegisterApiDisabled = new Set((queryParams.get('intentionRegisterApiDisabled') || '').split(','));
-  const capabilityActiveCheckDisabled = new Set((queryParams.get('capabilityActiveCheckDisabled') || '').split(','));
+  const intentionRegisterApiDisabled = new Set((queryParams.get('intentionRegisterApiDisabled') ?? '').split(','));
+  const capabilityActiveCheckDisabled = new Set((queryParams.get('capabilityActiveCheckDisabled') ?? '').split(','));
   const hasDevTools = !!environment.devtools && (!queryParams.has('devtools') || coerceBooleanProperty(queryParams.get('devtools')));
 
   installMessageInterceptors(queryParams);
@@ -112,7 +112,7 @@ function installMessageInterceptors(queryParams: Map<string, string>): void {
         }
         return next.handle(message);
       }
-    };
+    }();
     Beans.register(MessageInterceptor, {useValue: interceptor, multi: true});
   }
 
@@ -121,15 +121,15 @@ function installMessageInterceptors(queryParams: Map<string, string>): void {
       public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
         return next.handle(message);
       }
-    };
+    }();
     const interceptor2 = new class implements MessageInterceptor {
       public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
         if (message.topic === queryParams.get('intercept-message:reject-async')) {
-          return Promise.reject('Message rejected (async) by interceptor');
+          return Promise.reject(Error('Message rejected (async) by interceptor'));
         }
         return next.handle(message);
       }
-    };
+    }();
     Beans.register(MessageInterceptor, {useValue: interceptor1, multi: true});
     Beans.register(MessageInterceptor, {useValue: interceptor2, multi: true});
   }
@@ -142,7 +142,7 @@ function installMessageInterceptors(queryParams: Map<string, string>): void {
         }
         return next.handle(message);
       }
-    };
+    }();
     Beans.register(MessageInterceptor, {useValue: interceptor, multi: true});
   }
 
@@ -156,7 +156,7 @@ function installMessageInterceptors(queryParams: Map<string, string>): void {
           return next.handle(message);
         }
       }
-    };
+    }();
     Beans.register(MessageInterceptor, {useValue: interceptor, multi: true});
   }
 }
@@ -170,7 +170,7 @@ function installIntentInterceptors(queryParams: Map<string, string>): void {
         }
         return next.handle(message);
       }
-    };
+    }();
     Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
   }
 
@@ -182,7 +182,7 @@ function installIntentInterceptors(queryParams: Map<string, string>): void {
         }
         return next.handle(message);
       }
-    };
+    }();
     Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
   }
 
@@ -197,7 +197,7 @@ function installIntentInterceptors(queryParams: Map<string, string>): void {
           return next.handle(message);
         }
       }
-    };
+    }();
     Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
   }
 
@@ -212,7 +212,7 @@ function installIntentInterceptors(queryParams: Map<string, string>): void {
           return next.handle(message);
         }
       }
-    };
+    }();
     Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
   }
 }
@@ -235,4 +235,3 @@ function getQueryParams(url: string): Map<string, string> {
   searchParams.forEach((value, key) => queryParams.set(key, value));
   return queryParams;
 }
-

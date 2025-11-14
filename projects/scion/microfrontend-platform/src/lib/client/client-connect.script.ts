@@ -38,7 +38,7 @@ export async function connectClientToRemoteHost(args: {symbolicName: string; bro
 export async function bridgeMessages(): Promise<void> {
   const hostWindow = window.parent;
   // @ts-expect-error custom property to retrieve the contentWindow of the iframe
-  const clientWindow = window.parent.document['X-CLIENT-WINDOW'];
+  const clientWindow = window.parent.document['X-CLIENT-WINDOW'] as Window;
 
   // Bridge messages from the client to the remote host
   fromEvent<MessageEvent>(clientWindow, 'message') // dispatch connect message(s)

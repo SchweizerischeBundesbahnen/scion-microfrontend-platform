@@ -10,13 +10,13 @@
 
 import {ApplicationConfig} from '@scion/microfrontend-platform';
 
-const devtools: ApplicationConfig | null = {
+const devtools = {
   symbolicName: 'devtools',
   manifestUrl: 'http://localhost:5200/manifest.json',
   intentionCheckDisabled: true,
   scopeCheckDisabled: true,
   capabilityActiveCheckDisabled: true,
-};
+} as ApplicationConfig | null;
 
 /**
  * Environment used when starting the app locally.
