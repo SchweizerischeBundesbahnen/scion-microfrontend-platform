@@ -172,7 +172,10 @@ export default class PublishMessageComponent {
     try {
       if (requestReply) {
         this._requestResponseSubscription = this._intentClient.request$({type, qualifier}, message, {retain: this.form.controls.retain.value, headers})
-          .pipe(finalize(() => this.markPublishing(false)))
+          .pipe(
+            finalize(() => this.markPublishing(false)),
+            takeUntilDestroyed(this._destroyRef),
+          )
           .subscribe({
             next: reply => this.replies.push(reply),
             error: (error: unknown) => this.publishError = stringifyError(error),
