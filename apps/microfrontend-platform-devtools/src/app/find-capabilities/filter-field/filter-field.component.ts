@@ -13,6 +13,7 @@ import {UUID} from '@scion/toolkit/uuid';
 import {KeyValuePair, LogicalOperator} from './filter-field';
 import {CdkMonitorFocus, FocusOrigin} from '@angular/cdk/a11y';
 import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
+import {toSignal} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'devtools-filter-field',
@@ -47,8 +48,9 @@ export class FilterFieldComponent {
   private readonly _keyElement = viewChild('key', {read: ElementRef<HTMLElement>});
   private readonly _valueElement = viewChild('value', {read: ElementRef<HTMLElement>});
 
-  protected readonly isAddButtonDisabled = this.computeIsAddButtonDisabled();
+  protected readonly filters = computed(() => Array.from(this._filters().values()));
   protected readonly showFilter = signal(false);
+  protected readonly isAddButtonDisabled: Signal<boolean>;
   protected readonly keyFormControl = this._formBuilder.control('');
   protected readonly valueFormControl = this._formBuilder.control('');
   protected readonly autocompleteKeysDatalistId = UUID.randomUUID(); // generate random id for autocomplete list in order to support multiple filter fields in the same document
@@ -58,6 +60,7 @@ export class FilterFieldComponent {
 
   constructor() {
     this.computeFilters();
+    this.isAddButtonDisabled = this.computeIsAddButtonDisabled();
   }
 
   @HostListener('keydown.escape')
@@ -71,10 +74,6 @@ export class FilterFieldComponent {
       // Workaround for the fact that (cdkFocusChange) emits outside NgZone.
       this._zone.run(() => this._cdRef.markForCheck());
     }
-  }
-
-  protected get filters(): KeyValuePair[] {
-    return Array.from(this._filters().values());
   }
 
   protected onLogicalOperatorClick(logicalOperator: LogicalOperator): void {
@@ -102,28 +101,42 @@ export class FilterFieldComponent {
   }
 
   protected onRemoveFilterClick(removedFilter: KeyValuePair): void {
-    this._filters().delete(removedFilter);
+    this._filters.update(filters => {
+      const newFilters = new Set(filters);
+      newFilters.delete(removedFilter);
+      return newFilters;
+    });
     this.removeValueFilter.emit(removedFilter.value!);
     this.removeKeyValueFilter.emit(removedFilter);
   }
 
-  private computeFilters(): void {
+  public computeFilters(): void {
     effect(() => {
       const initialFilters = this.initialFilters();
+
       untracked(() => {
         return initialFilters?.forEach(it => {
-          this._filters.update(filters => (typeof it === 'string') ? filters.add({value: it}) : filters.add(it));
+          if (!this.hasEntry(it)) {
+            this._filters.update(filters => {
+              const newFilters = new Set(filters);
+              newFilters.add((typeof it === 'string') ? {key: undefined, value: it} : it);
+              return newFilters;
+            });
+          }
         });
       });
     });
   }
 
   private computeIsAddButtonDisabled(): Signal<boolean> {
+    const key = toSignal(this.keyFormControl.valueChanges, {initialValue: this.keyFormControl.value});
+    const value = toSignal(this.valueFormControl.valueChanges, {initialValue: this.valueFormControl.value});
+
     return computed(() => {
       if (this.type() === 'value') {
-        return !this.valueFormControl.value;
+        return !value();
       }
-      return !this.keyFormControl.value && !this.valueFormControl.value;
+      return !key() && !value();
     });
   }
 
@@ -131,14 +144,23 @@ export class FilterFieldComponent {
     const entry = {key: this.type() === 'value' ? undefined : key, value};
 
     if (!this.hasEntry(entry)) {
-      this._filters().add(entry);
+      this._filters.update(filters => {
+        const newFilters = new Set(filters);
+        newFilters.add(entry);
+        return newFilters;
+      });
       return entry;
     }
     return false;
   }
 
-  private hasEntry(entry: KeyValuePair): boolean {
-    return !!this.filters.find((it: KeyValuePair) => it.key === entry.key && it.value === entry.value);
+  private hasEntry(entry: string | KeyValuePair): boolean {
+    return !!this.filters().find((it: KeyValuePair) => {
+      if (typeof entry === 'string') {
+        return it.value === entry;
+      }
+      return it.key === entry.key && it.value === entry.value;
+    });
   }
 
   private focusInput(): void {

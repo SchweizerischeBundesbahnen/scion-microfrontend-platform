@@ -6,7 +6,7 @@
 </form>
 
 <sci-router-outlet #router_outlet
-                   [name]="outletName"
+                   [name]="outletName()"
                    (activate)="onActivate($event)"
                    (deactivate)="onDeactivate($event)"
                    (focuswithin)="onFocusWithin($event)">

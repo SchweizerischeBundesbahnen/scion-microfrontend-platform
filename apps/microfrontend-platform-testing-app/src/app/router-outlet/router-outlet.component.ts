@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, Injector, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, Injector, signal, viewChild} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
 import {Overlay} from '@angular/cdk/overlay';
@@ -40,14 +40,13 @@ export default class RouterOutletComponent {
   private readonly _contextDefineButton = viewChild.required<ElementRef<HTMLButtonElement>>('context_define_button');
   private readonly _routerOutlet = viewChild.required<ElementRef<SciRouterOutletElement>>('router_outlet');
 
+  protected readonly outletName = signal<string | undefined>(undefined);
   protected readonly form = this._formBuilder.group({
     outletName: this._formBuilder.control(''),
   });
 
-  protected outletName: string | undefined;
-
   protected onApplyClick(): boolean {
-    this.outletName = this.form.controls.outletName.value || undefined;
+    this.outletName.set(this.form.controls.outletName.value || undefined);
     return false;
   }
 
@@ -70,15 +69,15 @@ export default class RouterOutletComponent {
   }
 
   protected onActivate(event: Event): void {
-    console.debug(`[RouterOutletComponent::sci-router-outlet:onactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`);
+    console.debug(`[RouterOutletComponent::sci-router-outlet:onactivate] [outlet=${this.outletName()}, url=${(event as CustomEvent).detail}]`);
   }
 
   protected onDeactivate(event: Event): void {
-    console.debug(`[RouterOutletComponent::sci-router-outlet:ondeactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`);
+    console.debug(`[RouterOutletComponent::sci-router-outlet:ondeactivate] [outlet=${this.outletName()}, url=${(event as CustomEvent).detail}]`);
   }
 
   protected onFocusWithin(event: Event): void {
-    console.debug(`[RouterOutletComponent::sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`);
+    console.debug(`[RouterOutletComponent::sci-router-outlet:onfocuswithin] [outlet=${this.outletName()}, focuswithin=${(event as CustomEvent).detail}]`);
   }
 
   protected get empty$(): Observable<boolean> {
