@@ -13,7 +13,6 @@ import {runSafe} from '../../safe-runner';
 import {distinctUntilChanged, map, pairwise, skipWhile, startWith, switchMap, takeUntil, tap} from 'rxjs/operators';
 import {RouterOutletUrlAssigner} from './router-outlet-url-assigner';
 import {MessageClient} from '../messaging/message-client';
-import {Defined} from '@scion/toolkit/util';
 import {UUID} from '@scion/toolkit/uuid';
 import {mapToBody, TopicMessage} from '../../messaging.model';
 import {Keystroke} from '../keyboard-event/keystroke';
@@ -738,8 +737,8 @@ function outletNavigate$(outlet: string): Observable<Navigation> {
     .pipe(map((navigateMessage: TopicMessage<string>): Navigation => {
       return {
         url: navigateMessage.body ?? 'about:blank',
-        pushStateToSessionHistoryStack: Defined.orElse(navigateMessage.headers.get(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER) as boolean | undefined, false),
-        showSplash: Defined.orElse(navigateMessage.headers.get(SHOW_SPLASH_MESSAGE_HEADER) as boolean | undefined, false),
+        pushStateToSessionHistoryStack: navigateMessage.headers.get(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER) as boolean | undefined ?? false,
+        showSplash: navigateMessage.headers.get(SHOW_SPLASH_MESSAGE_HEADER) as boolean | undefined ?? false,
         capabilityId: navigateMessage.headers.get(CAPABILITY_ID_MESSAGE_HEADER) as string | undefined,
       };
     }));

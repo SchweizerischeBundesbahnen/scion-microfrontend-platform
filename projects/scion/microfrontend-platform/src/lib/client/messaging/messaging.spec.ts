@@ -2506,7 +2506,7 @@ describe('Messaging', () => {
     it('should error if publish qualifier contains entries with an illegal data type', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: {} as string}})).toBeRejectedWithError(/IllegalQualifierError/);
+      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: {} as any}})).toBeRejectedWithError(/IllegalQualifierError/); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     });
 
     it('should error if publish qualifier contains empty entries', async () => {
@@ -2521,7 +2521,7 @@ describe('Messaging', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       const captor = new ObserveCaptor();
-      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: {} as string}}).subscribe(captor);
+      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: {} as any}}).subscribe(captor); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getError()).toMatch(/IllegalQualifierError/);
     });
@@ -2565,7 +2565,7 @@ describe('Messaging', () => {
         await MicrofrontendPlatformHost.start({applications: []});
 
         const captor = new ObserveCaptor();
-        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: {} as string}}).subscribe(captor);
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: {} as any}}).subscribe(captor); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
         await captor.waitUntilCompletedOrErrored();
         expect(captor.getError()).toMatch(/IllegalQualifierError/);
       });

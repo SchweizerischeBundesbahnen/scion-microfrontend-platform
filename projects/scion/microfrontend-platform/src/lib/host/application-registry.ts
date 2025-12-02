@@ -56,10 +56,10 @@ export class ApplicationRegistry {
       manifestLoadTimeout: applicationConfig.manifestLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).manifestLoadTimeout,
       activatorLoadTimeout: applicationConfig.activatorLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).activatorLoadTimeout,
       allowedMessageOrigins: new Set(Arrays.coerce(applicationConfig.secondaryOrigin)).add(Urls.newUrl(baseUrl).origin),
-      scopeCheckDisabled: Defined.orElse(applicationConfig.scopeCheckDisabled, false),
-      intentionCheckDisabled: Defined.orElse(applicationConfig.intentionCheckDisabled, false),
-      intentionRegisterApiDisabled: Defined.orElse(applicationConfig.intentionRegisterApiDisabled, true),
-      capabilityActiveCheckDisabled: Defined.orElse(applicationConfig.capabilityActiveCheckDisabled, false),
+      scopeCheckDisabled: applicationConfig.scopeCheckDisabled ?? false,
+      intentionCheckDisabled: applicationConfig.intentionCheckDisabled ?? false,
+      intentionRegisterApiDisabled: applicationConfig.intentionRegisterApiDisabled ?? true,
+      capabilityActiveCheckDisabled: applicationConfig.capabilityActiveCheckDisabled ?? false,
     });
 
     for (const capability of manifest.capabilities ?? []) {

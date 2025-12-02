@@ -197,7 +197,7 @@ export class OutletRouter {
    * Navigates to specified URL.
    */
   private async navigateByUrl(url: string | null, options?: NavigationOptions): Promise<void> {
-    const outlet = (options?.outlet ?? await this.resolveContextualOutlet()) ?? PRIMARY_OUTLET;
+    const outlet = options?.outlet ?? await this.resolveContextualOutlet() ?? PRIMARY_OUTLET;
     const outletUrlTopic = RouterOutlets.urlTopic(outlet);
     const navigationUrl = this.computeNavigationUrl(url, options);
 
@@ -273,7 +273,7 @@ export class OutletRouter {
   private substituteNamedParameters(path: string, params: Map<string, unknown>): string {
     return path
       // 1. Replace named params contained in the params map.
-      .replace(/:([^/;&?#]+)/g, (match: string, paramName: string): string => params.get(paramName) !== undefined ? params.get(paramName) as string : match)
+      .replace(/:([^/;&?#]+)/g, (match: string, paramName: string) => params.get(paramName) !== undefined ? params.get(paramName) as string : match)
       // 2. Remove named matrix params not contained in the params map.
       .replace(/(?<delimiter>;)(?<paramName>[^=]+)=:(?<placeholder>[^;#?/]+)/g, () => {
         return '';

@@ -536,8 +536,8 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO_app1.clickPublish();
 
     // assert receiving the intent
-    await expect.poll(async () => (await receiverPO_app3.getFirstMessageOrElseReject()).getIntentParams()).toEqual({'param': 'value [string]'});
-    await expect.poll(async () => (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentParams()).toEqual({'param': 'value [string]'});
+    await expect.poll(() => receiverPO_app3.getFirstMessageOrElseReject().then(message => message.getIntentParams())).toEqual({'param': 'value [string]'});
+    await expect.poll(() => receiverPO_app4.getFirstMessageOrElseReject().then(message => message.getIntentParams())).toEqual({'param': 'value [string]'});
 
     await receiverPO_app3.clickClearMessages();
     await receiverPO_app4.clickClearMessages();
@@ -1002,14 +1002,14 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await receiverApp1PO.selectFlavor(MessagingFlavor.Intent);
     await receiverApp1PO.enterIntentSelector('temperature', {room: 'kitchen'});
     await receiverApp1PO.clickSubscribe();
-    await expect.poll(async () => (await receiverApp1PO.getFirstMessageOrElseReject()).getBody()).toEqual('22°C');
+    await expect.poll(() => receiverApp1PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('22°C');
 
     // test to receive retained intent in app-2
     const receiverApp2PO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2});
     await receiverApp2PO.selectFlavor(MessagingFlavor.Intent);
     await receiverApp1PO.enterIntentSelector('temperature', {room: 'kitchen'});
     await receiverApp2PO.clickSubscribe();
-    await expect.poll(async () => (await receiverApp2PO.getFirstMessageOrElseReject()).getBody()).toEqual('22°C');
+    await expect.poll(() => receiverApp2PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('22°C');
     await receiverApp2PO.clickClearMessages();
 
     // test not to receive the retained message in app-3

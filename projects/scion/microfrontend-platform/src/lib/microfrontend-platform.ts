@@ -188,13 +188,13 @@ export enum BeanDestroyOrders {
   /**
    * Use for core platform beans which should be destroyed as the very last beans.
    */
-  CORE = 1_000_000_000,
+  CORE = Number.MAX_SAFE_INTEGER,
   /**
    * Use for the {@link MessageBroker}.
    */
-  BROKER = 999_999_999,
+  BROKER = CORE - 1,
   /**
    * Use for messaging-related beans.
    */
-  MESSAGING = 999_999_998,
+  MESSAGING = BROKER - 1,
 }

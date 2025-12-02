@@ -74,7 +74,7 @@ export class MessageSelector<T> {
    * @param key - Specifies the key to select items.
    */
   public select$<R extends T>(key: string): Observable<R> {
-    return new Observable((observer: Subscriber<T>) => {
+    return new Observable<R>((observer: Subscriber<T>) => {
       const selector$ = new Subject<T>();
       Maps.addListValue(this._selectors, key, selector$);
       const subscription = merge(selector$, this._sourceError$)
@@ -85,7 +85,7 @@ export class MessageSelector<T> {
         Maps.removeListValue(this._selectors, key, selector$);
         subscription.unsubscribe();
       };
-    }) as Observable<R>;
+    });
   }
 
   /**

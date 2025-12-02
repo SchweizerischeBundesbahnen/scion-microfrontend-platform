@@ -15,7 +15,6 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {Client} from '../client-registry/client';
 import {firstValueFrom, noop} from 'rxjs';
 import {ɵClientRegistry} from '../client-registry/ɵclient.registry';
-import {UUID} from '@scion/toolkit/uuid';
 import {Logger, NULL_LOGGER} from '../../logger';
 import {ɵApplication} from '../../ɵplatform.model';
 import {map} from 'rxjs/operators';
@@ -405,10 +404,10 @@ describe('TopicSubscriptionRegistry', () => {
   }
 });
 
-function newClient(descriptor: {id?: string; appSymbolicName?: string}): Client {
+function newClient(descriptor: {id: string; appSymbolicName?: string}): Client {
   return new class implements Partial<Client> {
+    public readonly id = descriptor.id;
     public readonly application = {symbolicName: descriptor.appSymbolicName} as ɵApplication;
-    public readonly id = descriptor.id ?? UUID.randomUUID();
     public readonly dispose = noop;
   }() as Client;
 }

@@ -62,7 +62,7 @@ import {takeUntil} from 'rxjs/operators';
  */
 export class MicrofrontendPlatformHost {
 
-  private static _startupProgress$?: Observable<number>;
+  private static _startupProgress$: Observable<number> | undefined;
 
   private constructor() {
   }

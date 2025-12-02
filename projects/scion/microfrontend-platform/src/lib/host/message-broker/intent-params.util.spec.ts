@@ -34,7 +34,8 @@ describe('IntentParams', () => {
         ],
       },
       intent: {
-        type: 'test', params: new Map()
+        type: 'test',
+        params: new Map<string, unknown>()
           .set('requiredParam', 'requiredParamValue')
           .set('optionalParam', 'optionalParamValue'),
       },

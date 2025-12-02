@@ -26,11 +26,11 @@ export class ContextListPO {
     return listItemPOs.map(listItemPO => new ContextEntryListItemPO(listItemPO));
   }
 
-  public async getContext(): Promise<Record<string, string>> {
+  public async getContext(): Promise<Record<string, unknown>> {
     return waitUntilStable(async () => {
       const contextListItemPOs: ContextEntryListItemPO[] = await this.getContextListItemPOs();
 
-      const context: Record<string, string> = {};
+      const context: Record<string, unknown> = {};
       for (const listItemPO of contextListItemPOs) {
         const key = await listItemPO.getKey();
         const value = await listItemPO.getValue();

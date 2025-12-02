@@ -17,6 +17,7 @@ import {first} from 'rxjs/operators';
 import {stringifyError} from '../error.util';
 import {exhaustMap, filter, firstValueFrom, map, pairwise, timer} from 'rxjs';
 import CallInfo = jasmine.CallInfo;
+import Func = jasmine.Func;
 
 /**
  * Expects the given Promise to either resolve or reject.
@@ -150,7 +151,7 @@ export function installLoggerSpies(): void {
   Beans.register(Logger, {useValue: logger});
 }
 
-export function readConsoleLog(severity: 'info' | 'warn' | 'error', options?: {filter?: RegExp; projectFn?: (call: CallInfo<any>) => string}): string[] {
+export function readConsoleLog(severity: 'info' | 'warn' | 'error', options?: {filter?: RegExp; projectFn?: (call: CallInfo<Func>) => string}): string[] {
   return getLoggerSpy(severity).calls
     .all()
     .map(call => options?.projectFn ? options.projectFn(call) : call.args[0] as string)

@@ -23,7 +23,7 @@ export class ContextPagePO implements OutletPageObject {
     this._locator = frameLocator.locator('app-context');
   }
 
-  public getContext(): Promise<Record<string, string>> {
+  public getContext(): Promise<Record<string, unknown>> {
     const contextListPO = new ContextListPO(this._locator.locator('sci-list'));
     return contextListPO.getContext();
   }

@@ -15,10 +15,9 @@ import {RouterOutletPagePO} from './router-outlet-page.po';
 import {BrowserOutletPO} from '../browser-outlet/browser-outlet.po';
 import {Microfrontend1PagePO} from '../microfrontend/microfrontend-1-page.po';
 import {Microfrontend2PagePO} from '../microfrontend/microfrontend-2-page.po';
-import {RegisterCapabilityPagePO} from '../manifest/register-capability-page.po';
+import {MicrofrontendCapability, RegisterCapabilityPagePO} from '../manifest/register-capability-page.po';
 import {RegisterIntentionPagePO} from '../manifest/register-intention-page.po';
 import {MessagingFlavor, PublishMessagePagePO} from '../messaging/publish-message-page.po';
-import {MicrofrontendCapability} from '@scion/microfrontend-platform';
 import {test} from '../fixtures';
 import {expect} from '@playwright/test';
 
@@ -1253,7 +1252,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability
       const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
       await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
         properties: {
           path: 'test-pages/microfrontend-1-test-page',
@@ -1288,7 +1287,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability in app-2
       const registerCapabilityPO_app2 = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_2});
       await registerCapabilityPO_app2.registerCapability<MicrofrontendCapability>({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
         private: false,
         properties: {
@@ -1328,7 +1327,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability in app-2
       const registerCapabilityPO_app2 = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_2});
       await registerCapabilityPO_app2.registerCapability<MicrofrontendCapability>({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
         private: false,
         properties: {
@@ -1369,7 +1368,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability in app-2
       const registerCapabilityPO_app2 = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>({useClass: RegisterCapabilityPagePO, origin: TestingAppOrigins.APP_2});
       await registerCapabilityPO_app2.registerCapability<MicrofrontendCapability>({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
         private: true,
         properties: {
@@ -1436,7 +1435,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability
       const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
       await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
         params: [
           {name: 'id', required: true},
@@ -1477,7 +1476,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability
       const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
       await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
         params: [
           {name: 'id', required: true},
@@ -1518,7 +1517,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability
       const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
       await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
         params: [
           {name: 'id', required: true},
@@ -1557,7 +1556,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability
       const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
       await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
         properties: {
           path: 'test-pages/microfrontend-1-test-page',
@@ -1594,7 +1593,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability
       const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
       await registerCapabilityPO.registerCapability({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
       });
 
@@ -1634,7 +1633,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability
       const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
       await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
         properties: {
           path: 'test-pages/microfrontend-1-test-page',
@@ -1682,7 +1681,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability
       const registerCapabilityPO = await controllerOutlet.enterUrl<RegisterCapabilityPagePO>(RegisterCapabilityPagePO);
       await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
         properties: {
           path: 'test-pages/microfrontend-1-test-page',
@@ -1717,7 +1716,7 @@ test.describe('RouterOutlet', () => {
       // register "microfrontend" capability
       const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
       await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-        type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        type: 'microfrontend',
         qualifier: {entity: 'person'},
         properties: {
           path: 'test-pages/microfrontend-1-test-page',
@@ -1755,14 +1754,14 @@ test.describe('RouterOutlet', () => {
     // register "microfrontend" capability
     const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
     await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      type: 'microfrontend',
       qualifier: {comp: 'microfrontend-1'},
       properties: {
         path: Microfrontend1PagePO.PATH,
       },
     });
     await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      type: 'microfrontend',
       qualifier: {comp: 'microfrontend-2'},
       properties: {
         path: Microfrontend2PagePO.PATH,
@@ -1808,14 +1807,14 @@ test.describe('RouterOutlet', () => {
     // register "microfrontend" capability
     const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
     await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      type: 'microfrontend',
       qualifier: {comp: 'microfrontend-1'},
       properties: {
         path: Microfrontend1PagePO.PATH,
       },
     });
     await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      type: 'microfrontend',
       qualifier: {comp: 'microfrontend-2'},
       properties: {
         path: Microfrontend2PagePO.PATH,
@@ -1871,7 +1870,7 @@ test.describe('RouterOutlet', () => {
     // register "microfrontend" capability
     const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
     await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      type: 'microfrontend',
       qualifier: {comp: 'microfrontend-1'},
       properties: {
         path: Microfrontend1PagePO.PATH,
@@ -1879,7 +1878,7 @@ test.describe('RouterOutlet', () => {
       },
     });
     await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      type: 'microfrontend',
       qualifier: {comp: 'microfrontend-2'},
       properties: {
         path: Microfrontend2PagePO.PATH,

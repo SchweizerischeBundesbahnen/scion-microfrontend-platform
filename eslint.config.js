@@ -83,6 +83,10 @@ module.exports = tseslint.config(
       "@typescript-eslint/related-getter-setter-pairs": "off",
       "@typescript-eslint/no-unsafe-enum-comparison": "off",
       "@typescript-eslint/prefer-reduce-type-parameter": "off",
+      "@typescript-eslint/prefer-nullish-coalescing": ["error", {
+        ignorePrimitives: true,
+      }],
+      "@typescript-eslint/prefer-literal-enum-member": "off",
 
       // https://eslint.style/packages/default
       "@stylistic/indent": ["error", 2, {
