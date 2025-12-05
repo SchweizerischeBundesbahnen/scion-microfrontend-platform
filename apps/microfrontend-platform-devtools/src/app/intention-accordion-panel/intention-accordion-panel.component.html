@@ -1,9 +1,9 @@
 <header>Provided by:</header>
 <ul>
-  @for (application of applications$ | async; track application.symbolicName) {
+  @for (application of applications(); track application.symbolicName) {
     <li>
       <a (click)="onProviderClick(application)" href=""
-         [class.self]="application.symbolicName === intention.metadata!.appSymbolicName">
+         [class.self]="application.symbolicName === intention().metadata!.appSymbolicName">
         {{application.name}}
       </a>
     </li>

@@ -7,8 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, ViewChild} from '@angular/core';
-import {combineLatestWith, Observable, Subject} from 'rxjs';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, untracked, viewChild} from '@angular/core';
+import {Observable} from 'rxjs';
 import {Application, Capability, Intention} from '@scion/microfrontend-platform';
 import {distinctUntilChanged, expand, map, switchMap, take} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
@@ -25,7 +25,7 @@ import {IntentionAccordionItemComponent} from '../intention-accordion-item/inten
 import {IntentionAccordionPanelComponent} from '../intention-accordion-panel/intention-accordion-panel.component';
 import {RequiredCapabilitiesComponent} from '../required-capabilities/required-capabilities.component';
 import {DependentIntentionsComponent} from '../dependent-intentions/dependent-intentions.component';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {SciAccordionComponent, SciAccordionItemDirective} from '@scion/components.internal/accordion';
 import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
 import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
@@ -62,6 +62,7 @@ export class AppDetailsComponent {
   private readonly _manifestService = inject(DevToolsManifestService);
   private readonly _cd = inject(ChangeDetectorRef);
   private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _tabbar = viewChild(SciTabbarComponent);
 
   public application$: Observable<Application>;
   public capabilities$: Observable<Capability[]>;
@@ -69,8 +70,6 @@ export class AppDetailsComponent {
 
   public capabilityFilterFormControl = this._formBuilder.control('');
   public intentionFilterFormControl = this._formBuilder.control('');
-
-  private _tabbar$ = new Subject<SciTabbarComponent>();
 
   constructor() {
     this.application$ = this.observeApplication$();
@@ -118,24 +117,21 @@ export class AppDetailsComponent {
   }
 
   private installTabActivator(): void {
-    this._route.paramMap
-      .pipe(
-        map(params => params.get('activeTab')), // read 'activeTab' matrix param from URL
-        combineLatestWith(this._tabbar$), // wait for tabbar
-        takeUntilDestroyed(),
-      )
-      .subscribe(([tabToActivate, tabbar]) => {
-        if (tabToActivate) {
-          void this._router.navigate([], {replaceUrl: true, relativeTo: this._route}); // remove 'activeTab' matrix param from URL
-          tabbar.activateTab(tabToActivate);
-          this._cd.markForCheck();
-        }
-      });
-  }
+    const activeTab = toSignal(this._route.paramMap.pipe(map(params => params.get('activeTab')))); // read 'activeTab' matrix param from URL
 
-  @ViewChild(SciTabbarComponent)
-  public set injectTabbar(tabbar: SciTabbarComponent) {
-    this._tabbar$.next(tabbar);
-    this._tabbar$.complete();
+    effect(() => {
+      const tabToActivate = activeTab();
+      const tabbar = this._tabbar();
+
+      untracked(() => {
+        if (!tabToActivate || !tabbar) {
+          return;
+        }
+
+        void this._router.navigate([], {replaceUrl: true, relativeTo: this._route}); // remove 'activeTab' matrix param from URL
+        tabbar.activateTab(tabToActivate);
+        this._cd.markForCheck();
+      });
+    });
   }
 }

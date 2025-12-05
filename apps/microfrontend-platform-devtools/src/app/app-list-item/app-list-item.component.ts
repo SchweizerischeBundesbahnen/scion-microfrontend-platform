@@ -7,9 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from '@angular/core';
 import {Application} from '@scion/microfrontend-platform';
-import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router} from '@angular/router';
@@ -26,32 +25,58 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
     SciMaterialIconDirective,
   ],
 })
-export class AppListItemComponent implements OnInit {
+export class AppListItemComponent {
 
-  @Input({required: true})
-  public application!: Application;
-  public capabilityCount$!: Observable<number>;
-  public intentionCount$!: Observable<number>;
+  public readonly application = input.required<Application>();
 
   private readonly _manifestService = inject(DevToolsManifestService);
   private readonly _router = inject(Router);
 
-  public ngOnInit(): void {
-    this.capabilityCount$ = this._manifestService.capabilities$({appSymbolicName: this.application.symbolicName})
-      .pipe(map(capabilities => capabilities.length));
-    this.intentionCount$ = this._manifestService.intentions$({appSymbolicName: this.application.symbolicName})
-      .pipe(map(intentions => intentions.length));
+  protected readonly capabilityCount = signal(0);
+  protected readonly intentionCount = signal(0);
+
+  constructor() {
+    this.computeCapabilityCount();
+    this.computeIntentionCount();
   }
 
-  public onIntentionsClick(event: MouseEvent): boolean {
+  protected onIntentionsClick(event: MouseEvent): boolean {
     event.preventDefault(); // Prevent href navigation imposed by accessibility rules
-    void this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'intentions'}]}}]);
+    void this._router.navigate(['apps', {outlets: {details: [this.application().symbolicName, {activeTab: 'intentions'}]}}]);
     return true;
   }
 
-  public onCapabilitiesClick(event: MouseEvent): boolean {
+  protected onCapabilitiesClick(event: MouseEvent): boolean {
     event.preventDefault(); // Prevent href navigation imposed by accessibility rules
-    void this._router.navigate(['apps', {outlets: {details: [this.application.symbolicName, {activeTab: 'capabilities'}]}}]);
+    void this._router.navigate(['apps', {outlets: {details: [this.application().symbolicName, {activeTab: 'capabilities'}]}}]);
     return true;
+  }
+
+  private computeCapabilityCount(): void {
+    effect(onCleanup => {
+      const application = this.application();
+
+      untracked(() => {
+        const subscription = this._manifestService.capabilities$({appSymbolicName: application.symbolicName})
+          .pipe(map(capabilities => capabilities.length))
+          .subscribe(capabilityCount => this.capabilityCount.set(capabilityCount));
+
+        onCleanup(() => subscription.unsubscribe());
+      });
+    });
+  }
+
+  private computeIntentionCount(): void {
+    effect(onCleanup => {
+      const application = this.application();
+
+      untracked(() => {
+        const subscription = this._manifestService.intentions$({appSymbolicName: application.symbolicName})
+          .pipe(map(intentions => intentions.length))
+          .subscribe(intentionCount => this.intentionCount.set(intentionCount));
+
+        onCleanup(() => subscription.unsubscribe());
+      });
+    });
   }
 }

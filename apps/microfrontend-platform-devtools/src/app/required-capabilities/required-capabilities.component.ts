@@ -7,16 +7,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from '@angular/core';
 import {Capability, ParamDefinition} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
-import {Observable, ReplaySubject} from 'rxjs';
 import {expand, map, switchMap, take} from 'rxjs/operators';
 import {filterManifestObjects} from '../common/manifest-object-filter.utils';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Maps} from '@scion/toolkit/util';
-import {AsyncPipe, KeyValuePipe} from '@angular/common';
+import {KeyValuePipe} from '@angular/common';
 import {AppNamePipe} from '../common/app-name.pipe';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 import {ParamsFilterPipe} from '../common/params-filter.pipe';
@@ -33,7 +32,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   styleUrls: ['./required-capabilities.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AsyncPipe,
     KeyValuePipe,
     ReactiveFormsModule,
     SciFilterFieldComponent,
@@ -48,51 +46,52 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
     JoinPipe,
   ],
 })
-export class RequiredCapabilitiesComponent implements OnChanges {
+export class RequiredCapabilitiesComponent {
 
-  @Input({required: true})
-  public appSymbolicName!: string;
+  public readonly appSymbolicName = input.required<string>();
 
   private readonly _router = inject(Router);
   private readonly _formBuilder = inject(NonNullableFormBuilder);
-  private readonly _appChange$ = new ReplaySubject<void>(1);
 
-  protected readonly capabilitiesByApp$: Observable<Map<string, Capability[]>>;
   protected readonly filterFormControl = this._formBuilder.control('');
-
-  protected selectedCapability: Capability | undefined;
+  protected readonly capabilitiesByApp = signal(new Map<string, Capability[]>());
+  protected selectedCapability = signal<Capability | undefined>(undefined);
 
   constructor() {
-    const manifestService = inject(DevToolsManifestService);
-
-    this.capabilitiesByApp$ = this._appChange$
-      .pipe(
-        switchMap(() => manifestService.observeDependingCapabilities$(this.appSymbolicName)),
-        expand(capabilities => this.filterFormControl.valueChanges.pipe(take(1), map(() => capabilities))),
-        map(capabilities => filterManifestObjects(capabilities, this.filterFormControl.value)),
-        map(capabilities => capabilities.reduce((acc, capability) => Maps.addListValue(acc, capability.metadata!.appSymbolicName, capability), new Map<string, Capability[]>())),
-      );
+    this.computeCapabilitiesByApp();
   }
 
-  public ngOnChanges(changes: SimpleChanges): void {
-    this.filterFormControl.reset();
-    this.selectedCapability = undefined;
-    this._appChange$.next();
+  protected onCapabilityClick(capability: Capability): void {
+    this.selectedCapability.update(selectedCapability => selectedCapability === capability ? undefined : capability);
   }
 
-  public onCapabilityClick(capability: Capability): void {
-    if (this.selectedCapability === capability) {
-      this.selectedCapability = undefined;
-    }
-    else {
-      this.selectedCapability = capability;
-    }
-  }
-
-  public onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
+  protected onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
     event.stopPropagation();
     void this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
   }
 
-  public paramNameFn = (param: ParamDefinition): string => param.name;
+  protected paramNameFn = (param: ParamDefinition): string => param.name;
+
+  private computeCapabilitiesByApp(): void {
+    const manifestService = inject(DevToolsManifestService);
+
+    effect(onCleanup => {
+      const appSymbolicName = this.appSymbolicName();
+
+      untracked(() => {
+        this.filterFormControl.reset();
+        this.selectedCapability.set(undefined);
+
+        const subscription = manifestService.observeDependingCapabilities$(appSymbolicName)
+          .pipe(
+            switchMap(() => manifestService.observeDependingCapabilities$(this.appSymbolicName())),
+            expand(capabilities => this.filterFormControl.valueChanges.pipe(take(1), map(() => capabilities))),
+            map(capabilities => filterManifestObjects(capabilities, this.filterFormControl.value)),
+            map(capabilities => capabilities.reduce((acc, capability) => Maps.addListValue(acc, capability.metadata!.appSymbolicName, capability), new Map<string, Capability[]>())),
+          )
+          .subscribe(capabilitiesByApp => this.capabilitiesByApp.set(capabilitiesByApp));
+        onCleanup(() => subscription.unsubscribe());
+      });
+    });
+  }
 }

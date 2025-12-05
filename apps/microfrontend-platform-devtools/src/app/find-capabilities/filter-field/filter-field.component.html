@@ -1,27 +1,27 @@
 <header>
-  <span class="title">{{title}}</span>
-  @if (logicalOperator) {
+  <span class="title">{{title()}}</span>
+  @if (logicalOperator()) {
     <span class="toggle-button-group">
-      <button [class.active]="logicalOperator === OR" (click)="onLogicalOperatorClick(OR)">OR</button>
-      <button [class.active]="logicalOperator === AND" (click)="onLogicalOperatorClick(AND)">AND</button>
+      <button [class.active]="logicalOperator() === OR" (click)="onLogicalOperatorClick(OR)">OR</button>
+      <button [class.active]="logicalOperator() === AND" (click)="onLogicalOperatorClick(AND)">AND</button>
     </span>
   }
 </header>
 <div class="overlay-anchor">
-  @if (showFilter) {
-    <div class="overlay add-filter" [class]="type" cdkMonitorSubtreeFocus (cdkFocusChange)="onFocusChange($event)">
-      @if (isTypeKeyValue()) {
+  @if (showFilter()) {
+    <div class="overlay add-filter" [class]="type()" cdkMonitorSubtreeFocus (cdkFocusChange)="onFocusChange($event)">
+      @if (type() === 'key-value') {
         <input type="text" [formControl]="keyFormControl" (keydown.enter)="onAddFilterClick()" placeholder="Key" [attr.list]="autocompleteKeysDatalistId" #key>
       }
-      <input type="text" [formControl]="valueFormControl" (keydown.enter)="onAddFilterClick()" [placeholder]="placeholder" [attr.list]="autocompleteValuesDatalistId" #value>
+      <input type="text" [formControl]="valueFormControl" (keydown.enter)="onAddFilterClick()" [placeholder]="placeholder()" [attr.list]="autocompleteValuesDatalistId" #value>
       <button (click)="onAddFilterClick()" [disabled]="isAddButtonDisabled()" sci-primary>Add</button>
       <datalist [attr.id]="autocompleteKeysDatalistId">
-        @for (autocompleteKey of autocompleteKeys; track autocompleteKey) {
+        @for (autocompleteKey of autocompleteKeys(); track autocompleteKey) {
           <option [value]="autocompleteKey"></option>
         }
       </datalist>
       <datalist [attr.id]="autocompleteValuesDatalistId">
-        @for (autocompleteValue of autocompleteValues; track autocompleteValue) {
+        @for (autocompleteValue of autocompleteValues(); track autocompleteValue) {
           <option [value]="autocompleteValue"></option>
         }
       </datalist>
@@ -31,7 +31,7 @@
   }
 </div>
 <ul class="chips">
-  @for (filter of filters; track filter) {
+  @for (filter of filters(); track filter) {
     <li>
       <button (click)="onRemoveFilterClick(filter)" title="Click to remove">
         <span class="key">{{filter.key}}</span>
