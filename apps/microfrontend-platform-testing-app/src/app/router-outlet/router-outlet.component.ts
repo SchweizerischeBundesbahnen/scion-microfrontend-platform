@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, Injector, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, Injector, signal, viewChild} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
 import {Overlay} from '@angular/cdk/overlay';
@@ -36,57 +36,51 @@ export default class RouterOutletComponent {
   private readonly _formBuilder = inject(NonNullableFormBuilder);
   private readonly _overlay = inject(Overlay);
   private readonly _injector = inject(Injector);
+  private readonly _settingsButton = viewChild.required<ElementRef<HTMLButtonElement>>('settings_button');
+  private readonly _contextDefineButton = viewChild.required<ElementRef<HTMLButtonElement>>('context_define_button');
+  private readonly _routerOutlet = viewChild.required<ElementRef<SciRouterOutletElement>>('router_outlet');
 
-  public form = this._formBuilder.group({
+  protected readonly outletName = signal<string | undefined>(undefined);
+  protected readonly form = this._formBuilder.group({
     outletName: this._formBuilder.control(''),
   });
-  public outletName: string | undefined;
 
-  @ViewChild('settings_button', {static: true})
-  public _settingsButton!: ElementRef<HTMLButtonElement>;
-
-  @ViewChild('context_define_button', {static: true})
-  public _contextDefineButton!: ElementRef<HTMLButtonElement>;
-
-  @ViewChild('router_outlet', {static: true})
-  public _routerOutlet!: ElementRef<SciRouterOutletElement>;
-
-  public onApplyClick(): boolean {
-    this.outletName = this.form.controls.outletName.value || undefined;
+  protected onApplyClick(): boolean {
+    this.outletName.set(this.form.controls.outletName.value || undefined);
     return false;
   }
 
-  public onSettingsClick(): void {
+  protected onSettingsClick(): void {
     RouterOutletSettingsComponent.openAsOverlay({
-      anchor: this._settingsButton.nativeElement,
+      anchor: this._settingsButton().nativeElement,
       overlay: this._overlay,
-      routerOutlet: this._routerOutlet.nativeElement,
+      routerOutlet: this._routerOutlet().nativeElement,
       injector: this._injector,
     });
   }
 
-  public onContextDefineClick(): void {
+  protected onContextDefineClick(): void {
     RouterOutletContextComponent.openAsOverlay({
-      anchor: this._contextDefineButton.nativeElement,
+      anchor: this._contextDefineButton().nativeElement,
       overlay: this._overlay,
-      routerOutlet: this._routerOutlet.nativeElement,
+      routerOutlet: this._routerOutlet().nativeElement,
       injector: this._injector,
     });
   }
 
-  public onActivate(event: Event): void {
-    console.debug(`[RouterOutletComponent::sci-router-outlet:onactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`);
+  protected onActivate(event: Event): void {
+    console.debug(`[RouterOutletComponent::sci-router-outlet:onactivate] [outlet=${this.outletName()}, url=${(event as CustomEvent).detail}]`);
   }
 
-  public onDeactivate(event: Event): void {
-    console.debug(`[RouterOutletComponent::sci-router-outlet:ondeactivate] [outlet=${this.outletName}, url=${(event as CustomEvent).detail}]`);
+  protected onDeactivate(event: Event): void {
+    console.debug(`[RouterOutletComponent::sci-router-outlet:ondeactivate] [outlet=${this.outletName()}, url=${(event as CustomEvent).detail}]`);
   }
 
-  public onFocusWithin(event: Event): void {
-    console.debug(`[RouterOutletComponent::sci-router-outlet:onfocuswithin] [outlet=${this.outletName}, focuswithin=${(event as CustomEvent).detail}]`);
+  protected onFocusWithin(event: Event): void {
+    console.debug(`[RouterOutletComponent::sci-router-outlet:onfocuswithin] [outlet=${this.outletName()}, focuswithin=${(event as CustomEvent).detail}]`);
   }
 
-  public get empty$(): Observable<boolean> {
-    return this._routerOutlet.nativeElement.empty$;
+  protected get empty$(): Observable<boolean> {
+    return this._routerOutlet().nativeElement.empty$;
   }
 }

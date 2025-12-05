@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, DestroyRef, ElementRef, inject, LOCALE_ID, NgZone, OnInit, ViewChild} from '@angular/core';
+import {Component, effect, ElementRef, inject, LOCALE_ID, NgZone, untracked, viewChild} from '@angular/core';
 import {debounceTime, fromEvent, Subject} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import {formatDate} from '@angular/common';
@@ -19,53 +19,21 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   templateUrl: './angular-change-detection-test-page.component.html',
   styleUrls: ['./angular-change-detection-test-page.component.scss'],
 })
-export default class AngularChangeDetectionTestPageComponent implements OnInit {
+export default class AngularChangeDetectionTestPageComponent {
 
   private readonly _zone = inject(NgZone);
-  private readonly _destroyRef = inject(DestroyRef);
   private readonly locale = inject(LOCALE_ID);
+  private readonly _changeDetectionIndicatorElement = viewChild.required<ElementRef<HTMLElement>>('angular_change_detection_indicator');
+  private readonly _changeDetectionCyclesElement = viewChild.required<ElementRef<HTMLTextAreaElement>>('angular_change_detection_cycles');
+  private readonly _clearLogButton = viewChild.required<ElementRef<HTMLButtonElement>>('angular_change_detection_cycles_clear');
+  private readonly _element = viewChild.required<ElementRef<HTMLTextAreaElement>>('element');
+  private readonly _preventDefaultOnMousedownCheckbox = viewChild.required<ElementRef<HTMLInputElement>>('preventdefault_on_mousedown');
   private readonly _changeDetectionCycle$ = new Subject<void>();
-
-  @ViewChild('angular_change_detection_indicator', {static: true})
-  private _changeDetectionIndicatorElement!: ElementRef<HTMLElement>;
-
-  @ViewChild('angular_change_detection_cycles', {static: true})
-  private _changeDetectionCyclesElement!: ElementRef<HTMLTextAreaElement>;
-
-  @ViewChild('angular_change_detection_cycles_clear', {static: true})
-  private _clearLogButton!: ElementRef<HTMLButtonElement>;
-
-  @ViewChild('element', {static: true})
-  private _element!: ElementRef<HTMLTextAreaElement>;
-
-  @ViewChild('preventdefault_on_mousedown', {static: true})
-  private _preventdefaultOnMousedownCheckbox!: ElementRef<HTMLInputElement>;
 
   constructor() {
     this.installChangeDetectionIndicator();
-  }
-
-  public ngOnInit(): void {
-    // Install event listeners directly on DOM elements to not trigger change detection.
-    fromEvent(this._element.nativeElement, 'mousedown')
-      .pipe(
-        subscribeIn(fn => this._zone.runOutsideAngular(fn)),
-        takeUntilDestroyed(this._destroyRef),
-      )
-      .subscribe(event => {
-        if (this._preventdefaultOnMousedownCheckbox.nativeElement.checked) {
-          event.preventDefault();
-        }
-      });
-
-    fromEvent(this._clearLogButton.nativeElement, 'click')
-      .pipe(
-        subscribeIn(fn => this._zone.runOutsideAngular(fn)),
-        takeUntilDestroyed(this._destroyRef),
-      )
-      .subscribe(() => {
-        this._changeDetectionCyclesElement.nativeElement.value = '';
-      });
+    this.installPreventDefaultListener();
+    this.installClearLogListener();
   }
 
   /**
@@ -77,22 +45,67 @@ export default class AngularChangeDetectionTestPageComponent implements OnInit {
   }
 
   private installChangeDetectionIndicator(): void {
-    this._changeDetectionCycle$
-      .pipe(
-        tap(() => NgZone.assertNotInAngularZone()),
-        tap(() => {
-          this._changeDetectionIndicatorElement.nativeElement.classList.add('active');
-          this._changeDetectionCyclesElement.nativeElement.value = new Array<string>()
-            .concat(`${formatDate(Date.now(), 'hh:mm:ss:SSS', this.locale)}\tChange detection cycle`)
-            .concat(this._changeDetectionCyclesElement.nativeElement.value)
-            .filter(Boolean)
-            .join('\n');
-        }),
-        debounceTime(500),
-        takeUntilDestroyed(),
-      )
-      .subscribe(() => {
-        this._changeDetectionIndicatorElement.nativeElement.classList.remove('active');
+    effect(onCleanup => {
+      const changeDetectionIndicatorElement = this._changeDetectionIndicatorElement().nativeElement;
+      const changeDetectionCyclesElement = this._changeDetectionCyclesElement().nativeElement;
+
+      untracked(() => {
+        const subscription = this._changeDetectionCycle$
+          .pipe(
+            tap(() => NgZone.assertNotInAngularZone()),
+            tap(() => {
+              changeDetectionIndicatorElement.classList.add('active');
+              changeDetectionCyclesElement.value = new Array<string>()
+                .concat(`${formatDate(Date.now(), 'hh:mm:ss:SSS', this.locale)}\tChange detection cycle`)
+                .concat(changeDetectionCyclesElement.value)
+                .filter(Boolean)
+                .join('\n');
+            }),
+            debounceTime(500),
+            takeUntilDestroyed(),
+          )
+          .subscribe(() => {
+            changeDetectionIndicatorElement.classList.remove('active');
+          });
+
+        onCleanup(() => subscription.unsubscribe());
       });
+    });
+  }
+
+  private installPreventDefaultListener(): void {
+    effect(onCleanup => {
+      const preventDefaultOnMousedownCheckboxElement = this._preventDefaultOnMousedownCheckbox().nativeElement;
+      const element = this._element().nativeElement;
+
+      untracked(() => {
+        // Install event listener directly on DOM element to not trigger change detection.
+        const subscription = fromEvent(element, 'mousedown')
+          .pipe(subscribeIn(fn => this._zone.runOutsideAngular(fn)))
+          .subscribe(event => {
+            if (preventDefaultOnMousedownCheckboxElement.checked) {
+              event.preventDefault();
+            }
+          });
+
+        onCleanup(() => subscription.unsubscribe());
+      });
+    });
+  }
+
+  private installClearLogListener(): void {
+    effect(onCleanup => {
+      const clearLogButton = this._clearLogButton().nativeElement;
+      const changeDetectionCyclesElement = this._changeDetectionCyclesElement().nativeElement;
+
+      untracked(() => {
+        // Install event listener directly on DOM element to not trigger change detection.
+        const subscription = fromEvent(clearLogButton, 'click')
+          .pipe(subscribeIn(fn => this._zone.runOutsideAngular(fn)))
+          .subscribe(() => changeDetectionCyclesElement.value = '');
+
+        onCleanup(() => subscription.unsubscribe());
+      });
+    });
   }
 }

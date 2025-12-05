@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, DestroyRef, ElementRef, inject, NgZone, OnInit, ViewChild} from '@angular/core';
+import {Component, effect, ElementRef, inject, NgZone, untracked, viewChild} from '@angular/core';
 import {asapScheduler, debounceTime, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, ManifestService, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {tap} from 'rxjs/operators';
@@ -36,10 +36,10 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
     ReactiveFormsModule,
   ],
 })
-export default class AppShellComponent implements OnInit {
+export default class AppShellComponent {
 
   private readonly _zone = inject(NgZone);
-  private readonly _destroyRef = inject(DestroyRef);
+  private readonly _changeDetectionElement = viewChild.required<ElementRef<HTMLElement>>('angular_change_detection_indicator');
   private readonly _routeActivate$ = new Subject<void>();
   private readonly _angularChangeDetectionCycle$ = new Subject<void>();
 
@@ -50,20 +50,14 @@ export default class AppShellComponent implements OnInit {
 
   protected pageTitle: string | undefined;
 
-  @ViewChild('angular_change_detection_indicator', {static: true})
-  private _changeDetectionElement!: ElementRef<HTMLElement>;
-
   constructor() {
     this.installRouteActivateListener();
     this.installKeystrokeRegisterLogger();
+    this.installAngularChangeDetectionIndicator();
 
     if (!this.isPlatformHost || !Beans.get(ManifestService).applications.some(app => app.symbolicName === 'devtools')) {
       this.devToolsFormControl.disable();
     }
-  }
-
-  public ngOnInit(): void {
-    this.installAngularChangeDetectionIndicator();
   }
 
   private installRouteActivateListener(): void {
@@ -99,16 +93,21 @@ export default class AppShellComponent implements OnInit {
   }
 
   private installAngularChangeDetectionIndicator(): void {
-    this._angularChangeDetectionCycle$
-      .pipe(
-        tap(() => NgZone.assertNotInAngularZone()),
-        tap(() => this._changeDetectionElement.nativeElement.classList.add('active')),
-        debounceTime(500),
-        takeUntilDestroyed(this._destroyRef),
-      )
-      .subscribe(() => {
-        this._changeDetectionElement.nativeElement.classList.remove('active');
+    effect(onCleanup => {
+      const changeDetectionElement = this._changeDetectionElement().nativeElement;
+
+      untracked(() => {
+        const subscription = this._angularChangeDetectionCycle$
+          .pipe(
+            tap(() => NgZone.assertNotInAngularZone()),
+            tap(() => changeDetectionElement.classList.add('active')),
+            debounceTime(500),
+          )
+          .subscribe(() => changeDetectionElement.classList.remove('active'));
+
+        onCleanup(() => subscription.unsubscribe());
       });
+    });
   }
 
   /**
@@ -128,7 +127,7 @@ export default class AppShellComponent implements OnInit {
    *   <router-outlet #outlet=outlet (activate)="onRouteActivate(outlet.activatedRoute)"></router-outlet>
    * </ng-template>
    */
-  public onRouteActivate(route: ActivatedRoute): void {
+  protected onRouteActivate(route: ActivatedRoute): void {
     const isPageTitleVisible = route.snapshot.data['pageTitleVisible'] as boolean | undefined ?? true;
     asapScheduler.schedule(() => this.pageTitle = isPageTitleVisible ? route.snapshot.data['pageTitle'] as string : undefined);
     this._routeActivate$.next();
@@ -137,7 +136,7 @@ export default class AppShellComponent implements OnInit {
   /**
    * Method invoked on each Angular change detection cycle.
    */
-  public get onAngularChangeDetectionCycle(): void {
+  protected get onAngularChangeDetectionCycle(): void {
     this._zone.runOutsideAngular(() => this._angularChangeDetectionCycle$.next());
     return undefined as void;
   }

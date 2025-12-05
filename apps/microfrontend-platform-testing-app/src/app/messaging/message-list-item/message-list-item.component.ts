@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, HostBinding, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {Component, computed, effect, HostBinding, input, untracked} from '@angular/core';
 import {IntentMessage, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
 import {AppendParamDataTypePipe} from '../append-param-data-type.pipe';
 import {SciKeyValueComponent} from '@scion/components.internal/key-value';
@@ -21,28 +21,25 @@ import {SciKeyValueComponent} from '@scion/components.internal/key-value';
     AppendParamDataTypePipe,
   ],
 })
-export class MessageListItemComponent implements OnChanges {
+export class MessageListItemComponent {
 
-  public MessageHeaders = MessageHeaders;
+  public readonly isTopicMessage = input.required<boolean>();
+  public readonly message = input.required<TopicMessage | IntentMessage>();
 
-  @Input({required: true})
-  public isTopicMessage!: boolean;
-
-  @Input({required: true})
-  public message!: TopicMessage | IntentMessage;
+  protected readonly MessageHeaders = MessageHeaders;
+  protected readonly intentMessage = computed(() => this.message() as IntentMessage);
+  protected readonly topicMessage = computed(() => this.message() as TopicMessage);
 
   @HostBinding('attr.data-e2e-capability')
-  public capability: string | undefined;
+  protected capability: string | undefined;
 
-  public ngOnChanges(changes: SimpleChanges): void {
-    this.capability = (this.isTopicMessage ? undefined : JSON.stringify((this.intentMessage).capability, null, 2));
-  }
-
-  public get intentMessage(): IntentMessage {
-    return this.message as IntentMessage;
-  }
-
-  public get topicMessage(): TopicMessage {
-    return this.message as TopicMessage;
+  constructor() {
+    effect(() => {
+      const isTopicMessage = this.isTopicMessage();
+      const intentMessage = this.intentMessage();
+      untracked(() => {
+        this.capability = isTopicMessage ? undefined : JSON.stringify(intentMessage.capability, null, 2);
+      });
+    });
   }
 }
