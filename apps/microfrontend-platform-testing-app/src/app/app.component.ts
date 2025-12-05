@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, HostListener, inject, NgZone, OnDestroy} from '@angular/core';
+import {Component, DestroyRef, HostListener, inject, NgZone} from '@angular/core';
 import {ContextService, MicrofrontendPlatform, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {fromEvent, merge, withLatestFrom} from 'rxjs';
@@ -20,13 +20,15 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   templateUrl: './app.component.html',
   imports: [RouterOutlet],
 })
-export class AppComponent implements OnDestroy {
+export class AppComponent {
 
   private readonly _zone = inject(NgZone);
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _outletContext = Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
 
   constructor() {
     this.installPropagatedKeyboardEventLogger();
+    this._destroyRef.onDestroy(() => void MicrofrontendPlatform.destroy()); // Platform is started in {@link PlatformInitializer}
   }
 
   // TODO [Angular 21] Remove if cast is not required anymore.
@@ -57,9 +59,5 @@ export class AppComponent implements OnDestroy {
           console.debug(`[AppComponent::document:on${event.type}] [SYNTHETIC] [outletContext=${outletContext?.name ?? 'n/a'}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}]`);
         }
       });
-  }
-
-  public ngOnDestroy(): void {
-    void MicrofrontendPlatform.destroy(); // Platform is started in {@link PlatformInitializer}
   }
 }

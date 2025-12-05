@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject, OnDestroy} from '@angular/core';
+import {Component, DestroyRef, inject} from '@angular/core';
 import {IntentClient, MessageClient, TopicMessage} from '@scion/microfrontend-platform';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
@@ -42,15 +42,14 @@ import {parseTypedValues} from '../../common/typed-value-parser.util';
     AppAsPipe,
   ],
 })
-export default class PublishMessageComponent implements OnDestroy {
+export default class PublishMessageComponent {
 
   private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _messageClient = Beans.get(MessageClient);
   private readonly _intentClient = Beans.get(IntentClient);
 
-  private _requestResponseSubscription: Subscription | undefined;
-
-  public form = this._formBuilder.group({
+  protected readonly form = this._formBuilder.group({
     flavor: this._formBuilder.control<MessagingFlavor>(MessagingFlavor.Topic, Validators.required),
     destination: this._formBuilder.group<TopicMessageDestination | IntentMessageDestination>(this.createTopicDestination()),
     message: this._formBuilder.control(''),
@@ -59,14 +58,15 @@ export default class PublishMessageComponent implements OnDestroy {
     retain: this._formBuilder.control(false),
   });
 
-  public replies: TopicMessage[] = [];
+  protected readonly MessagingFlavor = MessagingFlavor;
+  protected readonly TopicMessageDestinationFormGroup = FormGroup<TopicMessageDestination>;
+  protected readonly IntentMessageDestinationFromGroup = FormGroup<IntentMessageDestination>;
 
-  public publishError: string | undefined;
-  public publishing: boolean | undefined;
+  private _requestResponseSubscription: Subscription | undefined;
 
-  public MessagingFlavor = MessagingFlavor;
-  public TopicMessageDestinationFormGroup = FormGroup<TopicMessageDestination>;
-  public IntentMessageDestinationFromGroup = FormGroup<IntentMessageDestination>;
+  protected replies: TopicMessage[] = [];
+  protected publishError: string | undefined;
+  protected publishing: boolean | undefined;
 
   constructor() {
     this.form.controls.flavor.valueChanges
@@ -85,23 +85,23 @@ export default class PublishMessageComponent implements OnDestroy {
     this.form.setControl('destination', this._formBuilder.group(destination));
   }
 
-  public onPublish(): void {
+  protected onPublish(): void {
     this.isTopicFlavor() ? this.publishMessage() : this.publishIntent();
   }
 
-  public isTopicFlavor(): boolean {
+  protected isTopicFlavor(): boolean {
     return this.form.controls.flavor.value === MessagingFlavor.Topic;
   }
 
-  public isRequestReply(): boolean {
+  protected isRequestReply(): boolean {
     return this.form.controls.requestReply.value;
   }
 
-  public onClear(): void {
+  protected onClear(): void {
     this.replies.length = 0;
   }
 
-  public onCancelPublish(): void {
+  protected onCancelPublish(): void {
     this.unsubscribe();
   }
 
@@ -136,7 +136,10 @@ export default class PublishMessageComponent implements OnDestroy {
     try {
       if (requestReply) {
         this._requestResponseSubscription = this._messageClient.request$(topic, message, {retain: this.form.controls.retain.value, headers})
-          .pipe(finalize(() => this.markPublishing(false)))
+          .pipe(
+            finalize(() => this.markPublishing(false)),
+            takeUntilDestroyed(this._destroyRef),
+          )
           .subscribe({
             next: reply => this.replies.push(reply),
             error: error => this.publishError = stringifyError(error),
@@ -169,7 +172,10 @@ export default class PublishMessageComponent implements OnDestroy {
     try {
       if (requestReply) {
         this._requestResponseSubscription = this._intentClient.request$({type, qualifier}, message, {retain: this.form.controls.retain.value, headers})
-          .pipe(finalize(() => this.markPublishing(false)))
+          .pipe(
+            finalize(() => this.markPublishing(false)),
+            takeUntilDestroyed(this._destroyRef),
+          )
           .subscribe({
             next: reply => this.replies.push(reply),
             error: (error: unknown) => this.publishError = stringifyError(error),
@@ -190,10 +196,6 @@ export default class PublishMessageComponent implements OnDestroy {
   private markPublishing(publishing: boolean): void {
     publishing ? this.form.disable() : this.form.enable();
     this.publishing = publishing;
-  }
-
-  public ngOnDestroy(): void {
-    this.unsubscribe();
   }
 }
 

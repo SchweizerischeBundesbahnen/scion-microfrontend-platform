@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject, OnDestroy} from '@angular/core';
+import {Component, DestroyRef, inject} from '@angular/core';
 import {IntentClient, IntentMessage, MessageClient, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
@@ -37,27 +37,28 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
     SciMaterialIconDirective,
   ],
 })
-export default class ReceiveMessageComponent implements OnDestroy {
+export default class ReceiveMessageComponent {
 
   private readonly _formBuilder = inject(NonNullableFormBuilder);
+  private readonly _destroyRef = inject(DestroyRef);
   private readonly _messageClient = Beans.get(MessageClient);
   private readonly _intentClient = Beans.get(IntentClient);
 
   private _subscription: Subscription | undefined;
 
-  public form = this._formBuilder.group({
+  protected form = this._formBuilder.group({
     flavor: this._formBuilder.control<MessagingFlavor>(MessagingFlavor.Topic, Validators.required),
     destination: this._formBuilder.group<TopicMessageDestination | IntentMessageDestination>(this.createTopicDestination()),
   });
 
-  public messages: (TopicMessage | IntentMessage)[] = [];
-  public MessagingFlavor = MessagingFlavor;
+  protected messages: (TopicMessage | IntentMessage)[] = [];
+  protected MessagingFlavor = MessagingFlavor;
 
-  public subscribeError: string | undefined;
+  protected subscribeError: string | undefined;
 
-  public MessageHeaders = MessageHeaders;
-  public TopicMessageDestinationFormGroup = FormGroup<TopicMessageDestination>;
-  public IntentMessageDestinationFromGroup = FormGroup<IntentMessageDestination>;
+  protected MessageHeaders = MessageHeaders;
+  protected TopicMessageDestinationFormGroup = FormGroup<TopicMessageDestination>;
+  protected IntentMessageDestinationFromGroup = FormGroup<IntentMessageDestination>;
 
   constructor() {
     this.form.controls.flavor.valueChanges
@@ -76,7 +77,7 @@ export default class ReceiveMessageComponent implements OnDestroy {
     this.form.setControl('destination', this._formBuilder.group(destination));
   }
 
-  public onSubscribe(): void {
+  protected onSubscribe(): void {
     this.isTopicMessaging() ? this.subscribeTopic() : this.subscribeIntent();
   }
 
@@ -86,7 +87,10 @@ export default class ReceiveMessageComponent implements OnDestroy {
     try {
       const topic = (this.form.controls.destination as FormGroup<TopicMessageDestination>).controls.topic.value;
       this._subscription = this._messageClient.observe$(topic)
-        .pipe(finalize(() => this.form.enable()))
+        .pipe(
+          finalize(() => this.form.enable()),
+          takeUntilDestroyed(this._destroyRef),
+        )
         .subscribe({
           next: message => this.messages.push(message),
           error: (error: unknown) => this.subscribeError = stringifyError(error),
@@ -107,7 +111,10 @@ export default class ReceiveMessageComponent implements OnDestroy {
     this.subscribeError = undefined;
     try {
       this._subscription = this._intentClient.observe$({type, qualifier})
-        .pipe(finalize(() => this.form.enable()))
+        .pipe(
+          finalize(() => this.form.enable()),
+          takeUntilDestroyed(this._destroyRef),
+        )
         .subscribe({
           next: message => this.messages.push(message),
           error: (error: unknown) => this.subscribeError = stringifyError(error),
@@ -119,25 +126,25 @@ export default class ReceiveMessageComponent implements OnDestroy {
     }
   }
 
-  public onUnsubscribe(): void {
+  protected onUnsubscribe(): void {
     this._subscription!.unsubscribe();
     this._subscription = undefined;
     this.messages.length = 0;
   }
 
-  public onClear(): void {
+  protected onClear(): void {
     this.messages.length = 0;
   }
 
-  public onReply(replyTo: unknown): void {
+  protected onReply(replyTo: unknown): void {
     void this._messageClient.publish(replyTo as string, 'this is a reply');
   }
 
-  public get isSubscribed(): boolean {
+  protected get isSubscribed(): boolean {
     return !!this._subscription && !this._subscription.closed;
   }
 
-  public isTopicMessaging(): boolean {
+  protected isTopicMessaging(): boolean {
     return this.form.controls.flavor.value === MessagingFlavor.Topic;
   }
 
@@ -153,10 +160,6 @@ export default class ReceiveMessageComponent implements OnDestroy {
       qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
       params: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
     };
-  }
-
-  public ngOnDestroy(): void {
-    this._subscription?.unsubscribe();
   }
 }
 
