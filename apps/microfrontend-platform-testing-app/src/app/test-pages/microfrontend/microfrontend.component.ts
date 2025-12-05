@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {UUID} from '@scion/toolkit/uuid';
 import {TestingAppService} from '../../testing-app.service';
 import {ActivatedRoute, Params} from '@angular/router';
@@ -36,7 +36,10 @@ export default class MicrofrontendComponent {
   public queryParams$: Observable<Params>;
   public fragment$: Observable<string | null>;
 
-  constructor(testingAppService: TestingAppService, route: ActivatedRoute) {
+  constructor() {
+    const testingAppService = inject(TestingAppService);
+    const route = inject(ActivatedRoute);
+
     this.appInstanceId = testingAppService.appInstanceId;
     this.componentInstanceId = UUID.randomUUID();
     this.params$ = route.params;

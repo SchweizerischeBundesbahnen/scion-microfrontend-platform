@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, HostListener, NgZone, OnDestroy} from '@angular/core';
+import {Component, HostListener, inject, NgZone, OnDestroy} from '@angular/core';
 import {ContextService, MicrofrontendPlatform, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {fromEvent, merge, withLatestFrom} from 'rxjs';
@@ -22,10 +22,10 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 })
 export class AppComponent implements OnDestroy {
 
-  private _outletContext: Promise<OutletContext | null>;
+  private readonly _zone = inject(NgZone);
+  private readonly _outletContext = Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
 
-  constructor(private _zone: NgZone) {
-    this._outletContext = Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
+  constructor() {
     this.installPropagatedKeyboardEventLogger();
   }
 
