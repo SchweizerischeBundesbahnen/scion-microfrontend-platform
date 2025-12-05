@@ -17,7 +17,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
   /** Intent Interceptor */
   class IntentLoggerInterceptor implements IntentInterceptor {
 
-    public intercept(intent: IntentMessage<any>, next: Handler<IntentMessage>): Promise<void> {
+    public intercept(intent: IntentMessage<unknown>, next: Handler<IntentMessage>): Promise<void> {
       console.log(intent);
 
       // Passes the intent along the interceptor chain.
@@ -58,7 +58,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
     private topicMatcher: TopicMatcher;
     private schemaValidator: JsonSchemaValidator;
 
-    constructor(topic: string, jsonSchema: any) {
+    constructor(topic: string, jsonSchema: unknown) {
       this.topicMatcher = new TopicMatcher(topic); // <1>
       this.schemaValidator = new JsonSchemaValidator(jsonSchema); // <2>
     }
@@ -95,7 +95,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 
   class JsonSchemaValidator {
 
-    constructor(schema: any) {
+    constructor(schema: unknown) {
     }
 
     public isValid(json: string): boolean {

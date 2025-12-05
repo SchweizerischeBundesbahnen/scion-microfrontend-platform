@@ -18,6 +18,7 @@ import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
+import {stringifyError} from '../../common/stringify-error.util';
 
 @Component({
   selector: 'app-register-intention',
@@ -75,8 +76,8 @@ export default class RegisterIntentionComponent {
       .then(id => {
         this.registerResponse = id;
       })
-      .catch(error => {
-        this.registerError = error;
+      .catch((error: unknown) => {
+        this.registerError = stringifyError(error);
       })
       .finally(() => {
         this.registerForm.reset();
@@ -103,8 +104,8 @@ export default class RegisterIntentionComponent {
       .then(() => {
         this.unregisterResponse = 'OK';
       })
-      .catch(error => {
-        this.unregisterError = error;
+      .catch((error: unknown) => {
+        this.unregisterError = stringifyError(error);
       })
       .finally(() => {
         this.unregisterForm.reset();

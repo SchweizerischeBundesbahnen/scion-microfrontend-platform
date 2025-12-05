@@ -82,13 +82,13 @@ export class CapabilityFilterSession {
 
     if (filterKey && filterValue) {
       const index = Object.keys(qualifier).map(key => key.toLowerCase()).indexOf(filterKey);
-      return `${Object.values(qualifier)[index]}`.toLowerCase() === `${filterValue}`;
+      return `${Object.values(qualifier)[index]}`.toLowerCase() === filterValue;
     }
     else if (filterKey) {
       return Object.keys(qualifier).map(key => key.toLowerCase()).includes(filterKey);
     }
     else if (filterValue) {
-      return Object.values(qualifier).some(qualifierValue => `${qualifierValue}`.toLowerCase() === `${filterValue}`);
+      return Object.values(qualifier).some(qualifierValue => `${qualifierValue}`.toLowerCase() === filterValue);
     }
     return false;
   }

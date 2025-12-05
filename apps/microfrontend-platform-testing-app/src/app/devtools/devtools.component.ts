@@ -24,6 +24,6 @@ import {SciThrobberComponent} from '@scion/components/throbber';
 export class DevToolsComponent {
 
   constructor() {
-    Beans.get(OutletRouter).navigate({component: 'devtools', vendor: 'scion'}, {outlet: 'devtools'});
+    void Beans.get(OutletRouter).navigate({component: 'devtools', vendor: 'scion'}, {outlet: 'devtools'});
   }
 }

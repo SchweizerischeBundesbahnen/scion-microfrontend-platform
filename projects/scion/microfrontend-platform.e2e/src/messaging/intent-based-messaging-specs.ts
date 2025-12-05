@@ -36,7 +36,7 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO.enterIntent('testing', {key: 'value'});
     await publisherPO.clickPublish();
 
-    await expect(await publisherPO.getPublishError()).toContain('[NotQualifiedError]');
+    await expect.poll(() => publisherPO.getPublishError()).toContain('[NotQualifiedError]');
   }
 
   /**
@@ -58,7 +58,7 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO.enterIntent('testing', {key: 'value'});
     await publisherPO.clickPublish();
 
-    await expect(await publisherPO.getPublishError()).toContain('[NullProviderError]');
+    await expect.poll(() => publisherPO.getPublishError()).toContain('[NullProviderError]');
   }
 
   /**
@@ -104,17 +104,17 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO_app3.enterMessage('some payload');
     await publisherPO_app3.clickPublish();
 
-    await expect(await publisherPO_app3.getPublishError()).toBeNull();
+    await expect.poll(() => publisherPO_app3.getPublishError()).toBeNull();
 
     // assert intent to be received in app-3
     const intent = await receiverPO_app3.getFirstMessageOrElseReject();
-    await expect(await intent.getIntentType()).toEqual('testing');
-    await expect(await intent.getBody()).toEqual('some payload');
-    await expect(await intent.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(await intent.getReplyTo()).toBeUndefined();
+    await expect.poll(() => intent.getIntentType()).toEqual('testing');
+    await expect.poll(() => intent.getBody()).toEqual('some payload');
+    await expect.poll(() => intent.getIntentQualifier()).toEqual({key: 'value'});
+    await expect.poll(() => intent.getReplyTo()).toBeUndefined();
 
     // assert intent not to be received in app-4
-    await expect(await receiverPO_app4.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO_app4.getMessages()).toEqual([]);
   }
 
   /**
@@ -151,10 +151,10 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO_app3.clickPublish();
 
     // assert intent not to be dispatched
-    await expect(await publisherPO_app3.getPublishError()).toContain('[NullProviderError]');
+    await expect.poll(() => publisherPO_app3.getPublishError()).toContain('[NullProviderError]');
 
     // assert intent not to be received
-    await expect(await receiverPO_app4.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO_app4.getMessages()).toEqual([]);
   }
 
   /**
@@ -200,17 +200,17 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO.enterMessage('some payload');
     await publisherPO.clickPublish();
 
-    await expect(await publisherPO.getPublishError()).toBeNull();
+    await expect.poll(() => publisherPO.getPublishError()).toBeNull();
 
     // assert intent to be received in app-3
     const intent = await receiverPO.getFirstMessageOrElseReject();
-    await expect(await intent.getIntentType()).toEqual('testing');
-    await expect(await intent.getBody()).toEqual('some payload');
-    await expect(await intent.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(await intent.getReplyTo()).toBeUndefined();
+    await expect.poll(() => intent.getIntentType()).toEqual('testing');
+    await expect.poll(() => intent.getBody()).toEqual('some payload');
+    await expect.poll(() => intent.getIntentQualifier()).toEqual({key: 'value'});
+    await expect.poll(() => intent.getReplyTo()).toBeUndefined();
 
     // assert intent not to be received in app-4
-    await expect(await receiverPO_app4.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO_app4.getMessages()).toEqual([]);
   }
 
   /**
@@ -246,14 +246,14 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO_app3.enterMessage('some payload');
     await publisherPO_app3.clickPublish();
 
-    await expect(await publisherPO_app3.getPublishError()).toBeNull();
+    await expect.poll(() => publisherPO_app3.getPublishError()).toBeNull();
 
     // assert intent to be received
     const intent = await receiverPO_app4.getFirstMessageOrElseReject();
-    await expect(await intent.getIntentType()).toEqual('testing');
-    await expect(await intent.getBody()).toEqual('some payload');
-    await expect(await intent.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(await intent.getReplyTo()).toBeUndefined();
+    await expect.poll(() => intent.getIntentType()).toEqual('testing');
+    await expect.poll(() => intent.getBody()).toEqual('some payload');
+    await expect.poll(() => intent.getIntentQualifier()).toEqual({key: 'value'});
+    await expect.poll(() => intent.getReplyTo()).toBeUndefined();
   }
 
   /**
@@ -307,28 +307,28 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO_app2.enterMessage('some payload');
     await publisherPO_app2.clickPublish();
 
-    await expect(await publisherPO_app2.getPublishError()).toBeNull();
+    await expect.poll(() => publisherPO_app2.getPublishError()).toBeNull();
 
     // assert intent to be received by app-2
     const intent_app2 = await receiverPO_app2.getFirstMessageOrElseReject();
-    await expect(await intent_app2.getIntentType()).toEqual('testing');
-    await expect(await intent_app2.getBody()).toEqual('some payload');
-    await expect(await intent_app2.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(await intent_app2.getReplyTo()).toBeUndefined();
+    await expect.poll(() => intent_app2.getIntentType()).toEqual('testing');
+    await expect.poll(() => intent_app2.getBody()).toEqual('some payload');
+    await expect.poll(() => intent_app2.getIntentQualifier()).toEqual({key: 'value'});
+    await expect.poll(() => intent_app2.getReplyTo()).toBeUndefined();
 
     // assert intent to be received by app-3_1
     const intent_app3_1 = await receiverPO_app3_1.getFirstMessageOrElseReject();
-    await expect(await intent_app3_1.getIntentType()).toEqual('testing');
-    await expect(await intent_app3_1.getBody()).toEqual('some payload');
-    await expect(await intent_app3_1.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(await intent_app3_1.getReplyTo()).toBeUndefined();
+    await expect.poll(() => intent_app3_1.getIntentType()).toEqual('testing');
+    await expect.poll(() => intent_app3_1.getBody()).toEqual('some payload');
+    await expect.poll(() => intent_app3_1.getIntentQualifier()).toEqual({key: 'value'});
+    await expect.poll(() => intent_app3_1.getReplyTo()).toBeUndefined();
 
     // assert intent to be received by app-3_2
     const intent_app3_2 = await receiverPO_app3_2.getFirstMessageOrElseReject();
-    await expect(await intent_app3_2.getIntentType()).toEqual('testing');
-    await expect(await intent_app3_2.getBody()).toEqual('some payload');
-    await expect(await intent_app3_2.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(await intent_app3_2.getReplyTo()).toBeUndefined();
+    await expect.poll(() => intent_app3_2.getIntentType()).toEqual('testing');
+    await expect.poll(() => intent_app3_2.getBody()).toEqual('some payload');
+    await expect.poll(() => intent_app3_2.getIntentQualifier()).toEqual({key: 'value'});
+    await expect.poll(() => intent_app3_2.getReplyTo()).toBeUndefined();
   }
 
   /**
@@ -365,26 +365,26 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     // assert receiving the first intent
     await publisherPO_app3.clickPublish();
     const intent1 = await receiverPO_app4.getFirstMessageOrElseReject();
-    await expect(await intent1.getIntentType()).toEqual('testing');
-    await expect(await intent1.getIntentQualifier()).toEqual({key: 'value'});
+    await expect.poll(() => intent1.getIntentType()).toEqual('testing');
+    await expect.poll(() => intent1.getIntentQualifier()).toEqual({key: 'value'});
     await receiverPO_app4.clickClearMessages();
-    await expect(await receiverPO_app4.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO_app4.getMessages()).toEqual([]);
 
     // assert receiving the second intent
     await publisherPO_app3.clickPublish();
     const intent2 = await receiverPO_app4.getFirstMessageOrElseReject();
-    await expect(await intent2.getIntentType()).toEqual('testing');
-    await expect(await intent2.getIntentQualifier()).toEqual({key: 'value'});
+    await expect.poll(() => intent2.getIntentType()).toEqual('testing');
+    await expect.poll(() => intent2.getIntentQualifier()).toEqual({key: 'value'});
     await receiverPO_app4.clickClearMessages();
-    await expect(await receiverPO_app4.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO_app4.getMessages()).toEqual([]);
 
     // assert receiving the second intent
     await publisherPO_app3.clickPublish();
     const intent3 = await receiverPO_app4.getFirstMessageOrElseReject();
-    await expect(await intent3.getIntentType()).toEqual('testing');
-    await expect(await intent3.getIntentQualifier()).toEqual({key: 'value'});
+    await expect.poll(() => intent3.getIntentType()).toEqual('testing');
+    await expect.poll(() => intent3.getIntentQualifier()).toEqual({key: 'value'});
     await receiverPO_app4.clickClearMessages();
-    await expect(await receiverPO_app4.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO_app4.getMessages()).toEqual([]);
   }
 
   /**
@@ -422,22 +422,22 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
 
     // assert receiving the intent
     const intent = await receiverPO_app4.getFirstMessageOrElseReject();
-    await expect(await intent.getIntentType()).toEqual('testing');
-    await expect(await intent.getIntentQualifier()).toEqual({key: 'value'});
-    await expect(await intent.getReplyTo()).not.toBeUndefined();
+    await expect.poll(() => intent.getIntentType()).toEqual('testing');
+    await expect.poll(() => intent.getIntentQualifier()).toEqual({key: 'value'});
+    await expect.poll(() => intent.getReplyTo()).not.toBeUndefined();
 
     // send the first reply
     await intent.clickReply();
     const reply1 = await publisherPO_app3.getFirstReplyOrElseReject();
-    await expect(await reply1.getReplyTo()).toBeUndefined();
-    await expect(await reply1.getBody()).toEqual('this is a reply');
+    await expect.poll(() => reply1.getReplyTo()).toBeUndefined();
+    await expect.poll(() => reply1.getBody()).toEqual('this is a reply');
     await publisherPO_app3.clickClearReplies();
 
     // send the second reply
     await intent.clickReply();
     const reply2 = await publisherPO_app3.getFirstReplyOrElseReject();
-    await expect(await reply2.getReplyTo()).toBeUndefined();
-    await expect(await reply2.getBody()).toEqual('this is a reply');
+    await expect.poll(() => reply2.getReplyTo()).toBeUndefined();
+    await expect.poll(() => reply2.getBody()).toEqual('this is a reply');
     await publisherPO_app3.clickClearReplies();
   }
 
@@ -536,8 +536,8 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO_app1.clickPublish();
 
     // assert receiving the intent
-    await expect(await (await receiverPO_app3.getFirstMessageOrElseReject()).getIntentParams()).toEqual({'param': 'value [string]'});
-    await expect(await (await receiverPO_app4.getFirstMessageOrElseReject()).getIntentParams()).toEqual({'param': 'value [string]'});
+    await expect.poll(() => receiverPO_app3.getFirstMessageOrElseReject().then(message => message.getIntentParams())).toEqual({'param': 'value [string]'});
+    await expect.poll(() => receiverPO_app4.getFirstMessageOrElseReject().then(message => message.getIntentParams())).toEqual({'param': 'value [string]'});
 
     await receiverPO_app3.clickClearMessages();
     await receiverPO_app4.clickClearMessages();
@@ -548,12 +548,12 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO_app1.clickPublish();
 
     // assert intent not to be dispatched
-    await expect(await publisherPO_app1.getPublishError()).toMatch(/IntentParamValidationError/);
+    await expect.poll(() => publisherPO_app1.getPublishError()).toMatch(/IntentParamValidationError/);
 
     // assert intent not to be received by app 3
-    await expect(await receiverPO_app3.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO_app3.getMessages()).toEqual([]);
     // assert intent to be received by app 4 because parameter is marked as optional
-    await expect(await receiverPO_app4.getMessages()).toHaveLength(1);
+    await expect.poll(() => receiverPO_app4.getMessages()).toHaveLength(1);
   }
 
   /**
@@ -590,10 +590,10 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO_app3.clickPublish();
 
     // assert intent not to be dispatched
-    await expect(await publisherPO_app3.getPublishError()).toMatch(/IntentParamValidationError/);
+    await expect.poll(() => publisherPO_app3.getPublishError()).toMatch(/IntentParamValidationError/);
 
     // assert intent not to be received
-    await expect(await receiverPO_app4.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO_app4.getMessages()).toEqual([]);
 
     // issue the intent with additional param: {'param1': 'value', 'unsupported-param': 'value'}
     await publisherPO_app3.selectFlavor(MessagingFlavor.Intent);
@@ -602,10 +602,10 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO_app3.clickPublish();
 
     // assert intent not to be dispatched
-    await expect(await publisherPO_app3.getPublishError()).toMatch(/IntentParamValidationError/);
+    await expect.poll(() => publisherPO_app3.getPublishError()).toMatch(/IntentParamValidationError/);
 
     // assert intent not to be received
-    await expect(await receiverPO_app4.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO_app4.getMessages()).toEqual([]);
   }
 
   /**
@@ -833,8 +833,8 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO.enterMessage('payload');
     await publisherPO.clickPublish();
 
-    await expect(await publisherPO.getPublishError()).toEqual('Intent rejected by interceptor');
-    await expect(await receiverPO.getMessages()).toEqual([]);
+    await expect.poll(() => publisherPO.getPublishError()).toEqual('Intent rejected by interceptor');
+    await expect.poll(() => receiverPO.getMessages()).toEqual([]);
   }
 
   /**
@@ -862,7 +862,7 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO.enterMessage('payload');
     await publisherPO.clickPublish();
 
-    await expect(await receiverPO.getMessages()).toEqual([]);
+    await expect.poll(() => receiverPO.getMessages()).toEqual([]);
   }
 
   /**
@@ -929,7 +929,7 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await publisherPO.clickPublish();
 
     // verify different capabilities
-    await expect(capabilityId_app2).not.toEqual(capabilityId_app3);
+    await expect.poll(() => capabilityId_app2).not.toEqual(capabilityId_app3);
 
     // verify intent received in app-2 with resolved capability `capabilityId_app2` (client-1)
     await expect(receiver1_app2.getFirstMessageOrElseReject()).toMatchIntentMessage({
@@ -1002,14 +1002,14 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
     await receiverApp1PO.selectFlavor(MessagingFlavor.Intent);
     await receiverApp1PO.enterIntentSelector('temperature', {room: 'kitchen'});
     await receiverApp1PO.clickSubscribe();
-    await expect(await (await receiverApp1PO.getFirstMessageOrElseReject()).getBody()).toEqual('22°C');
+    await expect.poll(() => receiverApp1PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('22°C');
 
     // test to receive retained intent in app-2
     const receiverApp2PO = await receiverOutletPO.enterUrl<ReceiveMessagePagePO>({useClass: ReceiveMessagePagePO, origin: TestingAppOrigins.APP_2});
     await receiverApp2PO.selectFlavor(MessagingFlavor.Intent);
     await receiverApp1PO.enterIntentSelector('temperature', {room: 'kitchen'});
     await receiverApp2PO.clickSubscribe();
-    await expect(await (await receiverApp2PO.getFirstMessageOrElseReject()).getBody()).toEqual('22°C');
+    await expect.poll(() => receiverApp2PO.getFirstMessageOrElseReject().then(message => message.getBody())).toEqual('22°C');
     await receiverApp2PO.clickClearMessages();
 
     // test not to receive the retained message in app-3
@@ -1069,20 +1069,20 @@ export namespace IntendBasedMessagingSpecs { // TODO [#222] Separate messaging-r
 
     // expect the reply to be received
     const reply1PO = await publisherPO.getFirstReplyOrElseReject();
-    await expect(await reply1PO.getTopic()).toEqual(replyTo);
-    await expect(await reply1PO.getBody()).toEqual('this is a reply');
-    await expect(await reply1PO.getReplyTo()).toBeUndefined();
+    await expect.poll(() => reply1PO.getTopic()).toEqual(replyTo);
+    await expect.poll(() => reply1PO.getBody()).toEqual('this is a reply');
+    await expect.poll(() => reply1PO.getReplyTo()).toBeUndefined();
 
     // clear the replies list
     await publisherPO.clickClearReplies();
-    await expect(await publisherPO.getReplies()).toEqual([]);
+    await expect.poll(() => publisherPO.getReplies()).toEqual([]);
 
     // send another reply
     await requestPO.clickReply();
     const replyPO = await publisherPO.getFirstReplyOrElseReject();
-    await expect(await replyPO.getTopic()).toEqual(replyTo);
-    await expect(await replyPO.getBody()).toEqual('this is a reply');
-    await expect(await replyPO.getReplyTo()).toBeUndefined();
+    await expect.poll(() => replyPO.getTopic()).toEqual(replyTo);
+    await expect.poll(() => replyPO.getBody()).toEqual('this is a reply');
+    await expect.poll(() => replyPO.getReplyTo()).toBeUndefined();
 
     // cancel subscription of requestor
     await publisherPO.clickCancel();

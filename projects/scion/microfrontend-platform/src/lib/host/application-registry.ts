@@ -50,16 +50,16 @@ export class ApplicationRegistry {
     const baseUrl = this.computeBaseUrl(applicationConfig, manifest);
     this._applications.set(applicationConfig.symbolicName, {
       symbolicName: applicationConfig.symbolicName,
-      name: manifest.name ?? applicationConfig.symbolicName,
+      name: manifest.name ?? applicationConfig.symbolicName, // eslint-disable-line @typescript-eslint/no-unnecessary-condition
       baseUrl: baseUrl,
       manifestUrl: Urls.newUrl(applicationConfig.manifestUrl, Urls.isAbsoluteUrl(applicationConfig.manifestUrl) ? applicationConfig.manifestUrl : window.origin).toString(),
       manifestLoadTimeout: applicationConfig.manifestLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).manifestLoadTimeout,
       activatorLoadTimeout: applicationConfig.activatorLoadTimeout ?? Beans.get(MicrofrontendPlatformConfig).activatorLoadTimeout,
       allowedMessageOrigins: new Set(Arrays.coerce(applicationConfig.secondaryOrigin)).add(Urls.newUrl(baseUrl).origin),
-      scopeCheckDisabled: Defined.orElse(applicationConfig.scopeCheckDisabled, false),
-      intentionCheckDisabled: Defined.orElse(applicationConfig.intentionCheckDisabled, false),
-      intentionRegisterApiDisabled: Defined.orElse(applicationConfig.intentionRegisterApiDisabled, true),
-      capabilityActiveCheckDisabled: Defined.orElse(applicationConfig.capabilityActiveCheckDisabled, false),
+      scopeCheckDisabled: applicationConfig.scopeCheckDisabled ?? false,
+      intentionCheckDisabled: applicationConfig.intentionCheckDisabled ?? false,
+      intentionRegisterApiDisabled: applicationConfig.intentionRegisterApiDisabled ?? true,
+      capabilityActiveCheckDisabled: applicationConfig.capabilityActiveCheckDisabled ?? false,
     });
 
     for (const capability of manifest.capabilities ?? []) {
@@ -148,4 +148,3 @@ export class ApplicationRegistry {
     }
   }
 }
-

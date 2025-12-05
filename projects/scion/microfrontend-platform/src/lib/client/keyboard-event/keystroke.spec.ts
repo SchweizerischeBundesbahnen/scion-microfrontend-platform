@@ -119,7 +119,7 @@ describe('Keystroke', () => {
     });
 
     it('should not log a warning if flags is empty', () => {
-      const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'warn', 'info']);
+      const loggerSpy = jasmine.createSpyObj<Logger>(Logger.name, ['error', 'warn', 'info']);
       Beans.register(Logger, {useValue: loggerSpy});
 
       expect(Keystroke.fromString('keydown.s{}')).toEqual(new Keystroke('keydown', 's', undefined, {}));
@@ -127,7 +127,7 @@ describe('Keystroke', () => {
     });
 
     it('should log a warning if a flag is not supported', () => {
-      const loggerSpy = jasmine.createSpyObj(Logger.name, ['error', 'warn', 'info']);
+      const loggerSpy = jasmine.createSpyObj<Logger>(Logger.name, ['error', 'warn', 'info']);
       Beans.register(Logger, {useValue: loggerSpy});
 
       expect(Keystroke.fromString('keydown.s{unsupported=false}')).toEqual(new Keystroke('keydown', 's', undefined, {}));

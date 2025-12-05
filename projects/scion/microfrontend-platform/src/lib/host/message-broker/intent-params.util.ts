@@ -32,7 +32,7 @@ export class IntentParams {
    */
   public static validateParams(intentMessage: IntentMessage): void {
     const {intent, capability} = intentMessage;
-    const sender = intentMessage.headers.get(MessageHeaders.AppSymbolicName);
+    const sender = intentMessage.headers.get(MessageHeaders.AppSymbolicName) as string;
     intent.params = new Map(intent.params);
 
     // Remove params with `undefined` as value.
@@ -62,7 +62,7 @@ export class IntentParams {
 }
 
 function toParamValidationError(paramsMatcherResult: ParamMatcherResult, intent: Intent): string {
-  const intentStringified = JSON.stringify(intent, (key, value) => (key === 'params') ? undefined : value);
+  const intentStringified = JSON.stringify(intent, (key, value: unknown) => (key === 'params') ? undefined : value);
   const missingParams = paramsMatcherResult.missingParams.map(param => param.name);
   const unexpectedParams = paramsMatcherResult.unexpectedParams;
   return `Params of intent do not match expected params of capability. The intent must have required params and not have additional params. [intent=${intentStringified}, missingParams=[${missingParams}], unexpectedParams=[${unexpectedParams}]].`;
@@ -70,12 +70,12 @@ function toParamValidationError(paramsMatcherResult: ParamMatcherResult, intent:
 
 function toDeprecatedParamWarning(param: ParamDefinition, metadata: {appSymbolicName: string}): string {
   const deprecation = param.deprecated!;
-  const useInstead = typeof deprecation === 'object' && deprecation.useInstead || undefined;
-  const message = typeof deprecation === 'object' && deprecation.message || undefined;
+  const useInstead = typeof deprecation === 'object' ? deprecation.useInstead : undefined;
+  const message = typeof deprecation === 'object' ? deprecation.message : undefined;
 
   return new Array<string>()
     .concat(`Application '${metadata.appSymbolicName}' passes a deprecated parameter in the intent: '${param.name}'.`)
     .concat(useInstead ? `Pass parameter '${useInstead}' instead.` : [])
-    .concat(message || [])
+    .concat(message ?? [])
     .join(' ');
 }

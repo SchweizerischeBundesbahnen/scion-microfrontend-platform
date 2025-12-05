@@ -17,7 +17,7 @@ export interface PublishOptions {
   /**
    * Sets headers to pass additional information with a message.
    */
-  headers?: Map<string, any>;
+  headers?: Map<string, unknown>;
   /**
    * Instructs the broker to store this message on the broker as a retained message.
    *
@@ -38,5 +38,4 @@ export interface PublishOptions {
  *
  * @category Messaging
  */
-export interface RequestOptions extends PublishOptions { // eslint-disable-line @typescript-eslint/no-empty-interface
-}
+export type RequestOptions = PublishOptions;

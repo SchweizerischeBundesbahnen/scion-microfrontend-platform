@@ -47,7 +47,7 @@ export class PublishMessagePagePO implements OutletPageObject {
     await headersEnterPO.addEntries(headers);
   }
 
-  public async enterIntent(type: string, qualifier?: Qualifier, params?: Record<string, any>): Promise<void> {
+  public async enterIntent(type: string, qualifier?: Qualifier, params?: Record<string, unknown>): Promise<void> {
     await this._locator.locator('input.e2e-intent-type').fill(type);
     const qualifierEnterPO = new SciKeyValueFieldPO(this._locator.locator('sci-key-value-field.e2e-intent-qualifier'));
     await qualifierEnterPO.clear();

@@ -14,7 +14,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 
 describe('RelativePathResolver', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.startPlatform(async () => void (Beans.register(RelativePathResolver))));
+  beforeEach(async () => await MicrofrontendPlatform.startPlatform(() => void Beans.register(RelativePathResolver)));
   afterEach(async () => await MicrofrontendPlatform.destroy());
 
   describe('hash-based routing', () => {

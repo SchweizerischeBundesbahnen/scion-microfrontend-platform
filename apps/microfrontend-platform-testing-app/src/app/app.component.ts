@@ -60,6 +60,6 @@ export class AppComponent implements OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    MicrofrontendPlatform.destroy().then(); // Platform is started in {@link PlatformInitializer}
+    void MicrofrontendPlatform.destroy(); // Platform is started in {@link PlatformInitializer}
   }
 }

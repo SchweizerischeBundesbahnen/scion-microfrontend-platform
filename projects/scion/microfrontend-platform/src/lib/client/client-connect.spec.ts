@@ -64,7 +64,7 @@ describe('MicrofrontendPlatform', () => {
 
     // Expect the client to be connected.
     await expectAsync(connectPromise).toBeResolved();
-    const clientId = await firstValueFrom(clientFixture.message$);
+    const clientId = await firstValueFrom(clientFixture.message$) as string;
     expect(Beans.get(ClientRegistry).getByClientId(clientId)).withContext('expected "client" to be CONNECTED').toBeDefined();
   });
 
@@ -141,7 +141,7 @@ describe('MicrofrontendPlatform', () => {
     const startup = MicrofrontendPlatformClient.connect('client-app', {brokerDiscoverTimeout: 250});
     await expectPromise(startup).toReject(/MicrofrontendPlatformStartupError/);
 
-    await expect(loggerSpy).toHaveBeenCalledWith('[GatewayError] Message broker not discovered within 250ms. Messages cannot be published or received.');
+    expect(loggerSpy).toHaveBeenCalledWith('[GatewayError] Message broker not discovered within 250ms. Messages cannot be published or received.');
   });
 
   /**

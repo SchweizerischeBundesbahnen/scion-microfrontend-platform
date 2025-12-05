@@ -92,7 +92,7 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
   /**
    * Tests that messages can be published and received.
    */
-  async function testPublishInternal(testingAppPO: TestingAppPO, testSetup: Outlets): Promise<void> { // eslint-disable-line no-inner-declarations
+  async function testPublishInternal(testingAppPO: TestingAppPO, testSetup: Outlets): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo(testSetup);
 
     const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
@@ -143,7 +143,7 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
   /**
    * Tests that an application can reply to a message.
    */
-  async function testReplyInternal(testingAppPO: TestingAppPO, testSetup: Outlets): Promise<void> { // eslint-disable-line no-inner-declarations
+  async function testReplyInternal(testingAppPO: TestingAppPO, testSetup: Outlets): Promise<void> {
     const pagePOs = await testingAppPO.navigateTo(testSetup);
 
     const receiverPO = pagePOs.get<ReceiveMessagePagePO>('receiver');
@@ -160,7 +160,7 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
 
     const messagePO = await receiverPO.getFirstMessageOrElseReject();
     const replyTo = await messagePO.getReplyTo();
-    await expect(replyTo).not.toBeUndefined();
+    await expect.poll(() => replyTo).not.toBeUndefined();
 
     // send a reply
     await messagePO.clickReply();
@@ -508,7 +508,7 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
     const requestPO = await receiverPO.getFirstMessageOrElseReject();
     const replyTo = await requestPO.getReplyTo();
     await expect.poll(() => requestPO.getBody()).toEqual('retained request');
-    await expect(replyTo).not.toBeUndefined();
+    await expect.poll(() => replyTo).not.toBeUndefined();
 
     // send reply
     await requestPO.clickReply();
@@ -741,7 +741,7 @@ export namespace TopicBasedMessagingSpecs { // TODO [#222] Separate messaging-re
 
     // Expect no error to be thrown
     const errors = await consoleLogs.get({filter: /Failed to execute 'postMessage' on 'DOMWindow'/, severity: 'error'});
-    await expect(errors).toEqual([]);
+    await expect.poll(() => errors).toEqual([]);
   }
 
   /**

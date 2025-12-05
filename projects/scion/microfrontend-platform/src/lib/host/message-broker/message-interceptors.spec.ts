@@ -24,7 +24,7 @@ describe('Message Interceptors', () => {
   afterEach(async () => MicrofrontendPlatform.destroy());
 
   it('should invoke interceptors in the order as registered', async () => {
-    const invocations = new Array<string>;
+    const invocations = new Array<string>();
 
     class Interceptor1 implements MessageInterceptor {
       public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
@@ -63,7 +63,7 @@ describe('Message Interceptors', () => {
   });
 
   it('should, by default, install app-specific interceptor before platform interceptors', async () => {
-    const invocations = new Array<string>;
+    const invocations = new Array<string>();
 
     const appInterceptor = new class implements MessageInterceptor {
       public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
@@ -72,7 +72,7 @@ describe('Message Interceptors', () => {
         }
         return next.handle(message);
       }
-    };
+    }();
 
     const platformInterceptor = new class implements MessageInterceptor {
       public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
@@ -81,7 +81,7 @@ describe('Message Interceptors', () => {
         }
         return next.handle(message);
       }
-    };
+    }();
 
     // Register app-specific interceptor before starting the platform.
     Beans.register(MessageInterceptor, {useValue: appInterceptor, multi: true});
@@ -98,7 +98,7 @@ describe('Message Interceptors', () => {
   });
 
   it('should support installing app-specific interceptor after platform interceptors', async () => {
-    const invocations = new Array<string>;
+    const invocations = new Array<string>();
 
     const appInterceptor = new class implements MessageInterceptor {
       public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
@@ -107,7 +107,7 @@ describe('Message Interceptors', () => {
         }
         return next.handle(message);
       }
-    };
+    }();
 
     const platformInterceptor = new class implements MessageInterceptor {
       public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
@@ -116,10 +116,10 @@ describe('Message Interceptors', () => {
         }
         return next.handle(message);
       }
-    };
+    }();
 
     // Register app-specific interceptor when starting the platform.
-    MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
+    void MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
       Beans.register(MessageInterceptor, {useValue: appInterceptor, multi: true});
     });
 

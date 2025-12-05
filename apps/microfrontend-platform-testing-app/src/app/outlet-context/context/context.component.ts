@@ -31,13 +31,13 @@ import {SciListComponent, SciListItemDirective} from '@scion/components.internal
 })
 export default class ContextComponent {
 
-  public context$: Observable<Map<string, Observable<any>>>;
+  public context$: Observable<Map<string, Observable<unknown>>>;
 
   constructor() {
     this.context$ = Beans.get(ContextService).names$().pipe(collectToContextMap());
   }
 }
 
-function collectToContextMap(): OperatorFunction<Set<string>, Map<string, Observable<any>>> {
-  return map(names => Array.from(names).reduce((collected, name) => collected.set(name, Beans.get(ContextService).observe$(name)), new Map<string, Observable<any>>()));
+function collectToContextMap(): OperatorFunction<Set<string>, Map<string, Observable<unknown>>> {
+  return map(names => Array.from(names).reduce((collected, name) => collected.set(name, Beans.get(ContextService).observe$(name)), new Map<string, Observable<unknown>>()));
 }

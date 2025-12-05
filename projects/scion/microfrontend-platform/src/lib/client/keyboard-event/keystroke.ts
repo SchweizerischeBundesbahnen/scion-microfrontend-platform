@@ -51,9 +51,6 @@ export class Keystroke {
    * Creates a {@link Keystroke} from the given keyboard event.
    */
   public static fromEvent(event: KeyboardEvent): Keystroke {
-    if (!event) {
-      throw Error('[KeystrokeParseError] Cannot create the keystroke from `null` or `undefined`.');
-    }
     return new Keystroke(event.type, escapeKeyboardEventKey(event.key), {control: event.ctrlKey, shift: event.shiftKey, alt: event.altKey, meta: event.metaKey});
   }
 
@@ -116,7 +113,7 @@ function escapeKeyboardEventKey(key: string): string {
 }
 
 function parseFlags(keystroke: string): KeystrokeFlags | undefined {
-  const flagsStr = keystroke.match(/{(?<flagsDictionary>.*)}/)?.groups!['flagsDictionary'] ?? null;
+  const flagsStr = (/{(?<flagsDictionary>.*)}/.exec(keystroke))?.groups!['flagsDictionary'] ?? null;
   if (flagsStr === null) {
     return undefined;
   }

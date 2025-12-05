@@ -59,7 +59,7 @@ export class MessageListItemPO {
   }
 
   public async getCapability(): Promise<Capability> {
-    return JSON.parse((await this._listItemPO.contentLocator.locator('[data-e2e-capability]').getAttribute('data-e2e-capability'))!);
+    return JSON.parse((await this._listItemPO.contentLocator.locator('[data-e2e-capability]').getAttribute('data-e2e-capability'))!) as Capability;
   }
 
   public async clickReply(): Promise<void> {

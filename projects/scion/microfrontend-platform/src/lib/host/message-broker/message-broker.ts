@@ -132,10 +132,10 @@ export class MessageBroker implements Initializer, PreDestroy {
         }
 
         const eventSource: Window = event.source as Window;
-        const envelope: MessageEnvelope<TopicMessage<void>> = event.data;
-        const clientAppName = envelope.message.headers.get(MessageHeaders.AppSymbolicName);
+        const envelope = event.data as MessageEnvelope<TopicMessage<void>>;
+        const clientAppName = envelope.message.headers.get(MessageHeaders.AppSymbolicName) as string;
         const clientMessageTarget = new MessageTarget(event);
-        const replyTo = envelope.message.headers.get(MessageHeaders.ReplyTo);
+        const replyTo = envelope.message.headers.get(MessageHeaders.ReplyTo) as string;
 
         if (!clientAppName) {
           const warning = `Client connect attempt rejected: Bad request. [origin='${event.origin}']`;
@@ -187,7 +187,7 @@ export class MessageBroker implements Initializer, PreDestroy {
           return;
         }
 
-        const client = new ɵClient(UUID.randomUUID(), eventSource, event.origin, application, envelope.message.headers.get(MessageHeaders.Version));
+        const client = new ɵClient(UUID.randomUUID(), eventSource, event.origin, application, envelope.message.headers.get(MessageHeaders.Version) as string);
         this._clientRegistry.registerClient(client);
 
         // Check if the client is compatible with the platform version of the host.
@@ -233,14 +233,14 @@ export class MessageBroker implements Initializer, PreDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe(request => runSafe(() => {
         const topic = request.body!;
-        const replyTo = request.headers.get(MessageHeaders.ReplyTo);
+        const replyTo = request.headers.get(MessageHeaders.ReplyTo) as string;
         const unsubscribe$ = this._topicSubscriptionRegistry.subscriptionCount$(replyTo).pipe(filter(count => count === 0));
 
         this._topicSubscriptionRegistry.subscriptionCount$(topic)
           .pipe(takeUntil(merge(this._destroy$, unsubscribe$)))
-          .subscribe({ // eslint-disable-line rxjs/no-nested-subscribe
-            next: count => Beans.get(MessageClient).publish(replyTo, count),
-            error: error => Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)}),
+          .subscribe({ // eslint-disable-line @smarttools/rxjs/no-nested-subscribe
+            next: count => void Beans.get(MessageClient).publish(replyTo, count),
+            error: error => void Beans.get(MessageClient).publish(replyTo, stringifyError(error), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)}),
           });
       }));
   }
@@ -254,10 +254,10 @@ export class MessageBroker implements Initializer, PreDestroy {
         filterByChannel<TopicMessage>(MessagingChannel.Topic),
         takeUntil(this._destroy$),
       )
-      .subscribe((event: MessageEvent<MessageEnvelope<TopicMessage>>) => runSafe(async () => {
+      .subscribe((event: MessageEvent<MessageEnvelope<TopicMessage>>) => void runSafe(async () => {
         const client = getSendingClient(event);
         const message = event.data.message;
-        const messageId = message.headers.get(MessageHeaders.MessageId);
+        const messageId = message.headers.get(MessageHeaders.MessageId) as string;
 
         const illegalTopicError = Topics.validateTopic(message.topic, {exactTopic: true});
         if (illegalTopicError) {
@@ -299,12 +299,12 @@ export class MessageBroker implements Initializer, PreDestroy {
         filterByChannel<IntentMessage>(MessagingChannel.Intent),
         takeUntil(this._destroy$),
       )
-      .subscribe((event: MessageEvent<MessageEnvelope<IntentMessage>>) => runSafe(async () => {
+      .subscribe((event: MessageEvent<MessageEnvelope<IntentMessage>>) => void runSafe(async () => {
         const client = getSendingClient(event);
         const message = event.data.message;
-        const messageId = message.headers.get(MessageHeaders.MessageId);
+        const messageId = message.headers.get(MessageHeaders.MessageId) as string;
 
-        if (!message.intent) {
+        if (!message.intent) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition
           const error = '[MessagingError] Missing message property: intent';
           sendDeliveryStatusError(client, messageId, error);
           return;
@@ -323,7 +323,7 @@ export class MessageBroker implements Initializer, PreDestroy {
         }
 
         if (!this._manifestRegistry.hasIntention(message.intent, client.application.symbolicName)) {
-          const error = `[NotQualifiedError] Application '${client.application.symbolicName}' is not qualified to publish intents of the type '${message.intent.type}' and qualifier '${JSON.stringify(message.intent.qualifier || {})}'. Ensure to have listed the intention in the application manifest.`;
+          const error = `[NotQualifiedError] Application '${client.application.symbolicName}' is not qualified to publish intents of the type '${message.intent.type}' and qualifier '${JSON.stringify(message.intent.qualifier ?? {})}'. Ensure to have listed the intention in the application manifest.`;
           sendDeliveryStatusError(client, messageId, error);
           return;
         }
@@ -331,7 +331,7 @@ export class MessageBroker implements Initializer, PreDestroy {
         // Find capabilities fulfilling the intent, or send an error otherwise.
         const capabilities = this._manifestRegistry.resolveCapabilitiesByIntent(message.intent, client.application.symbolicName);
         if (capabilities.length === 0) {
-          const error = `[NullProviderError] No application found to provide a capability of the type '${message.intent.type}' and qualifiers '${JSON.stringify(message.intent.qualifier || {})}'. Maybe, the capability is not public API or the providing application not available.`;
+          const error = `[NullProviderError] No application found to provide a capability of the type '${message.intent.type}' and qualifiers '${JSON.stringify(message.intent.qualifier ?? {})}'. Maybe, the capability is not public API or the providing application not available.`;
           sendDeliveryStatusError(client, messageId, error);
           return;
         }
@@ -381,7 +381,7 @@ export class MessageBroker implements Initializer, PreDestroy {
         Array.from(this._retainedMessageStore.values())
           .flat()
           .filter(retainedMessage => subscription.matches(retainedMessage.topic))
-          .forEach(retainedMessage => this._messagePublisher.interceptAndPublish({
+          .forEach(retainedMessage => void this._messagePublisher.interceptAndPublish({
             ...retainedMessage,
             headers: new Map(retainedMessage.headers).set(MessageHeaders.ɵSubscriberId, subscription.subscriberId),
           }));
@@ -399,7 +399,7 @@ export class MessageBroker implements Initializer, PreDestroy {
           .flat()
           .filter(retainedMessage => subscription.client.application.symbolicName === retainedMessage.capability.metadata!.appSymbolicName)
           .filter(retainedMessage => subscription.matches(retainedMessage.intent))
-          .forEach(retainedMessage => this._intentPublisher.interceptAndPublish({
+          .forEach(retainedMessage => void this._intentPublisher.interceptAndPublish({
             ...retainedMessage,
             headers: new Map(retainedMessage.headers).set(MessageHeaders.ɵSubscriberId, subscription.subscriberId),
           }));
@@ -432,7 +432,7 @@ export class MessageBroker implements Initializer, PreDestroy {
       .subscribe((event: MessageEvent<MessageEnvelope<TopicSubscribeCommand>>) => runSafe(() => {
         const client = getSendingClient(event);
         const envelope = event.data;
-        const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
+        const messageId = envelope.message.headers.get(MessageHeaders.MessageId) as string;
         const topic = envelope.message.topic;
 
         const illegalTopicError = Topics.validateTopic(topic, {exactTopic: false});
@@ -464,7 +464,7 @@ export class MessageBroker implements Initializer, PreDestroy {
       .subscribe((event: MessageEvent<MessageEnvelope<UnsubscribeCommand>>) => runSafe(() => {
         const client = getSendingClient(event);
         const envelope = event.data;
-        const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
+        const messageId = envelope.message.headers.get(MessageHeaders.MessageId) as string;
 
         try {
           const subscriberId = Defined.orElseThrow(envelope.message.subscriberId, () => Error('[TopicUnsubscribeError] Missing property: subscriberId'));
@@ -489,7 +489,7 @@ export class MessageBroker implements Initializer, PreDestroy {
       .subscribe((event: MessageEvent<MessageEnvelope<IntentSubscribeCommand>>) => runSafe(() => {
         const client = getSendingClient(event);
         const envelope = event.data;
-        const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
+        const messageId = envelope.message.headers.get(MessageHeaders.MessageId) as string;
 
         const illegalQualifierError = Qualifiers.validateQualifier(envelope.message.selector?.qualifier, {exactQualifier: false});
         if (illegalQualifierError) {
@@ -499,7 +499,7 @@ export class MessageBroker implements Initializer, PreDestroy {
 
         try {
           const subscriberId = Defined.orElseThrow(envelope.message.subscriberId, () => Error('[IntentSubscribeError] Missing property: subscriberId'));
-          this._intentSubscriptionRegistry.register(new IntentSubscription(envelope.message.selector || {}, subscriberId, client));
+          this._intentSubscriptionRegistry.register(new IntentSubscription(envelope.message.selector ?? {}, subscriberId, client));
           sendDeliveryStatusSuccess(client, messageId);
         }
         catch (error) {
@@ -520,7 +520,7 @@ export class MessageBroker implements Initializer, PreDestroy {
       .subscribe((event: MessageEvent<MessageEnvelope<UnsubscribeCommand>>) => runSafe(() => {
         const client = getSendingClient(event);
         const envelope = event.data;
-        const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
+        const messageId = envelope.message.headers.get(MessageHeaders.MessageId) as string;
 
         try {
           const subscriberId = Defined.orElseThrow(envelope.message.subscriberId, () => Error('[IntentUnsubscribeError] Missing property: subscriberId'));
@@ -539,7 +539,7 @@ export class MessageBroker implements Initializer, PreDestroy {
   private createMessagePublisher(): PublishInterceptorChain<TopicMessage> {
     return chainInterceptors(Beans.all(MessageInterceptor), async (message: TopicMessage): Promise<void> => {
       const subscribers = this._topicSubscriptionRegistry.subscriptions({
-        subscriberId: message.headers.get(MessageHeaders.ɵSubscriberId),
+        subscriberId: message.headers.get(MessageHeaders.ɵSubscriberId) as string,
         topic: message.topic,
       });
 
@@ -558,7 +558,7 @@ export class MessageBroker implements Initializer, PreDestroy {
   private createIntentPublisher(): PublishInterceptorChain<IntentMessage> {
     return chainInterceptors(Beans.all(IntentInterceptor), async (message: IntentMessage): Promise<void> => {
       const subscribers = this._intentSubscriptionRegistry.subscriptions({
-        subscriberId: message.headers.get(MessageHeaders.ɵSubscriberId),
+        subscriberId: message.headers.get(MessageHeaders.ɵSubscriberId) as string,
         appSymbolicName: message.capability.metadata!.appSymbolicName,
         intent: message.intent,
       });
@@ -580,8 +580,8 @@ export class MessageBroker implements Initializer, PreDestroy {
       return null;
     }
 
-    const subscriberId = Defined.orElseThrow(message.headers.get(MessageHeaders.ɵSubscriberId), () => Error('[MessagingError] Missing message header: subscriberId'));
-    const replyTo = message.headers.get(MessageHeaders.ReplyTo);
+    const subscriberId = Defined.orElseThrow(message.headers.get(MessageHeaders.ɵSubscriberId) as string | undefined, () => Error('[MessagingError] Missing message header: subscriberId'));
+    const replyTo = message.headers.get(MessageHeaders.ReplyTo) as string;
     const subscription = new TopicSubscription(replyTo, subscriberId, sender);
     this._topicSubscriptionRegistry.register(subscription);
     return subscription;
@@ -607,7 +607,7 @@ export class MessageBroker implements Initializer, PreDestroy {
     if (isRequest(message)) {
       Defined.orElseThrow(requestorReplySubscription, () => Error('[InternalMessagingError] An unexpected error occurred. Expected subscription not to be null.'));
       Maps.addListValue(this._retainedMessageStore, message.topic, message);
-      requestorReplySubscription!.whenUnsubscribe.then(() => Maps.removeListValue(this._retainedMessageStore, message.topic, message));
+      void requestorReplySubscription!.whenUnsubscribe.then(() => Maps.removeListValue(this._retainedMessageStore, message.topic, message));
     }
     // If a retained message (not a request), replace any previously stored retained message on that topic, if any.
     else {
@@ -627,7 +627,7 @@ export class MessageBroker implements Initializer, PreDestroy {
     if (isRequest(message)) {
       Defined.orElseThrow(requestorReplySubscription, () => Error('[InternalMessagingError] An unexpected error occurred. Expected subscription not to be null.'));
       Maps.addListValue(this._retainedIntentStore, capabilityId, message);
-      requestorReplySubscription!.whenUnsubscribe.then(() => Maps.removeListValue(this._retainedIntentStore, capabilityId, message));
+      void requestorReplySubscription!.whenUnsubscribe.then(() => Maps.removeListValue(this._retainedIntentStore, capabilityId, message));
     }
     // If a retained message (i.e. not a request), replace any previously stored retained message for that capability, if any.
     else {
@@ -647,8 +647,8 @@ export class MessageBroker implements Initializer, PreDestroy {
  * Throws an error if the client could not be resolved.
  */
 function getSendingClient(event: MessageEvent<MessageEnvelope>): Client {
-  const clientId = event.data.message.headers.get(MessageHeaders.ClientId);
-  const client = Beans.get(ClientRegistry).getByClientId(clientId)!;
+  const clientId = event.data.message.headers.get(MessageHeaders.ClientId) as string;
+  const client = Beans.get(ClientRegistry).getByClientId(clientId);
   if (!client) {
     throw Error(`[NullClientError] Client not found in client registry. [clientId=${clientId}]`);
   }
@@ -661,9 +661,9 @@ function getSendingClient(event: MessageEvent<MessageEnvelope>): Client {
 function checkOriginTrusted<T extends Message>(): MonoTypeOperatorFunction<MessageEvent<MessageEnvelope<T>>> {
   return mergeMap((event: MessageEvent<MessageEnvelope<T>>): Observable<MessageEvent<MessageEnvelope<T>>> => {
     const envelope: MessageEnvelope = event.data;
-    const messageId = envelope.message.headers.get(MessageHeaders.MessageId);
-    const clientId = envelope.message.headers.get(MessageHeaders.ClientId);
-    const client = Beans.get(ClientRegistry).getByClientId(clientId)!;
+    const messageId = envelope.message.headers.get(MessageHeaders.MessageId) as string;
+    const clientId = envelope.message.headers.get(MessageHeaders.ClientId) as string;
+    const client = Beans.get(ClientRegistry).getByClientId(clientId);
 
     // Assert client registration.
     if (!client) {

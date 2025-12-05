@@ -126,7 +126,7 @@ describe('Messaging', () => {
   });
 });
 
-function newTopicMessage(template?: {body?: any; statusCode?: number}): TopicMessage {
+function newTopicMessage(template?: {body?: unknown; statusCode?: number}): TopicMessage {
   const topicMessage: TopicMessage = {
     topic: 'test-topic',
     headers: new Map(),

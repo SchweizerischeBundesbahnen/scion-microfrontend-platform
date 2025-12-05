@@ -62,7 +62,7 @@ import {takeUntil} from 'rxjs/operators';
  */
 export class MicrofrontendPlatformHost {
 
-  private static _startupProgress$: Observable<number>;
+  private static _startupProgress$: Observable<number> | undefined;
 
   private constructor() {
   }
@@ -84,21 +84,20 @@ export class MicrofrontendPlatformHost {
    */
   public static start(config: MicrofrontendPlatformConfig): Promise<void> {
     return MicrofrontendPlatform.startPlatform(() => {
-        const symbolicName = config.host?.symbolicName || 'host';
+      const symbolicName = config.host?.symbolicName ?? 'host';
 
-        // Provide environment for running the platform as host.
-        providePlatformEnvironment({symbolicName, isPlatformHost: true});
-        provideClientEnvironment({
-          messageDeliveryTimeout: config.host?.messageDeliveryTimeout,
-          brokerDiscoverTimeout: config.host?.brokerDiscoverTimeout,
-          connectRunlevel: Runlevel.One, // Connect to the broker in runlevel 1, that is, after registration of the applications.
-        });
-        provideHostEnvironment(config);
+      // Provide environment for running the platform as host.
+      providePlatformEnvironment({symbolicName, isPlatformHost: true});
+      provideClientEnvironment({
+        messageDeliveryTimeout: config.host?.messageDeliveryTimeout,
+        brokerDiscoverTimeout: config.host?.brokerDiscoverTimeout,
+        connectRunlevel: Runlevel.One, // Connect to the broker in runlevel 1, that is, after registration of the applications.
+      });
+      provideHostEnvironment(config);
 
-        // Provide initializers to start the platform as host.
-        provideHostStartupInitializers(symbolicName, config);
-      },
-    );
+      // Provide initializers to start the platform as host.
+      provideHostStartupInitializers(symbolicName, config);
+    });
   }
 
   /**
@@ -112,12 +111,12 @@ export class MicrofrontendPlatformHost {
    * after the platform has been started.
    */
   public static get startupProgress$(): Observable<number> {
-    this._startupProgress$ = this._startupProgress$ || new Observable<number>(observer => {
+    this._startupProgress$ = this._startupProgress$ ?? new Observable<number>(observer => {
       const unsubscribe$ = new ReplaySubject<void>(1);
       const progress$ = defer(() => Beans.get(StartupProgressMonitor).progress$).pipe(takeUntil(unsubscribe$));
 
       if (MicrofrontendPlatform.state === PlatformState.Stopped) {
-        MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => progress$.subscribe(observer));
+        void MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => progress$.subscribe(observer));
       }
       else {
         progress$.subscribe(observer);
@@ -167,7 +166,7 @@ function provideHostStartupInitializers(symbolicName: string, config: Microfront
 
   // Provide platform properties to clients.
   Beans.registerInitializer({
-    useFunction: () => Beans.get(MessageClient).publish(PlatformTopics.PlatformProperties, config.properties || {}, {retain: true}),
+    useFunction: () => Beans.get(MessageClient).publish(PlatformTopics.PlatformProperties, config.properties ?? {}, {retain: true}),
     runlevel: Runlevel.Two,
   });
 
@@ -212,7 +211,7 @@ function provideStartupProgressMonitor(): void {
   Beans.register(StartupProgressMonitor, {useValue: monitor});
   Beans.register(ManifestLoadProgressMonitor, {useValue: manifestLoadProgressMonitor});
   Beans.register(ActivatorLoadProgressMonitor, {useValue: activatorLoadProgressMonitor});
-  MicrofrontendPlatform.whenState(PlatformState.Started).then(() => platformProgressMonitor.done());
+  void MicrofrontendPlatform.whenState(PlatformState.Started).then(() => platformProgressMonitor.done());
 }
 
 /**

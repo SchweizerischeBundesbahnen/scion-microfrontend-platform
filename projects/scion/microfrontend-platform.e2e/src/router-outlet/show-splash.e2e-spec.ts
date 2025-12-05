@@ -13,8 +13,7 @@ import {test} from '../fixtures';
 import {OutletRouterPagePO} from './outlet-router-page.po';
 import {expect} from '@playwright/test';
 import {PublishMessagePagePO} from '../messaging/publish-message-page.po';
-import {RegisterCapabilityPagePO} from '../manifest/register-capability-page.po';
-import {MicrofrontendCapability} from '@scion/microfrontend-platform';
+import {MicrofrontendCapability, RegisterCapabilityPagePO} from '../manifest/register-capability-page.po';
 
 test.describe('RouterOutlet', () => {
 
@@ -160,7 +159,7 @@ test.describe('RouterOutlet', () => {
     // Register "microfrontend" capability
     const capabilityRegisterer = pagePOs.get<RegisterCapabilityPagePO>('capabilityRegisterer');
     await capabilityRegisterer.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any,
+      type: 'microfrontend',
       qualifier: {component: 'microfrontend'},
       properties: {
         path: 'test-pages/signal-ready-test-page',
@@ -195,7 +194,7 @@ test.describe('RouterOutlet', () => {
     // Register "microfrontend" capability
     const capabilityRegisterer = pagePOs.get<RegisterCapabilityPagePO>('capabilityRegisterer');
     await capabilityRegisterer.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any,
+      type: 'microfrontend',
       qualifier: {component: 'microfrontend'},
       properties: {
         path: 'test-pages/signal-ready-test-page',
@@ -204,9 +203,9 @@ test.describe('RouterOutlet', () => {
       params: [
         {
           name: 'param',
-          required: false
-        }
-      ]
+          required: false,
+        },
+      ],
     });
 
     // Navigate to 'test-pages/signal-ready-test-page'
@@ -249,7 +248,7 @@ test.describe('RouterOutlet', () => {
     // Register "microfrontend" capability
     const capabilityRegisterer = pagePOs.get<RegisterCapabilityPagePO>('capabilityRegisterer');
     await capabilityRegisterer.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any,
+      type: 'microfrontend',
       qualifier: {component: 'microfrontend'},
       properties: {
         path: 'test-pages/signal-ready-test-page',
@@ -258,9 +257,9 @@ test.describe('RouterOutlet', () => {
       params: [
         {
           name: 'param',
-          required: false
-        }
-      ]
+          required: false,
+        },
+      ],
     });
 
     // Navigate to 'test-pages/signal-ready-test-page'
@@ -311,7 +310,7 @@ test.describe('RouterOutlet', () => {
     // Register "microfrontend" capability
     const capabilityRegisterer = pagePOs.get<RegisterCapabilityPagePO>('capabilityRegisterer');
     await capabilityRegisterer.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any,
+      type: 'microfrontend',
       qualifier: {component: 'microfrontend'},
       properties: {
         path: 'test-pages/signal-ready-test-page',
@@ -344,7 +343,7 @@ test.describe('RouterOutlet', () => {
     // Register "microfrontend" capability
     const capabilityRegisterer = pagePOs.get<RegisterCapabilityPagePO>('capabilityRegisterer');
     await capabilityRegisterer.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any,
+      type: 'microfrontend',
       qualifier: {component: 'microfrontend'},
       properties: {
         path: 'test-pages/signal-ready-test-page',
@@ -378,7 +377,7 @@ test.describe('RouterOutlet', () => {
     // Register "microfrontend" capability
     const capabilityRegisterer = pagePOs.get<RegisterCapabilityPagePO>('capabilityRegisterer');
     await capabilityRegisterer.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any,
+      type: 'microfrontend',
       qualifier: {component: 'microfrontend'},
       properties: {
         path: 'test-pages/signal-ready-test-page',
@@ -413,7 +412,7 @@ test.describe('RouterOutlet', () => {
     // Register "microfrontend" capability
     const capabilityRegisterer = pagePOs.get<RegisterCapabilityPagePO>('capabilityRegisterer');
     await capabilityRegisterer.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any,
+      type: 'microfrontend',
       qualifier: {component: 'microfrontend'},
       properties: {
         path: 'test-pages/signal-ready-test-page',
@@ -449,7 +448,7 @@ test.describe('RouterOutlet', () => {
     // Register "microfrontend" capability
     const capabilityRegisterer = pagePOs.get<RegisterCapabilityPagePO>('capabilityRegisterer');
     await capabilityRegisterer.registerCapability<MicrofrontendCapability>({
-      type: 'microfrontend' as any,
+      type: 'microfrontend',
       qualifier: {component: 'microfrontend'},
       properties: {
         path: 'test-pages/signal-ready-test-page',

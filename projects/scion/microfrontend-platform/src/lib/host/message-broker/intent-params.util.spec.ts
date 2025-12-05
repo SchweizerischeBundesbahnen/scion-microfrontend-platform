@@ -15,13 +15,13 @@ import {Beans} from '@scion/toolkit/bean-manager';
 
 describe('IntentParams', () => {
 
-  beforeEach(async () => {
-    await Beans.destroy();
+  beforeEach(() => {
+    Beans.destroy();
     installLoggerSpies();
   });
 
-  afterEach(async () => {
-    await Beans.destroy();
+  afterEach(() => {
+    Beans.destroy();
   });
 
   it('should validate intent with params', () => {
@@ -34,11 +34,12 @@ describe('IntentParams', () => {
         ],
       },
       intent: {
-        type: 'test', params: new Map()
+        type: 'test',
+        params: new Map<string, unknown>()
           .set('requiredParam', 'requiredParamValue')
           .set('optionalParam', 'optionalParamValue'),
       },
-      headers: new Map().set(MessageHeaders.AppSymbolicName, 'app'),
+      headers: new Map<string, unknown>().set(MessageHeaders.AppSymbolicName, 'app'),
     };
 
     IntentParams.validateParams(intentMessage);
@@ -52,7 +53,7 @@ describe('IntentParams', () => {
     const intentMessage: IntentMessage = {
       capability: {type: 'test'},
       intent: {type: 'test'},
-      headers: new Map().set(MessageHeaders.AppSymbolicName, 'app'),
+      headers: new Map<string, unknown>().set(MessageHeaders.AppSymbolicName, 'app'),
     };
 
     IntentParams.validateParams(intentMessage);
@@ -62,8 +63,8 @@ describe('IntentParams', () => {
   it('should remove `undefined` params', () => {
     const intentMessage: IntentMessage = {
       capability: {type: 'test'},
-      intent: {type: 'test', params: new Map().set('param', undefined)},
-      headers: new Map().set(MessageHeaders.AppSymbolicName, 'app'),
+      intent: {type: 'test', params: new Map<string, unknown>().set('param', undefined)},
+      headers: new Map<string, unknown>().set(MessageHeaders.AppSymbolicName, 'app'),
     };
 
     IntentParams.validateParams(intentMessage);
@@ -73,8 +74,8 @@ describe('IntentParams', () => {
   it('should error if the intent contains additional params', () => {
     const intentMessage: IntentMessage = {
       capability: {type: 'test'},
-      intent: {type: 'test', params: new Map().set('param', 'value')},
-      headers: new Map().set(MessageHeaders.AppSymbolicName, 'app'),
+      intent: {type: 'test', params: new Map<string, unknown>().set('param', 'value')},
+      headers: new Map<string, unknown>().set(MessageHeaders.AppSymbolicName, 'app'),
     };
 
     expect(() => IntentParams.validateParams(intentMessage)).toThrowError(/IntentParamValidationError/);
@@ -87,7 +88,7 @@ describe('IntentParams', () => {
         params: [{name: 'param', required: true}],
       },
       intent: {type: 'test'},
-      headers: new Map().set(MessageHeaders.AppSymbolicName, 'app'),
+      headers: new Map<string, unknown>().set(MessageHeaders.AppSymbolicName, 'app'),
     };
 
     expect(() => IntentParams.validateParams(intentMessage)).toThrowError(/IntentParamValidationError/);
@@ -100,7 +101,7 @@ describe('IntentParams', () => {
         params: [{name: 'param', required: false}],
       },
       intent: {type: 'test'},
-      headers: new Map().set(MessageHeaders.AppSymbolicName, 'app'),
+      headers: new Map<string, unknown>().set(MessageHeaders.AppSymbolicName, 'app'),
     };
 
     IntentParams.validateParams(intentMessage);
@@ -113,12 +114,12 @@ describe('IntentParams', () => {
         type: 'test',
         params: [{name: 'param', required: true, deprecated: true}],
       },
-      intent: {type: 'test', params: new Map().set('param', 'value')},
-      headers: new Map().set(MessageHeaders.AppSymbolicName, 'app'),
+      intent: {type: 'test', params: new Map<string, unknown>().set('param', 'value')},
+      headers: new Map<string, unknown>().set(MessageHeaders.AppSymbolicName, 'app'),
     };
 
     IntentParams.validateParams(intentMessage);
-    expect(intentMessage.intent.params).toEqual(new Map().set('param', 'value'));
+    expect(intentMessage.intent.params).toEqual(new Map<string, unknown>().set('param', 'value'));
     expect(getLoggerSpy('warn')).toHaveBeenCalledWith(jasmine.stringMatching(/\[DEPRECATION]\[4EAC5956] Application 'app' passes a deprecated parameter in the intent: 'param'/), jasmine.anything(), jasmine.anything());
   });
 
@@ -131,12 +132,12 @@ describe('IntentParams', () => {
           {name: 'param2', required: true},
         ],
       },
-      intent: {type: 'test', params: new Map().set('param1', 'value')},
-      headers: new Map().set(MessageHeaders.AppSymbolicName, 'app'),
+      intent: {type: 'test', params: new Map<string, unknown>().set('param1', 'value')},
+      headers: new Map<string, unknown>().set(MessageHeaders.AppSymbolicName, 'app'),
     };
 
     IntentParams.validateParams(intentMessage);
-    expect(intentMessage.intent.params).toEqual(new Map().set('param2', 'value'));
+    expect(intentMessage.intent.params).toEqual(new Map<string, unknown>().set('param2', 'value'));
     expect(getLoggerSpy('warn')).toHaveBeenCalledWith(jasmine.stringMatching(/\[DEPRECATION]\[4EAC5956] Application 'app' passes a deprecated parameter in the intent: 'param1'\. Pass parameter 'param2' instead\./), jasmine.anything(), jasmine.anything());
   });
 
@@ -149,12 +150,12 @@ describe('IntentParams', () => {
           {name: 'param2', required: true},
         ],
       },
-      intent: {type: 'test', params: new Map().set('param2', 'value')},
-      headers: new Map().set(MessageHeaders.AppSymbolicName, 'app'),
+      intent: {type: 'test', params: new Map<string, unknown>().set('param2', 'value')},
+      headers: new Map<string, unknown>().set(MessageHeaders.AppSymbolicName, 'app'),
     };
 
     IntentParams.validateParams(intentMessage);
-    expect(intentMessage.intent.params).toEqual(new Map().set('param2', 'value'));
+    expect(intentMessage.intent.params).toEqual(new Map<string, unknown>().set('param2', 'value'));
     expect(getLoggerSpy('warn')).not.toHaveBeenCalledWith();
   });
 });

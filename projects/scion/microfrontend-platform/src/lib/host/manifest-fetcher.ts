@@ -46,6 +46,6 @@ export class ManifestFetcher {
       throw Error(`[ManifestFetchError] Failed to fetch manifest for application '${appConfig.symbolicName}'. Maybe the application is currently unavailable. [httpStatusCode=${manifestFetchResponse.status}, httpStatusText=${manifestFetchResponse.statusText}]`);
     }
 
-    return await manifestFetchResponse.json();
+    return await manifestFetchResponse.json() as Manifest;
   }
 }

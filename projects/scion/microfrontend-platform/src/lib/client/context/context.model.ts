@@ -75,14 +75,14 @@ export namespace Contexts {
    * @param values - The collected values passed to the parent context during a context lookup.
    *                 Used to collect all values associated with the context name in the context hierarchy.
    */
-  export function newContextValueLookupRequest(name: string, replyTo: string, options?: ContextLookupOptions, values?: any[]): MessageEnvelope<TopicMessage<any[]>> {
+  export function newContextValueLookupRequest(name: string, replyTo: string, options?: ContextLookupOptions, values?: unknown[]): MessageEnvelope<TopicMessage<unknown[]>> {
     return {
       transport: MessagingTransport.MicrofrontendToOutlet,
       channel: MessagingChannel.Topic,
       message: {
         topic: contextValueLookupTopic(encodeURIComponent(name)), // Encode in order to support names containing forward slashes or starting with a colon.
-        body: values || [],
-        headers: new Map()
+        body: values ?? [],
+        headers: new Map<string, string | ContextLookupOptions | undefined>()
           .set(MessageHeaders.MessageId, UUID.randomUUID())
           .set(MessageHeaders.ReplyTo, replyTo)
           .set(CONTEXT_LOOKUP_OPTIONS, options),
@@ -102,8 +102,8 @@ export namespace Contexts {
       channel: MessagingChannel.Topic,
       message: {
         topic: Contexts.contextTreeNamesLookupTopic(),
-        body: names || new Set<string>(),
-        headers: new Map()
+        body: names ?? new Set<string>(),
+        headers: new Map<string, string>()
           .set(MessageHeaders.MessageId, UUID.randomUUID())
           .set(MessageHeaders.ReplyTo, replyTo),
       },
@@ -121,7 +121,7 @@ export namespace Contexts {
       channel: MessagingChannel.Topic,
       message: {
         topic: Contexts.contextTreeChangeTopic(),
-        headers: new Map()
+        headers: new Map<string, string>()
           .set(MessageHeaders.MessageId, UUID.randomUUID())
           .set(MessageHeaders.ReplyTo, replyTo),
       },
@@ -134,7 +134,7 @@ export namespace Contexts {
   export interface ContextTreeChangeEvent {
     type: 'set' | 'remove';
     name: string;
-    value?: any;
+    value?: unknown;
   }
 
   /**

@@ -49,7 +49,7 @@ export class CapabilityAccordionPanelComponent implements OnInit {
   }
 
   public onConsumerClick(application: Application): boolean {
-    this._router.navigate(['apps', {outlets: {details: [application.symbolicName, {activeTab: 'intentions'}]}}]).then();
+    void this._router.navigate(['apps', {outlets: {details: [application.symbolicName, {activeTab: 'intentions'}]}}]);
     return false;
   }
 }

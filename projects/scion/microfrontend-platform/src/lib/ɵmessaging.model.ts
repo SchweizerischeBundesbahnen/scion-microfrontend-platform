@@ -67,7 +67,7 @@ export enum MessagingChannel {
   /**
    * Channel for clients to send a disconnect request.
    */
-  ClientDisconnect = 'client-disconnect'
+  ClientDisconnect = 'client-disconnect',
 }
 
 /**

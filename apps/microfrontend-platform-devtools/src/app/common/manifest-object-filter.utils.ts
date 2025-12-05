@@ -13,9 +13,6 @@ import {Capability, Intention} from '@scion/microfrontend-platform';
  * Returns manifest objects that match given filter text in the type or qualifier.
  */
 export function filterManifestObjects<T extends Capability | Intention>(manifestObjects: T[], filter: string): T[] {
-  if (!manifestObjects) {
-    return [];
-  }
   if (!filter) {
     return manifestObjects;
   }
@@ -28,8 +25,8 @@ export function filterManifestObjects<T extends Capability | Intention>(manifest
 }
 
 function stringifyManifestObject(manifestObject: Capability | Intention): string {
-  const keys = Object.keys(manifestObject.qualifier || {}).join('');
-  const values = Object.values(manifestObject.qualifier || {}).join('');
+  const keys = Object.keys(manifestObject.qualifier ?? {}).join('');
+  const values = Object.values(manifestObject.qualifier ?? {}).join('');
   return `${manifestObject.type}${keys}${values}`;
 }
 

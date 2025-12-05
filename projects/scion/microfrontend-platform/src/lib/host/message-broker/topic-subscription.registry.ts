@@ -59,7 +59,7 @@ export class TopicSubscriptionRegistry extends MessageSubscriptionRegistry<Topic
   private subscriptionsByTopic(topic: string): TopicSubscription[] {
     const subscriptions = new Array<TopicSubscription>();
     Topics.computeWildcardSegmentPermutations(topic, ASTERISK).forEach(permutation => {
-      subscriptions.push(...this._subscriptionsByTopic.get(permutation) || []);
+      subscriptions.push(...this._subscriptionsByTopic.get(permutation) ?? []);
     });
     return subscriptions;
   }

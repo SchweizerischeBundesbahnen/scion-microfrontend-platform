@@ -22,7 +22,7 @@ export interface Message {
    *
    * Header values must be JSON serializable. If no headers are set, the `Map` is empty.
    */
-  headers: Map<string, any>;
+  headers: Map<string, unknown>;
   /**
    * Indicates whether this message is retained on the broker for late subscribers.
    */
@@ -37,7 +37,7 @@ export interface Message {
  * @category Messaging
  * @category Intention API
  */
-export interface IntentMessage<BODY = any> extends Message {
+export interface IntentMessage<BODY = unknown> extends Message {
   /**
    * Intent that represents this message.
    */
@@ -86,7 +86,7 @@ export interface Intent {
    * Parameters have no effect on the intent routing, unlike the qualifier. If mandatory parameters
    * are missing or non-specified parameters are included, the intent is rejected.
    */
-  params?: Map<string, any>;
+  params?: Map<string, unknown>;
 }
 
 /**
@@ -96,7 +96,7 @@ export interface Intent {
  *
  * @category Messaging
  */
-export interface TopicMessage<BODY = any> extends Message {
+export interface TopicMessage<BODY = unknown> extends Message {
   /**
    * The topic where to publish this message to.
    */
@@ -206,7 +206,7 @@ export enum RequestMethods {
   /**
    * The OBSERVE method is used to observe the specified resource.
    */
-  OBSERVE = 'OBSERVE'
+  OBSERVE = 'OBSERVE',
 }
 
 /**
@@ -267,7 +267,7 @@ export enum ResponseStatusCodes {
 export function throwOnErrorStatus<BODY>(): MonoTypeOperatorFunction<TopicMessage<BODY>> {
   return pipe(
     mergeMap((message: TopicMessage<BODY>): Observable<TopicMessage<BODY>> => {
-      const status = message.headers.get(MessageHeaders.Status) ?? ResponseStatusCodes.OK;
+      const status = message.headers.get(MessageHeaders.Status) as number | undefined ?? ResponseStatusCodes.OK;
       if (status < 400) {
         return of(message); // 1xx: informational responses, 2xx: successful responses, 4xx: client errors, 5xx: server errors
       }

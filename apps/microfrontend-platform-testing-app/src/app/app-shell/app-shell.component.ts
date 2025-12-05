@@ -12,7 +12,6 @@ import {asapScheduler, debounceTime, delay, EMPTY, from, mergeMap, of, Subject, 
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, ManifestService, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {tap} from 'rxjs/operators';
 import {ActivatedRoute, RouterOutlet} from '@angular/router';
-import {Defined} from '@scion/toolkit/util';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {AsyncPipe} from '@angular/common';
 import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
@@ -130,8 +129,8 @@ export default class AppShellComponent implements OnInit {
    * </ng-template>
    */
   public onRouteActivate(route: ActivatedRoute): void {
-    const isPageTitleVisible = Defined.orElse(route.snapshot.data['pageTitleVisible'], true);
-    asapScheduler.schedule(() => this.pageTitle = isPageTitleVisible ? route.snapshot.data['pageTitle'] : null);
+    const isPageTitleVisible = route.snapshot.data['pageTitleVisible'] as boolean | undefined ?? true;
+    asapScheduler.schedule(() => this.pageTitle = isPageTitleVisible ? route.snapshot.data['pageTitle'] as string : undefined);
     this._routeActivate$.next();
   }
 

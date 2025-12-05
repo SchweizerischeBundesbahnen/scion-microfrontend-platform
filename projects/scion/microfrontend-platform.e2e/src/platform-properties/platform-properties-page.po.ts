@@ -22,7 +22,7 @@ export class PlatformPropertiesPagePO implements OutletPageObject {
     this._locator = frameLocator.locator('app-platform-properties');
   }
 
-  public async getPlatformProperties(): Promise<Record<string, any>> {
+  public async getPlatformProperties(): Promise<Record<string, unknown>> {
     return new SciKeyValuePO(this._locator.locator('sci-key-value.e2e-properties')).readEntries();
   }
 }

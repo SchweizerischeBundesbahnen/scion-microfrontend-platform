@@ -8,10 +8,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {ApplicationConfig} from '@scion/microfrontend-platform';
-
-const devtools: ApplicationConfig | null = null;
-
 /**
  * Environment used when packaging the app for CI on GitHub.
  */
@@ -40,7 +36,7 @@ export const environment = {
     },
   },
   activatorLoadTimeout: 20000,
-  devtools,
+  devtools: null,
 };
 
 /*

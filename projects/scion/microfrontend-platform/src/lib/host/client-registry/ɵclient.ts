@@ -29,7 +29,7 @@ export class ɵClient implements Client {
               public readonly window: Window,
               public readonly origin: string,
               public readonly application: ɵApplication,
-              version: string) {
+              version?: string) {
     this.version = version ?? '0.0.0';
     this.installLivenessDetector();
   }
