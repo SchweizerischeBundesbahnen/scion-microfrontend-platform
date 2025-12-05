@@ -42,7 +42,7 @@ export class AppComponent {
 
   constructor(private _shellService: ShellService, private _cd: ChangeDetectorRef) {
     this.installNavigationEndListener();
-    this.signalReady().then();
+    void this.signalReady();
 
   }
 

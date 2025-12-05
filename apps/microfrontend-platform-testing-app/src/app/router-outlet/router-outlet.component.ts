@@ -13,7 +13,7 @@ import {RouterOutletContextComponent} from '../router-outlet-context/router-outl
 import {Overlay} from '@angular/cdk/overlay';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {RouterOutletSettingsComponent} from '../router-outlet-settings/router-outlet-settings.component';
-import {NEVER, Observable} from 'rxjs';
+import {Observable} from 'rxjs';
 import {AsyncPipe} from '@angular/common';
 import {SciThrobberComponent} from '@scion/components/throbber';
 import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
@@ -87,6 +87,6 @@ export default class RouterOutletComponent {
   }
 
   public get empty$(): Observable<boolean> {
-    return this._routerOutlet ? this._routerOutlet.nativeElement.empty$ : NEVER;
+    return this._routerOutlet.nativeElement.empty$;
   }
 }

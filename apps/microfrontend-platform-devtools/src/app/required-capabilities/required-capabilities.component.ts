@@ -68,7 +68,7 @@ export class RequiredCapabilitiesComponent implements OnChanges {
         switchMap(() => manifestService.observeDependingCapabilities$(this.appSymbolicName)),
         expand(capabilities => this.filterFormControl.valueChanges.pipe(take(1), map(() => capabilities))),
         map(capabilities => filterManifestObjects(capabilities, this.filterFormControl.value)),
-        map(capabilities => capabilities.reduce((acc, capability) => Maps.addListValue(acc, capability.metadata!.appSymbolicName, capability), new Map())),
+        map(capabilities => capabilities.reduce((acc, capability) => Maps.addListValue(acc, capability.metadata!.appSymbolicName, capability), new Map<string, Capability[]>())),
       );
   }
 
@@ -89,7 +89,7 @@ export class RequiredCapabilitiesComponent implements OnChanges {
 
   public onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
     event.stopPropagation();
-    this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
+    void this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
   }
 
   public paramNameFn = (param: ParamDefinition): string => param.name;

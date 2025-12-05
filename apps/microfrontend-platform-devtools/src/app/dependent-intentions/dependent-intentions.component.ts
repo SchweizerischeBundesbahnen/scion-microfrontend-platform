@@ -59,7 +59,7 @@ export class DependentIntentionsComponent implements OnInit, OnChanges {
         switchMap(() => this._manifestService.observeDependentIntentions$(this.appSymbolicName)),
         expand(intentions => this.filterFormControl.valueChanges.pipe(take(1), map(() => intentions))),
         map(intentions => filterManifestObjects(intentions, this.filterFormControl.value)),
-        map(intentions => intentions.reduce((acc, intention) => Maps.addListValue(acc, intention.metadata!.appSymbolicName, intention), new Map())),
+        map(intentions => intentions.reduce((acc, intention) => Maps.addListValue(acc, intention.metadata!.appSymbolicName, intention), new Map<string, Intention[]>())),
       );
   }
 
@@ -70,6 +70,6 @@ export class DependentIntentionsComponent implements OnInit, OnChanges {
 
   public onOpenAppClick(event: MouseEvent, appSymbolicName: string): void {
     event.stopPropagation();
-    this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
+    void this._router.navigate(['/apps', {outlets: {details: [appSymbolicName]}}]);
   }
 }

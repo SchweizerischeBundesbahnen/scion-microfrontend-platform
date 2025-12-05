@@ -155,13 +155,13 @@ export class TestingAppPO {
       }
 
       public get<T extends OutletPageObject>(outlet: string): T {
-        const pageObject = outletPageObjectMap.get(outlet) as T;
+        const pageObject = outletPageObjectMap.get(outlet) as T | undefined;
         if (!pageObject) {
           throw Error(`[OutletNotFoundError] No outlet found with the given name '${outlet}'.`);
         }
         return pageObject;
       }
-    };
+    }();
   }
 
   /**

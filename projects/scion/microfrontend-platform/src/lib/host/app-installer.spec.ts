@@ -24,15 +24,15 @@ describe('AppInstaller', () => {
 
   it('should fetch and register applications', async () => {
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj(HttpClient.name, ['fetch']);
+    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
     httpClientSpy.fetch
       .withArgs('http://www.app-1/manifest').and.returnValue(okAnswer({body: {name: 'App 1'}, delay: 120}))
       .withArgs('http://www.app-2/manifest').and.returnValue(okAnswer({body: {name: 'App 2'}, delay: 30}))
-      .and.callFake((arg: any) => fetch(arg)); // fetches the manifest of the host app
+      .and.callFake(arg => fetch(arg)); // fetches the manifest of the host app
     Beans.register(HttpClient, {useValue: httpClientSpy});
 
     // mock {Logger}
-    const loggerSpy = jasmine.createSpyObj(Logger.name, ['info', 'warn', 'error']);
+    const loggerSpy = jasmine.createSpyObj<Logger>(Logger.name, ['info', 'warn', 'error']);
     Beans.register(Logger, {useValue: loggerSpy});
 
     // start the platform
@@ -62,18 +62,18 @@ describe('AppInstaller', () => {
 
   it('should ignore applications which are not available', async () => {
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj(HttpClient.name, ['fetch']);
+    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
     httpClientSpy.fetch
       .withArgs('http://www.app-1/manifest').and.returnValue(okAnswer({body: {name: 'App 1'}, delay: 12}))
       .withArgs('http://www.app-2/manifest').and.returnValue(nokAnswer({status: 500, delay: 100}))
       .withArgs('http://www.app-3/manifest').and.returnValue(okAnswer({body: {name: 'App 3'}, delay: 600}))
       .withArgs('http://www.app-4/manifest').and.returnValue(nokAnswer({status: 502, delay: 200}))
-      .and.callFake((arg: any) => fetch(arg)); // fetches the manifest of the host app
+      .and.callFake(arg => fetch(arg)); // fetches the manifest of the host app
 
     Beans.register(HttpClient, {useValue: httpClientSpy});
 
     // mock {Logger}
-    const loggerSpy = jasmine.createSpyObj(Logger.name, ['info', 'warn', 'error']);
+    const loggerSpy = jasmine.createSpyObj<Logger>(Logger.name, ['info', 'warn', 'error']);
     Beans.register(Logger, {useValue: loggerSpy});
 
     // start the platform
@@ -96,18 +96,18 @@ describe('AppInstaller', () => {
 
   it('should cancel fetching an application\'s manifest after the timeout expires and not register it', async () => {
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj(HttpClient.name, ['fetch']);
+    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
     httpClientSpy.fetch
       .withArgs('http://www.app-1/manifest').and.returnValue(okAnswer({body: {name: 'App 1'}, delay: 1000})) // greater than the app-specific manifestLoadTimeout => expect failure
       .withArgs('http://www.app-2/manifest').and.returnValue(okAnswer({body: {name: 'App 2'}, delay: 400}))
       .withArgs('http://www.app-3/manifest').and.returnValue(okAnswer({body: {name: 'App 3'}, delay: 600})) // greater than the global manifestLoadTimeout => expect failure
-      .withArgs('http://www.app-4/manifest').and.returnValue(okAnswer({body: {name: 'App 4'}, delay: 600})) // less then than the app-specific manifestLoadTimeout => expect success
-      .and.callFake((arg: any) => fetch(arg)); // fetches the manifest of the host app
+      .withArgs('http://www.app-4/manifest').and.returnValue(okAnswer({body: {name: 'App 4'}, delay: 600})) // less than the app-specific manifestLoadTimeout => expect success
+      .and.callFake(arg => fetch(arg)); // fetches the manifest of the host app
 
     Beans.register(HttpClient, {useValue: httpClientSpy});
 
     // mock {Logger}
-    const loggerSpy = jasmine.createSpyObj(Logger.name, ['info', 'warn', 'error']);
+    const loggerSpy = jasmine.createSpyObj<Logger>(Logger.name, ['info', 'warn', 'error']);
     Beans.register(Logger, {useValue: loggerSpy});
 
     // start the platform
@@ -132,21 +132,21 @@ describe('AppInstaller', () => {
   });
 });
 
-function okAnswer(answer: {body: Manifest; delay: number}): Promise<Partial<Response>> {
-  const response: Partial<Response> = {
+function okAnswer(answer: {body: Manifest; delay: number}): Promise<Response> {
+  const response = {
     ok: true,
-    json: (): Promise<any> => Promise.resolve(answer.body),
-  };
+    json: (): Promise<unknown> => Promise.resolve(answer.body),
+  } as Response;
   return new Promise(resolve => {
     setTimeout(() => resolve(response), answer.delay);
   });
 }
 
-function nokAnswer(answer: {status: number; delay: number}): Promise<Partial<Response>> {
-  const response: Partial<Response> = {
+function nokAnswer(answer: {status: number; delay: number}): Promise<Response> {
+  const response = {
     ok: false,
     status: answer.status,
-  };
+  } as Response;
   return new Promise(resolve => {
     setTimeout(() => resolve(response), answer.delay);
   });

@@ -9,4 +9,3 @@
  */
 
 export {FocusMonitor} from './focus-monitor';
-

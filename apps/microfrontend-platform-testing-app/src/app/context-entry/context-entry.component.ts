@@ -17,13 +17,13 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 })
 export class ContextEntryComponent {
 
-  public value: any;
+  public value: unknown;
 
   @Input({required: true})
   public name!: string;
 
-  @Input({alias: 'value', required: true})  // eslint-disable-line @angular-eslint/no-input-rename
-  public set setValue(value: any) {
+  @Input({alias: 'value', required: true})
+  public set setValue(value: unknown) {
     if (typeof value === 'object') {
       this.value = JSON.stringify(value);
     }

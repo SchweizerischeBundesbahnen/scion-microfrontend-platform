@@ -70,6 +70,6 @@ export abstract class MicrofrontendPlatformConfig {
    * Defines user-defined properties which can be read by micro applications via {@link PlatformPropertyService}.
    */
   public abstract readonly properties?: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }

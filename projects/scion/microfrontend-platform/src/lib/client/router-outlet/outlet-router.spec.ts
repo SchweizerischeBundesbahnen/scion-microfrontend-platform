@@ -35,7 +35,7 @@ describe('OutletRouter', () => {
     const blobUrl = URL.createObjectURL(new Blob([content], {type: 'text/html'}));
 
     // Navigate to blob URL.
-    Beans.get(OutletRouter).navigate(blobUrl, {outlet: 'outlet'}).then();
+    void Beans.get(OutletRouter).navigate(blobUrl, {outlet: 'outlet'});
 
     // Wait until loaded the blob page into the iframe.
     // Since the iframe is initialized with the "about:blank" page, we expect the blob page load event to fire as the second load event.

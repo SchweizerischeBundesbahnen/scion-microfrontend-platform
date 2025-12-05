@@ -23,8 +23,8 @@ test.describe('Context', () => {
     await lookupContextValuePO.enterKey('name');
     await lookupContextValuePO.clickSubscribe();
 
-    await expect(await lookupContextValuePO.getLookedUpValue()).toBeNull();
-    await expect(await lookupContextValuePO.getObservedValue()).toBeNull();
+    await expect.poll(() => lookupContextValuePO.getLookedUpValue()).toBeNull();
+    await expect.poll(() => lookupContextValuePO.getObservedValue()).toBeNull();
   });
 
   test('should be a noop when collecting context values outside of an outlet context', async ({page}) => {
@@ -35,8 +35,8 @@ test.describe('Context', () => {
     await lookupContextValuePO.toggleCollectValues(true);
     await lookupContextValuePO.clickSubscribe();
 
-    await expect(await lookupContextValuePO.getLookedUpValue()).toEqual([]);
-    await expect(await lookupContextValuePO.getObservedValue()).toEqual([]);
+    await expect.poll(() => lookupContextValuePO.getLookedUpValue()).toEqual([]);
+    await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual([]);
   });
 
   test('should allow setting a context value', async ({testingAppPO}) => {
@@ -50,7 +50,7 @@ test.describe('Context', () => {
     await routerOutletContextPO.close();
 
     const lookupContextValuePO = pagePOs.get<LookupContextValuePagePO>('context');
-    await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value');
+    await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value');
   });
 
   test('should allow setting a context key name containing forward slashes', async ({testingAppPO}) => {
@@ -64,7 +64,7 @@ test.describe('Context', () => {
     await routerOutletContextPO.close();
 
     const lookupContextValuePO = pagePOs.get<LookupContextValuePagePO>('context');
-    await expect(await lookupContextValuePO.lookupValue('a/b/c')).toEqual('value');
+    await expect.poll(() => lookupContextValuePO.lookupValue('a/b/c')).toEqual('value');
   });
 
   test('should allow setting a context key name starting with a colon', async ({testingAppPO}) => {
@@ -78,7 +78,7 @@ test.describe('Context', () => {
     await routerOutletContextPO.close();
 
     const lookupContextValuePO = pagePOs.get<LookupContextValuePagePO>('context');
-    await expect(await lookupContextValuePO.lookupValue(':key')).toEqual('value');
+    await expect.poll(() => lookupContextValuePO.lookupValue(':key')).toEqual('value');
   });
 
   test('should allow removing a context value', async ({testingAppPO}) => {
@@ -92,13 +92,13 @@ test.describe('Context', () => {
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value');
     });
     await test.step('removing context value [key=value] from outlet "context"', async () => {
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.removeContextValue('key');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toBeNull();
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toBeNull();
     });
   });
 
@@ -116,15 +116,15 @@ test.describe('Context', () => {
       await lookupContextValuePO.enterKey('key');
       await lookupContextValuePO.clickSubscribe();
 
-      await expect(await lookupContextValuePO.getLookedUpValue()).toEqual('value-1');
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual('value-1');
+      await expect.poll(() => lookupContextValuePO.getLookedUpValue()).toEqual('value-1');
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual('value-1');
     });
     await test.step('updating context value [key=value-2] of outlet "context"', async () => {
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getLookedUpValue()).toEqual('value-1');
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual('value-2');
+      await expect.poll(() => lookupContextValuePO.getLookedUpValue()).toEqual('value-1');
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual('value-2');
     });
   });
 
@@ -140,8 +140,8 @@ test.describe('Context', () => {
     await routerOutletContextPO.close();
 
     const lookupContextValuePO = pagePOs.get<LookupContextValuePagePO>('context');
-    await expect(await lookupContextValuePO.lookupValue('key1')).toEqual('value1');
-    await expect(await lookupContextValuePO.lookupValue('key2')).toEqual('value2');
+    await expect.poll(() => lookupContextValuePO.lookupValue('key1')).toEqual('value1');
+    await expect.poll(() => lookupContextValuePO.lookupValue('key2')).toEqual('value2');
   });
 
   test('should allow observing a context value', async ({testingAppPO}) => {
@@ -158,35 +158,35 @@ test.describe('Context', () => {
     const lookupContextValuePO = pagePOs.get<LookupContextValuePagePO>('context');
     await lookupContextValuePO.enterKey('key');
     await lookupContextValuePO.clickSubscribe();
-    await expect(await lookupContextValuePO.getObservedValue()).toBeNull();
+    await expect.poll(() => lookupContextValuePO.getObservedValue()).toBeNull();
 
     await test.step('adding context value [key=value-1] to outlet "outlet1"', async () => {
       const outlet1BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet1');
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-1');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual('value-1');
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual('value-1');
     });
     await test.step('adding context value [key=value-2] to outlet "outlet2"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual('value-2');
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual('value-2');
     });
     await test.step('adding context value [key=value-3] to outlet "outlet3"', async () => {
       const outlet3BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet3');
       const routerOutletContextPO = await outlet3BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-3');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual('value-3');
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual('value-3');
     });
     await test.step('adding context value [key=value-4] to outlet "context"', async () => {
       const contextBrowserOutletPO = pagePOs.get<BrowserOutletPO>('context:outlet');
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-4');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual('value-4');
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual('value-4');
     });
   });
 
@@ -202,35 +202,35 @@ test.describe('Context', () => {
     });
 
     const lookupContextValuePO = pagePOs.get<LookupContextValuePagePO>('context');
-    await expect(await lookupContextValuePO.lookupValue('key')).toBeNull();
+    await expect.poll(() => lookupContextValuePO.lookupValue('key')).toBeNull();
 
     await test.step('adding context value [key=value-1] to outlet "outlet1"', async () => {
       const outlet1BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet1');
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-1');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-1');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-1');
     });
     await test.step('adding context value [key=value-2] to outlet "outlet2"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-2');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-2');
     });
     await test.step('adding context value [key=value-3] to outlet "outlet3"', async () => {
       const outlet3BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet3');
       const routerOutletContextPO = await outlet3BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-3');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-3');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-3');
     });
     await test.step('adding context value [key=value-4] to outlet "context"', async () => {
       const contextBrowserOutletPO = pagePOs.get<BrowserOutletPO>('context:outlet');
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-4');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-4');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-4');
     });
   });
 
@@ -252,7 +252,7 @@ test.describe('Context', () => {
       await routerOutletContextPO.addContextValue('key', 'value-1');
       await routerOutletContextPO.addContextValue('outlet-1-key', 'outlet-1-value');
       await routerOutletContextPO.close();
-      await expect(await contextPagePO.getContext()).toEqual(expect.objectContaining({
+      await expect.poll(() => contextPagePO.getContext()).toEqual(expect.objectContaining({
         'key': 'value-1',
         'outlet-1-key': 'outlet-1-value',
       }));
@@ -263,7 +263,7 @@ test.describe('Context', () => {
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.addContextValue('outlet-2-key', 'outlet-2-value');
       await routerOutletContextPO.close();
-      await expect(await contextPagePO.getContext()).toEqual(expect.objectContaining({
+      await expect.poll(() => contextPagePO.getContext()).toEqual(expect.objectContaining({
         'key': 'value-2',
         'outlet-1-key': 'outlet-1-value',
         'outlet-2-key': 'outlet-2-value',
@@ -275,7 +275,7 @@ test.describe('Context', () => {
       await routerOutletContextPO.addContextValue('key', 'value-3');
       await routerOutletContextPO.addContextValue('outlet-3-key', 'outlet-3-value');
       await routerOutletContextPO.close();
-      await expect(await contextPagePO.getContext()).toEqual(expect.objectContaining({
+      await expect.poll(() => contextPagePO.getContext()).toEqual(expect.objectContaining({
         'key': 'value-3',
         'outlet-1-key': 'outlet-1-value',
         'outlet-2-key': 'outlet-2-value',
@@ -300,10 +300,10 @@ test.describe('Context', () => {
     await routerOutletContextPO.close();
 
     const lookupContextValueOutlet3PO = pagePOs.get<LookupContextValuePagePO>('outlet3');
-    await expect(await lookupContextValueOutlet3PO.lookupValue('key')).toEqual('root-value');
+    await expect.poll(() => lookupContextValueOutlet3PO.lookupValue('key')).toEqual('root-value');
 
     const lookupContextValueOutlet4PO = pagePOs.get<LookupContextValuePagePO>('outlet4');
-    await expect(await lookupContextValueOutlet4PO.lookupValue('key')).toEqual('root-value');
+    await expect.poll(() => lookupContextValueOutlet4PO.lookupValue('key')).toEqual('root-value');
   });
 
   test('should allow overriding context values', async ({testingAppPO}) => {
@@ -321,21 +321,21 @@ test.describe('Context', () => {
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-1');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-1');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-1');
     });
     await test.step('adding context value [key=value-2] to outlet "outlet2"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-2');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-2');
     });
     await test.step('adding context value [key=value-3] to outlet "context"', async () => {
       const contextBrowserOutletPO = pagePOs.get<BrowserOutletPO>('context:outlet');
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-3');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-3');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-3');
     });
   });
 
@@ -357,21 +357,21 @@ test.describe('Context', () => {
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-1');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['value-1']);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['value-1']);
     });
     await test.step('adding context value [key=value-2] to outlet "outlet2"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['value-1', 'value-2']);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['value-1', 'value-2']);
     });
     await test.step('adding context value [key=value-3] to outlet "outlet1"', async () => {
       const outlet1BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet1');
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-3');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['value-1', 'value-2', 'value-3']);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['value-1', 'value-2', 'value-3']);
     });
   });
 
@@ -396,21 +396,21 @@ test.describe('Context', () => {
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-1');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual(['value-1']);
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual(['value-1']);
     });
     await test.step('adding context value [key=value-2] to outlet "outlet2"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual(['value-1', 'value-2']);
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual(['value-1', 'value-2']);
     });
     await test.step('adding context value [key=value-3] to outlet "outlet1"', async () => {
       const outlet1BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet1');
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-3');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual(['value-1', 'value-2', 'value-3']);
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual(['value-1', 'value-2', 'value-3']);
     });
   });
 
@@ -432,21 +432,21 @@ test.describe('Context', () => {
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', '');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['']);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['']);
     });
     await test.step('adding context value [key=value-2] to outlet "outlet2"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['', 'value-2']);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['', 'value-2']);
     });
     await test.step('adding context value [key=value-3] to outlet "outlet1"', async () => {
       const outlet1BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet1');
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-3');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['', 'value-2', 'value-3']);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['', 'value-2', 'value-3']);
     });
   });
 
@@ -468,21 +468,21 @@ test.describe('Context', () => {
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', null);
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual([null]);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual([null]);
     });
     await test.step('adding context value [key=value-2] to outlet "outlet2"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual([null, 'value-2']);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual([null, 'value-2']);
     });
     await test.step('adding context value [key=value-3] to outlet "outlet1"', async () => {
       const outlet1BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet1');
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-3');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual([null, 'value-2', 'value-3']);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual([null, 'value-2', 'value-3']);
     });
   });
 
@@ -501,8 +501,8 @@ test.describe('Context', () => {
     await lookupContextValuePO.enterKey('key');
     await lookupContextValuePO.clickSubscribe();
 
-    await expect(await lookupContextValuePO.getLookedUpValue()).toBeNull();
-    await expect(await lookupContextValuePO.getObservedValue()).toBeNull();
+    await expect.poll(() => lookupContextValuePO.getLookedUpValue()).toBeNull();
+    await expect.poll(() => lookupContextValuePO.getObservedValue()).toBeNull();
   });
 
   test('should return an empty array when collecting values but if no value is associated anywhere in the context hierarchy', async ({testingAppPO}) => {
@@ -521,8 +521,8 @@ test.describe('Context', () => {
     await lookupContextValuePO.toggleCollectValues(true);
     await lookupContextValuePO.clickSubscribe();
 
-    await expect(await lookupContextValuePO.getLookedUpValue()).toEqual([]);
-    await expect(await lookupContextValuePO.getObservedValue()).toEqual([]);
+    await expect.poll(() => lookupContextValuePO.getLookedUpValue()).toEqual([]);
+    await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual([]);
   });
 
   test('should ignore `undefined` context values when collecting', async ({testingAppPO}) => {
@@ -543,21 +543,21 @@ test.describe('Context', () => {
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', undefined);
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual([]);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual([]);
     });
     await test.step('adding context value [key=value-2] to outlet "outlet2"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['value-2']);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['value-2']);
     });
     await test.step('adding context value [key=value-3] to outlet "outlet1"', async () => {
       const outlet1BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet1');
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-3');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['value-2', 'value-3']);
+      await expect.poll(() => lookupContextValuePO.lookupValue('key', {collect: true})).toEqual(['value-2', 'value-3']);
     });
   });
 
@@ -577,42 +577,42 @@ test.describe('Context', () => {
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-1');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-1');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-1');
     });
     await test.step('adding context value [key=value-2] to outlet "outlet2"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-2');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-2');
     });
     await test.step('adding context value [key=value-3] to outlet "context"', async () => {
       const contextBrowserOutletPO = pagePOs.get<BrowserOutletPO>('context:outlet');
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-3');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-3');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-3');
     });
     await test.step('removing context value [key=value-3] from outlet "context"', async () => {
       const contextBrowserOutletPO = pagePOs.get<BrowserOutletPO>('context:outlet');
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.removeContextValue('key');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-2');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-2');
     });
     await test.step('removing context value [key=value-2] from outlet "outlet2"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.removeContextValue('key');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toEqual('value-1');
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toEqual('value-1');
     });
     await test.step('removing context value [key=value-1] from outlet "outlet1"', async () => {
       const outlet1BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet1');
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.removeContextValue('key');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.lookupValue('key')).toBeNull();
+      await expect.poll(() => lookupContextValuePO.lookupValue('key')).toBeNull();
     });
   });
 
@@ -634,42 +634,42 @@ test.describe('Context', () => {
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-1');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual('value-1');
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual('value-1');
     });
     await test.step('adding context value [key=value-2] to outlet "outlet2"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-2');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual('value-2');
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual('value-2');
     });
     await test.step('adding context value [key=value-3] to outlet "context"', async () => {
       const contextBrowserOutletPO = pagePOs.get<BrowserOutletPO>('context:outlet');
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.addContextValue('key', 'value-3');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual('value-3');
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual('value-3');
     });
     await test.step('removing context value [key=value-3] from outlet "context"', async () => {
       const contextBrowserOutletPO = pagePOs.get<BrowserOutletPO>('context:outlet');
       const routerOutletContextPO = await contextBrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.removeContextValue('key');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual('value-2');
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual('value-2');
     });
     await test.step('removing context value [key=value-2] from outlet "outlet"', async () => {
       const outlet2BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet2');
       const routerOutletContextPO = await outlet2BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.removeContextValue('key');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toEqual('value-1');
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toEqual('value-1');
     });
     await test.step('removing context value [key=value-1] from outlet "outlet1"', async () => {
       const outlet1BrowserOutletPO = pagePOs.get<BrowserOutletPO>('outlet1');
       const routerOutletContextPO = await outlet1BrowserOutletPO.openRouterOutletContext();
       await routerOutletContextPO.removeContextValue('key');
       await routerOutletContextPO.close();
-      await expect(await lookupContextValuePO.getObservedValue()).toBeNull();
+      await expect.poll(() => lookupContextValuePO.getObservedValue()).toBeNull();
     });
   });
 
@@ -693,12 +693,11 @@ test.describe('Context', () => {
     });
 
     const lookupContextValueOutlet1PO = pagePOs.get<LookupContextValuePagePO>('outlet1');
-    await expect(await lookupContextValueOutlet1PO.lookupValue('key1')).toEqual('value1');
-    await expect(await lookupContextValueOutlet1PO.lookupValue('key2')).toBeNull();
+    await expect.poll(() => lookupContextValueOutlet1PO.lookupValue('key1')).toEqual('value1');
+    await expect.poll(() => lookupContextValueOutlet1PO.lookupValue('key2')).toBeNull();
 
     const lookupContextValueOutlet2PO = pagePOs.get<LookupContextValuePagePO>('outlet2');
-    await expect(await lookupContextValueOutlet2PO.lookupValue('key1')).toBeNull();
-    await expect(await lookupContextValueOutlet2PO.lookupValue('key2')).toEqual('value2');
+    await expect.poll(() => lookupContextValueOutlet2PO.lookupValue('key1')).toBeNull();
+    await expect.poll(() => lookupContextValueOutlet2PO.lookupValue('key2')).toEqual('value2');
   });
 });
-

@@ -33,8 +33,8 @@ test.describe('Angular Change Detection', () => {
 
     // Make outlet the active outlet.
     await activeOutlet.clickCenter();
-    await expect(await activeOutlet.hasFocus()).toBe(true);
-    await expect(await inactiveOutlet.hasFocus()).toBe(false);
+    await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+    await expect.poll(() => inactiveOutlet.hasFocus()).toBe(false);
 
     // Clear change detection log.
     await activeOutlet.clearChangeDetectionLog();
@@ -48,8 +48,8 @@ test.describe('Angular Change Detection', () => {
     await activeOutlet.moveMouseToCenter({y: -2});
 
     // Expect no change detection cycles to be triggered.
-    await expect(await activeOutlet.getChangeDetectionLog()).toEqual([]);
-    await expect(await inactiveOutlet.getChangeDetectionLog()).toEqual([]);
+    await expect.poll(() => activeOutlet.getChangeDetectionLog()).toEqual([]);
+    await expect.poll(() => inactiveOutlet.getChangeDetectionLog()).toEqual([]);
   });
 
   test('should not trigger Angular change detection when moving the mouse in the inactive outlet', async ({testingAppPO}) => {
@@ -63,8 +63,8 @@ test.describe('Angular Change Detection', () => {
 
     // Make outlet the active outlet.
     await activeOutlet.clickCenter();
-    await expect(await activeOutlet.hasFocus()).toBe(true);
-    await expect(await inactiveOutlet.hasFocus()).toBe(false);
+    await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+    await expect.poll(() => inactiveOutlet.hasFocus()).toBe(false);
 
     // Clear change detection log.
     await activeOutlet.clearChangeDetectionLog();
@@ -78,8 +78,8 @@ test.describe('Angular Change Detection', () => {
     await inactiveOutlet.moveMouseToCenter({y: -2});
 
     // Expect no change detection cycles to be triggered.
-    await expect(await activeOutlet.getChangeDetectionLog()).toEqual([]);
-    await expect(await inactiveOutlet.getChangeDetectionLog()).toEqual([]);
+    await expect.poll(() => activeOutlet.getChangeDetectionLog()).toEqual([]);
+    await expect.poll(() => inactiveOutlet.getChangeDetectionLog()).toEqual([]);
   });
 
   test('should not trigger Angular change detection when moving the mouse with the mouse button pressed in the active and inactive outlet', async ({testingAppPO}) => {
@@ -93,8 +93,8 @@ test.describe('Angular Change Detection', () => {
 
     // Make outlet the active outlet.
     await activeOutlet.clickCenter();
-    await expect(await activeOutlet.hasFocus()).toBe(true);
-    await expect(await inactiveOutlet.hasFocus()).toBe(false);
+    await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+    await expect.poll(() => inactiveOutlet.hasFocus()).toBe(false);
 
     // Clear change detection log.
     await activeOutlet.clearChangeDetectionLog();
@@ -123,8 +123,8 @@ test.describe('Angular Change Detection', () => {
       await inactiveOutlet.mouseUp();
 
       // Expect no change detection cycles to be triggered.
-      await expect(await activeOutlet.getChangeDetectionLog()).toEqual([]);
-      await expect(await inactiveOutlet.getChangeDetectionLog()).toEqual([]);
+      await expect.poll(() => activeOutlet.getChangeDetectionLog()).toEqual([]);
+      await expect.poll(() => inactiveOutlet.getChangeDetectionLog()).toEqual([]);
     });
 
     await test.step('mousedown.preventDefault=false', async () => {
@@ -150,8 +150,8 @@ test.describe('Angular Change Detection', () => {
       await inactiveOutlet.mouseUp();
 
       // Expect no change detection cycles to be triggered.
-      await expect(await activeOutlet.getChangeDetectionLog()).toEqual([]);
-      await expect(await inactiveOutlet.getChangeDetectionLog()).toEqual([]);
+      await expect.poll(() => activeOutlet.getChangeDetectionLog()).toEqual([]);
+      await expect.poll(() => inactiveOutlet.getChangeDetectionLog()).toEqual([]);
     });
   });
 
@@ -166,8 +166,8 @@ test.describe('Angular Change Detection', () => {
 
     // Make outlet the active outlet.
     await activeOutlet.clickCenter();
-    await expect(await activeOutlet.hasFocus()).toBe(true);
-    await expect(await inactiveOutlet.hasFocus()).toBe(false);
+    await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+    await expect.poll(() => inactiveOutlet.hasFocus()).toBe(false);
 
     // Clear change detection log.
     await activeOutlet.clearChangeDetectionLog();
@@ -177,8 +177,8 @@ test.describe('Angular Change Detection', () => {
     await activeOutlet.clickCenter();
 
     // Expect no change detection cycles to be triggered.
-    await expect(await activeOutlet.getChangeDetectionLog()).toEqual([]);
-    await expect(await inactiveOutlet.getChangeDetectionLog()).toEqual([]);
+    await expect.poll(() => activeOutlet.getChangeDetectionLog()).toEqual([]);
+    await expect.poll(() => inactiveOutlet.getChangeDetectionLog()).toEqual([]);
   });
 
   test('should not trigger Angular change detection when typing in the active outlet', async ({testingAppPO}) => {
@@ -192,8 +192,8 @@ test.describe('Angular Change Detection', () => {
 
     // Make outlet the active outlet.
     await activeOutlet.clickCenter();
-    await expect(await activeOutlet.hasFocus()).toBe(true);
-    await expect(await inactiveOutlet.hasFocus()).toBe(false);
+    await expect.poll(() => activeOutlet.hasFocus()).toBe(true);
+    await expect.poll(() => inactiveOutlet.hasFocus()).toBe(false);
 
     // Clear change detection log.
     await activeOutlet.clearChangeDetectionLog();
@@ -203,7 +203,7 @@ test.describe('Angular Change Detection', () => {
     await activeOutlet.type('TEST');
 
     // Expect no change detection cycles to be triggered.
-    await expect(await activeOutlet.getChangeDetectionLog()).toEqual(['TEST']);
-    await expect(await inactiveOutlet.getChangeDetectionLog()).toEqual([]);
+    await expect.poll(() => activeOutlet.getChangeDetectionLog()).toEqual(['TEST']);
+    await expect.poll(() => inactiveOutlet.getChangeDetectionLog()).toEqual([]);
   });
 });

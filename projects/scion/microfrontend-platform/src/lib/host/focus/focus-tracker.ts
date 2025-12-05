@@ -41,11 +41,11 @@ export class FocusTracker implements PreDestroy {
   private monitorFocusInEvents(): Subscription {
     return Beans.get(MessageClient).observe$<void>(PlatformTopics.FocusIn)
       .pipe(
-        map(event => event.headers.get(MessageHeaders.ClientId)),
+        map(event => event.headers.get(MessageHeaders.ClientId) as string),
         distinctUntilChanged(),
       )
       .subscribe(clientId => runSafe(() => {
-        this._focusOwner$.next(Beans.get(ClientRegistry).getByClientId(clientId) || undefined);
+        this._focusOwner$.next(Beans.get(ClientRegistry).getByClientId(clientId) ?? undefined);
       }));
   }
 
@@ -54,7 +54,7 @@ export class FocusTracker implements PreDestroy {
    */
   private replyToIsFocusWithinRequests(): Subscription {
     return Beans.get(MessageClient).onMessage<void, boolean>(PlatformTopics.IsFocusWithin, request => {
-      const clientId = request.headers.get(MessageHeaders.ClientId);
+      const clientId = request.headers.get(MessageHeaders.ClientId) as string;
       return this._focusOwner$
         .pipe(
           map(focusOwner => this.isFocusWithin(clientId, focusOwner)),

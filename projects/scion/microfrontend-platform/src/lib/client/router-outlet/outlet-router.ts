@@ -13,7 +13,7 @@ import {ContextService} from '../context/context-service';
 import {Urls} from '../../url.util';
 import {RelativePathResolver} from './relative-path-resolver';
 import {Maps} from '@scion/toolkit/util';
-import {SHOW_SPLASH_MESSAGE_HEADER, NavigationOptions, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, CAPABILITY_ID_MESSAGE_HEADER} from './metadata';
+import {CAPABILITY_ID_MESSAGE_HEADER, NavigationOptions, PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, SHOW_SPLASH_MESSAGE_HEADER} from './metadata';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Intent, mapToBody, RequestError} from '../../messaging.model';
 import {lastValueFrom} from 'rxjs';
@@ -186,7 +186,7 @@ export class OutletRouter {
 
   public async navigate(target: string | Qualifier | null, options?: NavigationOptions): Promise<void> {
     if (!target || typeof target === 'string') {
-      await this.navigateByUrl(target as string, options);
+      await this.navigateByUrl(target, options);
     }
     else {
       await this.navigateByIntent(target, options);
@@ -197,7 +197,7 @@ export class OutletRouter {
    * Navigates to specified URL.
    */
   private async navigateByUrl(url: string | null, options?: NavigationOptions): Promise<void> {
-    const outlet = options?.outlet || await this.resolveContextualOutlet() || PRIMARY_OUTLET;
+    const outlet = options?.outlet ?? await this.resolveContextualOutlet() ?? PRIMARY_OUTLET;
     const outletUrlTopic = RouterOutlets.urlTopic(outlet);
     const navigationUrl = this.computeNavigationUrl(url, options);
 
@@ -270,10 +270,10 @@ export class OutletRouter {
    * /segment/segment;matrixParam1=:param1;matrixParam2=:param2 // matrix params
    * /segment/segment?queryParam1=:param1&queryParam2=:param2 // query params
    */
-  private substituteNamedParameters(path: string, params: Map<string, any>): string {
+  private substituteNamedParameters(path: string, params: Map<string, unknown>): string {
     return path
       // 1. Replace named params contained in the params map.
-      .replace(/:([^/;&?#]+)/g, (match, paramName) => params.get(paramName) !== undefined ? params.get(paramName) : match)
+      .replace(/:([^/;&?#]+)/g, (match: string, paramName: string) => params.get(paramName) !== undefined ? params.get(paramName) as string : match)
       // 2. Remove named matrix params not contained in the params map.
       .replace(/(?<delimiter>;)(?<paramName>[^=]+)=:(?<placeholder>[^;#?/]+)/g, () => {
         return '';

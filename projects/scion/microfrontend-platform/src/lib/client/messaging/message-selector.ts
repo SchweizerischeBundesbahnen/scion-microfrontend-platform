@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {merge, Observable, Subject} from 'rxjs';
+import {merge, Observable, Subject, Subscriber} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {Maps} from '@scion/toolkit/util';
 
@@ -45,7 +45,7 @@ import {Maps} from '@scion/toolkit/util';
  */
 export class MessageSelector<T> {
 
-  private _selectors = new Map<string, Array<Subject<T>>>;
+  private _selectors = new Map<string, Array<Subject<T>>>();
   private _sourceError$ = new Subject<never>();
   private _sourceComplete$ = new Subject<void>();
   private _destroy$ = new Subject<void>();
@@ -74,8 +74,8 @@ export class MessageSelector<T> {
    * @param key - Specifies the key to select items.
    */
   public select$<R extends T>(key: string): Observable<R> {
-    return new Observable(observer => {
-      const selector$ = new Subject<any>();
+    return new Observable<R>((observer: Subscriber<T>) => {
+      const selector$ = new Subject<T>();
       Maps.addListValue(this._selectors, key, selector$);
       const subscription = merge(selector$, this._sourceError$)
         .pipe(takeUntil(this._sourceComplete$))

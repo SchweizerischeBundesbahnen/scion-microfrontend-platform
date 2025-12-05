@@ -34,17 +34,17 @@ export default class AngularZoneTestPageComponent {
 
   public tests = {
     messageClient: {
-      observe: new TestCaseModel(model => this.testMessageClientObserve(model)),
+      observe: new TestCaseModel(model => void this.testMessageClientObserve(model)),
       request: new TestCaseModel(model => this.testMessageClientRequest(model)),
       subscriberCount: new TestCaseModel(model => this.testMessageClientSubscriberCount(model)),
     },
     intentClient: {
-      observe: new TestCaseModel(model => this.testIntentClientObserve(model)),
-      request: new TestCaseModel(model => this.testIntentClientRequest(model)),
+      observe: new TestCaseModel(model => void this.testIntentClientObserve(model)),
+      request: new TestCaseModel(model => void this.testIntentClientRequest(model)),
     },
     contextService: {
-      observe: new TestCaseModel(model => this.testContextServiceObserve(model)),
-      names: new TestCaseModel(model => this.testContextServiceNames(model)),
+      observe: new TestCaseModel(model => void this.testContextServiceObserve(model)),
+      names: new TestCaseModel(model => void this.testContextServiceNames(model)),
     },
     manifestService: {
       lookupCapabilities: new TestCaseModel(model => this.testManifestServiceLookupCapabilities(model)),
@@ -80,7 +80,7 @@ export default class AngularZoneTestPageComponent {
     Beans.get(MessageClient).observe$(topic)
       .pipe((take(1)))
       .subscribe(request => {
-        Beans.get(MessageClient).publish(request.headers.get(MessageHeaders.ReplyTo));
+        void Beans.get(MessageClient).publish(request.headers.get(MessageHeaders.ReplyTo) as string);
       });
   }
 
@@ -103,7 +103,7 @@ export default class AngularZoneTestPageComponent {
     Beans.get(IntentClient).observe$({type})
       .pipe(
         take(1),
-        finalize(() => Beans.get(ManifestService).unregisterCapabilities({type})),
+        finalize(() => void Beans.get(ManifestService).unregisterCapabilities({type})),
       )
       .subscribe(() => model.addEmission('Received intent'));
   }
@@ -118,15 +118,15 @@ export default class AngularZoneTestPageComponent {
     Beans.get(IntentClient).request$({type}, undefined, {retain: true})
       .pipe(
         take(1),
-        finalize(() => Beans.get(ManifestService).unregisterCapabilities({type})),
+        finalize(() => void Beans.get(ManifestService).unregisterCapabilities({type})),
       )
       .subscribe(() => model.addEmission('Received response'));
 
     // Install replier.
-    await Beans.get(IntentClient).observe$({type})
+    Beans.get(IntentClient).observe$({type})
       .pipe((take(1)))
       .subscribe(request => {
-        Beans.get(MessageClient).publish(request.headers.get(MessageHeaders.ReplyTo));
+        void Beans.get(MessageClient).publish(request.headers.get(MessageHeaders.ReplyTo) as string);
       });
   }
 
@@ -141,7 +141,7 @@ export default class AngularZoneTestPageComponent {
         model.addEmission('Received context value');
 
         // Trigger context value update.
-        Beans.get(MessageClient).publish(TestingAppTopics.routerOutletContextUpdateTopic(outletContext.name, contextKey), `value-${UUID.randomUUID()}`);
+        void Beans.get(MessageClient).publish(TestingAppTopics.routerOutletContextUpdateTopic(outletContext.name, contextKey), `value-${UUID.randomUUID()}`);
       });
   }
 
@@ -155,7 +155,7 @@ export default class AngularZoneTestPageComponent {
         model.addEmission('Received context names');
 
         // Trigger context value update.
-        Beans.get(MessageClient).publish(TestingAppTopics.routerOutletContextUpdateTopic(outletContext.name, UUID.randomUUID()), `value-${UUID.randomUUID()}`);
+        void Beans.get(MessageClient).publish(TestingAppTopics.routerOutletContextUpdateTopic(outletContext.name, UUID.randomUUID()), `value-${UUID.randomUUID()}`);
       });
   }
 

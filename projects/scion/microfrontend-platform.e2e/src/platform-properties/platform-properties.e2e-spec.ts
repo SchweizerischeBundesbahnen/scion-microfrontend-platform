@@ -25,9 +25,9 @@ test.describe('PlatformProperties', () => {
     }, {queryParams: platformProperties});
 
     const microfrontend1PO = pagePOs.get<PlatformPropertiesPagePO>('microfrontend1');
-    await expect(await microfrontend1PO.getPlatformProperties()).toEqual(expect.objectContaining({'property1': 'value1', 'property2': 'value2'}));
+    await expect.poll(() => microfrontend1PO.getPlatformProperties()).toEqual(expect.objectContaining({'property1': 'value1', 'property2': 'value2'}));
 
     const microfrontend2PO = pagePOs.get<PlatformPropertiesPagePO>('microfrontend2');
-    await expect(await microfrontend2PO.getPlatformProperties()).toEqual(expect.objectContaining({'property1': 'value1', 'property2': 'value2'}));
+    await expect.poll(() => microfrontend2PO.getPlatformProperties()).toEqual(expect.objectContaining({'property1': 'value1', 'property2': 'value2'}));
   });
 });

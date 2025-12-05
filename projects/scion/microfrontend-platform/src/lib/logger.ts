@@ -24,22 +24,22 @@ export abstract class Logger {
   /**
    * Logs with severity debug.
    */
-  public abstract debug(message?: any, ...args: any[]): void;
+  public abstract debug(message?: unknown, ...args: unknown[]): void;
 
   /**
    * Logs with severity info.
    */
-  public abstract info(message?: any, ...args: any[]): void;
+  public abstract info(message?: unknown, ...args: unknown[]): void;
 
   /**
    * Logs with severity warn.
    */
-  public abstract warn(message?: any, ...args: any[]): void;
+  public abstract warn(message?: unknown, ...args: unknown[]): void;
 
   /**
    * Logs with severity error.
    */
-  public abstract error(message?: any, ...args: any[]): void;
+  public abstract error(message?: unknown, ...args: unknown[]): void;
 }
 
 /**
@@ -51,32 +51,32 @@ export abstract class Logger {
  */
 export class ConsoleLogger implements Logger {
 
-  public debug(message?: any, ...args: any[]): void {
+  public debug(message?: unknown, ...args: unknown[]): void {
     this.log('debug', message, args);
   }
 
-  public info(message?: any, ...args: any[]): void {
+  public info(message?: unknown, ...args: unknown[]): void {
     this.log('info', message, args);
   }
 
-  public warn(message?: any, ...args: any[]): void {
+  public warn(message?: unknown, ...args: unknown[]): void {
     this.log('warn', message, args);
   }
 
-  public error(message?: any, ...args: any[]): void {
+  public error(message?: unknown, ...args: unknown[]): void {
     this.log('error', message, args);
   }
 
-  private log(severity: 'debug' | 'info' | 'warn' | 'error', message: any, args: any[]): void {
-    const loggingContext: LoggingContext = args[0] instanceof LoggingContext ? args.shift() : {appSymbolicName: Beans.get(APP_IDENTITY), version: Beans.get(ɵVERSION)};
+  private log(severity: 'debug' | 'info' | 'warn' | 'error', message: unknown, args: unknown[]): void {
+    const loggingContext = (args[0] instanceof LoggingContext ? args.shift() : {appSymbolicName: Beans.get(APP_IDENTITY), version: Beans.get(ɵVERSION)}) as LoggingContext;
     const prefix = new Array<string>()
       .concat(loggingContext.version ? `[@scion/microfrontend-platform@${loggingContext.version}]` : '[@scion/microfrontend-platform]')
       .concat(`[${loggingContext.appSymbolicName}]`)
       .join('');
 
-    if (console && typeof console[severity] === 'function') {
+    if (console && typeof console[severity] === 'function') { // eslint-disable-line @typescript-eslint/no-unnecessary-condition
       const consoleFn = console[severity];
-      args?.length ? consoleFn(`${prefix} ${message}`, ...args) : consoleFn(`${prefix} ${message}`);
+      args?.length ? consoleFn(`${prefix} ${message}`, ...args) : consoleFn(`${prefix} ${message}`); // eslint-disable-line @typescript-eslint/no-unnecessary-condition
     }
   }
 }
@@ -88,22 +88,22 @@ export class ConsoleLogger implements Logger {
  */
 export const NULL_LOGGER = new class extends Logger {
 
-  public debug(message?: any, ...args: any[]): void {
+  public debug(message?: unknown, ...args: unknown[]): void {
     // NOOP
   }
 
-  public info(message?: any, ...args: any[]): void {
+  public info(message?: unknown, ...args: unknown[]): void {
     // NOOP
   }
 
-  public warn(message?: any, ...args: any[]): void {
+  public warn(message?: unknown, ...args: unknown[]): void {
     // NOOP
   }
 
-  public error(message?: any, ...args: any[]): void {
+  public error(message?: unknown, ...args: unknown[]): void {
     // NOOP
   }
-};
+}();
 
 /**
  * Contextual information to add to the log message.

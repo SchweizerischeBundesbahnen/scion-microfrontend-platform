@@ -24,7 +24,7 @@ import {BrokerGateway, NullBrokerGateway} from './client/messaging/broker-gatewa
  */
 export class PlatformPropertyService implements Initializer {
 
-  private _properties = new Map<string, any>();
+  private _properties = new Map<string, unknown>();
 
   public async init(): Promise<void> {
     const messagingDisabled = Beans.get(BrokerGateway) instanceof NullBrokerGateway;
@@ -51,7 +51,7 @@ export class PlatformPropertyService implements Initializer {
    */
   public get<T>(key: string, defaultValue?: T): T {
     if (this._properties.has(key)) {
-      return this._properties.get(key);
+      return this._properties.get(key) as T;
     }
     if (defaultValue !== undefined) {
       return defaultValue;
@@ -62,7 +62,7 @@ export class PlatformPropertyService implements Initializer {
   /**
    * Returns the properties map.
    */
-  public properties(): Map<string, any> {
+  public properties(): Map<string, unknown> {
     return this._properties;
   }
 }

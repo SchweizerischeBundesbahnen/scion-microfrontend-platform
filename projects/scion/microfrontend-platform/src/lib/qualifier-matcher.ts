@@ -26,7 +26,7 @@ export class QualifierMatcher {
    * @param pattern - Pattern to match qualifiers. If `null` or `undefined`, uses an empty qualifier pattern.
    */
   constructor(pattern: Qualifier | null | undefined) {
-    this._pattern = pattern || {};
+    this._pattern = pattern ?? {};
     this._patternKeys = Object.keys(this._pattern);
   }
 
@@ -34,7 +34,7 @@ export class QualifierMatcher {
    * Attempts to match the given qualifier against the pattern which was passed to the constructor.
    */
   public matches(qualifier: Qualifier | null | undefined): boolean {
-    const testee = qualifier || {};
+    const testee = qualifier ?? {};
     const testeeKeys = Object.keys(testee);
     const {_patternKeys: patternKeys, _pattern: pattern} = this;
 
@@ -49,7 +49,7 @@ export class QualifierMatcher {
         if (pattern[key] === testee[key]) {
           return true;
         }
-        if (pattern[key] === '*' && testee[key] !== undefined && testee[key] !== null) {
+        if (pattern[key] === '*' && !!testee[key]) {
           return true;
         }
         return false;

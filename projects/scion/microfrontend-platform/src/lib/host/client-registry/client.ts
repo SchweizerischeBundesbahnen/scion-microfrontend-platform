@@ -61,7 +61,7 @@ export interface Client {
  *
  * @internal
  */
-export const CLIENT_PING_INTERVAL = /*@__PURE__*/Symbol('CLIENT_PING_INTERVAL');
+export const CLIENT_PING_INTERVAL = /* @__PURE__ */Symbol('CLIENT_PING_INTERVAL');
 
 /**
  * Specifies the ping timeout (in milliseconds) for unregistering a client.
@@ -72,4 +72,4 @@ export const CLIENT_PING_INTERVAL = /*@__PURE__*/Symbol('CLIENT_PING_INTERVAL');
  *
  * @internal
  */
-export const CLIENT_PING_TIMEOUT = /*@__PURE__*/Symbol('CLIENT_PING_TIMEOUT');
+export const CLIENT_PING_TIMEOUT = /* @__PURE__ */Symbol('CLIENT_PING_TIMEOUT');

@@ -38,7 +38,7 @@ export class ɵMicrofrontendPlatformStopper implements MicrofrontendPlatformStop
         takeUntil(this._destroy$),
       )
       .subscribe(() => {
-        MicrofrontendPlatform.destroy();
+        void MicrofrontendPlatform.destroy();
       });
   }
 

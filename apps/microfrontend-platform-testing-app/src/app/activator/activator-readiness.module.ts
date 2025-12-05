@@ -44,10 +44,10 @@ export default class ActivatorReadinessModule {
     // Subscribe for ping requests.
     Beans.get(MessageClient).observe$(TestingAppTopics.ActivatorPing)
       .subscribe(pingRequest => {
-        Beans.get(MessageClient).publish(pingRequest.headers.get(MessageHeaders.ReplyTo), pingReply);
+        void Beans.get(MessageClient).publish(pingRequest.headers.get(MessageHeaders.ReplyTo) as string, pingReply);
       });
 
     // Signal the host platform that this activator is ready.
-    Beans.get(MessageClient).publish(activationContext.activator.properties.readinessTopics as string);
+    void Beans.get(MessageClient).publish(activationContext.activator.properties.readinessTopics as string);
   }
 }

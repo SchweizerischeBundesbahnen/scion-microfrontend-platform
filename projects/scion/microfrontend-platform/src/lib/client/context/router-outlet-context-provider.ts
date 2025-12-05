@@ -14,7 +14,7 @@ import {MessageEnvelope, MessagingChannel, MessagingTransport} from '../../ɵmes
 import {TopicMatcher} from '../../topic-matcher.util';
 import {MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from '../messaging/message-client';
-import {CONTEXT_LOOKUP_OPTIONS, Contexts} from './context.model';
+import {CONTEXT_LOOKUP_OPTIONS, ContextLookupOptions, Contexts} from './context.model';
 import {runSafe} from '../../safe-runner';
 import {IS_PLATFORM_HOST} from '../../platform.model';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -33,7 +33,7 @@ export class RouterOutletContextProvider {
 
   private _microfrontendRequest$: Observable<MessageEvent<MessageEnvelope<TopicMessage>>>;
 
-  private _entries$ = new BehaviorSubject<Map<string, any>>(new Map());
+  private _entries$ = new BehaviorSubject<Map<string, unknown>>(new Map());
   private _entryChange$ = new Subject<Contexts.ContextTreeChangeEvent>();
   private _outletDisconnect$ = new Subject<void>();
 
@@ -55,7 +55,7 @@ export class RouterOutletContextProvider {
    * @param value - Specifies the value to be stored. It can be any object which
    *        is serializable with the structured clone algorithm.
    */
-  public set(name: string, value: any): void {
+  public set(name: string, value: unknown): void {
     this._entries$.next(new Map(this._entries$.getValue()).set(name, value));
     this._entryChange$.next({name, value, type: 'set'});
   }
@@ -83,7 +83,7 @@ export class RouterOutletContextProvider {
    * Returns an Observable that emits the values registered in this outlet. Values inherited from parent contexts are not returned.
    * The Observable never completes, and emits when a context value is added or removed.
    */
-  public get entries$(): Observable<Map<string, any>> {
+  public get entries$(): Observable<Map<string, unknown>> {
     return this._entries$;
   }
 
@@ -110,28 +110,28 @@ export class RouterOutletContextProvider {
   private installContextValueLookupListener(): void {
     this._microfrontendRequest$
       .pipe(
-        filterByTopicChannel<any[]>(Contexts.contextValueLookupTopic(':name')),
+        filterByTopicChannel<unknown[]>(Contexts.contextValueLookupTopic(':name')),
         pluckMessage(),
         takeUntil(this._outletDisconnect$),
       )
-      .subscribe((lookupRequest: TopicMessage<any[]>) => runSafe(() => {
+      .subscribe((lookupRequest: TopicMessage<unknown[]>) => runSafe(() => {
         const encodedName = new TopicMatcher(Contexts.contextValueLookupTopic(':name')).match(lookupRequest.topic).params!.get('name')!;
 
         // The name has to be decoded here because it was encoded in `newContextValueLookupRequest` where the topic was created.
         const name = decodeURIComponent(encodedName);
-        const replyTo = lookupRequest.headers.get(MessageHeaders.ReplyTo);
-        const options = lookupRequest.headers.get(CONTEXT_LOOKUP_OPTIONS);
+        const replyTo = lookupRequest.headers.get(MessageHeaders.ReplyTo) as string;
+        const options = lookupRequest.headers.get(CONTEXT_LOOKUP_OPTIONS) as ContextLookupOptions | undefined;
         const entries = this._entries$.getValue();
 
         if (options?.collect) {
-          const collectedValues = lookupRequest.body || [];
+          const collectedValues = lookupRequest.body ?? [];
           if (entries.has(name) && entries.get(name) !== undefined) {
             collectedValues.push(entries.get(name));
           }
 
           if (Beans.get(IS_PLATFORM_HOST)) {
             // Reply with the collected context values.
-            Beans.get(MessageClient).publish(replyTo, collectedValues, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+            void Beans.get(MessageClient).publish(replyTo, collectedValues, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
           }
           else {
             // Pass on the lookup request to the parent context.
@@ -141,11 +141,11 @@ export class RouterOutletContextProvider {
         else {
           if (entries.has(name) && entries.get(name) !== undefined) {
             // Reply with the found context value.
-            Beans.get(MessageClient).publish(replyTo, entries.get(name), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+            void Beans.get(MessageClient).publish(replyTo, entries.get(name), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
           }
           else if (Beans.get(IS_PLATFORM_HOST)) {
             // No context value found; the root of the context tree has been reached; reply with `NOT_FOUND` status code.
-            Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.NOT_FOUND)});
+            void Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.NOT_FOUND)});
           }
           else {
             // Pass on the lookup request to the parent context.
@@ -169,12 +169,12 @@ export class RouterOutletContextProvider {
         takeUntil(this._outletDisconnect$),
       )
       .subscribe((lookupRequest: TopicMessage<Set<string>>) => runSafe(() => {
-        const replyTo = lookupRequest.headers.get(MessageHeaders.ReplyTo);
+        const replyTo = lookupRequest.headers.get(MessageHeaders.ReplyTo) as string;
         const entries = this._entries$.getValue();
-        const collectedNames = new Set<string>([...entries.keys(), ...(lookupRequest.body || [])]);
+        const collectedNames = new Set<string>([...entries.keys(), ...(lookupRequest.body ?? [])]);
         if (Beans.get(IS_PLATFORM_HOST)) {
           // Answer the request when reaching the root of the context tree.
-          Beans.get(MessageClient).publish(replyTo, collectedNames, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+          void Beans.get(MessageClient).publish(replyTo, collectedNames, {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
         }
         else {
           // Pass on the lookup request to the parent context.
@@ -197,20 +197,20 @@ export class RouterOutletContextProvider {
         takeUntil(this._outletDisconnect$),
       )
       .subscribe((observeRequest: TopicMessage<void>) => runSafe(() => {
-        const replyTo = observeRequest.headers.get(MessageHeaders.ReplyTo);
+        const replyTo = observeRequest.headers.get(MessageHeaders.ReplyTo) as string;
 
         this._entryChange$
           .pipe(
             takeUntilUnsubscribe(replyTo),
             takeUntil(this._outletDisconnect$),
           )
-          .subscribe((event: Contexts.ContextTreeChangeEvent) => { // eslint-disable-line rxjs/no-nested-subscribe
-            Beans.get(MessageClient).publish<Contexts.ContextTreeChangeEvent>(replyTo, event);
+          .subscribe((event: Contexts.ContextTreeChangeEvent) => { // eslint-disable-line @smarttools/rxjs/no-nested-subscribe
+            void Beans.get(MessageClient).publish<Contexts.ContextTreeChangeEvent>(replyTo, event);
           });
 
         if (Beans.get(IS_PLATFORM_HOST)) {
           // Notify that the subscriber subscribed to the root context.
-          Beans.get(MessageClient).publish<Contexts.RootContextSubscribeEventType>(replyTo, Contexts.RootContextSubscribeEvent);
+          void Beans.get(MessageClient).publish<Contexts.RootContextSubscribeEventType>(replyTo, Contexts.RootContextSubscribeEvent);
         }
         else {
           // Pass on the registration request to the parent context.

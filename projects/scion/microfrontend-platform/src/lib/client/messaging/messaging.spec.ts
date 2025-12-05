@@ -24,8 +24,8 @@ import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 import {PublishOptions, RequestOptions} from './publish-options';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T | undefined => msg.body;
-const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<string, any> => msg.headers;
-const paramsExtractFn = <T>(msg: IntentMessage<T>): Map<string, any> | undefined => msg.intent.params;
+const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<string, unknown> => msg.headers;
+const paramsExtractFn = <T>(msg: IntentMessage<T>): Map<string, unknown> | undefined => msg.intent.params;
 const capabilityIdExtractFn = <T>(msg: IntentMessage<T>): string => msg.capability.metadata!.id;
 
 describe('Messaging', () => {
@@ -65,8 +65,8 @@ describe('Messaging', () => {
       ],
     });
 
-    const captor = new ObserveCaptor<TopicMessage, string>(msg => msg.body);
-    Beans.get(MessageClient).observe$('client/whenPlatformStateStopping').subscribe(captor);
+    const captor = new ObserveCaptor<TopicMessage<string>, string>(msg => msg.body!);
+    Beans.get(MessageClient).observe$<string>('client/whenPlatformStateStopping').subscribe(captor);
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
     await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageWhenPlatformStateStopping', {symbolicName: 'client'});
@@ -84,8 +84,8 @@ describe('Messaging', () => {
       ],
     });
 
-    const captor = new ObserveCaptor<TopicMessage, string>(msg => msg.body);
-    Beans.get(MessageClient).observe$('client/beanPreDestroy').subscribe(captor);
+    const captor = new ObserveCaptor<TopicMessage<string>, string>(msg => msg.body!);
+    Beans.get(MessageClient).observe$<string>('client/beanPreDestroy').subscribe(captor);
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
     await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageOnBeanPreDestroy', {symbolicName: 'client'});
@@ -103,8 +103,8 @@ describe('Messaging', () => {
       ],
     });
 
-    const captor = new ObserveCaptor<TopicMessage, string>(msg => msg.body);
-    Beans.get(MessageClient).observe$('client/beforeunload').subscribe(captor);
+    const captor = new ObserveCaptor<TopicMessage<string>, string>(msg => msg.body!);
+    Beans.get(MessageClient).observe$<string>('client/beforeunload').subscribe(captor);
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
     await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageInBeforeUnload', {symbolicName: 'client'});
@@ -125,8 +125,8 @@ describe('Messaging', () => {
       ],
     });
 
-    const captor = new ObserveCaptor<TopicMessage, string>(msg => msg.body);
-    Beans.get(MessageClient).observe$('client/unload').subscribe(captor);
+    const captor = new ObserveCaptor<TopicMessage<string>, string>(msg => msg.body!);
+    Beans.get(MessageClient).observe$<string>('client/unload').subscribe(captor);
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
     await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageInUnload', {symbolicName: 'client'});
@@ -186,7 +186,7 @@ describe('Messaging', () => {
   it('should dispatch a message to subscribers with a wildcard subscription', async () => {
     await MicrofrontendPlatformHost.start({applications: []});
 
-    const messageCaptor = new ObserveCaptor();
+    const messageCaptor = new ObserveCaptor<TopicMessage<string>>();
 
     // Subscribe to 'myhome/:room/temperature'
     Beans.get(MessageClient).observe$<string>('myhome/:room/temperature').subscribe(messageCaptor);
@@ -199,21 +199,21 @@ describe('Messaging', () => {
 
     await messageCaptor.waitUntilEmitCount(3);
 
-    expectMessage(messageCaptor.getValues()[0]).toMatch({
+    expectMessage(messageCaptor.getValues()[0]!).toMatch({
       topic: 'myhome/livingroom/temperature',
       body: '25°C',
       params: new Map().set('room', 'livingroom'),
       headers: new Map(),
     });
 
-    expectMessage(messageCaptor.getValues()[1]).toMatch({
+    expectMessage(messageCaptor.getValues()[1]!).toMatch({
       topic: 'myhome/livingroom/temperature',
       body: '26°C',
       params: new Map().set('room', 'livingroom'),
       headers: new Map(),
     });
 
-    expectMessage(messageCaptor.getValues()[2]).toMatch({
+    expectMessage(messageCaptor.getValues()[2]!).toMatch({
       topic: 'myhome/kitchen/temperature',
       body: '22°C',
       params: new Map().set('room', 'kitchen'),
@@ -229,7 +229,7 @@ describe('Messaging', () => {
 
     await Beans.get(MessageClient).publish('some-topic', undefined, {headers: new Map().set('header1', 'value').set('header2', 42)});
     await headerCaptor.waitUntilEmitCount(1);
-    await expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('header1', 'value').set('header2', 42)));
+    expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('header1', 'value').set('header2', 42)));
   });
 
   it('should allow passing headers when issuing an intent', async () => {
@@ -248,7 +248,7 @@ describe('Messaging', () => {
 
     await Beans.get(IntentClient).publish({type: 'some-capability'}, undefined, {headers: new Map().set('header1', 'value').set('header2', 42)});
     await headerCaptor.waitUntilEmitCount(1);
-    await expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('header1', 'value').set('header2', 42)));
+    expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('header1', 'value').set('header2', 42)));
   });
 
   it('should return an empty headers dictionary if no headers are set', async () => {
@@ -259,21 +259,22 @@ describe('Messaging', () => {
 
     await Beans.get(MessageClient).publish('some-topic', 'payload');
     await headerCaptor.waitUntilEmitCount(1);
-    await expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map()));
+    expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map()));
   });
 
   it('should allow passing headers when sending a request', async () => {
     await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$('some-topic').subscribe(msg => {
-      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set('reply-header', msg.headers.get('request-header').toUpperCase())});
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo) as string;
+      const requestHeader = msg.headers.get('request-header') as string;
+      void Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set('reply-header', requestHeader.toUpperCase())});
     });
 
     const replyHeaderCaptor = new ObserveCaptor(headersExtractFn);
     Beans.get(MessageClient).request$('some-topic', undefined, {headers: new Map().set('request-header', 'ping')}).subscribe(replyHeaderCaptor);
     await replyHeaderCaptor.waitUntilEmitCount(1);
-    await expect(replyHeaderCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('reply-header', 'PING')));
+    expect(replyHeaderCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('reply-header', 'PING')));
   });
 
   it('should allow passing headers when sending an intent request', async () => {
@@ -288,22 +289,23 @@ describe('Messaging', () => {
     });
 
     Beans.get(IntentClient).observe$().subscribe(intent => {
-      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set('reply-header', intent.headers.get('request-header').toUpperCase())});
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo) as string;
+      const requestHeader = intent.headers.get('request-header') as string;
+      void Beans.get(MessageClient).publish(replyTo, undefined, {headers: new Map().set('reply-header', requestHeader.toUpperCase())});
     });
 
     const replyHeaderCaptor = new ObserveCaptor(headersExtractFn);
-    Beans.get(IntentClient).request$({type: 'some-capability'}, undefined, {headers: new Map().set('request-header', 'ping')}).subscribe(replyHeaderCaptor);
+    void Beans.get(IntentClient).request$({type: 'some-capability'}, undefined, {headers: new Map().set('request-header', 'ping')}).subscribe(replyHeaderCaptor);
     await replyHeaderCaptor.waitUntilEmitCount(1);
-    await expect(replyHeaderCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('reply-header', 'PING')));
+    expect(replyHeaderCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('reply-header', 'PING')));
   });
 
   it('should allow receiving a reply for a request (by not replying with a status code)', async () => {
     await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
-      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -317,8 +319,8 @@ describe('Messaging', () => {
     await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
-      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -332,10 +334,10 @@ describe('Messaging', () => {
     await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
-      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
+      void Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
+      void Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -349,8 +351,8 @@ describe('Messaging', () => {
     await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
-      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -364,10 +366,10 @@ describe('Messaging', () => {
     await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
-      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
+      void Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase());
+      void Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -381,8 +383,8 @@ describe('Messaging', () => {
     await MicrofrontendPlatformHost.start({applications: []});
 
     Beans.get(MessageClient).observe$<string>('some-topic').subscribe(msg => {
-      const replyTo = msg.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+      const replyTo = msg.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, msg.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -436,8 +438,8 @@ describe('Messaging', () => {
     });
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
-      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -459,8 +461,8 @@ describe('Messaging', () => {
     });
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
-      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.OK)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -482,10 +484,10 @@ describe('Messaging', () => {
     });
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
-      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
+      void Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
+      void Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -507,8 +509,8 @@ describe('Messaging', () => {
     });
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
-      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -530,10 +532,10 @@ describe('Messaging', () => {
     });
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
-      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
-      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
+      void Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase());
+      void Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -555,8 +557,8 @@ describe('Messaging', () => {
     });
 
     Beans.get(IntentClient).observe$<string>().subscribe(intent => {
-      const replyTo = intent.headers.get(MessageHeaders.ReplyTo);
-      Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
+      const replyTo = intent.headers.get(MessageHeaders.ReplyTo) as string;
+      void Beans.get(MessageClient).publish(replyTo, intent.body!.toUpperCase(), {headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.ERROR)});
     });
 
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
@@ -571,17 +573,17 @@ describe('Messaging', () => {
   it('should allow an interceptor to handle a \'request-response\' intent message if no replier is running', async () => {
     // create an interceptor which handles intents of a given type and then swallows the message
     const interceptor = new class implements IntentInterceptor {
-      public intercept(message: IntentMessage, next: Handler<IntentMessage>): Promise<void> {
+      public intercept(message: IntentMessage<string>, next: Handler<IntentMessage>): Promise<void> {
         if (message.intent.type === 'some-capability') {
-          const replyTo = message.headers.get(MessageHeaders.ReplyTo);
-          const body = message.body;
+          const replyTo = message.headers.get(MessageHeaders.ReplyTo) as string;
+          const body = message.body!;
           return Beans.get(MessageClient).publish(replyTo, body.toUpperCase());
         }
         else {
           return next.handle(message);
         }
       }
-    };
+    }();
     Beans.register(IntentInterceptor, {useValue: interceptor, multi: true});
     await MicrofrontendPlatformHost.start({
       host: {
@@ -608,17 +610,17 @@ describe('Messaging', () => {
   it('should allow an interceptor to handle a \'request-response\' topic message if no replier is running', async () => {
     // create an interceptor which handles messages of a given topic and then swallows the message
     const interceptor = new class implements MessageInterceptor {
-      public intercept(message: TopicMessage, next: Handler<TopicMessage>): Promise<void> {
+      public intercept(message: TopicMessage<string>, next: Handler<TopicMessage>): Promise<void> {
         if (message.topic === 'some-topic') {
-          const replyTo = message.headers.get(MessageHeaders.ReplyTo);
-          const body = message.body;
+          const replyTo = message.headers.get(MessageHeaders.ReplyTo) as string;
+          const body = message.body!;
           return Beans.get(MessageClient).publish(replyTo, body.toUpperCase());
         }
         else {
           return next.handle(message);
         }
       }
-    };
+    }();
     Beans.register(MessageInterceptor, {useValue: interceptor, multi: true});
     await MicrofrontendPlatformHost.start({applications: []});
 
@@ -657,7 +659,7 @@ describe('Messaging', () => {
     // Publish a message in runlevel 0
     Beans.registerInitializer({
       useFunction: () => {
-        Beans.get(MessageClient).publish('some-topic', 'payload', {retain: true});
+        void Beans.get(MessageClient).publish('some-topic', 'payload', {retain: true});
         return Promise.resolve();
       },
       runlevel: 0,
@@ -689,8 +691,8 @@ describe('Messaging', () => {
     await MicrofrontendPlatformHost.start({applications: []});
 
     // GIVEN
-    const captor = new ObserveCaptor<TopicMessage, string>(message => message.body);
-    Beans.get(MessageClient).observe$('topic').subscribe(captor);
+    const captor = new ObserveCaptor<TopicMessage<string>, string>(message => message.body!);
+    Beans.get(MessageClient).observe$<string>('topic').subscribe(captor);
     // WHEN
     await Beans.get(MessageClient).publish('topic', 'message');
     await captor.waitUntilEmitCount(1);
@@ -704,8 +706,8 @@ describe('Messaging', () => {
     await MicrofrontendPlatformHost.start({applications: []});
 
     // GIVEN
-    const captor = new ObserveCaptor<TopicMessage, string>(message => message.body);
-    Beans.get(MessageClient).observe$('topic').subscribe(captor);
+    const captor = new ObserveCaptor<TopicMessage<string>, string>(message => message.body!);
+    Beans.get(MessageClient).observe$<string>('topic').subscribe(captor);
     // WHEN
     await Beans.get(MessageClient).publish('topic', 'message 1');
     await Beans.get(MessageClient).publish('topic', 'message 2');
@@ -943,12 +945,12 @@ describe('Messaging', () => {
     // Mount client that monitors the topic message channel and subscribes to the test topic.
     const microfrontend1 = registerFixture(new MicrofrontendFixture());
     await microfrontend1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToTopic', {symbolicName: 'client', topic: 'test/topic', monitorTopicMessageChannel: true});
-    const microfrontend1TopicMessageChannel = new ObserveCaptor();
+    const microfrontend1TopicMessageChannel = new ObserveCaptor<unknown>();
 
     // Mount client that monitors the topic message channel but DOES NOT subscribe to the test topic.
     const microfrontend2 = registerFixture(new MicrofrontendFixture());
     await microfrontend2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'monitorTopicMessageChannel', {symbolicName: 'client'});
-    const microfrontend2TopicMessageChannel = new ObserveCaptor();
+    const microfrontend2TopicMessageChannel = new ObserveCaptor<unknown>();
 
     // Publish message to the test topic.
     await Beans.get(MessageClient).publish('test/topic', 'Topic message');
@@ -998,12 +1000,12 @@ describe('Messaging', () => {
     // Mount client that monitors the intent message channel and subscribes to the test intent.
     const microfrontend1 = registerFixture(new MicrofrontendFixture());
     await microfrontend1.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'subscribeToIntent', {symbolicName: 'client', intent: {type: 'testee'}, monitorIntentMessageChannel: true});
-    const microfrontend1IntentMessageChannel = new ObserveCaptor();
+    const microfrontend1IntentMessageChannel = new ObserveCaptor<unknown>();
 
     // Mount client that monitors the intent message channel but DOES NOT subscribe to the test intent.
     const microfrontend2 = registerFixture(new MicrofrontendFixture());
     await microfrontend2.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'monitorIntentMessageChannel', {symbolicName: 'client'});
-    const microfrontend2IntentMessageChannel = new ObserveCaptor();
+    const microfrontend2IntentMessageChannel = new ObserveCaptor<unknown>();
 
     // Publish test intent.
     await Beans.get(IntentClient).publish({type: 'testee'}, 'Intent message');
@@ -1095,13 +1097,12 @@ describe('Messaging', () => {
     Beans.get(MessageClient).observe$('some-topic').subscribe(headersCaptor);
 
     await Beans.get(MessageClient).publish('some-topic', 'payload', {
-        headers: new Map()
-          .set(MessageHeaders.Timestamp, 'should-not-be-set')
-          .set(MessageHeaders.ClientId, 'should-not-be-set')
-          .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
-          .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
-      },
-    );
+      headers: new Map()
+        .set(MessageHeaders.Timestamp, 'should-not-be-set')
+        .set(MessageHeaders.ClientId, 'should-not-be-set')
+        .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
+        .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
+    });
 
     await headersCaptor.waitUntilEmitCount(1);
     expect(headersCaptor.getLastValue()!.get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
@@ -1117,13 +1118,12 @@ describe('Messaging', () => {
     Beans.get(MessageClient).observe$('some-topic').subscribe(headersCaptor);
 
     Beans.get(MessageClient).request$('some-topic', 'payload', {
-        headers: new Map()
-          .set(MessageHeaders.Timestamp, 'should-not-be-set')
-          .set(MessageHeaders.ClientId, 'should-not-be-set')
-          .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
-          .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
-      },
-    ).subscribe();
+      headers: new Map()
+        .set(MessageHeaders.Timestamp, 'should-not-be-set')
+        .set(MessageHeaders.ClientId, 'should-not-be-set')
+        .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
+        .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
+    }).subscribe();
 
     await headersCaptor.waitUntilEmitCount(1);
     expect(headersCaptor.getLastValue()!.get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
@@ -1147,13 +1147,12 @@ describe('Messaging', () => {
     Beans.get(IntentClient).observe$().subscribe(headersCaptor);
 
     await Beans.get(IntentClient).publish({type: 'some-capability'}, 'payload', {
-        headers: new Map()
-          .set(MessageHeaders.Timestamp, 'should-not-be-set')
-          .set(MessageHeaders.ClientId, 'should-not-be-set')
-          .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
-          .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
-      },
-    );
+      headers: new Map()
+        .set(MessageHeaders.Timestamp, 'should-not-be-set')
+        .set(MessageHeaders.ClientId, 'should-not-be-set')
+        .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
+        .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
+    });
 
     await headersCaptor.waitUntilEmitCount(1);
     expect(headersCaptor.getLastValue()!.get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
@@ -1176,13 +1175,12 @@ describe('Messaging', () => {
     Beans.get(IntentClient).observe$().subscribe(headersCaptor);
 
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'payload', {
-        headers: new Map()
-          .set(MessageHeaders.Timestamp, 'should-not-be-set')
-          .set(MessageHeaders.ClientId, 'should-not-be-set')
-          .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
-          .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
-      },
-    ).subscribe();
+      headers: new Map()
+        .set(MessageHeaders.Timestamp, 'should-not-be-set')
+        .set(MessageHeaders.ClientId, 'should-not-be-set')
+        .set(MessageHeaders.AppSymbolicName, 'should-not-be-set')
+        .set(MessageHeaders.ɵSubscriberId, 'should-not-be-set'),
+    }).subscribe();
 
     await headersCaptor.waitUntilEmitCount(1);
     expect(headersCaptor.getLastValue()!.get(MessageHeaders.Timestamp)).not.toEqual('should-not-be-set');
@@ -1608,7 +1606,7 @@ describe('Messaging', () => {
             intercepted = true;
             return next.handle(intent);
           }
-        },
+        }(),
       });
 
       // Start the platform
@@ -2037,12 +2035,12 @@ describe('Messaging', () => {
       it('should dispatch a retained message only to the newly subscribed subscriber', async () => {
         await MicrofrontendPlatformHost.start({applications: []});
 
-        const messageCollector1 = new ObserveCaptor();
-        const messageCollector2 = new ObserveCaptor();
-        const messageCollector3 = new ObserveCaptor();
-        const messageCollector4 = new ObserveCaptor();
-        const messageCollector5 = new ObserveCaptor();
-        const messageCollector6 = new ObserveCaptor();
+        const messageCollector1 = new ObserveCaptor<TopicMessage>();
+        const messageCollector2 = new ObserveCaptor<TopicMessage>();
+        const messageCollector3 = new ObserveCaptor<TopicMessage>();
+        const messageCollector4 = new ObserveCaptor<TopicMessage>();
+        const messageCollector5 = new ObserveCaptor<TopicMessage>();
+        const messageCollector6 = new ObserveCaptor<TopicMessage>();
 
         // Subscribe before publishing the retained message
         Beans.get(MessageClient).observe$<string>('myhome/livingroom/temperature').subscribe(messageCollector1);
@@ -2052,7 +2050,7 @@ describe('Messaging', () => {
         await Beans.get(MessageClient).publish('myhome/livingroom/temperature', '25°C', {retain: true});
 
         await messageCollector1.waitUntilEmitCount(1);
-        expectMessage(messageCollector1.getLastValue()).toMatch({
+        expectMessage(messageCollector1.getLastValue()!).toMatch({
           topic: 'myhome/livingroom/temperature',
           body: '25°C',
           params: new Map(),
@@ -2060,7 +2058,7 @@ describe('Messaging', () => {
         });
 
         await messageCollector2.waitUntilEmitCount(1);
-        expectMessage(messageCollector2.getLastValue()).toMatch({
+        expectMessage(messageCollector2.getLastValue()!).toMatch({
           topic: 'myhome/livingroom/temperature',
           body: '25°C',
           params: new Map().set('room', 'livingroom'),
@@ -2080,7 +2078,7 @@ describe('Messaging', () => {
         await messageCollector5.waitUntilEmitCount(1);
 
         expect(messageCollector1.getValues().length).toEqual(1);
-        expectMessage(messageCollector1.getLastValue()).toMatch({
+        expectMessage(messageCollector1.getLastValue()!).toMatch({
           topic: 'myhome/livingroom/temperature',
           body: '25°C',
           params: new Map(),
@@ -2088,7 +2086,7 @@ describe('Messaging', () => {
         });
 
         expect(messageCollector2.getValues().length).toEqual(1);
-        expectMessage(messageCollector2.getLastValue()).toMatch({
+        expectMessage(messageCollector2.getLastValue()!).toMatch({
           topic: 'myhome/livingroom/temperature',
           body: '25°C',
           params: new Map().set('room', 'livingroom'),
@@ -2096,7 +2094,7 @@ describe('Messaging', () => {
         });
 
         expect(messageCollector3.getValues().length).toEqual(1);
-        expectMessage(messageCollector3.getLastValue()).toMatch({
+        expectMessage(messageCollector3.getLastValue()!).toMatch({
           topic: 'myhome/livingroom/temperature',
           body: '25°C',
           params: new Map(),
@@ -2104,7 +2102,7 @@ describe('Messaging', () => {
         });
 
         expect(messageCollector4.getValues().length).toEqual(1);
-        expectMessage(messageCollector4.getLastValue()).toMatch({
+        expectMessage(messageCollector4.getLastValue()!).toMatch({
           topic: 'myhome/livingroom/temperature',
           body: '25°C',
           params: new Map().set('room', 'livingroom'),
@@ -2112,7 +2110,7 @@ describe('Messaging', () => {
         });
 
         expect(messageCollector5.getValues().length).toEqual(1);
-        expectMessage(messageCollector5.getLastValue()).toMatch({
+        expectMessage(messageCollector5.getLastValue()!).toMatch({
           topic: 'myhome/livingroom/temperature',
           body: '25°C',
           params: new Map().set('room', 'livingroom').set('measurement', 'temperature'),
@@ -2508,7 +2506,7 @@ describe('Messaging', () => {
     it('should error if publish qualifier contains entries with an illegal data type', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: {} as any}})).toBeRejectedWithError(/IllegalQualifierError/);
+      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: {} as any}})).toBeRejectedWithError(/IllegalQualifierError/); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     });
 
     it('should error if publish qualifier contains empty entries', async () => {
@@ -2523,7 +2521,7 @@ describe('Messaging', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       const captor = new ObserveCaptor();
-      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: {} as any}}).subscribe(captor);
+      Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: {} as any}}).subscribe(captor); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getError()).toMatch(/IllegalQualifierError/);
     });
@@ -2567,7 +2565,7 @@ describe('Messaging', () => {
         await MicrofrontendPlatformHost.start({applications: []});
 
         const captor = new ObserveCaptor();
-        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: {} as any}}).subscribe(captor);
+        Beans.get(IntentClient).request$({type: 'temperature', qualifier: {room: {} as any}}).subscribe(captor); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
         await captor.waitUntilCompletedOrErrored();
         expect(captor.getError()).toMatch(/IllegalQualifierError/);
       });

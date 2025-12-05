@@ -13,7 +13,7 @@ export namespace Objects {
   /**
    * Compares the two objects for shallow equality.
    */
-  export function isEqual(a: any, b: any): boolean {
+  export function isEqual(a: unknown, b: unknown): boolean {
     if (a === b) {
       return true;
     }
@@ -26,6 +26,6 @@ export namespace Objects {
       return false;
     }
 
-    return Object.entries(a).every(([key, value]) => (b[key] === value));
+    return Object.entries(a).every(([key, value]) => ((b as Record<string, unknown>)[key] === value));
   }
 }

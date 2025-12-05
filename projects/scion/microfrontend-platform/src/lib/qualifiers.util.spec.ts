@@ -57,7 +57,7 @@ describe('Qualifiers', () => {
     expect(Qualifiers.validateQualifier({booleanEntry: false}, {exactQualifier: true})).toBeNull();
     expect(Qualifiers.validateQualifier({booleanEntry: false}, {exactQualifier: false})).toBeNull();
 
-    expect(Qualifiers.validateQualifier({objectEntry: {} as any}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
-    expect(Qualifiers.validateQualifier({objectEntry: {} as any}, {exactQualifier: false})).toMatch(/IllegalQualifierError/);
+    expect(Qualifiers.validateQualifier({objectEntry: {} as any}, {exactQualifier: true})).toMatch(/IllegalQualifierError/); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+    expect(Qualifiers.validateQualifier({objectEntry: {} as any}, {exactQualifier: false})).toMatch(/IllegalQualifierError/); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   });
 });

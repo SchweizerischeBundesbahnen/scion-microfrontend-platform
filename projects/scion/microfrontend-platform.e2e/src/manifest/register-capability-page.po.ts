@@ -13,6 +13,9 @@ import {Capability, ManifestObjectFilter} from '@scion/microfrontend-platform';
 import {SciKeyValueFieldPO} from '../@scion/components.internal/key-value-field.po';
 import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
+import {MicrofrontendCapability as _MicrofrontendCapability} from '@scion/microfrontend-platform';
+
+export type MicrofrontendCapability = Omit<_MicrofrontendCapability, 'type'> & {type: 'microfrontend'};
 
 export class RegisterCapabilityPagePO implements OutletPageObject {
 

@@ -16,6 +16,7 @@ import {ClientRegistry} from '../host/client-registry/client.registry';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {installLoggerSpies, readConsoleLog} from '../testing/spec.util.spec';
 import {filter} from 'rxjs/operators';
+import {Observable} from 'rxjs';
 
 describe('MicrofrontendPlatform', () => {
 
@@ -236,7 +237,7 @@ describe('MicrofrontendPlatform', () => {
       ],
       liveness: {
         interval: .5, // 500ms
-        timeout: .1,  // 100ms
+        timeout: .1, // 100ms
       },
     });
 
@@ -249,7 +250,7 @@ describe('MicrofrontendPlatform', () => {
     expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be CONNECTED').toBeDefined();
 
     // Load page
-    await microfrontendFixture.setUrl('about:blank');
+    microfrontendFixture.setUrl('about:blank');
     await waitUntilClientUnregistered(clientId);
 
     // Expect client to be disconnected
@@ -269,7 +270,7 @@ describe('MicrofrontendPlatform', () => {
       ],
       liveness: {
         interval: .5, // 500ms
-        timeout: .1,  // 100ms
+        timeout: .1, // 100ms
       },
     });
 
@@ -296,7 +297,7 @@ describe('MicrofrontendPlatform', () => {
 
   async function getClientId(fixture: MicrofrontendFixture): Promise<string> {
     const captor = new ObserveCaptor<string>();
-    fixture.message$.subscribe(captor);
+    (fixture.message$ as Observable<string>).subscribe(captor);
     return captor.getLastValue()!;
   }
 

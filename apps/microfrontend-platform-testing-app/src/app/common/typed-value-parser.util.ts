@@ -64,7 +64,7 @@ export function parseTypedValue(value: unknown): unknown {
     return undefined;
   }
 
-  const paramMatch = value.match(/<(?<type>.+)>(?<value>.+)<\/\k<type>>/);
+  const paramMatch = /<(?<type>.+)>(?<value>.+)<\/\k<type>>/.exec(value);
   switch (paramMatch?.groups!['type']) {
     case 'number': {
       return coerceNumberProperty(paramMatch.groups['value']);

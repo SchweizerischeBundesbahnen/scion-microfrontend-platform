@@ -26,7 +26,7 @@ test.describe('RouterOutlet', () => {
     await preferredSizePO.checkUseElementSize(false);
     await preferredSizePO.enterPreferredWidth('555px');
     await preferredSizePO.enterPreferredHeight('444px');
-    await expect(await preferredSizePO.getSize()).toEqual({width: originalWidth, height: originalHeight});
+    await expect.poll(() => preferredSizePO.getSize()).toEqual({width: originalWidth, height: originalHeight});
   });
 
   test('should allow resetting the preferred size on the outlet', async ({testingAppPO}) => {
@@ -42,13 +42,13 @@ test.describe('RouterOutlet', () => {
     await preferredSizePO.checkUseElementSize(false);
     await preferredSizePO.enterPreferredWidth('555px');
     await preferredSizePO.enterPreferredHeight('444px');
-    await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
+    await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
 
     // Reset the preferred size
     const routerOutletSettingsPO = await routerOutletPO.openRouterOutletSettings();
     await routerOutletSettingsPO.clickPreferredSizeReset();
     await routerOutletSettingsPO.close();
-    await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: originalWidth, height: originalHeight});
+    await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: originalWidth, height: originalHeight});
   });
 
   test.describe('Set the preferred outlet size programmatically', () => {
@@ -64,7 +64,7 @@ test.describe('RouterOutlet', () => {
       await preferredSizePO.checkUseElementSize(false);
       await preferredSizePO.enterPreferredWidth('555px');
       await preferredSizePO.enterPreferredHeight('444px');
-      await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
     });
 
     test('should return to the original layout when the preferred size is reset', async ({testingAppPO}) => {
@@ -80,11 +80,11 @@ test.describe('RouterOutlet', () => {
       await preferredSizePO.checkUseElementSize(false);
       await preferredSizePO.enterPreferredWidth('555px');
       await preferredSizePO.enterPreferredHeight('444px');
-      await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
 
       // Reset the preferred size
       await preferredSizePO.clickReset();
-      await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: originalWidth, height: originalHeight});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: originalWidth, height: originalHeight});
     });
 
     test('should return to the original layout width when unsetting the preferred width', async ({testingAppPO}) => {
@@ -99,11 +99,11 @@ test.describe('RouterOutlet', () => {
       await preferredSizePO.checkUseElementSize(false);
       await preferredSizePO.enterPreferredWidth('555px');
       await preferredSizePO.enterPreferredHeight('444px');
-      await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
 
       // Unset the preferred width
       await preferredSizePO.enterPreferredWidth(null);
-      await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: originalWidth, height: 444});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: originalWidth, height: 444});
     });
 
     test('should return to the original layout height when unsetting the preferred height', async ({testingAppPO}) => {
@@ -118,11 +118,11 @@ test.describe('RouterOutlet', () => {
       await preferredSizePO.checkUseElementSize(false);
       await preferredSizePO.enterPreferredWidth('555px');
       await preferredSizePO.enterPreferredHeight('444px');
-      await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
 
       // Unset the preferred height
       await preferredSizePO.enterPreferredHeight(null);
-      await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: originalHeight});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: originalHeight});
     });
   });
 
@@ -141,17 +141,17 @@ test.describe('RouterOutlet', () => {
       // Use the content size as the preferred outlet size
       await preferredSizePO.checkUseElementSize(true);
       await preferredSizePO.clickBindElementObservable();
-      await expect(await routerOutletPO.getRouterOutletSize()).not.toEqual({width: originalWidth, height: originalHeight});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).not.toEqual({width: originalWidth, height: originalHeight});
 
       // Set the content size as CSS variables
       await preferredSizePO.enterCssWidth('555px');
       await preferredSizePO.enterCssHeight('444px');
-      await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: 555, height: 444});
 
       // Set the content size as CSS variables
       await preferredSizePO.enterCssWidth('666px');
       await preferredSizePO.enterCssHeight('555px');
-      await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: 666, height: 555});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: 666, height: 555});
     });
 
     test('should return to the original layout when the observing element is unbound as element size observable', async ({testingAppPO}) => {
@@ -167,10 +167,10 @@ test.describe('RouterOutlet', () => {
       // Use the content size as the preferred outlet size
       await preferredSizePO.checkUseElementSize(true);
       await preferredSizePO.clickBindElementObservable();
-      await expect(await routerOutletPO.getRouterOutletSize()).not.toEqual({width: originalWidth, height: originalHeight});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).not.toEqual({width: originalWidth, height: originalHeight});
 
       await preferredSizePO.clickUnbindElementObservable();
-      await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: originalWidth, height: originalHeight});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: originalWidth, height: originalHeight});
     });
 
     test('should return to the original layout when the observing element is unmounted from the DOM', async ({testingAppPO}) => {
@@ -186,10 +186,10 @@ test.describe('RouterOutlet', () => {
       // Use the content size as the preferred outlet size
       await preferredSizePO.checkUseElementSize(true);
       await preferredSizePO.clickBindElementObservable();
-      await expect(await routerOutletPO.getRouterOutletSize()).not.toEqual({width: originalWidth, height: originalHeight});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).not.toEqual({width: originalWidth, height: originalHeight});
 
       await preferredSizePO.clickUnmount();
-      await expect(await routerOutletPO.getRouterOutletSize()).toEqual({width: originalWidth, height: originalHeight});
+      await expect.poll(() => routerOutletPO.getRouterOutletSize()).toEqual({width: originalWidth, height: originalHeight});
     });
   });
 
@@ -208,4 +208,3 @@ test.describe('RouterOutlet', () => {
     return new PreferredSizePagePO(routerOutletPO.routerOutletFrameLocator);
   }
 });
-

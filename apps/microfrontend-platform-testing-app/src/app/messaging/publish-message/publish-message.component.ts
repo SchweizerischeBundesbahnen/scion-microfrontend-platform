@@ -139,17 +139,13 @@ export default class PublishMessageComponent implements OnDestroy {
           .pipe(finalize(() => this.markPublishing(false)))
           .subscribe({
             next: reply => this.replies.push(reply),
-            error: error => this.publishError = error,
+            error: error => this.publishError = stringifyError(error),
           });
       }
       else {
         this._messageClient.publish(topic, message, {retain: this.form.controls.retain.value, headers})
-          .catch(error => {
-            this.publishError = error?.message ?? `${error}`;
-          })
-          .finally(() => {
-            this.markPublishing(false);
-          });
+          .catch((error: unknown) => this.publishError = stringifyError(error))
+          .finally(() => this.markPublishing(false));
       }
     }
     catch (error: unknown) {
@@ -176,17 +172,13 @@ export default class PublishMessageComponent implements OnDestroy {
           .pipe(finalize(() => this.markPublishing(false)))
           .subscribe({
             next: reply => this.replies.push(reply),
-            error: error => this.publishError = error,
+            error: (error: unknown) => this.publishError = stringifyError(error),
           });
       }
       else {
         this._intentClient.publish({type, qualifier, params}, message, {retain: this.form.controls.retain.value, headers})
-          .catch(error => {
-            this.publishError = error?.message ?? `${error}`;
-          })
-          .finally(() => {
-            this.markPublishing(false);
-          });
+          .catch((error: unknown) => this.publishError = stringifyError(error))
+          .finally(() => this.markPublishing(false));
       }
     }
     catch (error: unknown) {

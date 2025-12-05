@@ -40,7 +40,7 @@ export default class ActivatorProgressModule {
     // Signal the host platform that this activator is ready.
     const readinessTopics = activationContext.activator.properties.readinessTopics;
     if (readinessTopics) {
-      Beans.get(MessageClient).publish(readinessTopics as string);
+      void Beans.get(MessageClient).publish(readinessTopics as string);
     }
   }
 }

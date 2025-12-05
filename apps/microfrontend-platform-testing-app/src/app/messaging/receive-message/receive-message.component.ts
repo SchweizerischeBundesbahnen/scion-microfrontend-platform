@@ -89,7 +89,7 @@ export default class ReceiveMessageComponent implements OnDestroy {
         .pipe(finalize(() => this.form.enable()))
         .subscribe({
           next: message => this.messages.push(message),
-          error: error => this.subscribeError = error,
+          error: (error: unknown) => this.subscribeError = stringifyError(error),
         });
     }
     catch (error: unknown) {
@@ -110,7 +110,7 @@ export default class ReceiveMessageComponent implements OnDestroy {
         .pipe(finalize(() => this.form.enable()))
         .subscribe({
           next: message => this.messages.push(message),
-          error: error => this.subscribeError = error,
+          error: (error: unknown) => this.subscribeError = stringifyError(error),
         });
     }
     catch (error: unknown) {
@@ -129,8 +129,8 @@ export default class ReceiveMessageComponent implements OnDestroy {
     this.messages.length = 0;
   }
 
-  public onReply(replyTo: string): void {
-    this._messageClient.publish(replyTo, 'this is a reply');
+  public onReply(replyTo: unknown): void {
+    void this._messageClient.publish(replyTo as string, 'this is a reply');
   }
 
   public get isSubscribed(): boolean {

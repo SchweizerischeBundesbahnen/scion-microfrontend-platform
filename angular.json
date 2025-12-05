@@ -35,7 +35,8 @@
             "lintFilePatterns": [
               "projects/scion/microfrontend-platform/**/*.ts",
               "projects/scion/microfrontend-platform/**/*.html"
-            ]
+            ],
+            "eslintConfig": "projects/scion/microfrontend-platform/eslint.config.js"
           }
         }
       }
@@ -49,7 +50,8 @@
           "options": {
             "lintFilePatterns": [
               "projects/scion/microfrontend-platform.e2e/**/*.ts"
-            ]
+            ],
+            "eslintConfig": "projects/scion/microfrontend-platform.e2e/eslint.config.js"
           }
         }
       }
@@ -87,7 +89,8 @@
             "lintFilePatterns": [
               "projects/scion/microfrontend-platform.client-application-bundle-analyzer/**/*.ts",
               "projects/scion/microfrontend-platform.client-application-bundle-analyzer/**/*.html"
-            ]
+            ],
+            "eslintConfig": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/eslint.config.js"
           }
         }
       }
@@ -206,7 +209,8 @@
             "lintFilePatterns": [
               "apps/microfrontend-platform-testing-app/**/*.ts",
               "apps/microfrontend-platform-testing-app/**/*.html"
-            ]
+            ],
+            "eslintConfig": "apps/microfrontend-platform-testing-app/eslint.config.js"
           }
         }
       }
@@ -305,7 +309,8 @@
             "lintFilePatterns": [
               "apps/microfrontend-platform-devtools/**/*.ts",
               "apps/microfrontend-platform-devtools/**/*.html"
-            ]
+            ],
+            "eslintConfig": "apps/microfrontend-platform-devtools/eslint.config.js"
           }
         }
       }

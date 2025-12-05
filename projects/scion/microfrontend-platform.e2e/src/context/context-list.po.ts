@@ -26,11 +26,11 @@ export class ContextListPO {
     return listItemPOs.map(listItemPO => new ContextEntryListItemPO(listItemPO));
   }
 
-  public async getContext(): Promise<Record<string, string>> {
+  public async getContext(): Promise<Record<string, unknown>> {
     return waitUntilStable(async () => {
       const contextListItemPOs: ContextEntryListItemPO[] = await this.getContextListItemPOs();
 
-      const context: Record<string, string> = {};
+      const context: Record<string, unknown> = {};
       for (const listItemPO of contextListItemPOs) {
         const key = await listItemPO.getKey();
         const value = await listItemPO.getValue();
@@ -40,11 +40,11 @@ export class ContextListPO {
     }, {isStable: (a, b) => Object.keys(a).length === Object.keys(b).length});
   }
 
-  private parseJSON(value: string): any {
+  private parseJSON(value: string): unknown {
     try {
       return JSON.parse(value);
     }
-    catch (error) {
+    catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
       return value;
     }
   }

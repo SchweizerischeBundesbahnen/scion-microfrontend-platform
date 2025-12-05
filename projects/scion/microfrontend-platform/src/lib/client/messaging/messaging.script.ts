@@ -28,7 +28,7 @@ export async function connectToHost(args: {symbolicName: string}): Promise<void>
 
 export async function sendMessageWhenPlatformStateStopping(args: {symbolicName: string}): Promise<void> {
   await MicrofrontendPlatformClient.connect(args.symbolicName);
-  MicrofrontendPlatform.whenState(PlatformState.Stopping).then(async () => {
+  void MicrofrontendPlatform.whenState(PlatformState.Stopping).then(async () => {
     await Beans.get(MessageClient).publish(`${args.symbolicName}/whenPlatformStateStopping`, 'message from client');
   });
 }
@@ -36,7 +36,7 @@ export async function sendMessageWhenPlatformStateStopping(args: {symbolicName: 
 export async function sendMessageOnBeanPreDestroy(args: {symbolicName: string}): Promise<void> {
   class LifecycleHook implements PreDestroy {
     public preDestroy(): void {
-      Beans.get(MessageClient).publish(`${args.symbolicName}/beanPreDestroy`, 'message from client');
+      void Beans.get(MessageClient).publish(`${args.symbolicName}/beanPreDestroy`, 'message from client');
     }
   }
 
@@ -47,14 +47,14 @@ export async function sendMessageOnBeanPreDestroy(args: {symbolicName: string}):
 export async function sendMessageInBeforeUnload(args: {symbolicName: string}): Promise<void> {
   await MicrofrontendPlatformClient.connect(args.symbolicName);
   fromEvent(window, 'beforeunload', {once: true}).subscribe(() => {
-    Beans.get(MessageClient).publish(`${args.symbolicName}/beforeunload`, 'message from client');
+    void Beans.get(MessageClient).publish(`${args.symbolicName}/beforeunload`, 'message from client');
   });
 }
 
 export async function sendMessageInUnload(args: {symbolicName: string}): Promise<void> {
   await MicrofrontendPlatformClient.connect(args.symbolicName);
   fromEvent(window, 'unload', {once: true}).subscribe(() => {
-    Beans.get(MessageClient).publish(`${args.symbolicName}/unload`, 'message from client');
+    void Beans.get(MessageClient).publish(`${args.symbolicName}/unload`, 'message from client');
   });
 }
 
