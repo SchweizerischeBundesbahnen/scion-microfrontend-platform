@@ -31,7 +31,7 @@ export class AppComponent {
     this._destroyRef.onDestroy(() => void MicrofrontendPlatform.destroy()); // Platform is started in {@link PlatformInitializer}
   }
 
-  // TODO [Angular 21] Remove if cast is not required anymore.
+  // TODO [Angular 22] Remove if cast is not required anymore. See https://github.com/angular/angular/issues/40778
   @HostListener('document:keydown.control.alt.shift.s', ['$event'])
   public async onE2eTestKeyboardEvent(event: Event): Promise<void> {
     const keyboardEvent = event as KeyboardEvent;
