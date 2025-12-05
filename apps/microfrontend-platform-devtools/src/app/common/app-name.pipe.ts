@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Pipe, PipeTransform} from '@angular/core';
+import {inject, Pipe, PipeTransform} from '@angular/core';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 
 /**
@@ -17,8 +17,7 @@ import {DevToolsManifestService} from '../dev-tools-manifest.service';
 @Pipe({name: 'devtoolsAppName'})
 export class AppNamePipe implements PipeTransform {
 
-  constructor(private _manifestService: DevToolsManifestService) {
-  }
+  private readonly _manifestService = inject(DevToolsManifestService);
 
   public transform(symbolicName: string): string | undefined {
     return this._manifestService.getApplication(symbolicName)?.name;
