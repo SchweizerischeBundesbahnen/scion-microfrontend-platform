@@ -1,7 +1,7 @@
 name: Continuous Integration and Delivery
 on: [push, pull_request, workflow_dispatch]
 env:
-  NODE_VERSION: 22.16.0
+  NODE_VERSION: 24.11.0
 jobs:
   install:
     name: 'Installing NPM modules'
@@ -152,6 +152,7 @@ jobs:
     needs: [build-platform, build-apps]
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         shardIndex: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         shardTotal: [ 10 ]

@@ -11,6 +11,7 @@
 import {FrameLocator, Locator, Page} from '@playwright/test';
 import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
+import {waitUntilStable} from '../testing.util';
 
 export class LookupContextValuePagePO implements OutletPageObject {
 
@@ -54,8 +55,14 @@ export class LookupContextValuePagePO implements OutletPageObject {
     const valueLocator = this._locator.locator('output.e2e-lookup-value');
     const errorLocator = this._locator.locator('output.e2e-lookup-error');
     return Promise.race<T>([
-      valueLocator.waitFor({state: 'attached'}).then(() => valueLocator.innerText()).then(value => Promise.resolve(JSON.parse(value))),
-      errorLocator.waitFor({state: 'attached'}).then(() => errorLocator.innerText()).then(error => Promise.reject(Error(error))),
+      valueLocator.waitFor({state: 'attached'}).then(async () => {
+        await waitUntilStable(() => valueLocator.innerText());
+        return valueLocator.innerText();
+      }).then(value => Promise.resolve(JSON.parse(value))),
+      errorLocator.waitFor({state: 'attached'}).then(async () => {
+        await waitUntilStable(() => errorLocator.innerText());
+        return errorLocator.innerText();
+      }).then(error => Promise.reject(Error(error))),
     ]);
   }
 

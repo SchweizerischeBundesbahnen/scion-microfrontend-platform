@@ -11,7 +11,7 @@
 import {Qualifier} from '@scion/microfrontend-platform';
 import {MessageListItemPO} from './message-list-item.po';
 import {FrameLocator, Locator} from '@playwright/test';
-import {isPresent} from '../testing.util';
+import {isPresent, waitUntilStable} from '../testing.util';
 import {SciListPO} from '../@scion/components.internal/list.po';
 import {SciKeyValueFieldPO} from '../@scion/components.internal/key-value-field.po';
 import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
@@ -96,6 +96,7 @@ export class PublishMessagePagePO implements OutletPageObject {
   }
 
   public async getFirstReplyOrElseReject(): Promise<MessageListItemPO> {
+    await waitUntilStable(() => this.getReplies().then(replies => replies.length));
     const messages = await this.getReplies();
     return messages[0]!;
   }

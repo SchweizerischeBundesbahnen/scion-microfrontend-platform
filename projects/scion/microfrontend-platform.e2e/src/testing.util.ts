@@ -50,6 +50,7 @@ export async function isPresent(element: Locator): Promise<boolean> {
  * Evaluates `location.href` in the browsing context of the specified locator.
  */
 export async function getLocationHref(frameLocator: FrameLocator): Promise<string> {
+  await frameLocator.locator('html').waitFor({state: 'attached'});
   return await frameLocator.locator('html').evaluate(() => window.location.href);
 }
 

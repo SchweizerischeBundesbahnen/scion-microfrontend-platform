@@ -15,6 +15,7 @@ import {MessageListItemPO} from './message-list-item.po';
 import {SciListPO} from '../@scion/components.internal/list.po';
 import {SciKeyValueFieldPO} from '../@scion/components.internal/key-value-field.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
+import {waitUntilStable} from '../testing.util';
 
 export class ReceiveMessagePagePO implements OutletPageObject {
 
@@ -64,6 +65,7 @@ export class ReceiveMessagePagePO implements OutletPageObject {
   }
 
   public async getFirstMessageOrElseReject(): Promise<MessageListItemPO> {
+    await waitUntilStable(() => this.getMessages().then(messages => messages.length));
     const messages = await this.getMessages();
     if (messages.length > 0) {
       return messages[0]!;
