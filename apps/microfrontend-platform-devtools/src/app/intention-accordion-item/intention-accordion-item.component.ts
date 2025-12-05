@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
@@ -32,8 +32,7 @@ export class IntentionAccordionItemComponent implements OnChanges {
   @Input({required: true})
   public intention!: Intention;
 
-  constructor(private _manifestService: DevToolsManifestService) {
-  }
+  private readonly _manifestService = inject(DevToolsManifestService);
 
   public ngOnChanges(changes: SimpleChanges): void {
     this.nullProvider$ = this._manifestService.capabilityProviders$(this.intention)

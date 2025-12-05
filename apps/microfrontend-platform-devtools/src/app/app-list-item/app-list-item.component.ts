@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, Input, OnInit} from '@angular/core';
 import {Application} from '@scion/microfrontend-platform';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -33,8 +33,8 @@ export class AppListItemComponent implements OnInit {
   public capabilityCount$!: Observable<number>;
   public intentionCount$!: Observable<number>;
 
-  constructor(private _manifestService: DevToolsManifestService, private _router: Router) {
-  }
+  private readonly _manifestService = inject(DevToolsManifestService);
+  private readonly _router = inject(Router);
 
   public ngOnInit(): void {
     this.capabilityCount$ = this._manifestService.capabilities$({appSymbolicName: this.application.symbolicName})

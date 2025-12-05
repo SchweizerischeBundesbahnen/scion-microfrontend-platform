@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, inject} from '@angular/core';
 import {Observable} from 'rxjs';
 import {ShellService} from './shell.service';
 import {ContextService, MicrofrontendPlatformClient, OUTLET_CONTEXT} from '@scion/microfrontend-platform';
@@ -35,15 +35,18 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
 })
 export class AppComponent {
 
-  public showPrimaryOutlet = true;
-  public showDetailsOutlet = false;
-  public menuOpen = false;
-  public readonly connnectedToHost = MicrofrontendPlatformClient.isConnected();
+  private readonly _shellService = inject(ShellService);
+  private readonly _cd = inject(ChangeDetectorRef);
 
-  constructor(private _shellService: ShellService, private _cd: ChangeDetectorRef) {
+  protected readonly connectedToHost = MicrofrontendPlatformClient.isConnected();
+
+  protected showPrimaryOutlet = true;
+  protected showDetailsOutlet = false;
+  protected menuOpen = false;
+
+  constructor() {
     this.installNavigationEndListener();
     void this.signalReady();
-
   }
 
   /**
