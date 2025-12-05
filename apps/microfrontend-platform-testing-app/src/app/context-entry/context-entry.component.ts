@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, input} from '@angular/core';
 
 @Component({
   selector: 'app-context-entry',
@@ -17,18 +17,6 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 })
 export class ContextEntryComponent {
 
-  public value: unknown;
-
-  @Input({required: true})
-  public name!: string;
-
-  @Input({alias: 'value', required: true})
-  public set setValue(value: unknown) {
-    if (typeof value === 'object') {
-      this.value = JSON.stringify(value);
-    }
-    else {
-      this.value = value;
-    }
-  }
+  public readonly name = input.required<string>();
+  public readonly value = input.required({transform: (value: unknown): unknown => typeof value === 'object' ? JSON.stringify(value) : value});
 }
