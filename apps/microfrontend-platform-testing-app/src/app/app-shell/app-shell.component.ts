@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, DestroyRef, ElementRef, NgZone, OnInit, ViewChild} from '@angular/core';
+import {Component, DestroyRef, ElementRef, inject, NgZone, OnInit, ViewChild} from '@angular/core';
 import {asapScheduler, debounceTime, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, ManifestService, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {tap} from 'rxjs/operators';
@@ -38,22 +38,22 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
 })
 export default class AppShellComponent implements OnInit {
 
-  private _routeActivate$ = new Subject<void>();
-  private _angularChangeDetectionCycle$ = new Subject<void>();
+  private readonly _zone = inject(NgZone);
+  private readonly _destroyRef = inject(DestroyRef);
+  private readonly _routeActivate$ = new Subject<void>();
+  private readonly _angularChangeDetectionCycle$ = new Subject<void>();
 
-  public appSymbolicName: string;
-  public pageTitle: string | undefined;
-  public isPlatformHost = Beans.get<boolean>(IS_PLATFORM_HOST);
-  public focusMonitor: FocusMonitor;
+  protected readonly isPlatformHost = Beans.get<boolean>(IS_PLATFORM_HOST);
+  protected readonly appSymbolicName = Beans.get<string>(APP_IDENTITY);
+  protected readonly focusMonitor = Beans.get(FocusMonitor);
+  protected readonly devToolsFormControl = new FormControl<boolean>(false, {nonNullable: true});
 
-  public devToolsFormControl = new FormControl<boolean>(false, {nonNullable: true});
+  protected pageTitle: string | undefined;
 
   @ViewChild('angular_change_detection_indicator', {static: true})
   private _changeDetectionElement!: ElementRef<HTMLElement>;
 
-  constructor(private _zone: NgZone, private _destroyRef: DestroyRef) {
-    this.appSymbolicName = Beans.get<string>(APP_IDENTITY);
-    this.focusMonitor = Beans.get(FocusMonitor);
+  constructor() {
     this.installRouteActivateListener();
     this.installKeystrokeRegisterLogger();
 

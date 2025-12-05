@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, HostListener, Injector} from '@angular/core';
+import {Component, HostListener, inject, Injector} from '@angular/core';
 import {PreferredSize, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
@@ -32,9 +32,12 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
 })
 export class RouterOutletSettingsComponent {
 
-  public pageScrollingEnabledFormControl: FormControl<boolean>;
+  private readonly _routerOutlet = inject(SciRouterOutletElement);
+  private readonly _overlay = inject(OverlayRef);
 
-  constructor(private _routerOutlet: SciRouterOutletElement, private _overlay: OverlayRef) {
+  protected readonly pageScrollingEnabledFormControl: FormControl<boolean>;
+
+  constructor() {
     this.pageScrollingEnabledFormControl = new FormControl<boolean>(this._routerOutlet.scrollable, {nonNullable: true});
     this.pageScrollingEnabledFormControl.valueChanges
       .pipe(takeUntilDestroyed())

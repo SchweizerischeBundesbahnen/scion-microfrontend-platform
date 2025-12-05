@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectorRef, Component, DestroyRef, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, inject, OnInit, ViewChild} from '@angular/core';
 import {fromEvent, merge} from 'rxjs';
 import {DatePipe} from '@angular/common';
 import {SciViewportComponent} from '@scion/components/viewport';
@@ -28,14 +28,14 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 })
 export default class MouseEventDispatchTestPageComponent implements OnInit {
 
-  public dispatchedEvents = new Array<DispatchedEvent>();
-  public followTailFormControl = new FormControl<boolean>(true);
+  private readonly _cd = inject(ChangeDetectorRef);
+  private readonly _destroyRef = inject(DestroyRef);
+
+  protected readonly dispatchedEvents = new Array<DispatchedEvent>();
+  protected readonly followTailFormControl = new FormControl<boolean>(true);
 
   @ViewChild(SciViewportComponent, {static: true})
   private _viewport!: SciViewportComponent;
-
-  constructor(private _cd: ChangeDetectorRef, private _destroyRef: DestroyRef) {
-  }
 
   public ngOnInit(): void {
     merge(fromEvent(document, 'sci-mousemove'), fromEvent(document, 'sci-mouseup'))

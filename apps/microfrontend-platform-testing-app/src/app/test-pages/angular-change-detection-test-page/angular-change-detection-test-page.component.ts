@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, DestroyRef, ElementRef, Inject, LOCALE_ID, NgZone, OnInit, ViewChild} from '@angular/core';
+import {Component, DestroyRef, ElementRef, inject, LOCALE_ID, NgZone, OnInit, ViewChild} from '@angular/core';
 import {debounceTime, fromEvent, Subject} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import {formatDate} from '@angular/common';
@@ -21,7 +21,10 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 })
 export default class AngularChangeDetectionTestPageComponent implements OnInit {
 
-  private _changeDetectionCycle$ = new Subject<void>();
+  private readonly _zone = inject(NgZone);
+  private readonly _destroyRef = inject(DestroyRef);
+  private readonly locale = inject(LOCALE_ID);
+  private readonly _changeDetectionCycle$ = new Subject<void>();
 
   @ViewChild('angular_change_detection_indicator', {static: true})
   private _changeDetectionIndicatorElement!: ElementRef<HTMLElement>;
@@ -38,9 +41,7 @@ export default class AngularChangeDetectionTestPageComponent implements OnInit {
   @ViewChild('preventdefault_on_mousedown', {static: true})
   private _preventdefaultOnMousedownCheckbox!: ElementRef<HTMLInputElement>;
 
-  constructor(private _zone: NgZone,
-              private _destroyRef: DestroyRef,
-              @Inject(LOCALE_ID) private locale: string) {
+  constructor() {
     this.installChangeDetectionIndicator();
   }
 
