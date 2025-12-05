@@ -7,12 +7,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject, Input, OnChanges, SimpleChanges} from '@angular/core';
-import {Observable} from 'rxjs';
+import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from '@angular/core';
 import {Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {map} from 'rxjs/operators';
-import {AsyncPipe} from '@angular/common';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 
 @Component({
@@ -21,21 +19,31 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
   styleUrls: ['./intention-accordion-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AsyncPipe,
     SciQualifierChipListComponent,
   ],
 })
-export class IntentionAccordionItemComponent implements OnChanges {
+export class IntentionAccordionItemComponent {
 
-  public nullProvider$!: Observable<boolean>;
-
-  @Input({required: true})
-  public intention!: Intention;
+  public readonly intention = input.required<Intention>();
 
   private readonly _manifestService = inject(DevToolsManifestService);
 
-  public ngOnChanges(changes: SimpleChanges): void {
-    this.nullProvider$ = this._manifestService.capabilityProviders$(this.intention)
-      .pipe(map(apps => apps.length === 0));
+  protected nullProvider = signal(false);
+
+  constructor() {
+    this.computeNullProvider();
+  }
+
+  private computeNullProvider(): void {
+    effect(onCleanup => {
+      const intention = this.intention();
+
+      untracked(() => {
+        const subscription = this._manifestService.capabilityProviders$(intention)
+          .pipe(map(apps => apps.length === 0))
+          .subscribe(nullProvider => this.nullProvider.set(nullProvider));
+        onCleanup(() => subscription.unsubscribe());
+      });
+    });
   }
 }

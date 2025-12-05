@@ -1,6 +1,6 @@
-<sci-qualifier-chip-list [type]="intention.type" [qualifier]="intention.qualifier"/>
+<sci-qualifier-chip-list [type]="intention().type" [qualifier]="intention().qualifier"/>
 <div class="hints">
-  @if (nullProvider$ | async) {
+  @if (nullProvider()) {
     <span class="no-provider-found" title="No application provides a matching capability.">NO PROVIDER FOUND</span>
   }
 </div>

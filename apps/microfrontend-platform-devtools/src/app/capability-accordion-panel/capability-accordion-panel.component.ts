@@ -7,12 +7,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject, Input, OnInit} from '@angular/core';
-import {Observable} from 'rxjs';
+import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from '@angular/core';
 import {Application, Capability} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router, RouterLink} from '@angular/router';
-import {AsyncPipe, JsonPipe} from '@angular/common';
+import {JsonPipe} from '@angular/common';
 import {SciKeyValueComponent} from '@scion/components.internal/key-value';
 import {CustomParamMetadataPipe} from '../common/custom-param-metadata.pipe';
 import {AppNamePipe} from '../common/app-name.pipe';
@@ -24,7 +23,6 @@ import {SciTabbarComponent, SciTabDirective} from '@scion/components.internal/ta
   styleUrls: ['./capability-accordion-panel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AsyncPipe,
     JsonPipe,
     RouterLink,
     AppNamePipe,
@@ -34,22 +32,32 @@ import {SciTabbarComponent, SciTabDirective} from '@scion/components.internal/ta
     SciKeyValueComponent,
   ],
 })
-export class CapabilityAccordionPanelComponent implements OnInit {
+export class CapabilityAccordionPanelComponent {
 
-  public applications$!: Observable<Application[]>;
-
-  @Input({required: true})
-  public capability!: Capability;
+  public readonly capability = input.required<Capability>();
 
   private readonly _manifestService = inject(DevToolsManifestService);
   private readonly _router = inject(Router);
 
-  public ngOnInit(): void {
-    this.applications$ = this._manifestService.capabilityConsumers$(this.capability);
+  protected readonly applications = signal(new Array<Application>());
+
+  constructor() {
+    this.computeApplications();
   }
 
   public onConsumerClick(application: Application): boolean {
     void this._router.navigate(['apps', {outlets: {details: [application.symbolicName, {activeTab: 'intentions'}]}}]);
     return false;
+  }
+
+  private computeApplications(): void {
+    effect(onCleanup => {
+      const capability = this.capability();
+
+      untracked(() => {
+        const subscription = this._manifestService.capabilityConsumers$(capability).subscribe(applications => this.applications.set(applications));
+        onCleanup(() => subscription.unsubscribe());
+      });
+    });
   }
 }

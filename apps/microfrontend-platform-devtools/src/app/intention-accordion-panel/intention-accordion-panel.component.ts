@@ -7,38 +7,43 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject, Input, OnInit} from '@angular/core';
-import {Observable} from 'rxjs';
+import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from '@angular/core';
 import {Application, Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router} from '@angular/router';
-import {AsyncPipe} from '@angular/common';
 
 @Component({
   selector: 'devtools-intention-accordion-panel',
   templateUrl: './intention-accordion-panel.component.html',
   styleUrls: ['./intention-accordion-panel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AsyncPipe,
-  ],
 })
-export class IntentionAccordionPanelComponent implements OnInit {
+export class IntentionAccordionPanelComponent {
 
-  public applications$!: Observable<Application[]>;
+  public readonly intention = input.required<Intention>();
 
-  @Input({required: true})
-  public intention!: Intention;
-
-  private readonly _manifestService = inject(DevToolsManifestService);
   private readonly _router = inject(Router);
 
-  public ngOnInit(): void {
-    this.applications$ = this._manifestService.capabilityProviders$(this.intention);
+  protected readonly applications = signal(new Array<Application>());
+
+  constructor() {
+    this.computeApplications();
   }
 
-  public onProviderClick(application: Application): boolean {
+  protected onProviderClick(application: Application): boolean {
     void this._router.navigate(['apps', {outlets: {details: [application.symbolicName, {activeTab: 'capabilities'}]}}]);
     return false;
+  }
+
+  private computeApplications(): void {
+    const manifestService = inject(DevToolsManifestService);
+    effect(onCleanup => {
+      const intention = this.intention();
+
+      untracked(() => {
+        const subscription = manifestService.capabilityProviders$(intention).subscribe(applications => this.applications.set(applications));
+        onCleanup(() => subscription.unsubscribe());
+      });
+    });
   }
 }
