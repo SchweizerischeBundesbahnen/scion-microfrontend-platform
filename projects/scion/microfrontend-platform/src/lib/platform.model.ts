@@ -437,6 +437,12 @@ export interface ParamDefinition {
    */
   required: boolean;
   /**
+   * Defines a default value for optional parameters.
+   *
+   * The default value is used when the parameter is not provided.
+   */
+  default?: unknown;
+  /**
    * Allows deprecating the parameter.
    *
    * It is good practice to explain the deprecation, provide the date of removal, and how to migrate.

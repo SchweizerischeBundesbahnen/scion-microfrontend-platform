@@ -37,6 +37,10 @@
             <span class="label">Required:</span>
             <span class="description">{{param.required}}</span>
           </ng-container>
+          @if (param.default) {
+            <span class="label">Default:</span>
+            <span class="description">{{param.default}}</span>
+          }
           @if (param.deprecated; as deprecation) {
             <span class="label">Deprecated:</span>
             @if (deprecation === true) {

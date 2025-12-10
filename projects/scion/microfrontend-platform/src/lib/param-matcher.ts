@@ -74,6 +74,15 @@ export class ParamMatcher {
         matcherResult.missingParams.push(paramDef);
       });
 
+    // Map default values to optional params if not set.
+    this._optionalParamDefs.forEach(paramDef => {
+      const value = paramsCopy.get(paramDef.name);
+
+      if (value === undefined && paramDef.default !== undefined && typeof paramDef.deprecated !== 'object') {
+        paramsCopy.set(paramDef.name, paramDef.default);
+      }
+    });
+
     // Test if no additional params are passed.
     Array.from(paramsCopy.keys())
       .filter(param => !this._requiredParamDefs.some(paramDef => paramDef.name === param) && !this._optionalParamDefs.some(paramDef => paramDef.name === param))

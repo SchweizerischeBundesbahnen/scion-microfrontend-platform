@@ -55,9 +55,9 @@ export class IntentParams {
         const warning = toDeprecatedParamWarning(deprecatedParam, {appSymbolicName: sender});
         Beans.get(Logger).warn(`[DEPRECATION][4EAC5956] ${warning}`, new LoggingContext(sender), intent);
       });
-      // Use the matcher's parameters to have deprecated params mapped to their replacement.
-      intent.params = paramMatcherResult.params;
     }
+    // Use the matcher's parameters to have deprecated params mapped to their replacement.
+    intent.params = paramMatcherResult.params;
   }
 }
 

@@ -21,7 +21,8 @@ export class CustomParamMetadataPipe implements PipeTransform {
     .add('name')
     .add('description')
     .add('deprecated')
-    .add('required');
+    .add('required')
+    .add('default');
 
   public transform(param: ParamDefinition): Record<string, unknown> | null {
     const customProperties = Object.entries(param)

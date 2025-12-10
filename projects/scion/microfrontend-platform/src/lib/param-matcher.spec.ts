@@ -127,4 +127,113 @@ describe('ParamMatcher', () => {
       .match(new Map().set('param1', 'value1')))
       .toEqual({matches: false, missingParams: [], unexpectedParams: ['param2'], deprecatedParams: [{name: 'param1', required: true, deprecated: {useInstead: 'param2'}}], params: undefined});
   });
+
+  it('should map default param values to optional params if not set', () => {
+    // Optional params.
+    expect(new ParamMatcher([{name: 'param', required: false, default: 'defaultValue'}])
+      .match(new Map()))
+      .toEqual({matches: true, missingParams: [], unexpectedParams: [], deprecatedParams: [], params: new Map().set('param', 'defaultValue')});
+
+    expect(new ParamMatcher([{name: 'param', required: false, default: 'defaultValue'}])
+      .match(new Map().set('param', 'value')))
+      .toEqual({matches: true, missingParams: [], unexpectedParams: [], deprecatedParams: [], params: new Map().set('param', 'value')});
+
+    expect(new ParamMatcher([{name: 'param1', required: false, default: 'defaultValue1'}, {name: 'param2', required: false}])
+      .match(new Map().set('param1', 'value1')))
+      .toEqual({matches: true, missingParams: [], unexpectedParams: [], deprecatedParams: [], params: new Map().set('param1', 'value1')});
+
+    expect(new ParamMatcher([{name: 'param1', required: false, default: 'defaultValue1'}, {name: 'param2', required: false}])
+      .match(new Map().set('param2', 'value2')))
+      .toEqual({matches: true, missingParams: [], unexpectedParams: [], deprecatedParams: [], params: new Map().set('param1', 'defaultValue1').set('param2', 'value2')});
+
+    // Required params.
+    expect(new ParamMatcher([{name: 'param', required: true, default: 'defaultValue'}])
+      .match(new Map()))
+      .toEqual({matches: false, missingParams: [{name: 'param', required: true, default: 'defaultValue'}], unexpectedParams: [], deprecatedParams: [], params: undefined});
+
+    expect(new ParamMatcher([{name: 'param', required: true, default: 'defaultValue'}])
+      .match(new Map().set('param', 'value')))
+      .toEqual({matches: true, missingParams: [], unexpectedParams: [], deprecatedParams: [], params: new Map().set('param', 'value')});
+
+    // Deprecated params.
+    expect(new ParamMatcher([{name: 'param1', required: false, deprecated: true, default: 'defaultValue1'}])
+      .match(new Map()))
+      .toEqual({
+        matches: true,
+        missingParams: [],
+        unexpectedParams: [],
+        deprecatedParams: [],
+        params: new Map().set('param1', 'defaultValue1'),
+      });
+
+    expect(new ParamMatcher([{name: 'param1', required: false, deprecated: true, default: 'defaultValue1'}])
+      .match(new Map().set('param1', 'value1')))
+      .toEqual({
+        matches: true,
+        missingParams: [],
+        unexpectedParams: [],
+        deprecatedParams: [{name: 'param1', required: false, deprecated: true, default: 'defaultValue1'}],
+        params: new Map().set('param1', 'value1'),
+      });
+
+    expect(new ParamMatcher([{name: 'param1', required: false, deprecated: {useInstead: 'param2'}, default: 'defaultValue1'}, {name: 'param2', required: false, default: 'defaultValue2'}])
+      .match(new Map()))
+      .toEqual({
+        matches: true,
+        missingParams: [],
+        unexpectedParams: [],
+        deprecatedParams: [],
+        params: new Map().set('param2', 'defaultValue2'),
+      });
+
+    expect(new ParamMatcher([{name: 'param1', required: false, deprecated: {useInstead: 'param2'}, default: 'defaultValue1'}, {name: 'param2', required: false}])
+      .match(new Map()))
+      .toEqual({
+        matches: true,
+        missingParams: [],
+        unexpectedParams: [],
+        deprecatedParams: [],
+        params: new Map(),
+      });
+
+    expect(new ParamMatcher([{name: 'param1', required: false, deprecated: {useInstead: 'param2'}}, {name: 'param2', required: false, default: 'defaultValue2'}])
+      .match(new Map()))
+      .toEqual({
+        matches: true,
+        missingParams: [],
+        unexpectedParams: [],
+        deprecatedParams: [],
+        params: new Map().set('param2', 'defaultValue2'),
+      });
+
+    expect(new ParamMatcher([{name: 'param1', required: false, deprecated: {useInstead: 'param2'}, default: 'defaultValue1'}, {name: 'param2', required: false, default: 'defaultValue2'}])
+      .match(new Map().set('param1', 'value1')))
+      .toEqual({
+        matches: true,
+        missingParams: [],
+        unexpectedParams: [],
+        deprecatedParams: [{name: 'param1', required: false, deprecated: {useInstead: 'param2'}, default: 'defaultValue1'}],
+        params: new Map().set('param2', 'value1'),
+      });
+
+    expect(new ParamMatcher([{name: 'param1', required: false, deprecated: {useInstead: 'param2'}, default: 'defaultValue1'}, {name: 'param2', required: false}])
+      .match(new Map().set('param1', 'value1')))
+      .toEqual({
+        matches: true,
+        missingParams: [],
+        unexpectedParams: [],
+        deprecatedParams: [{name: 'param1', required: false, deprecated: {useInstead: 'param2'}, default: 'defaultValue1'}],
+        params: new Map().set('param2', 'value1'),
+      });
+
+    expect(new ParamMatcher([{name: 'param1', required: false, deprecated: {useInstead: 'param2'}}, {name: 'param2', required: false, default: 'defaultValue2'}])
+      .match(new Map().set('param1', 'value1')))
+      .toEqual({
+        matches: true,
+        missingParams: [],
+        unexpectedParams: [],
+        deprecatedParams: [{name: 'param1', required: false, deprecated: {useInstead: 'param2'}}],
+        params: new Map().set('param2', 'value1'),
+      });
+  });
 });
