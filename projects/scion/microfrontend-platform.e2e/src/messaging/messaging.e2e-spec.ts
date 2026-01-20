@@ -12,6 +12,10 @@ import {TestingAppOrigins} from '../testing-app.po';
 import {TopicBasedMessagingSpecs} from './topic-based-messaging-specs';
 import {IntendBasedMessagingSpecs} from './intent-based-messaging-specs';
 import {test} from '../fixtures';
+import {RegisterCapabilityPagePO} from '../manifest/register-capability-page.po';
+import {MessagingFlavor, PublishMessagePagePO} from './publish-message-page.po';
+import {ReceiveMessagePagePO} from './receive-message-page.po';
+import {expect} from '@playwright/test';
 
 test.describe('Messaging', () => {
 
@@ -202,6 +206,38 @@ test.describe('Messaging', () => {
 
     test('should dispatch intent to inactive capabilities if "Capability Active Check" is disabled"', async ({testingAppPO}) => {
       await IntendBasedMessagingSpecs.dispatchIntentToInactiveCapabilitySpec(testingAppPO);
+    });
+
+    test('should use default value of optional param', async ({testingAppPO}) => {
+      const pagePOs = await testingAppPO.navigateTo({
+        publishMessage: PublishMessagePagePO,
+        receiveMessage: ReceiveMessagePagePO,
+        registerCapability: RegisterCapabilityPagePO,
+      });
+
+      // Register capability with default parameter.
+      const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapability');
+      await registerCapabilityPO.registerCapability({
+        type: 'testee',
+        qualifier: {component: 'testee'},
+        params: [
+          {name: 'param', required: false, default: 'defaultValue'},
+        ],
+      });
+
+      // Subscribe to intents.
+      const receiveMessagePO = pagePOs.get<ReceiveMessagePagePO>('receiveMessage');
+      await receiveMessagePO.selectFlavor(MessagingFlavor.Intent);
+      await receiveMessagePO.clickSubscribe();
+
+      // Publish intent.
+      const publishMessagePO = pagePOs.get<PublishMessagePagePO>('publishMessage');
+      await publishMessagePO.selectFlavor(MessagingFlavor.Intent);
+      await publishMessagePO.enterIntent('testee', {component: 'testee'});
+      await publishMessagePO.clickPublish();
+
+      // Expect param to have default value.
+      await expect.poll(() => receiveMessagePO.getFirstMessageOrElseReject().then(message => message.getIntentParams())).toEqual({'param': 'defaultValue [string]'});
     });
 
     test.describe('intent-interception', () => {

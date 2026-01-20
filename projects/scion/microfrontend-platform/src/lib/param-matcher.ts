@@ -51,7 +51,7 @@ export class ParamMatcher {
       deprecatedParams: [],
     };
 
-    // Test if deprecated params are passed and map them to their substitute, if any.
+    // Map deprecated params to their substitute, if any.
     this._deprecatedParamDefs
       .filter(paramDef => paramsCopy.has(paramDef.name))
       .forEach(paramDef => {
@@ -72,6 +72,16 @@ export class ParamMatcher {
       .forEach(paramDef => {
         matcherResult.matches = false;
         matcherResult.missingParams.push(paramDef);
+      });
+
+    // Apply default values for optional params. Ignore deprecated params defining a `useInstead` since already mapped.
+    this._optionalParamDefs
+      .filter(paramDef => paramDef.default !== undefined)
+      .filter(paramDef => !(typeof paramDef.deprecated === 'object' && paramDef.deprecated.useInstead))
+      .forEach(paramDef => {
+        if (paramsCopy.get(paramDef.name) === undefined) {
+          paramsCopy.set(paramDef.name, paramDef.default);
+        }
       });
 
     // Test if no additional params are passed.

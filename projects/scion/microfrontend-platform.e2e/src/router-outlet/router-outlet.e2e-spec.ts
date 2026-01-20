@@ -1609,6 +1609,42 @@ test.describe('RouterOutlet', () => {
       await expect.poll(() => routerOutletPO.getEmbeddedContentUrl()).toEqual('about:blank');
     });
 
+    test('should use default value of optional param', async ({testingAppPO}) => {
+      const pagePOs = await testingAppPO.navigateTo({
+        routerOutlet: RouterOutletPagePO,
+        router: OutletRouterPagePO,
+        registerCapabilityPage: RegisterCapabilityPagePO,
+      });
+
+      // Open router outlet page.
+      const routerOutletPO = pagePOs.get<RouterOutletPagePO>('routerOutlet');
+      await routerOutletPO.enterOutletName('testee');
+      await routerOutletPO.clickApply();
+
+      // Register "microfrontend" capability with default parameter.
+      const registerCapabilityPO = pagePOs.get<RegisterCapabilityPagePO>('registerCapabilityPage');
+      await registerCapabilityPO.registerCapability<MicrofrontendCapability>({
+        type: 'microfrontend',
+        qualifier: {component: 'testee'},
+        params: [
+          {name: 'param', required: false, default: 'defaultValue'},
+        ],
+        properties: {
+          path: 'test-pages/microfrontend-1-test-page?param=:param',
+        },
+      });
+
+      // Navigate to the microfrontend.
+      const routerPO = pagePOs.get<OutletRouterPagePO>('router');
+      await routerPO.enterOutletName('testee');
+      await routerPO.enterIntentQualifier({component: 'testee'});
+      await routerPO.clickNavigate();
+
+      // Verify to use default value of param.
+      const microfrontendPO = new Microfrontend1PagePO(routerOutletPO.routerOutletFrameLocator);
+      await expect.poll(() => microfrontendPO.getQueryParams()).toEqual({'param': 'defaultValue'});
+    });
+
     test('should navigate to a microfrontend in the specified outlet', async ({testingAppPO}) => {
       const pagePOs = await testingAppPO.navigateTo({
         router: OutletRouterPagePO,
