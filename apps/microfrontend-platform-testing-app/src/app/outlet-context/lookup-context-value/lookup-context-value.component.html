@@ -20,9 +20,11 @@
     <ng-template sciSash>
       <section class="context-value">
         <header>Observe:</header>
-        <output class="e2e-observe-value">
-          {{observeValue | json}}
-        </output>
+        @if (observeValue !== undefined) { <!-- null is a valid value -->
+          <output class="e2e-observe-value">
+            {{observeValue | json}}
+          </output>
+        }
       </section>
     </ng-template>
 
@@ -30,9 +32,11 @@
     <ng-template sciSash>
       <section class="context-value">
         <header>Lookup:</header>
-        <output class="e2e-lookup-value">
-          {{lookupValue | json}}
-        </output>
+        @if (lookupValue !== undefined) { <!-- null is a valid value -->
+          <output class="e2e-lookup-value">
+            {{lookupValue | json}}
+          </output>
+        }
       </section>
     </ng-template>
   </sci-sashbox>

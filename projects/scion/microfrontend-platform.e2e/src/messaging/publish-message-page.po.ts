@@ -97,7 +97,10 @@ export class PublishMessagePagePO implements OutletPageObject {
 
   public async getFirstReplyOrElseReject(): Promise<MessageListItemPO> {
     const messages = await this.getReplies();
-    return messages[0]!;
+    if (messages.length > 0) {
+      return messages[0]!;
+    }
+    throw Error('[NoReplyFoundError] No reply found.');
   }
 
   public async getPublishError(): Promise<string | null> {

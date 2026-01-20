@@ -1,4 +1,4 @@
-import {ApplicationConfig} from '@angular/core';
+import {ApplicationConfig, provideZoneChangeDetection} from '@angular/core';
 import {provideRouter, withHashLocation} from '@angular/router';
 import {routes} from './app.routes';
 import {provideMicrofrontendPlatformHost} from './microfrontend-platform-host.provider';
@@ -11,5 +11,6 @@ export const appConfig: ApplicationConfig = {
     provideMicrofrontendPlatformHost(),
     provideMicrofrontendPlatformClient(),
     provideAnimations(),
+    provideZoneChangeDetection(),
   ],
 };

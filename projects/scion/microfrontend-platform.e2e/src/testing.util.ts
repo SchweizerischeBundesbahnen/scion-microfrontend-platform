@@ -10,6 +10,7 @@
 
 import {FrameLocator, Locator, Page} from '@playwright/test';
 import {exhaustMap, filter, firstValueFrom, map, pairwise, timer} from 'rxjs';
+import {TestingAppPO} from './testing-app.po';
 
 /**
  * Returns if given CSS class is present on given element.
@@ -50,6 +51,8 @@ export async function isPresent(element: Locator): Promise<boolean> {
  * Evaluates `location.href` in the browsing context of the specified locator.
  */
 export async function getLocationHref(frameLocator: FrameLocator): Promise<string> {
+  const appPO = new TestingAppPO(frameLocator.owner().page());
+  await appPO.waitUntilIdle();
   return await frameLocator.locator('html').evaluate(() => window.location.href);
 }
 

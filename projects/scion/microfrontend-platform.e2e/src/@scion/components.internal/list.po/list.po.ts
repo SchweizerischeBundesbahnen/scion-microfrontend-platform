@@ -10,6 +10,7 @@
 
 import {SciListItemPO} from './list-item.po';
 import {Locator} from '@playwright/test';
+import {waitUntilStable} from '../../../testing.util';
 
 /**
  * Page object for {@link SciListComponent}.
@@ -24,7 +25,7 @@ export class SciListPO {
 
   public async getListItems(): Promise<SciListItemPO[]> {
     const listItemPOs = [];
-    const count = await this._listItemLocator.count();
+    const count = await waitUntilStable(() => this._listItemLocator.count());
     for (let i = 0; i < count; i++) {
       listItemPOs.push(new SciListItemPO(this._listItemLocator.nth(i)));
     }
