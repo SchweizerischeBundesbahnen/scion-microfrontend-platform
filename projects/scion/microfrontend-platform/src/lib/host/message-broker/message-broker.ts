@@ -175,7 +175,7 @@ export class MessageBroker implements Initializer, PreDestroy {
         // Check if the client is already connected. If already connected, do nothing. A client can potentially initiate multiple connect requests, for example,
         // when not receiving connect confirmation in time.
         const currentClient = this._clientRegistry.getByWindow(eventSource);
-        if (currentClient && currentClient.origin === event.origin && currentClient.application.symbolicName === application.symbolicName) {
+        if (currentClient?.origin === event.origin && currentClient.application.symbolicName === application.symbolicName) {
           sendTopicMessage<ConnackMessage>(currentClient, {
             topic: replyTo,
             body: {

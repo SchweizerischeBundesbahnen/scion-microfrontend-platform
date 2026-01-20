@@ -177,6 +177,13 @@ export class TestingAppPO {
   public async hasFocus(): Promise<boolean> {
     return isPresent(this._page.locator('app-root').locator('.e2e-has-focus'));
   }
+
+  /**
+   * Waits for the browser to become idle.
+   */
+  public async waitUntilIdle(timeout?: number): Promise<void> {
+    return this._page.evaluate((timeout: number | undefined) => new Promise<void>(resolve => requestIdleCallback(() => resolve(), {timeout})), timeout);
+  }
 }
 
 function putIfAbsentOrElseThrow(map: Map<string, OutletPageObject>, outletName: string, pageObject: OutletPageObject): void {
