@@ -93,7 +93,7 @@ export class MicrofrontendPlatform {
    */
   public static async startPlatform(startupFn?: () => void): Promise<void> {
     if (this.state === PlatformState.Started) {
-      return Promise.reject(Error('[MicrofrontendPlatformStartupError] Platform already started'));
+      throw Error('[MicrofrontendPlatformStartupError] Platform already started');
     }
 
     try {
@@ -104,7 +104,7 @@ export class MicrofrontendPlatform {
     }
     catch (error) {
       await this.destroy();
-      return Promise.reject(Error(`[MicrofrontendPlatformStartupError] Microfrontend platform failed to start: ${error}`));
+      throw Error(`[MicrofrontendPlatformStartupError] Microfrontend platform failed to start: ${error}`);
     }
   }
 

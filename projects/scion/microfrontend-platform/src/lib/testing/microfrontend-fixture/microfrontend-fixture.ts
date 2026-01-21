@@ -207,7 +207,9 @@ export class MicrofrontendFixture {
     if (this._options?.useSciRouterOutlet) {
       void Beans.get(OutletRouter).navigate(url, {outlet: this._routerOutletName});
     }
-    this.iframe.setAttribute('src', url);
+    else {
+      this.iframe.setAttribute('src', url);
+    }
     this.message$ = NEVER;
   }
 
@@ -239,9 +241,9 @@ export class MicrofrontendFixture {
                 (async () => {
                   // Create Observer for the script to send messages to the fixture. 
                   const observer = {
-                    next: (value) => window.parent.postMessage({ channel: '${channels.next}', value: value}, window.origin),
-                    error: (error) => window.parent.postMessage({ channel: '${channels.error}', value: error}, window.origin),
-                    complete: () => window.parent.postMessage({ channel: '${channels.complete}'}, window.origin),
+                    next: (value) => window.parent.postMessage({ channel: '${channels.next}', value: value}, window.origin), // {@link MessageEventData}
+                    error: (error) => window.parent.postMessage({ channel: '${channels.error}', value: error}, window.origin), // {@link MessageEventData}
+                    complete: () => window.parent.postMessage({ channel: '${channels.complete}'}, window.origin), // {@link MessageEventData}
                   };
                   try {
                     const args = fromJson('${toJson(args)}');
@@ -249,7 +251,7 @@ export class MicrofrontendFixture {
                     // Execute the script.
                     await ${ESBUILD_SCRIPT_GLOBAL_VARIABLE}['${scriptMethod}'](args, observer);
                     // Signal script execution completed.
-                    window.parent.postMessage({ channel: '${channels.load}'}, window.origin);
+                    window.parent.postMessage({ channel: '${channels.load}'}, window.origin); // {@link MessageEventData}
                   } 
                   catch (error) {
                     observer.error(error);  

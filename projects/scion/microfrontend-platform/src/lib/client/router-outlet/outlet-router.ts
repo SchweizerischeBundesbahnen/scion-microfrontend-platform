@@ -203,7 +203,7 @@ export class OutletRouter {
 
     await Beans.get(MessageClient).publish(outletUrlTopic, navigationUrl, {
       retain: true,
-      headers: new Map<string, any>()
+      headers: new Map<string, unknown>()
         .set(PUSH_STATE_TO_SESSION_HISTORY_STACK_MESSAGE_HEADER, options?.pushStateToSessionHistoryStack ?? false)
         .set(SHOW_SPLASH_MESSAGE_HEADER, options?.showSplash ?? false)
         .set(CAPABILITY_ID_MESSAGE_HEADER, options?.ɵcapabilityId),

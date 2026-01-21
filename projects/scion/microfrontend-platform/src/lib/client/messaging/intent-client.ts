@@ -73,7 +73,7 @@ export abstract class IntentClient {
    * @return A Promise that resolves when dispatched the intent, or that rejects if the intent could not be dispatched,
    *         e.g., if missing the intention declaration, or because no application is registered to handle the intent.
    */
-  public abstract publish<T = any>(intent: Intent, body?: T, options?: PublishOptions): Promise<void>;
+  public abstract publish<T = unknown>(intent: Intent, body?: T, options?: PublishOptions): Promise<void>;
 
   /**
    * Sends an intent and receives one or more replies.
@@ -164,7 +164,7 @@ export abstract class IntentClient {
    * @return Subscription to unregister the callback. Calling {@link rxjs!Subscription.unsubscribe Subscription.unsubscribe} will complete the Observable of all
    *         requestors, if any.
    */
-  public abstract onIntent<IN = any, OUT = any>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription;
+  public abstract onIntent<IN = unknown, OUT = unknown>(selector: IntentSelector, callback: (intentMessage: IntentMessage<IN>) => Observable<OUT> | Promise<OUT> | OUT | void): Subscription;
 }
 
 /**

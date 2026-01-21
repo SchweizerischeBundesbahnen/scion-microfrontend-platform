@@ -366,7 +366,7 @@ export class SciRouterOutletElement extends HTMLElement {
    * Makes contextual data available to embedded content. Embedded content can lookup contextual data using the {@link ContextService}.
    * Contextual data must be serializable with the structured clone algorithm.
    */
-  public setContextValue<T = any>(name: string, value: T): void {
+  public setContextValue<T = unknown>(name: string, value: T): void {
     this._contextProvider.set(name, value);
   }
 
@@ -386,7 +386,7 @@ export class SciRouterOutletElement extends HTMLElement {
    * Returns an Observable that emits the context of this outlet. Context values inherited from parent contexts are not returned.
    * The Observable never completes, and emits when a context value is added to or removed from the outlet context.
    */
-  public get contextValues$(): Observable<Map<string, any>> {
+  public get contextValues$(): Observable<Map<string, unknown>> {
     return this._contextProvider.entries$;
   }
 
