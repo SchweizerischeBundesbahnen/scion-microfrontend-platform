@@ -31,7 +31,7 @@ export interface NavigationOptions {
    * Specifies the parameters that, if navigating via URL, are used to substitute named URL parameters or that are passed along with the intent
    * if navigating via intent.
    */
-  params?: Map<string, any> | Dictionary;
+  params?: Map<string, unknown> | Dictionary;
   /**
    * Instructs the router to push a state to the browser's session history stack, allowing the user to use the back button to navigate back in the outlet.
    * By default, this behavior is disabled.

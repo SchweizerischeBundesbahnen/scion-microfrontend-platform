@@ -49,7 +49,7 @@ export class QualifierMatcher {
         if (pattern[key] === testee[key]) {
           return true;
         }
-        if (pattern[key] === '*' && !!testee[key]) {
+        if (pattern[key] === '*' && testee[key] !== undefined && testee[key] !== null) { // eslint-disable-line @typescript-eslint/no-unnecessary-condition
           return true;
         }
         return false;

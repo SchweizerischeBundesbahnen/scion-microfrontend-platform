@@ -132,11 +132,7 @@ export class FilterFieldComponent {
     const entry = typeof filter === 'string' ? {key: undefined, value: filter} : {key: this.type() === 'value' ? undefined : filter.key, value: filter.value};
 
     if (!this.hasEntry(entry)) {
-      this.filters.update(filters => {
-        const newFilters = [...filters];
-        newFilters.push(entry);
-        return newFilters;
-      });
+      this.filters.update(filters => filters.concat(entry));
       return entry;
     }
     return false;

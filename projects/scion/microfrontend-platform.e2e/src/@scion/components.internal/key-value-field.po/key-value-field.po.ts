@@ -18,7 +18,7 @@ export class SciKeyValueFieldPO {
   constructor(private readonly _sciKeyValueFieldLocator: Locator) {
   }
 
-  public async addEntries(entries: Record<string, any>): Promise<void> {
+  public async addEntries(entries: Record<string, unknown>): Promise<void> {
     const addButton = this._sciKeyValueFieldLocator.locator('button.e2e-add');
     const lastKeyInput = this._sciKeyValueFieldLocator.locator('input.e2e-key').last();
     const lastValueInput = this._sciKeyValueFieldLocator.locator('input.e2e-value').last();
