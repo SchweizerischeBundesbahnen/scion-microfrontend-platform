@@ -38,7 +38,7 @@ export class AppComponent {
     // only log "real", aka trusted events and ignore synthetic events, e.g. keyboard events propagated across iframe boundaries.
     if (keyboardEvent.isTrusted) {
       const outletContextName = (await this._outletContext)?.name ?? 'n/a';
-      console.debug(`[AppComponent::document:onkeydown] [TRUSTED] [outletContext=${outletContextName}, key='${keyboardEvent.key}', control=${keyboardEvent.ctrlKey}, shift=${keyboardEvent.shiftKey}, alt=${keyboardEvent.altKey}, meta=${keyboardEvent.metaKey}, defaultPrevented=${keyboardEvent.defaultPrevented}]`);
+      console.debug(`[AppComponent::document:onkeydown] [TRUSTED] [outletContext=${outletContextName}, key='${keyboardEvent.key}', control=${keyboardEvent.ctrlKey}, shift=${keyboardEvent.shiftKey}, alt=${keyboardEvent.altKey}, meta=${keyboardEvent.metaKey}, location=${keyboardEvent.location}, defaultPrevented=${keyboardEvent.defaultPrevented}]`);
     }
   }
 
@@ -56,7 +56,7 @@ export class AppComponent {
       )
       .subscribe(([event, outletContext]: [KeyboardEvent, OutletContext | null]) => {
         if (!event.isTrusted && (event.target as Element).tagName === 'SCI-ROUTER-OUTLET') {
-          console.debug(`[AppComponent::document:on${event.type}] [SYNTHETIC] [outletContext=${outletContext?.name ?? 'n/a'}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}]`);
+          console.debug(`[AppComponent::document:on${event.type}] [SYNTHETIC] [outletContext=${outletContext?.name ?? 'n/a'}, key='${event.key}', control=${event.ctrlKey}, shift=${event.shiftKey}, alt=${event.altKey}, meta=${event.metaKey}, location=${event.location}]`);
         }
       });
   }
