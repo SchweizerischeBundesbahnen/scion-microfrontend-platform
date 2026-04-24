@@ -62,6 +62,7 @@ export class KeyboardEventDispatcher implements PreDestroy {
           altKey: event.altKey,
           metaKey: event.metaKey,
           bubbles: event.bubbles,
+          location: event.location,
         };
 
         const publishTo = RouterOutlets.keyboardEventTopic(outletContext!.uid, event.type);

@@ -24,7 +24,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
  *
  * ### Example for Angular Applications
  *
- * For Angular applications, we reommend installing the following decorator:
+ * For Angular applications, we recommend installing the following decorator:
  *
  * ```ts
  * import {NgZone} from '@angular/core';
