@@ -263,9 +263,6 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "apps/microfrontend-platform-devtools/src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
             "tsConfig": "apps/microfrontend-platform-devtools/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [

@@ -1,4 +1,4 @@
-@if (application$ | async; as application) {
+@if (application(); as application) {
   <section class="properties">
     <span>Name:</span>
     <span>{{application.name}} ({{application.symbolicName}})</span>
@@ -21,7 +21,7 @@
   </section>
   <sci-tabbar>
     <ng-template sciTab label="Capabilities" name="capabilities">
-      @if (capabilities$ | async; as capabilities) {
+      @if (capabilities(); as capabilities) {
         <section class="capabilities">
           <sci-filter-field #capability_filter_field [formControl]="capabilityFilterFormControl"
                             placeholder="Filter by type and qualifier, with multiple filter terms separated by space."/>
@@ -42,7 +42,7 @@
       }
     </ng-template>
     <ng-template sciTab label="Intentions" name="intentions">
-      @if (intentions$ | async; as intentions) {
+      @if (intentions(); as intentions) {
         <section class="intentions">
           <sci-filter-field #intention_filter_field [formControl]="intentionFilterFormControl"
                             placeholder="Filter by type and qualifier, with multiple filter terms separated by space."/>

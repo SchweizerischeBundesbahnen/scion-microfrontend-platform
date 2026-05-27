@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, untracked, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, effect, inject, untracked, viewChild} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Application, Capability, Intention} from '@scion/microfrontend-platform';
 import {distinctUntilChanged, expand, map, switchMap, take} from 'rxjs/operators';
@@ -60,22 +60,18 @@ export class AppDetailsComponent {
   private readonly _route = inject(ActivatedRoute);
   private readonly _router = inject(Router);
   private readonly _manifestService = inject(DevToolsManifestService);
-  private readonly _cd = inject(ChangeDetectorRef);
   private readonly _formBuilder = inject(NonNullableFormBuilder);
   private readonly _tabbar = viewChild(SciTabbarComponent);
+  private readonly _application$ = this.observeApplication$();
 
-  public application$: Observable<Application>;
-  public capabilities$: Observable<Capability[]>;
-  public intentions$: Observable<Intention[]>;
+  protected readonly application = toSignal(this._application$);
+  protected readonly capabilities = toSignal(this.observeCapabilities$());
+  protected readonly intentions = toSignal(this.observeIntentions$());
 
-  public capabilityFilterFormControl = this._formBuilder.control('');
-  public intentionFilterFormControl = this._formBuilder.control('');
+  protected readonly capabilityFilterFormControl = this._formBuilder.control('');
+  protected readonly intentionFilterFormControl = this._formBuilder.control('');
 
   constructor() {
-    this.application$ = this.observeApplication$();
-    this.capabilities$ = this.observeCapabilities$();
-    this.intentions$ = this.observeIntentions$();
-
     this.installTitleProvider();
     this.installTabActivator();
   }
@@ -90,7 +86,7 @@ export class AppDetailsComponent {
   }
 
   private observeCapabilities$(): Observable<Capability[]> {
-    return this.application$
+    return this._application$
       .pipe(
         switchMap(application => this._manifestService.capabilities$({appSymbolicName: application.symbolicName})),
         expand(capabilities => this.capabilityFilterFormControl.valueChanges.pipe(take(1), map(() => capabilities))),
@@ -99,7 +95,7 @@ export class AppDetailsComponent {
   }
 
   private observeIntentions$(): Observable<Intention[]> {
-    return this.application$
+    return this._application$
       .pipe(
         switchMap(application => this._manifestService.intentions$({appSymbolicName: application.symbolicName})),
         expand(intentions => this.intentionFilterFormControl.valueChanges.pipe(take(1), map(() => intentions))),
@@ -108,11 +104,10 @@ export class AppDetailsComponent {
   }
 
   private installTitleProvider(): void {
-    this.application$
+    this._application$
       .pipe(takeUntilDestroyed())
       .subscribe(application => {
         this._shellService.detailsTitle = application.name;
-        this._cd.markForCheck();
       });
   }
 
@@ -130,7 +125,6 @@ export class AppDetailsComponent {
 
         void this._router.navigate([], {replaceUrl: true, relativeTo: this._route}); // remove 'activeTab' matrix param from URL
         tabbar.activateTab(tabToActivate);
-        this._cd.markForCheck();
       });
     });
   }

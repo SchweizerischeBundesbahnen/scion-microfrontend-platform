@@ -8,9 +8,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {EnvironmentProviders, inject, Injector, makeEnvironmentProviders, NgZone, provideAppInitializer} from '@angular/core';
-import {ContextService, IntentClient, ManifestService, MessageClient, MicrofrontendPlatformClient, ObservableDecorator, OutletRouter} from '@scion/microfrontend-platform';
-import {NgZoneObservableDecorator} from './ng-zone-observable-decorator';
+import {EnvironmentProviders, inject, Injector, makeEnvironmentProviders, provideAppInitializer} from '@angular/core';
+import {ContextService, IntentClient, ManifestService, MessageClient, MicrofrontendPlatformClient, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {environment} from '../../environments/environment';
 import {MicrofrontendPlatformClientStartupPhase, runMicrofrontendPlatformClientInitializers} from './microfrontend-platform-client-initializer';
@@ -33,12 +32,10 @@ export function provideMicrofrontendPlatformClient(): EnvironmentProviders {
  * Connects devtools to the host.
  */
 async function connectToHostFn(): Promise<void> {
-  const zone = inject(NgZone);
   const injector = inject(Injector);
 
-  Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)});
   await runMicrofrontendPlatformClientInitializers(MicrofrontendPlatformClientStartupPhase.PreConnect, injector);
-  if (await zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect(environment.symbolicName).then(() => true).catch(() => false))) {
+  if (await MicrofrontendPlatformClient.connect(environment.symbolicName).then(() => true).catch(() => false)) {
     await runMicrofrontendPlatformClientInitializers(MicrofrontendPlatformClientStartupPhase.PostConnect, injector);
   }
 }
