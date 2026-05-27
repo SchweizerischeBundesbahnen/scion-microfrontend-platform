@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, inject, untracked, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, effect, inject, untracked, viewChild} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Application, Capability, Intention} from '@scion/microfrontend-platform';
 import {distinctUntilChanged, expand, map, switchMap, take} from 'rxjs/operators';
@@ -60,7 +60,6 @@ export class AppDetailsComponent {
   private readonly _route = inject(ActivatedRoute);
   private readonly _router = inject(Router);
   private readonly _manifestService = inject(DevToolsManifestService);
-  private readonly _cd = inject(ChangeDetectorRef);
   private readonly _formBuilder = inject(NonNullableFormBuilder);
   private readonly _tabbar = viewChild(SciTabbarComponent);
 
@@ -112,7 +111,6 @@ export class AppDetailsComponent {
       .pipe(takeUntilDestroyed())
       .subscribe(application => {
         this._shellService.detailsTitle = application.name;
-        this._cd.markForCheck();
       });
   }
 
@@ -130,7 +128,6 @@ export class AppDetailsComponent {
 
         void this._router.navigate([], {replaceUrl: true, relativeTo: this._route}); // remove 'activeTab' matrix param from URL
         tabbar.activateTab(tabToActivate);
-        this._cd.markForCheck();
       });
     });
   }
