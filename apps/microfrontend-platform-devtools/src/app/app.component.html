@@ -1,12 +1,12 @@
 @if (connectedToHost | async) {
   <sci-sashbox>
-    @if (showPrimaryOutlet) {
+    @if (showPrimaryOutlet()) {
       <ng-template sciSash size="1">
         <aside>
           <header>
             <button class="menu" (click)="onOpenMenuClick()" sciMaterialIcon>menu</button>
-            <span class="title">{{primaryTitle$ | async}}</span>
-            @if (showDetailsOutlet) {
+            <span class="title">{{primaryTitle()}}</span>
+            @if (showDetailsOutlet()) {
               <button class="collapse" (click)="onCollapsePrimaryClick()" sciMaterialIcon>keyboard_arrow_left</button>
             }
           </header>
@@ -14,15 +14,15 @@
         </aside>
       </ng-template>
     }
-    @if (showDetailsOutlet) {
+    @if (showDetailsOutlet()) {
       <ng-template sciSash size="4">
         <main>
           <header>
-            @if (!showPrimaryOutlet) {
+            @if (!showPrimaryOutlet()) {
               <button class="menu" (click)="onOpenMenuClick()" sciMaterialIcon>menu</button>
               <button class="expand" (click)="onExpandPrimaryClick()" sciMaterialIcon>keyboard_arrow_right</button>
             }
-            <span class="title" (dblclick)="onDetailsDblClick()">{{detailsTitle$ | async}}</span>
+            <span class="title" (dblclick)="onDetailsDblClick()">{{detailsTitle()}}</span>
           </header>
           <router-outlet name="details"/>
         </main>
@@ -41,7 +41,7 @@
   </section>
 }
 
-@if (menuOpen) {
+@if (menuOpen()) {
   <devtools-app-menu (close)="onMenuClose()"/>
 }
 

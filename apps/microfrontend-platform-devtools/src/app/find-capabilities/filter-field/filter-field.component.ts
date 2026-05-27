@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, ElementRef, HostListener, inject, input, NgZone, output, Signal, signal, untracked, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, ElementRef, inject, input, output, Signal, signal, untracked, viewChild} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
 import {KeyValuePair, LogicalOperator} from './filter-field';
@@ -25,6 +25,9 @@ import {toSignal} from '@angular/core/rxjs-interop';
     CdkMonitorFocus,
     SciMaterialIconDirective,
   ],
+  host: {
+    '(keydown.escape)': `showFilter.set(false)`,
+  },
 })
 export class FilterFieldComponent {
 
@@ -42,7 +45,6 @@ export class FilterFieldComponent {
   public readonly changeLogicalOperator = output<LogicalOperator>();
 
   private readonly _cdRef = inject(ChangeDetectorRef);
-  private readonly _zone = inject(NgZone);
   private readonly _formBuilder = inject(NonNullableFormBuilder);
   private readonly _keyElement = viewChild('key', {read: ElementRef<HTMLElement>});
   private readonly _valueElement = viewChild('value', {read: ElementRef<HTMLElement>});
@@ -61,16 +63,9 @@ export class FilterFieldComponent {
     this.computeFilters();
   }
 
-  @HostListener('keydown.escape')
-  protected onEscape(): void {
-    this.showFilter.set(false);
-  }
-
   protected onFocusChange(origin: FocusOrigin): void {
     if (origin === null) {
       this.showFilter.set(false);
-      // Workaround for the fact that (cdkFocusChange) emits outside NgZone.
-      this._zone.run(() => this._cdRef.markForCheck());
     }
   }
 
