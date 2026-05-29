@@ -5,6 +5,8 @@ include::{basedir}/_common.adoc[]
 == Angular Integration Guide
 This part of the documentation is for developers who want to integrate the SCION Microfrontend Platform in an Angular application.
 
+IMPORTANT: For Angular applications using Zone.js, start or connect to the platform outside the Angular zone to avoid excessive change detection cycles caused by platform-internal messaging. Refer to the Angular integration guide in version https://microfrontend-platform-developer-guide-v2-0-0.scion.vercel.app/#chapter:angular_integration_guide[2.0.0] for more information and examples.
+
 [.chapter-toc]
 ****
 [.chapter-title]
@@ -18,7 +20,6 @@ In this Chapter
 - <<chapter:angular-integration-guide:providing-activator>>
 - <<chapter:angular-integration-guide:providing-platform-beans-for-dependency-injection>>
 - <<chapter:angular-integration-guide:providing-microfrontends>>
-- <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>>
 ****
 '''
 
@@ -30,8 +31,6 @@ The platform should be started during the bootstrapping of the Angular applicati
 
 NOTE: Angular allows hooking into the process of initialization by providing an initializer to Angular's `provideAppInitializer` function. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
 
-IMPORTANT: We recommend starting the platform outside the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
-
 The following listing illustrates how to configure an Angular app initializer to start the SCION Microfrontend Platform in the host application.
 
 [source,typescript]
@@ -40,10 +39,8 @@ include::start-platform-via-initializer.snippets.ts[tags=host-app:startPlatformH
 ----
 <1> Registers a set of DI providers to set up the SCION Microfrontend Platform in the host application.
 <2> Instruments Angular to start the SCION Microfrontend Platform during application startup.
-<3> Injects `NgZone` using Angular's `inject` function.
-<4> Registers a decorator to synchronize platform-specific RxJS Observables with the Angular Zone. See <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>> for more information.
-<5> Constructs the config object to configure the platform and list applications that are allowed to interact with the platform. Refer to <<chapter:configuration:configuring-the-platform>> for more information about configuring the platform.
-<6> Starts the platform host outside the Angular zone.
+<3> Constructs the config object to configure the platform and list applications that are allowed to interact with the platform. Refer to <<chapter:configuration:configuring-the-platform>> for more information about configuring the platform.
+<4> Starts the platform host.
 
 
 ====
@@ -57,8 +54,6 @@ A micro application should connect to the platform host during the bootstrapping
 
 NOTE: Angular allows hooking into the process of initialization by providing an initializer to Angular's `provideAppInitializer` function. Angular will wait until all initializers resolved to start the application, making it the ideal place for starting the SCION Microfrontend Platform.
 
-IMPORTANT: We recommend connecting to the platform host outside the Angular zone in order to avoid excessive change detection cycles of platform-internal subscriptions to global DOM events.
-
 The following listing illustrates how to configure an Angular app initializer to connect to the platform from a micro application.
 
 [source,typescript]
@@ -67,9 +62,7 @@ include::start-platform-via-initializer.snippets.ts[tags=micro-app:connectToHost
 ----
 <1> Registers a set of DI providers to set up the SCION Microfrontend Platform in a client application.
 <2> Instruments Angular to connect to the platform host during application startup.
-<3> Injects `NgZone` using Angular’s `inject` function.
-<4> Registers a decorator to synchronize platform-specific RxJS Observables with the Angular Zone. See <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>> for more information.
-<5> Connects to the platform host outside the Angular zone, passing the symbolic name of the application as argument.
+<3> Connects to the platform host, passing the symbolic name of the application as argument.
 
 ====
 TIP: Refer to chapter <<chapter:configuration:connecting-to-the-host>> for detailed instructions on how to connect to the host from a microfrontend.
@@ -87,10 +80,8 @@ The following listing illustrates how to configure an Angular resolver to connec
 include::start-platform-via-resolver.snippets.ts[tags=resolver]
 ----
 <1> Installs a resolver on a component-less, empty-path route, which is parent to the microfrontend routes.
-<2> Injects `NgZone` using Angular’s `inject` function.
-<3> Registers a decorator to synchronize platform-specific RxJS Observables with the Angular Zone. See <<chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone>> for more information.
-<4> Connects to the platform host outside the Angular zone, passing the symbolic name of the application as argument.
-<5> Registers microfrontend routes as child routes.
+<2> Connects to the platform host, passing the symbolic name of the application as argument.
+<3> Registers microfrontend routes as child routes.
 
 Ensure that a micro application instance connects to the host only once. Therefore, it is recommended to install the resolver in a parent route common to all microfrontend routes. When loading a microfrontend for the first time, Angular will wait activating the child route until the platform finished starting. When navigating to another microfrontend of the micro application, the resolver does not resolve anew.
 
@@ -195,30 +186,3 @@ include::lazy-loaded-microfrontends.snippets.ts[tags=routes]
 <2> Registers the lazy-loaded route for the `microfrontend-1` microfrontend.
 <3> Registers the lazy-loaded route for the `microfrontend-2` microfrontend.
 <4> Registers the declared routes with Angular.
-
-
-[[chapter:angular-integration-guide:synchronizing-rxjs-observables-with-angular-zone]]
-[discrete]
-=== Synchronizing RxJS Observables with the Angular Zone
-
-Angular applications expect an RxJS Observable to emit in the same Angular zone in which subscribed to the Observable. That is, if subscribing inside the Angular zone, emissions are expected to be received inside the Angular zone. Otherwise, the UI may not be updated as expected but delayed until the next change detection cycle. Similarly, if subscribing outside the Angular zone, emissions are expected to be received outside the Angular zone. Otherwise, this would cause unnecessary change detection cycles resulting in potential performance degradation.
-
-Therefore, the platform supports the decoration of its observables to emit in the correct zone. We strongly recommend decoration for Angular applications. A decorator must implement `ObservableDecorator` and be registered in the bean manager before the platform is started, as follows:
-
-[source,typescript]
-----
-include::angular-zone-observable-decorator.snippets.ts[tags=register-ng-zone-observable-decorator]
-----
-<1> Injects the Angular `NgZone`.
-<2> Registers the decorator.
-
-Example of a decorator for synchronizing the Angular zone.
-
-[source,typescript]
-----
-include::angular-zone-observable-decorator.snippets.ts[tags=ng-zone-observable-decorator]
-----
-<1> Captures the zone at the time of subscription to the Observable.
-<2> Subscribes to the source outside the Angular zone.
-<3> Runs subscription handlers (`next`, `error`, `complete`) in the same zone in which subscribed to the Observable.
-
