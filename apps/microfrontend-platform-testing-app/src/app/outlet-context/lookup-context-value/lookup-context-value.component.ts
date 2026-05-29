@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, inject, signal} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ContextService} from '@scion/microfrontend-platform';
@@ -36,7 +36,6 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 export default class LookupContextValueComponent {
 
   private readonly _formBuilder = inject(NonNullableFormBuilder);
-  private readonly _cd = inject(ChangeDetectorRef);
   private readonly _destroyRef = inject(DestroyRef);
   private readonly _contextService = Beans.get(ContextService);
 
@@ -45,11 +44,11 @@ export default class LookupContextValueComponent {
     collect: this._formBuilder.control(false, Validators.required),
   });
 
-  private _subscription: Subscription | undefined;
+  protected readonly observeValue = signal<unknown>(undefined);
+  protected readonly lookupValue = signal<unknown>(undefined);
+  protected readonly subscribeError = signal<string | undefined>(undefined);
 
-  protected observeValue: unknown;
-  protected lookupValue: unknown;
-  protected subscribeError: string | undefined;
+  private _subscription: Subscription | undefined;
 
   protected onSubscribe(): void {
     const key = this.form.controls.key.value;
@@ -61,21 +60,14 @@ export default class LookupContextValueComponent {
     this._subscription = this._contextService.observe$(key, options)
       .pipe(takeUntilDestroyed(this._destroyRef))
       .subscribe({
-        next: next => {
-          this.observeValue = next;
-          this._cd.markForCheck();
-        },
-        error: (error: unknown) => {
-          this.subscribeError = stringifyError(error);
-          this._cd.markForCheck();
-        },
+        next: next => this.observeValue.set(next),
+        error: (error: unknown) => this.subscribeError.set(stringifyError(error)),
       });
 
     // Lookup
     this._contextService.lookup(key, options)
-      .then(value => this.lookupValue = value)
-      .catch((error: unknown) => this.subscribeError = stringifyError(error))
-      .finally(() => this._cd.markForCheck());
+      .then(value => this.lookupValue.set(value))
+      .catch((error: unknown) => this.subscribeError.set(stringifyError(error)));
   }
 
   protected onUnsubscribe(): void {
@@ -83,9 +75,9 @@ export default class LookupContextValueComponent {
     this.form.controls.key.enable();
     this.form.controls.collect.enable();
 
-    this.lookupValue = undefined;
-    this.observeValue = undefined;
-    this.subscribeError = undefined;
+    this.lookupValue.set(undefined);
+    this.observeValue.set(undefined);
+    this.subscribeError.set(undefined);
   }
 
   protected get isSubscribed(): boolean {

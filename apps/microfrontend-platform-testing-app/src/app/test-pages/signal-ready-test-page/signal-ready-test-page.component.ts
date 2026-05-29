@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ContextService, MessageClient, MicrofrontendPlatformClient, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
@@ -19,6 +19,7 @@ import {from, switchMap} from 'rxjs';
 @Component({
   selector: 'app-signal-ready-test-page',
   template: '',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SignalReadyTestPageComponent {
 

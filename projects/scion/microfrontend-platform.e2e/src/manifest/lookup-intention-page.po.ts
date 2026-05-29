@@ -10,7 +10,7 @@
 
 import {FrameLocator, Locator} from '@playwright/test';
 import {ManifestObjectFilter} from '@scion/microfrontend-platform';
-import {isPresent} from '../testing.util';
+import {isPresent, waitUntilAngularStable} from '../testing.util';
 import {SciKeyValueFieldPO} from '../@scion/components.internal/key-value-field.po';
 import {SciListPO} from '../@scion/components.internal/list.po';
 import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
@@ -39,6 +39,8 @@ export class LookupIntentionPagePO implements OutletPageObject {
     if (await this._locator.locator('button.e2e-reset').isEnabled()) {
       await this._locator.locator('button.e2e-reset').click();
     }
+
+    await waitUntilAngularStable(this._locator.page());
 
     if (filter && Object.keys(filter).length) {
       if (filter.id) {

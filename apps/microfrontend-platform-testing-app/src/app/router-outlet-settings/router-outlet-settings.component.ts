@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, HostListener, inject, Injector} from '@angular/core';
+import {Component, inject, Injector} from '@angular/core';
 import {PreferredSize, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
@@ -29,12 +29,15 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
     ReactiveFormsModule,
     SciToggleButtonComponent,
   ],
+  host: {
+    '(keydown.escape)': `overlay.dispose()`,
+  },
 })
 export class RouterOutletSettingsComponent {
 
   private readonly _routerOutlet = inject(SciRouterOutletElement);
-  private readonly _overlay = inject(OverlayRef);
 
+  protected readonly overlay = inject(OverlayRef);
   protected readonly pageScrollingEnabledFormControl: FormControl<boolean>;
 
   constructor() {
@@ -42,16 +45,16 @@ export class RouterOutletSettingsComponent {
     this.pageScrollingEnabledFormControl.valueChanges
       .pipe(takeUntilDestroyed())
       .subscribe(on => this._routerOutlet.scrollable = on);
-    this._overlay.backdropClick()
+    this.overlay.backdropClick()
       .pipe(takeUntilDestroyed())
-      .subscribe(() => this._overlay.dispose());
+      .subscribe(() => this.overlay.dispose());
   }
 
-  public onPreferredSizeResetClick(): void {
+  protected onPreferredSizeResetClick(): void {
     this._routerOutlet.resetPreferredSize();
   }
 
-  public get preferredSize(): PreferredSize | undefined {
+  protected get preferredSize(): PreferredSize | undefined {
     const preferredSize = this._routerOutlet.preferredSize;
     if (!preferredSize) {
       return undefined;
@@ -64,11 +67,6 @@ export class RouterOutletSettingsComponent {
       }
       return obj;
     }, {});
-  }
-
-  @HostListener('keydown.escape')
-  public onEscape(): void {
-    this._overlay.dispose();
   }
 
   public static openAsOverlay(config: {anchor: HTMLElement; routerOutlet: SciRouterOutletElement; overlay: Overlay; injector: Injector}): void {

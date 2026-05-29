@@ -88,6 +88,13 @@ export async function waitUntilNavigationStable(page: Page): Promise<void> {
 }
 
 /**
+ * Waits for Angular to become stable.
+ */
+export async function waitUntilAngularStable(page: Page): Promise<void> {
+  await waitUntilStable(() => page.locator('app-root').getAttribute('data-last-render'));
+}
+
+/**
  * Parses given keystroke.
  *
  * Format: "keydown.control.alt.enter{preventDefault=true}"

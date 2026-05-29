@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MessageClient, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -17,6 +17,7 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
   selector: 'app-clear-outlet-then-send-message-test-page',
   templateUrl: './clear-outlet-then-send-message-test-page.component.html',
   styleUrls: ['./clear-outlet-then-send-message-test-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     SciFormFieldComponent,
@@ -26,12 +27,12 @@ export default class ClearOutletThenSendMessageTestPageComponent {
 
   private readonly _formBuilder = inject(NonNullableFormBuilder);
 
-  public form = this._formBuilder.group({
+  protected readonly form = this._formBuilder.group({
     outlet: this._formBuilder.control('', Validators.required),
     topic: this._formBuilder.control('', Validators.required),
   });
 
-  public async onRunTestClick(): Promise<void> {
+  protected async onRunTestClick(): Promise<void> {
     // Clear the router outlet.
     await Beans.get(OutletRouter).navigate(null, {outlet: this.form.controls.outlet.value});
     // Send message to the topic.

@@ -49,22 +49,22 @@
 
 </form>
 
-@if (!publishing) {
+@if (!publishing()) {
   <button type="button" (click)="onPublish()" [disabled]="form.invalid" class="e2e-publish" sci-primary>{{isTopicFlavor() ? 'Publish message' : 'Issue intent'}}</button>
 }
-@if (publishing) {
+@if (publishing()) {
   <button type="button" (click)="onCancelPublish()" class="e2e-cancel" sci-primary>Cancel</button>
 }
 
-@if (publishError) {
+@if (publishError()) {
   <output class="publish-error e2e-publish-error">
-    {{publishError}}
+    {{publishError()}}
   </output>
 }
 
-@if (isRequestReply() && publishing) {
+@if (isRequestReply() && publishing()) {
   <sci-list class="replies e2e-replies">
-    @for (reply of replies; track reply) {
+    @for (reply of replies(); track reply) {
       <ng-template sciListItem>
         <app-message-list-item [message]="reply" [isTopicMessage]="true"/>
       </ng-template>

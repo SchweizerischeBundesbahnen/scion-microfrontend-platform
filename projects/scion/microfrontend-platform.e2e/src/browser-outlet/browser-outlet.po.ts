@@ -11,7 +11,7 @@
 import {Outlets, TestingAppOrigins} from '../testing-app.po';
 import {RouterOutletContextPO} from '../context/router-outlet-context.po';
 import {Frame, FrameLocator, Locator, Page} from '@playwright/test';
-import {getLocationHref, isPresent, parseKeystroke} from '../testing.util';
+import {getLocationHref, isPresent, parseKeystroke, waitUntilAngularStable} from '../testing.util';
 import {ElementSelectors} from '../element-selectors';
 import {RouterOutletSettingsPO} from '../settings/router-outlet-settings.po';
 import {ConsoleLogs} from '../console-logs';
@@ -80,6 +80,7 @@ export class BrowserOutletPO implements OutletPageObject {
    */
   public async openRouterOutletContext(): Promise<RouterOutletContextPO> {
     await this._locator.locator('button.e2e-context-define').click();
+    await waitUntilAngularStable(this._locator.page());
     return new RouterOutletContextPO(this._pageOrFrameLocator);
   }
 

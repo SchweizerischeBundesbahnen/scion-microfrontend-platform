@@ -7,8 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, effect, ElementRef, inject, NgZone, untracked, viewChild} from '@angular/core';
-import {asapScheduler, debounceTime, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
+import {Component, effect, ElementRef, inject, NgZone, signal, untracked, viewChild} from '@angular/core';
+import {debounceTime, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, ManifestService, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {tap} from 'rxjs/operators';
 import {ActivatedRoute, RouterOutlet} from '@angular/router';
@@ -48,7 +48,7 @@ export default class AppShellComponent {
   protected readonly focusMonitor = Beans.get(FocusMonitor);
   protected readonly devToolsFormControl = new FormControl<boolean>(false, {nonNullable: true});
 
-  protected pageTitle: string | undefined;
+  protected readonly pageTitle = signal<string | undefined>(undefined);
 
   constructor() {
     this.installRouteActivateListener();
@@ -110,26 +110,9 @@ export default class AppShellComponent {
     });
   }
 
-  /**
-   * asapScheduler is used in order to avoid 'ExpressionChangedAfterItHasBeenCheckedError'.
-   *
-   * For some reason, if the router-outlet is placed inside a container with some structural directive,
-   * the change detection gets somewhat messed up, resulting in the mentioned error.
-   *
-   * Example 1:
-   * <ng-container *ngIf="...">
-   *   <router-outlet #outlet=outlet (activate)="onRouteActivate(outlet.activatedRoute)"></router-outlet>
-   * </ng-container>
-   *
-   * Example 2:
-   * <ng-container *ngTemplateOutlet="template"></ng-container>
-   * <ng-template #template>
-   *   <router-outlet #outlet=outlet (activate)="onRouteActivate(outlet.activatedRoute)"></router-outlet>
-   * </ng-template>
-   */
   protected onRouteActivate(route: ActivatedRoute): void {
     const isPageTitleVisible = route.snapshot.data['pageTitleVisible'] as boolean | undefined ?? true;
-    asapScheduler.schedule(() => this.pageTitle = isPageTitleVisible ? route.snapshot.data['pageTitle'] as string : undefined);
+    this.pageTitle.set(isPageTitleVisible ? route.snapshot.data['pageTitle'] as string : undefined);
     this._routeActivate$.next();
   }
 

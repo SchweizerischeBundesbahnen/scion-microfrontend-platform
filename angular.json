@@ -66,9 +66,6 @@
           "options": {
             "outputPath": "dist/microfrontend-platform-client-application-bundle-analyzer",
             "browser": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
             "tsConfig": "projects/scion/microfrontend-platform.client-application-bundle-analyzer/tsconfig.app.json",
             "outputHashing": "all",
             "sourceMap": true
@@ -110,9 +107,6 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "apps/microfrontend-platform-testing-app/src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
             "tsConfig": "apps/microfrontend-platform-testing-app/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -180,10 +174,43 @@
               "outputHashing": "all",
               "outputPath": "dist/microfrontend-platform-testing-app-ci"
             },
+            "production-ci-zone": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "polyfills": [
+                "zone.js"
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "apps/microfrontend-platform-testing-app/src/environments/environment.ts",
+                  "with": "apps/microfrontend-platform-testing-app/src/environments/environment.ci.ts"
+                }
+              ],
+              "outputHashing": "all",
+              "outputPath": "dist/microfrontend-platform-testing-app-ci-zone"
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "development-zone": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "polyfills": [
+                "zone.js"
+              ]
             }
           },
           "defaultConfiguration": "development"
@@ -196,6 +223,12 @@
             },
             "development": {
               "buildTarget": "microfrontend-platform-testing-app:build:development",
+              "headers": {
+                "Content-Security-Policy": "default-src 'self'; connect-src 'self' blob: localhost:*; frame-src 'self' localhost:*; font-src 'self' https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com 'nonce-STATIC_NONCE'; script-src 'self' 'nonce-STATIC_NONCE'; frame-ancestors 'self' localhost:*"
+              }
+            },
+            "development-zone": {
+              "buildTarget": "microfrontend-platform-testing-app:build:development-zone",
               "headers": {
                 "Content-Security-Policy": "default-src 'self'; connect-src 'self' blob: localhost:*; frame-src 'self' localhost:*; font-src 'self' https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com 'nonce-STATIC_NONCE'; script-src 'self' 'nonce-STATIC_NONCE'; frame-ancestors 'self' localhost:*"
               }
