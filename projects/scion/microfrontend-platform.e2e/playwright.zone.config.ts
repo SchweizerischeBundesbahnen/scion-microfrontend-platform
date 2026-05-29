@@ -19,22 +19,22 @@ export default defineConfig({
   fullyParallel: true,
   webServer: [
     {
-      command: runInCI ? 'npm run microfrontend-platform-testing-app:4201:dist-serve' : 'npm run microfrontend-platform-testing-app:4201:serve',
+      command: runInCI ? 'npm run microfrontend-platform-testing-app:4201:dist-serve-zone' : 'npm run microfrontend-platform-testing-app:4201:serve-zone',
       port: 4201,
       reuseExistingServer: !runInCI,
     },
     {
-      command: runInCI ? 'npm run microfrontend-platform-testing-app:4202:dist-serve' : 'npm run microfrontend-platform-testing-app:4202:serve',
+      command: runInCI ? 'npm run microfrontend-platform-testing-app:4202:dist-serve-zone' : 'npm run microfrontend-platform-testing-app:4202:serve-zone',
       port: 4202,
       reuseExistingServer: !runInCI,
     },
     {
-      command: runInCI ? 'npm run microfrontend-platform-testing-app:4203:dist-serve' : 'npm run microfrontend-platform-testing-app:4203:serve',
+      command: runInCI ? 'npm run microfrontend-platform-testing-app:4203:dist-serve-zone' : 'npm run microfrontend-platform-testing-app:4203:serve-zone',
       port: 4203,
       reuseExistingServer: !runInCI,
     },
     {
-      command: runInCI ? 'npm run microfrontend-platform-testing-app:4204:dist-serve' : 'npm run microfrontend-platform-testing-app:4204:serve',
+      command: runInCI ? 'npm run microfrontend-platform-testing-app:4204:dist-serve-zone' : 'npm run microfrontend-platform-testing-app:4204:serve-zone',
       port: 4204,
       reuseExistingServer: !runInCI,
     },
@@ -47,8 +47,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
-  testMatch: /.*\.e2e-spec\.ts/,
-  testIgnore: /.*\.zone\.e2e-spec\.ts/,
+  testMatch: /.*\.zone\.e2e-spec\.ts/,
 });
 
 // Install SCION-specific matchers that can be used as expectations.

@@ -19,6 +19,8 @@
     "test:headless": "cross-env HEADLESS=true run-p \"**:*:test -- {@}\" --",
     "e2e": "run-s \"**:e2e:run -- {@}\" --",
     "e2e:headless": "cross-env HEADLESS=true run-s \"**:e2e:run -- {@}\" --",
+    "e2e-zone": "run-s \"**:e2e-zone:run -- {@}\" --",
+    "e2e-zone:headless": "cross-env HEADLESS=true run-s \"**:e2e-zone:run -- {@}\" --",
     "postinstall": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright install chromium",
 
     "copy-src": "run-p copy-src:*",
@@ -51,6 +53,15 @@
     "microfrontend-platform-testing-app:4204:serve": "ng serve microfrontend-platform-testing-app --port 4204",
     "microfrontend-platform-testing-app:4204:dist-serve": "serve dist/microfrontend-platform-testing-app-ci/browser -p 4204 --config ../../../apps/microfrontend-platform-testing-app/vercel-test-server.config.json --no-request-logging",
 
+    "microfrontend-platform-testing-app:4201:serve-zone": "ng serve microfrontend-platform-testing-app --configuration=development-zone --port 4201",
+    "microfrontend-platform-testing-app:4201:dist-serve-zone": "serve dist/microfrontend-platform-testing-app-ci-zone/browser -p 4201 --config ../../../apps/microfrontend-platform-testing-app/vercel-test-server.config.json --no-request-logging",
+    "microfrontend-platform-testing-app:4202:serve-zone": "ng serve microfrontend-platform-testing-app --configuration=development-zone --port 4202",
+    "microfrontend-platform-testing-app:4202:dist-serve-zone": "serve dist/microfrontend-platform-testing-app-ci-zone/browser -p 4202 --config ../../../apps/microfrontend-platform-testing-app/vercel-test-server.config.json --no-request-logging",
+    "microfrontend-platform-testing-app:4203:serve-zone": "ng serve microfrontend-platform-testing-app --configuration=development-zone --port 4203",
+    "microfrontend-platform-testing-app:4203:dist-serve-zone": "serve dist/microfrontend-platform-testing-app-ci-zone/browser -p 4203 --config ../../../apps/microfrontend-platform-testing-app/vercel-test-server.config.json --no-request-logging",
+    "microfrontend-platform-testing-app:4204:serve-zone": "ng serve microfrontend-platform-testing-app --configuration=development-zone --port 4204",
+    "microfrontend-platform-testing-app:4204:dist-serve-zone": "serve dist/microfrontend-platform-testing-app-ci-zone/browser -p 4204 --config ../../../apps/microfrontend-platform-testing-app/vercel-test-server.config.json --no-request-logging",
+
     "microfrontend-platform-devtools:build": "ng build microfrontend-platform-devtools --configuration=development",
     "microfrontend-platform-devtools-vercel:build": "ng build microfrontend-platform-devtools --configuration=production-vercel",
     "microfrontend-platform-devtools:lint": "ng lint microfrontend-platform-devtools",
@@ -62,7 +73,9 @@
 
     "e2e:run": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config projects/scion/microfrontend-platform.e2e/playwright.config.ts",
     "e2e:debug": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 PWDEBUG=1 playwright test --config projects/scion/microfrontend-platform.e2e/playwright.config.ts",
-    "e2e:lint": "ng lint @scion/microfrontend-platform.e2e"
+    "e2e:lint": "ng lint @scion/microfrontend-platform.e2e",
+    "e2e-zone:run": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config projects/scion/microfrontend-platform.e2e/playwright.zone.config.ts",
+    "e2e-zone:debug": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 PWDEBUG=1 playwright test --config projects/scion/microfrontend-platform.e2e/playwright.zone.config.ts"
   },
   "private": true,
   "dependencies": {
