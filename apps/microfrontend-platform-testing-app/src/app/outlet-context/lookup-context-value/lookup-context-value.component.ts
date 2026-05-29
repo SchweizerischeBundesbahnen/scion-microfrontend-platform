@@ -44,11 +44,11 @@ export default class LookupContextValueComponent {
     collect: this._formBuilder.control(false, Validators.required),
   });
 
-  private _subscription: Subscription | undefined;
+  protected readonly observeValue = signal<unknown>(undefined);
+  protected readonly lookupValue = signal<unknown>(undefined);
+  protected readonly subscribeError = signal<string | undefined>(undefined);
 
-  protected observeValue = signal<unknown>(undefined);
-  protected lookupValue = signal<unknown>(undefined);
-  protected subscribeError = signal<string | undefined>(undefined);
+  private _subscription: Subscription | undefined;
 
   protected onSubscribe(): void {
     const key = this.form.controls.key.value;

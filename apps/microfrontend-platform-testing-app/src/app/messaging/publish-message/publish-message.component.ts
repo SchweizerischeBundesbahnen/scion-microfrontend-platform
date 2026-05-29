@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, DestroyRef, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, inject, signal} from '@angular/core';
 import {IntentClient, MessageClient, TopicMessage} from '@scion/microfrontend-platform';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
@@ -29,6 +29,7 @@ import {parseTypedValues} from '../../common/typed-value-parser.util';
   selector: 'app-publish-message',
   templateUrl: './publish-message.component.html',
   styleUrls: ['./publish-message.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     ReactiveFormsModule,
@@ -61,12 +62,11 @@ export default class PublishMessageComponent {
   protected readonly MessagingFlavor = MessagingFlavor;
   protected readonly TopicMessageDestinationFormGroup = FormGroup<TopicMessageDestination>;
   protected readonly IntentMessageDestinationFromGroup = FormGroup<IntentMessageDestination>;
+  protected readonly replies = signal<TopicMessage[]>([]);
+  protected readonly publishError = signal<string | undefined>(undefined);
+  protected readonly publishing = signal<boolean | undefined>(undefined);
 
   private _requestResponseSubscription: Subscription | undefined;
-
-  protected replies = signal<TopicMessage[]>([]);
-  protected publishError = signal<string | undefined>(undefined);
-  protected publishing = signal<boolean | undefined>(undefined);
 
   constructor() {
     this.form.controls.flavor.valueChanges

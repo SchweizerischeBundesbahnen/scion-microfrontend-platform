@@ -34,7 +34,7 @@ export class MessageListItemComponent {
   protected readonly intentMessage = computed(() => this.message() as IntentMessage);
   protected readonly topicMessage = computed(() => this.message() as TopicMessage);
 
-  protected capability = signal<string | undefined>(undefined);
+  protected readonly capability = signal<string | undefined>(undefined);
 
   constructor() {
     effect(() => {

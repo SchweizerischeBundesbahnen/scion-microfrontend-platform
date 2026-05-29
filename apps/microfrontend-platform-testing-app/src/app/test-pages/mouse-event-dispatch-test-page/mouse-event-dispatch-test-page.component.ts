@@ -33,7 +33,7 @@ export default class MouseEventDispatchTestPageComponent {
   private readonly _destroyRef = inject(DestroyRef);
   private readonly _viewport = viewChild.required(SciViewportComponent);
 
-  protected readonly dispatchedEvents = signal<Array<DispatchedEvent>>([]);
+  protected readonly dispatchedEvents = signal(new Array<DispatchedEvent>());
   protected readonly followTailFormControl = new FormControl<boolean>(true);
 
   constructor() {

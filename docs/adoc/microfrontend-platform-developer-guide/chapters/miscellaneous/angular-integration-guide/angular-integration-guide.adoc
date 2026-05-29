@@ -5,6 +5,8 @@ include::{basedir}/_common.adoc[]
 == Angular Integration Guide
 This part of the documentation is for developers who want to integrate the SCION Microfrontend Platform in an Angular application.
 
+IMPORTANT: For Angular applications using Zone.js, start or connect to the platform outside the Angular zone to avoid excessive change detection cycles caused by platform-internal messaging. Refer to the Angular integration guide in version https://microfrontend-platform-developer-guide-v2-1-0.scion.vercel.app/#chapter:angular_integration_guide[2.1.0] for more information and examples.
+
 [.chapter-toc]
 ****
 [.chapter-title]

@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NavigationOptions, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -23,6 +23,7 @@ import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.intern
   selector: 'app-outlet-router',
   templateUrl: './outlet-router.component.html',
   styleUrls: ['./outlet-router.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     SciFormFieldComponent,
@@ -35,7 +36,7 @@ export default class OutletRouterComponent {
 
   private readonly _formBuilder = inject(NonNullableFormBuilder);
 
-  public form = this._formBuilder.group({
+  protected readonly form = this._formBuilder.group({
     outlet: this._formBuilder.control(''),
     useIntent: this._formBuilder.control(false),
     destination: this._formBuilder.group<UrlDestination | IntentDestination>(this.createUrlDestination()),
@@ -44,10 +45,10 @@ export default class OutletRouterComponent {
     showSplash: this._formBuilder.control(false),
   });
 
-  public navigateError = signal<string | undefined>(undefined);
+  protected readonly navigateError = signal<string | undefined>(undefined);
 
-  public UrlDestinationFormGroup = FormGroup<UrlDestination>;
-  public IntentDestinationFormGroup = FormGroup<IntentDestination>;
+  protected readonly UrlDestinationFormGroup = FormGroup<UrlDestination>;
+  protected readonly IntentDestinationFormGroup = FormGroup<IntentDestination>;
 
   constructor() {
     this.form.controls.useIntent.valueChanges
@@ -62,7 +63,7 @@ export default class OutletRouterComponent {
       });
   }
 
-  public async onNavigateClick(): Promise<void> {
+  protected async onNavigateClick(): Promise<void> {
     const options: NavigationOptions = {
       outlet: this.form.controls.outlet.value || undefined,
       params: SciKeyValueFieldComponent.toMap(this.form.controls.params) ?? undefined,

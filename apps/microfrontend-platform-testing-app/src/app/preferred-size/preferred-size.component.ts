@@ -31,7 +31,7 @@ export default class PreferredSizeComponent {
   private readonly _formBuilder = inject(NonNullableFormBuilder);
   private readonly _host = inject(ElementRef).nativeElement as HTMLElement;
 
-  public form = this._formBuilder.group({
+  protected readonly form = this._formBuilder.group({
     cssSize: this._formBuilder.group({
       width: this._formBuilder.control('', Validators.pattern(/^\d+px$/)),
       height: this._formBuilder.control('', Validators.pattern(/^\d+px$/)),
@@ -43,7 +43,7 @@ export default class PreferredSizeComponent {
     useElementSize: this._formBuilder.control(false),
   }, {updateOn: 'blur'});
 
-  public elementDimensionObservableBound = signal(false);
+  protected readonly elementDimensionObservableBound = signal(false);
 
   constructor() {
     this.form.controls.useElementSize.valueChanges
@@ -76,25 +76,25 @@ export default class PreferredSizeComponent {
       });
   }
 
-  public get isUseElementSize(): boolean {
+  protected get isUseElementSize(): boolean {
     return this.form.controls.useElementSize.value;
   }
 
-  public onElementObservableBind(): void {
+  protected onElementObservableBind(): void {
     this.elementDimensionObservableBound.set(true);
     Beans.get(PreferredSizeService).fromDimension(this._host);
   }
 
-  public onElementObservableUnbind(): void {
+  protected onElementObservableUnbind(): void {
     this.elementDimensionObservableBound.set(false);
     Beans.get(PreferredSizeService).fromDimension(undefined);
   }
 
-  public onElementUnmount(): void {
+  protected onElementUnmount(): void {
     this._host.parentElement!.removeChild(this._host);
   }
 
-  public onResetClick(): void {
+  protected onResetClick(): void {
     this.reset();
   }
 

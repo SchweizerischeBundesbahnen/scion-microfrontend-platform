@@ -27,12 +27,12 @@ export default class ClearOutletThenSendMessageTestPageComponent {
 
   private readonly _formBuilder = inject(NonNullableFormBuilder);
 
-  public form = this._formBuilder.group({
+  protected readonly form = this._formBuilder.group({
     outlet: this._formBuilder.control('', Validators.required),
     topic: this._formBuilder.control('', Validators.required),
   });
 
-  public async onRunTestClick(): Promise<void> {
+  protected async onRunTestClick(): Promise<void> {
     // Clear the router outlet.
     await Beans.get(OutletRouter).navigate(null, {outlet: this.form.controls.outlet.value});
     // Send message to the topic.

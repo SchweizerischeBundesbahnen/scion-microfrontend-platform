@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, DestroyRef, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, inject, signal} from '@angular/core';
 import {IntentClient, IntentMessage, MessageClient, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
@@ -26,6 +26,7 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'app-receive-message',
   templateUrl: './receive-message.component.html',
   styleUrls: ['./receive-message.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     SciFormFieldComponent,
@@ -44,21 +45,20 @@ export default class ReceiveMessageComponent {
   private readonly _messageClient = Beans.get(MessageClient);
   private readonly _intentClient = Beans.get(IntentClient);
 
-  private _subscription: Subscription | undefined;
-
-  protected form = this._formBuilder.group({
+  protected readonly form = this._formBuilder.group({
     flavor: this._formBuilder.control<MessagingFlavor>(MessagingFlavor.Topic, Validators.required),
     destination: this._formBuilder.group<TopicMessageDestination | IntentMessageDestination>(this.createTopicDestination()),
   });
 
-  protected messages = signal<(TopicMessage | IntentMessage)[]>([]);
-  protected MessagingFlavor = MessagingFlavor;
+  protected readonly MessagingFlavor = MessagingFlavor;
+  protected readonly MessageHeaders = MessageHeaders;
+  protected readonly TopicMessageDestinationFormGroup = FormGroup<TopicMessageDestination>;
+  protected readonly IntentMessageDestinationFromGroup = FormGroup<IntentMessageDestination>;
 
-  protected subscribeError = signal<string | undefined>(undefined);
+  protected readonly messages = signal<(TopicMessage | IntentMessage)[]>([]);
+  protected readonly subscribeError = signal<string | undefined>(undefined);
 
-  protected MessageHeaders = MessageHeaders;
-  protected TopicMessageDestinationFormGroup = FormGroup<TopicMessageDestination>;
-  protected IntentMessageDestinationFromGroup = FormGroup<IntentMessageDestination>;
+  private _subscription: Subscription | undefined;
 
   constructor() {
     this.form.controls.flavor.valueChanges

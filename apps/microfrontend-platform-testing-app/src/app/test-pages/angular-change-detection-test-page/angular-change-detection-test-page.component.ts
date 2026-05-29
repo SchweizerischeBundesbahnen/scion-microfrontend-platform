@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, LOCALE_ID, NgZone, untracked, viewChild} from '@angular/core';
+import {Component, effect, ElementRef, inject, LOCALE_ID, NgZone, untracked, viewChild} from '@angular/core';
 import {debounceTime, fromEvent, Subject} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import {formatDate} from '@angular/common';
@@ -18,7 +18,6 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   selector: 'app-angular-change-detection-test-page',
   templateUrl: './angular-change-detection-test-page.component.html',
   styleUrls: ['./angular-change-detection-test-page.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class AngularChangeDetectionTestPageComponent {
 
