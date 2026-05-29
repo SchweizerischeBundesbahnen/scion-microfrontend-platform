@@ -3,8 +3,8 @@
     @if (isPlatformHost) {
       <img class="banner" src="scion-microfrontend-platform-banner.svg" alt="SCION Microfrontend Platform">
     }
-    @if (pageTitle) {
-      <span class="page-title">{{pageTitle}}</span>
+    @if (pageTitle()) {
+      <span class="page-title">{{pageTitle()}}</span>
     }
   </div>
   <div class="actions">

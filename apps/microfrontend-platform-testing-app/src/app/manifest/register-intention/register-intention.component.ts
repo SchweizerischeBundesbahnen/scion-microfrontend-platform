@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {APP_IDENTITY, Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
@@ -54,19 +54,26 @@ export default class RegisterIntentionComponent {
 
   public intentions$: Observable<Intention[]>;
 
-  public registerResponse: string | undefined;
-  public registerError: string | undefined;
-  public unregisterResponse: 'OK' | undefined;
-  public unregisterError: string | undefined;
+  public registerResponse = signal<string | undefined>(undefined);
+  public registerError = signal<string | undefined>(undefined);
+  public unregisterResponse = signal<'OK' | undefined>(undefined);
+  public unregisterError = signal<string | undefined>(undefined);
 
   constructor() {
     this.intentions$ = Beans.get(ManifestService).lookupIntentions$({appSymbolicName: Beans.get<string>(APP_IDENTITY)});
+
+    // If the form is cleared onRegister/onUnregister, Playwright might be too fast and see a stale response.
+    this.registerForm.valueChanges.subscribe(() => {
+      this.registerResponse.set(undefined);
+      this.registerError.set(undefined);
+    });
+    this.unregisterForm.valueChanges.subscribe(() => {
+      this.unregisterResponse.set(undefined);
+      this.unregisterError.set(undefined);
+    });
   }
 
   public onRegister(): void {
-    this.registerResponse = undefined;
-    this.registerError = undefined;
-
     const intention: Intention = {
       type: this.registerForm.controls.type.value,
       qualifier: SciKeyValueFieldComponent.toDictionary(this.registerForm.controls.qualifier, false),
@@ -74,21 +81,18 @@ export default class RegisterIntentionComponent {
 
     Beans.get(ManifestService).registerIntention(intention)
       .then(id => {
-        this.registerResponse = id;
+        this.registerResponse.set(id);
       })
       .catch((error: unknown) => {
-        this.registerError = stringifyError(error);
+        this.registerError.set(stringifyError(error));
       })
       .finally(() => {
-        this.registerForm.reset();
-        this.registerForm.setControl('qualifier', this._formBuilder.array<FormGroup<KeyValueEntry>>([]));
+        this.registerForm.reset({}, {emitEvent: false});
+        this.registerForm.setControl('qualifier', this._formBuilder.array<FormGroup<KeyValueEntry>>([]), {emitEvent: false});
       });
   }
 
   public onUnregister(): void {
-    this.unregisterResponse = undefined;
-    this.unregisterError = undefined;
-
     const nilQualifierIfEmpty = this.unregisterForm.controls.nilqualifierIfEmpty.value;
     const qualifier = SciKeyValueFieldComponent.toDictionary(this.unregisterForm.controls.qualifier);
     const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
@@ -102,14 +106,14 @@ export default class RegisterIntentionComponent {
 
     Beans.get(ManifestService).unregisterIntentions(filter)
       .then(() => {
-        this.unregisterResponse = 'OK';
+        this.unregisterResponse.set('OK');
       })
       .catch((error: unknown) => {
-        this.unregisterError = stringifyError(error);
+        this.unregisterError.set(stringifyError(error));
       })
       .finally(() => {
-        this.unregisterForm.reset();
-        this.unregisterForm.setControl('qualifier', this._formBuilder.array<FormGroup<KeyValueEntry>>([]));
+        this.unregisterForm.reset({}, {emitEvent: false});
+        this.unregisterForm.setControl('qualifier', this._formBuilder.array<FormGroup<KeyValueEntry>>([]), {emitEvent: false});
       });
   }
 }

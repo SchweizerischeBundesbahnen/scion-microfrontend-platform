@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
+import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 import {OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {SciThrobberComponent} from '@scion/components/throbber';
@@ -16,6 +16,7 @@ import {SciThrobberComponent} from '@scion/components/throbber';
   selector: 'app-devtools',
   templateUrl: './devtools.component.html',
   styleUrls: ['./devtools.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
   imports: [
     SciThrobberComponent,

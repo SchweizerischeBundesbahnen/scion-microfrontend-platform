@@ -95,6 +95,8 @@ jobs:
             cmd: npm run microfrontend-platform-testing-app-vercel:build
           - name: microfrontend-platform-testing-app-ci
             cmd: npm run microfrontend-platform-testing-app-ci:build
+          - name: microfrontend-platform-testing-app-ci-zone
+            cmd: npm run microfrontend-platform-testing-app-ci-zone:build
           - name: microfrontend-platform-devtools-vercel
             cmd: npm run microfrontend-platform-devtools-vercel:build
     steps:
@@ -154,6 +156,7 @@ jobs:
     needs: [build-platform, build-apps]
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         shardIndex: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         shardTotal: [ 10 ]

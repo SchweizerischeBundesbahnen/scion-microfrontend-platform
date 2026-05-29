@@ -88,6 +88,16 @@ export async function waitUntilNavigationStable(page: Page): Promise<void> {
 }
 
 /**
+ * Waits for Angular to become stable.
+ *
+ * Playwright can interact with elements to early with zoneless CD.
+ * Use this method to wait for Angular to stabilize after an interaction.
+ */
+export async function waitUntilAngularStable(page: Page): Promise<void> {
+  await waitUntilStable(() => page.locator('app-root').getAttribute('data-last-render'));
+}
+
+/**
  * Parses given keystroke.
  *
  * Format: "keydown.control.alt.enter{preventDefault=true}"

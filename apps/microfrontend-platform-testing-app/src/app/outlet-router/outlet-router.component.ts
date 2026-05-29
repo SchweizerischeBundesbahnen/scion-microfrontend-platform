@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NavigationOptions, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -44,7 +44,7 @@ export default class OutletRouterComponent {
     showSplash: this._formBuilder.control(false),
   });
 
-  public navigateError: string | undefined;
+  public navigateError = signal<string | undefined>(undefined);
 
   public UrlDestinationFormGroup = FormGroup<UrlDestination>;
   public IntentDestinationFormGroup = FormGroup<IntentDestination>;
@@ -72,7 +72,7 @@ export default class OutletRouterComponent {
       options.pushStateToSessionHistoryStack = true;
     }
 
-    this.navigateError = undefined;
+    this.navigateError.set(undefined);
     try {
       if (this.form.controls.useIntent.value) {
         const qualifier = SciKeyValueFieldComponent.toDictionary((this.form.controls.destination as FormGroup<IntentDestination>).controls.qualifier)!;
@@ -87,7 +87,7 @@ export default class OutletRouterComponent {
       this.form.reset();
     }
     catch (error: unknown) {
-      this.navigateError = stringifyError(error);
+      this.navigateError.set(stringifyError(error));
     }
   }
 

@@ -10,14 +10,14 @@
     <button type="submit" (click)="onRegister()" [disabled]="registerForm.invalid" class="e2e-register" sci-primary>Register</button>
   </form>
 
-  @if (registerError) {
+  @if (registerError()) {
     <output class="error e2e-register-error">
-      {{registerError}}
+      {{registerError()}}
     </output>
   }
-  @if (registerResponse) {
+  @if (registerResponse()) {
     <output class="response e2e-register-response">
-      Intention ID: <span class="e2e-intention-id">{{registerResponse}}</span>
+      Intention ID: <span class="e2e-intention-id">{{registerResponse()}}</span>
     </output>
   }
 </section>
@@ -43,14 +43,14 @@
     <button type="submit" (click)="onUnregister()" [disabled]="unregisterForm.invalid" class="e2e-unregister" sci-primary>Unregister</button>
   </form>
 
-  @if (unregisterError) {
+  @if (unregisterError()) {
     <output class="error e2e-unregister-error">
-      {{unregisterError}}
+      {{unregisterError()}}
     </output>
   }
-  @if (unregisterResponse) {
+  @if (unregisterResponse()) {
     <output class="response e2e-unregister-response">
-      {{unregisterResponse}}
+      {{unregisterResponse()}}
     </output>
   }
 </section>

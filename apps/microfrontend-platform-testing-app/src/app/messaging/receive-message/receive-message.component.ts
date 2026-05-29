@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, DestroyRef, inject} from '@angular/core';
+import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {IntentClient, IntentMessage, MessageClient, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
@@ -51,10 +51,10 @@ export default class ReceiveMessageComponent {
     destination: this._formBuilder.group<TopicMessageDestination | IntentMessageDestination>(this.createTopicDestination()),
   });
 
-  protected messages: (TopicMessage | IntentMessage)[] = [];
+  protected messages = signal<(TopicMessage | IntentMessage)[]>([]);
   protected MessagingFlavor = MessagingFlavor;
 
-  protected subscribeError: string | undefined;
+  protected subscribeError = signal<string | undefined>(undefined);
 
   protected MessageHeaders = MessageHeaders;
   protected TopicMessageDestinationFormGroup = FormGroup<TopicMessageDestination>;
@@ -83,7 +83,7 @@ export default class ReceiveMessageComponent {
 
   private subscribeTopic(): void {
     this.form.disable();
-    this.subscribeError = undefined;
+    this.subscribeError.set(undefined);
     try {
       const topic = (this.form.controls.destination as FormGroup<TopicMessageDestination>).controls.topic.value;
       this._subscription = this._messageClient.observe$(topic)
@@ -92,13 +92,13 @@ export default class ReceiveMessageComponent {
           takeUntilDestroyed(this._destroyRef),
         )
         .subscribe({
-          next: message => this.messages.push(message),
-          error: (error: unknown) => this.subscribeError = stringifyError(error),
+          next: message => this.messages.update(messages => [...messages, message]),
+          error: (error: unknown) => this.subscribeError.set(stringifyError(error)),
         });
     }
     catch (error: unknown) {
       this.form.enable();
-      this.subscribeError = stringifyError(error);
+      this.subscribeError.set(stringifyError(error));
     }
   }
 
@@ -108,7 +108,7 @@ export default class ReceiveMessageComponent {
     const qualifier = SciKeyValueFieldComponent.toDictionary(destinationFormGroup.controls.qualifier) ?? undefined;
 
     this.form.disable();
-    this.subscribeError = undefined;
+    this.subscribeError.set(undefined);
     try {
       this._subscription = this._intentClient.observe$({type, qualifier})
         .pipe(
@@ -116,24 +116,24 @@ export default class ReceiveMessageComponent {
           takeUntilDestroyed(this._destroyRef),
         )
         .subscribe({
-          next: message => this.messages.push(message),
-          error: (error: unknown) => this.subscribeError = stringifyError(error),
+          next: message => this.messages.update(messages => [...messages, message]),
+          error: (error: unknown) => this.subscribeError.set(stringifyError(error)),
         });
     }
     catch (error: unknown) {
       this.form.enable();
-      this.subscribeError = stringifyError(error);
+      this.subscribeError.set(stringifyError(error));
     }
   }
 
   protected onUnsubscribe(): void {
     this._subscription!.unsubscribe();
     this._subscription = undefined;
-    this.messages.length = 0;
+    this.messages.set([]);
   }
 
   protected onClear(): void {
-    this.messages.length = 0;
+    this.messages.set([]);
   }
 
   protected onReply(replyTo: unknown): void {

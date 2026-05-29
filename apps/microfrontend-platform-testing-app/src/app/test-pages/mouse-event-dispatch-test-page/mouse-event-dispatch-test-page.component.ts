@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectorRef, Component, DestroyRef, effect, inject, untracked, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, effect, inject, signal, untracked, viewChild} from '@angular/core';
 import {fromEvent, merge} from 'rxjs';
 import {DatePipe} from '@angular/common';
 import {SciViewportComponent} from '@scion/components/viewport';
@@ -19,6 +19,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   selector: 'app-mouse-event-dispatch-test-page',
   templateUrl: './mouse-event-dispatch-test-page.component.html',
   styleUrls: ['./mouse-event-dispatch-test-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DatePipe,
     ReactiveFormsModule,
@@ -32,7 +33,7 @@ export default class MouseEventDispatchTestPageComponent {
   private readonly _destroyRef = inject(DestroyRef);
   private readonly _viewport = viewChild.required(SciViewportComponent);
 
-  protected readonly dispatchedEvents = new Array<DispatchedEvent>();
+  protected readonly dispatchedEvents = signal<Array<DispatchedEvent>>([]);
   protected readonly followTailFormControl = new FormControl<boolean>(true);
 
   constructor() {
@@ -40,7 +41,7 @@ export default class MouseEventDispatchTestPageComponent {
   }
 
   protected onClearDispatchedEvent(): void {
-    this.dispatchedEvents.length = 0;
+    this.dispatchedEvents.set([]);
   }
 
   private installEventsListener(): void {
@@ -51,7 +52,7 @@ export default class MouseEventDispatchTestPageComponent {
         const subscription = merge(fromEvent(document, 'sci-mousemove'), fromEvent(document, 'sci-mouseup'))
           .pipe(takeUntilDestroyed(this._destroyRef))
           .subscribe(event => {
-            this.dispatchedEvents.push({type: event.type, timestamp: Date.now()});
+            this.dispatchedEvents.update(dispatchedEvents => [...dispatchedEvents, {type: event.type, timestamp: Date.now()}]);
             if (this.followTailFormControl.value) {
               this._cd.detectChanges();
               viewport.scrollTop = viewport.scrollHeight;

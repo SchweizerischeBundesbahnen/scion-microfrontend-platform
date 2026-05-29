@@ -31,16 +31,16 @@
   <button (click)="onUnsubscribe()" class="e2e-unsubscribe" sci-primary>Unsubscribe</button>
 }
 
-@if (subscribeError) {
+@if (subscribeError()) {
   <output class="subscribe-error">
-    {{subscribeError}}
+    {{subscribeError()}}
   </output>
 }
 
 
 @if (isSubscribed) {
   <sci-list class="messages e2e-messages">
-    @for (message of messages; track message) {
+    @for (message of messages(); track message) {
       <ng-template sciListItem [actions]="message.headers.get(MessageHeaders.ReplyTo) ? [reply_action] : []">
         <app-message-list-item [message]="message" [isTopicMessage]="isTopicMessaging()"/>
       </ng-template>

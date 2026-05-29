@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MessageClient, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -17,6 +17,7 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
   selector: 'app-clear-outlet-then-send-message-test-page',
   templateUrl: './clear-outlet-then-send-message-test-page.component.html',
   styleUrls: ['./clear-outlet-then-send-message-test-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     SciFormFieldComponent,

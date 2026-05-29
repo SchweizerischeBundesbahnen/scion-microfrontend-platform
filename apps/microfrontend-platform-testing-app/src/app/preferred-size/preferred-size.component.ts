@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, ElementRef, inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, ElementRef, inject, signal} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {PreferredSizeService} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -43,7 +43,7 @@ export default class PreferredSizeComponent {
     useElementSize: this._formBuilder.control(false),
   }, {updateOn: 'blur'});
 
-  public elementDimensionObservableBound: boolean | undefined;
+  public elementDimensionObservableBound = signal(false);
 
   constructor() {
     this.form.controls.useElementSize.valueChanges
@@ -81,12 +81,12 @@ export default class PreferredSizeComponent {
   }
 
   public onElementObservableBind(): void {
-    this.elementDimensionObservableBound = true;
+    this.elementDimensionObservableBound.set(true);
     Beans.get(PreferredSizeService).fromDimension(this._host);
   }
 
   public onElementObservableUnbind(): void {
-    this.elementDimensionObservableBound = false;
+    this.elementDimensionObservableBound.set(false);
     Beans.get(PreferredSizeService).fromDimension(undefined);
   }
 
@@ -103,7 +103,7 @@ export default class PreferredSizeComponent {
     setCssVariable(this._host, '--height');
     Beans.get(PreferredSizeService).fromDimension(undefined);
     Beans.get(PreferredSizeService).resetPreferredSize();
-    this.elementDimensionObservableBound = false;
+    this.elementDimensionObservableBound.set(false);
     this.form.reset(undefined, {emitEvent: false});
   }
 }

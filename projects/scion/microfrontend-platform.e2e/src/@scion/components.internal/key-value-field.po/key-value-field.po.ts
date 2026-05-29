@@ -9,6 +9,7 @@
  */
 
 import {Locator} from '@playwright/test';
+import {waitUntilAngularStable} from '../../../testing.util';
 
 /**
  * Page object for {@link SciKeyValueFieldComponent}.
@@ -25,6 +26,7 @@ export class SciKeyValueFieldPO {
 
     for (const key of Object.keys(entries)) {
       await addButton.click();
+      await waitUntilAngularStable(this._sciKeyValueFieldLocator.page());
       await lastKeyInput.fill(key);
       await lastValueInput.fill(toTypedValue(entries[key]));
     }

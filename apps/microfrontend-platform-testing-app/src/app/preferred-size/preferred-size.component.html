@@ -8,7 +8,7 @@
       <sci-form-field label="CSS height">
         <input class="e2e-css-height" [formControl]="form.controls.cssSize.controls.height" placeholder="Enter a value in pixel" title="Enter a pixel value which is set as CSS variable for the element height, or an empty value to unset the CSS variable.">
       </sci-form-field>
-      @if (!elementDimensionObservableBound) {
+      @if (!elementDimensionObservableBound()) {
         <button (click)="onElementObservableBind()" class="e2e-bind-element-observable" sci-primary>Bind the element as size observable</button>
       } @else {
         <button (click)="onElementObservableUnbind()" class="e2e-unbind-element-observable" sci-primary>Unbind the element as size observable</button>

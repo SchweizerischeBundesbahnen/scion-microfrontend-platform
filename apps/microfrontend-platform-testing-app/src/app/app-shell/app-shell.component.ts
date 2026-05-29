@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, effect, ElementRef, inject, NgZone, untracked, viewChild} from '@angular/core';
+import {Component, effect, ElementRef, inject, NgZone, signal, untracked, viewChild} from '@angular/core';
 import {asapScheduler, debounceTime, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, ManifestService, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {tap} from 'rxjs/operators';
@@ -48,7 +48,7 @@ export default class AppShellComponent {
   protected readonly focusMonitor = Beans.get(FocusMonitor);
   protected readonly devToolsFormControl = new FormControl<boolean>(false, {nonNullable: true});
 
-  protected pageTitle: string | undefined;
+  protected readonly pageTitle = signal<string | undefined>(undefined);
 
   constructor() {
     this.installRouteActivateListener();
@@ -129,7 +129,7 @@ export default class AppShellComponent {
    */
   protected onRouteActivate(route: ActivatedRoute): void {
     const isPageTitleVisible = route.snapshot.data['pageTitleVisible'] as boolean | undefined ?? true;
-    asapScheduler.schedule(() => this.pageTitle = isPageTitleVisible ? route.snapshot.data['pageTitle'] as string : undefined);
+    asapScheduler.schedule(() => this.pageTitle.set(isPageTitleVisible ? route.snapshot.data['pageTitle'] as string : undefined));
     this._routeActivate$.next();
   }
 
