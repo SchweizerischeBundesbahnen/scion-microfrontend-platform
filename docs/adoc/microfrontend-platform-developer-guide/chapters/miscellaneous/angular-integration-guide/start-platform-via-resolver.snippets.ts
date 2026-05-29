@@ -1,21 +1,10 @@
-import {Component, inject, NgZone} from '@angular/core';
-import {MicrofrontendPlatformClient, ObservableDecorator} from '@scion/microfrontend-platform';
+import {Component} from '@angular/core';
+import {MicrofrontendPlatformClient} from '@scion/microfrontend-platform';
 import {provideRouter, Routes, withHashLocation} from '@angular/router';
-import {Beans} from '@scion/toolkit/bean-manager';
-import {Observable} from 'rxjs';
 import {bootstrapApplication} from '@angular/platform-browser';
 
 @Component({selector: 'app-root', template: ''})
 class AppComponent {
-}
-
-class NgZoneObservableDecorator implements ObservableDecorator {
-
-  constructor(zone: NgZone) {
-  }
-  public decorate$<T>(source$: Observable<T>): Observable<T> {
-    return source$;
-  }
 }
 
 // tag::resolver[]
@@ -25,13 +14,9 @@ const appRoutes: Routes = [
   {
     path: '',
     resolve: { // <1>
-      platform: () => {
-        const zone = inject(NgZone); // <2>
-        Beans.register(ObservableDecorator, {useValue: new NgZoneObservableDecorator(zone)}); // <3>
-        return zone.runOutsideAngular(() => MicrofrontendPlatformClient.connect('APP_SYMBOLIC_NAME')); // <4>
-      },
+      platform: () => MicrofrontendPlatformClient.connect('APP_SYMBOLIC_NAME'), // <2>
     },
-    children: [ // <5>
+    children: [ // <3>
       {
         path: 'microfrontend-1',
         loadComponent: () => import('./microfrontend-1/microfrontend-1.component'),
