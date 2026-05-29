@@ -10,14 +10,16 @@
     <button type="submit" (click)="onRegister()" [disabled]="registerForm.invalid" class="e2e-register" sci-primary>Register</button>
   </form>
 
-  @if (registerError) {
+  @if (registerError()) {
     <output class="error e2e-register-error">
-      {{registerError}}
+      {{registerError()}}
+      <button (click)="onClearRegisterResponse()" class="clear-response e2e-clear-register-response" sciMaterialIcon>close</button>
     </output>
   }
-  @if (registerResponse) {
+  @if (registerResponse()) {
     <output class="response e2e-register-response">
-      Intention ID: <span class="e2e-intention-id">{{registerResponse}}</span>
+      Intention ID: <span class="e2e-intention-id">{{registerResponse()}}</span>
+      <button (click)="onClearRegisterResponse()" class="clear-response e2e-clear-register-response" sciMaterialIcon>close</button>
     </output>
   }
 </section>
@@ -43,20 +45,22 @@
     <button type="submit" (click)="onUnregister()" [disabled]="unregisterForm.invalid" class="e2e-unregister" sci-primary>Unregister</button>
   </form>
 
-  @if (unregisterError) {
+  @if (unregisterError()) {
     <output class="error e2e-unregister-error">
-      {{unregisterError}}
+      {{unregisterError()}}
+      <button (click)="onClearUnregisterResponse()" class="clear-response e2e-clear-unregister-response" sciMaterialIcon>close</button>
     </output>
   }
-  @if (unregisterResponse) {
+  @if (unregisterResponse()) {
     <output class="response e2e-unregister-response">
-      {{unregisterResponse}}
+      {{unregisterResponse()}}
+      <button (click)="onClearUnregisterResponse()" class="clear-response e2e-clear-unregister-response" sciMaterialIcon>close</button>
     </output>
   }
 </section>
 
 <sci-list class="intentions">
-  @for (intention of intentions$ | async; track intention) {
+  @for (intention of intentions(); track intention) {
     <ng-template sciListItem>
       <section class="intention">
         <sci-qualifier-chip-list [qualifier]="intention.qualifier" [type]="intention.type"/>

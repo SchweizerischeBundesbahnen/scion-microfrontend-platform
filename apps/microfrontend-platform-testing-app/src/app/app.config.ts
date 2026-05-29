@@ -11,6 +11,7 @@ export const appConfig: ApplicationConfig = {
     provideMicrofrontendPlatformHost(),
     provideMicrofrontendPlatformClient(),
     provideAnimations(),
-    provideZoneChangeDetection(),
+    // Only provide zone CD if the polyfill is loaded (see angular.json).
+    'Zone' in window ? provideZoneChangeDetection() : [],
   ],
 };

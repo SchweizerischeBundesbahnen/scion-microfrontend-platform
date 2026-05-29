@@ -8,7 +8,7 @@
 <section class="dispatched-mouse-events e2e-dispatched-mouse-events">
   <header>Received Dispatched Mouse Events</header>
   <sci-viewport>
-    @for (dispatchedEvent of dispatchedEvents; track dispatchedEvent) {
+    @for (dispatchedEvent of dispatchedEvents(); track dispatchedEvent) {
       <div class="event e2e-event">
         <span>{{dispatchedEvent.timestamp | date:'hh:mm:ss:SSS'}}</span><span class="e2e-type">{{dispatchedEvent.type}}</span>
       </div>

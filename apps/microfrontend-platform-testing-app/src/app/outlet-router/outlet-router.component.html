@@ -28,8 +28,8 @@
   <button type="submit" class="e2e-navigate" (click)="onNavigateClick()" [disabled]="form.invalid" sci-primary>Navigate</button>
 </form>
 
-@if (navigateError) {
+@if (navigateError()) {
   <output class="navigate-error e2e-navigate-error">
-    {{navigateError}}
+    {{navigateError()}}
   </output>
 }

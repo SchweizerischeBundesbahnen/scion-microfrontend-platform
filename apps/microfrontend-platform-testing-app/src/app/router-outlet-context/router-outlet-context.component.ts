@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, HostListener, inject, Injector} from '@angular/core';
+import {Component, inject, Injector} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {ConnectedPosition, Overlay, OverlayConfig, OverlayRef} from '@angular/cdk/overlay';
@@ -36,14 +36,17 @@ const OVERLAY_POSITION_SOUTH: ConnectedPosition = {originX: 'end', originY: 'bot
     ContextEntryComponent,
     SciMaterialIconDirective,
   ],
+  host: {
+    '(keydown.escape)': `onClose()`,
+  },
 })
 export class RouterOutletContextComponent {
 
   private readonly _formBuilder = inject(NonNullableFormBuilder);
   private readonly _overlay = inject(OverlayRef);
-  public readonly routerOutlet = inject(SciRouterOutletElement);
 
-  public form = this._formBuilder.group({
+  protected readonly routerOutlet = inject(SciRouterOutletElement);
+  protected readonly form = this._formBuilder.group({
     name: this._formBuilder.control('', Validators.required),
     value: this._formBuilder.control(''),
   });
@@ -54,17 +57,16 @@ export class RouterOutletContextComponent {
       .subscribe(() => this._overlay.dispose());
   }
 
-  @HostListener('keydown.escape')
-  public onClose(): void {
+  protected onClose(): void {
     this._overlay.dispose();
   }
 
-  public onAddClick(): void {
+  protected onAddClick(): void {
     this.routerOutlet.setContextValue(this.form.controls.name.value, parseTypedValue(this.form.controls.value.value));
     this.form.reset();
   }
 
-  public onRemoveClick(name: string): void {
+  protected onRemoveClick(name: string): void {
     this.routerOutlet.removeContextValue(name);
   }
 

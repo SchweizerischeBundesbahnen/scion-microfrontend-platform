@@ -20,9 +20,9 @@
     <ng-template sciSash>
       <section class="context-value">
         <header>Observe:</header>
-        @if (observeValue !== undefined) { <!-- null is a valid value -->
+        @if (observeValue() !== undefined) { <!-- null is a valid value -->
           <output class="e2e-observe-value">
-            {{observeValue | json}}
+            {{observeValue() | json}}
           </output>
         }
       </section>
@@ -32,9 +32,9 @@
     <ng-template sciSash>
       <section class="context-value">
         <header>Lookup:</header>
-        @if (lookupValue !== undefined) { <!-- null is a valid value -->
+        @if (lookupValue() !== undefined) { <!-- null is a valid value -->
           <output class="e2e-lookup-value">
-            {{lookupValue | json}}
+            {{lookupValue() | json}}
           </output>
         }
       </section>
@@ -42,8 +42,8 @@
   </sci-sashbox>
 }
 
-@if (subscribeError) {
+@if (subscribeError()) {
   <output class="subscribe-error e2e-observe-error e2e-lookup-error">
-    {{subscribeError}}
+    {{subscribeError()}}
   </output>
 }

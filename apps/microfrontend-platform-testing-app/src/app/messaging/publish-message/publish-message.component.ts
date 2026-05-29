@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, DestroyRef, inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, inject, signal} from '@angular/core';
 import {IntentClient, MessageClient, TopicMessage} from '@scion/microfrontend-platform';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
@@ -29,6 +29,7 @@ import {parseTypedValues} from '../../common/typed-value-parser.util';
   selector: 'app-publish-message',
   templateUrl: './publish-message.component.html',
   styleUrls: ['./publish-message.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     ReactiveFormsModule,
@@ -61,12 +62,11 @@ export default class PublishMessageComponent {
   protected readonly MessagingFlavor = MessagingFlavor;
   protected readonly TopicMessageDestinationFormGroup = FormGroup<TopicMessageDestination>;
   protected readonly IntentMessageDestinationFromGroup = FormGroup<IntentMessageDestination>;
+  protected readonly replies = signal<TopicMessage[]>([]);
+  protected readonly publishError = signal<string | undefined>(undefined);
+  protected readonly publishing = signal<boolean | undefined>(undefined);
 
   private _requestResponseSubscription: Subscription | undefined;
-
-  protected replies: TopicMessage[] = [];
-  protected publishError: string | undefined;
-  protected publishing: boolean | undefined;
 
   constructor() {
     this.form.controls.flavor.valueChanges
@@ -98,7 +98,7 @@ export default class PublishMessageComponent {
   }
 
   protected onClear(): void {
-    this.replies.length = 0;
+    this.replies.set([]);
   }
 
   protected onCancelPublish(): void {
@@ -108,7 +108,7 @@ export default class PublishMessageComponent {
   private unsubscribe(): void {
     this._requestResponseSubscription?.unsubscribe();
     this._requestResponseSubscription = undefined;
-    this.replies.length = 0;
+    this.replies.set([]);
   }
 
   private createTopicDestination(): TopicMessageDestination {
@@ -132,7 +132,7 @@ export default class PublishMessageComponent {
     const headers = SciKeyValueFieldComponent.toMap(this.form.controls.headers) ?? undefined;
 
     this.markPublishing(true);
-    this.publishError = undefined;
+    this.publishError.set(undefined);
     try {
       if (requestReply) {
         this._requestResponseSubscription = this._messageClient.request$(topic, message, {retain: this.form.controls.retain.value, headers})
@@ -141,19 +141,19 @@ export default class PublishMessageComponent {
             takeUntilDestroyed(this._destroyRef),
           )
           .subscribe({
-            next: reply => this.replies.push(reply),
-            error: error => this.publishError = stringifyError(error),
+            next: reply => this.replies.update(replies => [...replies, reply]),
+            error: error => this.publishError.set(stringifyError(error)),
           });
       }
       else {
         this._messageClient.publish(topic, message, {retain: this.form.controls.retain.value, headers})
-          .catch((error: unknown) => this.publishError = stringifyError(error))
+          .catch((error: unknown) => this.publishError.set(stringifyError(error)))
           .finally(() => this.markPublishing(false));
       }
     }
     catch (error: unknown) {
       this.markPublishing(false);
-      this.publishError = stringifyError(error);
+      this.publishError.set(stringifyError(error));
     }
   }
 
@@ -168,7 +168,7 @@ export default class PublishMessageComponent {
     const headers = SciKeyValueFieldComponent.toMap(this.form.controls.headers, false);
 
     this.markPublishing(true);
-    this.publishError = undefined;
+    this.publishError.set(undefined);
     try {
       if (requestReply) {
         this._requestResponseSubscription = this._intentClient.request$({type, qualifier}, message, {retain: this.form.controls.retain.value, headers})
@@ -177,25 +177,25 @@ export default class PublishMessageComponent {
             takeUntilDestroyed(this._destroyRef),
           )
           .subscribe({
-            next: reply => this.replies.push(reply),
-            error: (error: unknown) => this.publishError = stringifyError(error),
+            next: reply => this.replies.update(replies => [...replies, reply]),
+            error: (error: unknown) => this.publishError.set(stringifyError(error)),
           });
       }
       else {
         this._intentClient.publish({type, qualifier, params}, message, {retain: this.form.controls.retain.value, headers})
-          .catch((error: unknown) => this.publishError = stringifyError(error))
+          .catch((error: unknown) => this.publishError.set(stringifyError(error)))
           .finally(() => this.markPublishing(false));
       }
     }
     catch (error: unknown) {
       this.markPublishing(false);
-      this.publishError = stringifyError(error);
+      this.publishError.set(stringifyError(error));
     }
   }
 
   private markPublishing(publishing: boolean): void {
     publishing ? this.form.disable() : this.form.enable();
-    this.publishing = publishing;
+    this.publishing.set(publishing);
   }
 }
 

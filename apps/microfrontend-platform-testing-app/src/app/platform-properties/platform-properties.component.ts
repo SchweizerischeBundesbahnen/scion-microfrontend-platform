@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {PlatformPropertyService} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {SciKeyValueComponent} from '@scion/components.internal/key-value';
@@ -16,6 +16,7 @@ import {SciKeyValueComponent} from '@scion/components.internal/key-value';
   selector: 'app-platform-properties',
   templateUrl: './platform-properties.component.html',
   styleUrls: ['./platform-properties.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [SciKeyValueComponent],
 })
 export default class PlatformPropertiesComponent {

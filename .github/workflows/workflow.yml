@@ -95,6 +95,8 @@ jobs:
             cmd: npm run microfrontend-platform-testing-app-vercel:build
           - name: microfrontend-platform-testing-app-ci
             cmd: npm run microfrontend-platform-testing-app-ci:build
+          - name: microfrontend-platform-testing-app-ci-zone
+            cmd: npm run microfrontend-platform-testing-app-ci-zone:build
           - name: microfrontend-platform-devtools-vercel
             cmd: npm run microfrontend-platform-devtools-vercel:build
     steps:
@@ -154,6 +156,7 @@ jobs:
     needs: [build-platform, build-apps]
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         shardIndex: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         shardTotal: [ 10 ]
@@ -186,6 +189,39 @@ jobs:
           name: playwright-test-results-${{ matrix.shardIndex }}
           path: test-results/
           retention-days: 7
+  e2e-zone:
+    name: 'E2E Zone Testing'
+    needs: [build-platform, build-apps]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: 'Downloading platform (dist)'
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: 'Downloading app: microfrontend-platform-testing-app-ci-zone (dist)'
+        uses: actions/download-artifact@v4
+        with:
+          name: microfrontend-platform-testing-app-ci-zone
+          path: dist/microfrontend-platform-testing-app-ci-zone
+      - name: 'Restoring NPM modules from cache'
+        uses: actions/cache@v4
+        with:
+          path: ./node_modules
+          key: node_modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+      - name: Run e2e zone tests
+        run: npm run e2e-zone:headless
+      - name: Upload Playwright results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results-zone
+          path: test-results/
+          retention-days: 7
   release-guard:
     name: 'Should release?'
     if: github.ref == 'refs/heads/master'
@@ -198,6 +234,7 @@ jobs:
       - test
       - analyze
       - e2e
+      - e2e-zone
     runs-on: ubuntu-latest
     outputs:
       should-release: ${{ steps.tag-release-commit.outputs.is-release-commit }}

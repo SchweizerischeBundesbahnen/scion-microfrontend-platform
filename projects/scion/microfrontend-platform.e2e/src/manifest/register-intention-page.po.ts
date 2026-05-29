@@ -44,10 +44,14 @@ export class RegisterIntentionPagePO implements OutletPageObject {
     // Evaluate the response: resolves the promise on success, or rejects it on error.
     const responseLocator = this._registerSectionLocator.locator('output.e2e-register-response');
     const errorLocator = this._registerSectionLocator.locator('output.e2e-register-error');
-    return Promise.race([
+    const intentionId = await Promise.race([
       responseLocator.waitFor({state: 'attached'}).then(() => responseLocator.locator('span.e2e-intention-id').innerText()),
       errorLocator.waitFor({state: 'attached'}).then(() => errorLocator.innerText()).then(error => Promise.reject(Error(error))),
     ]);
+
+    // Clear response to ensure subsequent intention registration will not use current response.
+    await this._registerSectionLocator.locator('button.e2e-clear-register-response').click();
+    return intentionId;
   }
 
   /**
@@ -77,9 +81,12 @@ export class RegisterIntentionPagePO implements OutletPageObject {
     // Evaluate the response: resolves the promise on success, or rejects it on error.
     const responseLocator = this._unregisterSectionLocator.locator('output.e2e-unregister-response');
     const errorLocator = this._unregisterSectionLocator.locator('output.e2e-unregister-error');
-    return Promise.race([
+    await Promise.race([
       responseLocator.waitFor({state: 'attached'}),
       errorLocator.waitFor({state: 'attached'}).then(() => errorLocator.innerText()).then(error => Promise.reject(Error(error))),
     ]);
+
+    // Clear response to ensure subsequent intention unregistration will not use current response.
+    await this._unregisterSectionLocator.locator('button.e2e-clear-unregister-response').click();
   }
 }

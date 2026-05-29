@@ -35,21 +35,37 @@
     }
 
     > output.error {
+      position: relative;
       border: 1px solid var(--sci-color-negative);
       background-color: var(--sci-color-background-negative);
       color: var(--sci-color-negative);
       border-radius: var(--sci-corner);
       padding: 1em;
       font-family: monospace;
+
+      > .clear-response {
+        position: absolute;
+        top: 0.25em;
+        right: 0.25em;
+        color: var(--sci-color-negative);
+      }
     }
 
     > output.response {
+      position: relative;
       border: 1px solid var(--sci-color-positive);
       background-color: var(--sci-color-background-positive);
       color: var(--sci-color-positive);
       border-radius: var(--sci-corner);
       padding: 1em;
       font-family: monospace;
+
+      > .clear-response {
+        position: absolute;
+        top: 0.25em;
+        right: 0.25em;
+        color: var(--sci-color-positive);
+      }
     }
   }
 
