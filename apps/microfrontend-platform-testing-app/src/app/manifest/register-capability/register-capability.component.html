@@ -22,6 +22,7 @@
       <sci-key-value-field [keyValueFormArray]="registerForm.controls.properties" [addable]="true" [removable]="true" class="e2e-properties"/>
     </sci-form-field>
     <button type="submit" (click)="onRegister()" [disabled]="registerForm.invalid" class="e2e-register" sci-primary>Register</button>
+    <button (click)="onClearRegisterResponse()" [disabled]="!registerResponse() && ! registerError()" class="e2e-clear-register-response">Clear response</button>
   </form>
 
   @if (registerError()) {
@@ -55,6 +56,7 @@
       <input [formControl]="unregisterForm.controls.appSymbolicName" class="e2e-app-symbolic-name">
     </sci-form-field>
     <button type="submit" (click)="onUnregister()" [disabled]="unregisterForm.invalid" class="e2e-unregister" sci-primary>Unregister</button>
+    <button (click)="onClearUnregisterResponse()" [disabled]="!unregisterResponse() && ! unregisterError()" class="e2e-clear-unregister-response">Clear response</button>
   </form>
 
   @if (unregisterError()) {
@@ -70,7 +72,7 @@
 </section>
 
 <sci-list class="capabilities">
-  @for (capability of capabilities$ | async; track capability) {
+  @for (capability of capabilities(); track capability) {
     <ng-template sciListItem>
       <section class="capability">
         <sci-qualifier-chip-list [qualifier]="capability.qualifier" [type]="capability.type"/>

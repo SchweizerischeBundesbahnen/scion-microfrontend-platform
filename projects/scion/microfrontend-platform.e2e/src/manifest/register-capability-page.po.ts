@@ -9,11 +9,10 @@
  */
 
 import {FrameLocator, Locator} from '@playwright/test';
-import {Capability, ManifestObjectFilter} from '@scion/microfrontend-platform';
+import {Capability, ManifestObjectFilter, MicrofrontendCapability as _MicrofrontendCapability} from '@scion/microfrontend-platform';
 import {SciKeyValueFieldPO} from '../@scion/components.internal/key-value-field.po';
 import {SciCheckboxPO} from '../@scion/components.internal/checkbox.po';
 import {OutletPageObject} from '../browser-outlet/browser-outlet.po';
-import {MicrofrontendCapability as _MicrofrontendCapability} from '@scion/microfrontend-platform';
 
 export type MicrofrontendCapability = Omit<_MicrofrontendCapability, 'type'> & {type: 'microfrontend'};
 
@@ -55,10 +54,12 @@ export class RegisterCapabilityPagePO implements OutletPageObject {
     // Evaluate the response: resolves the promise on success, or rejects it on error.
     const responseLocator = this._registerSectionLocator.locator('output.e2e-register-response');
     const errorLocator = this._registerSectionLocator.locator('output.e2e-register-error');
-    return Promise.race([
+    const capabilityId = await Promise.race([
       responseLocator.waitFor({state: 'attached'}).then(() => responseLocator.locator('span.e2e-capability-id').innerText()),
       errorLocator.waitFor({state: 'attached'}).then(() => errorLocator.innerText()).then(error => Promise.reject(Error(error))),
     ]);
+    await this._registerSectionLocator.locator('button.e2e-clear-register-response').click();
+    return capabilityId;
   }
 
   /**
@@ -88,9 +89,10 @@ export class RegisterCapabilityPagePO implements OutletPageObject {
     // Evaluate the response: resolves the promise on success, or rejects it on error.
     const responseLocator = this._unregisterSectionLocator.locator('output.e2e-unregister-response');
     const errorLocator = this._unregisterSectionLocator.locator('output.e2e-unregister-error');
-    return Promise.race([
+    await Promise.race([
       responseLocator.waitFor({state: 'attached'}),
       errorLocator.waitFor({state: 'attached'}).then(() => errorLocator.innerText()).then(error => Promise.reject(Error(error))),
     ]);
+    await this._unregisterSectionLocator.locator('button.e2e-clear-unregister-response').click();
   }
 }

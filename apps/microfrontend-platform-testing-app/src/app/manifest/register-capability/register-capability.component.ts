@@ -7,26 +7,26 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
 import {FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {APP_IDENTITY, Capability, ManifestObjectFilter, ManifestService, ParamDefinition} from '@scion/microfrontend-platform';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
-import {Observable} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {AsyncPipe, JsonPipe} from '@angular/common';
+import {JsonPipe} from '@angular/common';
 import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
 import {SciQualifierChipListComponent} from '@scion/components.internal/qualifier-chip-list';
 import {parseTypedValues} from '../../common/typed-value-parser.util';
 import {stringifyError} from '../../common/stringify-error.util';
+import {toSignal} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-register-capability',
   templateUrl: './register-capability.component.html',
   styleUrls: ['./register-capability.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AsyncPipe,
     JsonPipe,
     ReactiveFormsModule,
     SciFormFieldComponent,
@@ -41,8 +41,8 @@ export default class RegisterCapabilityComponent {
 
   private readonly _formBuilder = inject(NonNullableFormBuilder);
 
-  public paramsPlaceholder: ParamDefinition[] = [{name: 'param1', required: true}, {name: 'param2', required: true}];
-  public registerForm = this._formBuilder.group({
+  protected readonly paramsPlaceholder: ParamDefinition[] = [{name: 'param1', required: true}, {name: 'param2', required: true}];
+  protected readonly registerForm = this._formBuilder.group({
     type: this._formBuilder.control('', Validators.required),
     qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
     params: this._formBuilder.control(''),
@@ -50,7 +50,7 @@ export default class RegisterCapabilityComponent {
     inactive: this._formBuilder.control(false),
     properties: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
   });
-  public unregisterForm = this._formBuilder.group({
+  protected readonly unregisterForm = this._formBuilder.group({
     id: this._formBuilder.control(''),
     type: this._formBuilder.control(''),
     qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
@@ -58,28 +58,13 @@ export default class RegisterCapabilityComponent {
     appSymbolicName: this._formBuilder.control(''),
   });
 
-  public capabilities$: Observable<Capability[]>;
+  protected readonly capabilities = toSignal(Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: Beans.get<string>(APP_IDENTITY)}));
+  protected readonly registerResponse = signal<string | undefined>(undefined);
+  protected readonly registerError = signal<string | undefined>(undefined);
+  protected readonly unregisterResponse = signal<'OK' | undefined>(undefined);
+  protected readonly unregisterError = signal<string | undefined>(undefined);
 
-  public registerResponse = signal<string | undefined>(undefined);
-  public registerError = signal<string | undefined>(undefined);
-  public unregisterResponse = signal<'OK' | undefined>(undefined);
-  public unregisterError = signal<string | undefined>(undefined);
-
-  constructor() {
-    this.capabilities$ = Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: Beans.get<string>(APP_IDENTITY)});
-
-    // If the form is cleared onRegister/onUnregister, Playwright might be too fast and see a stale response.
-    this.registerForm.valueChanges.subscribe(() => {
-      this.registerResponse.set(undefined);
-      this.registerError.set(undefined);
-    });
-    this.unregisterForm.valueChanges.subscribe(() => {
-      this.unregisterResponse.set(undefined);
-      this.unregisterError.set(undefined);
-    });
-  }
-
-  public onRegister(): void {
+  protected onRegister(): void {
     const params = this.registerForm.controls.params.value;
 
     const capability: Capability = {
@@ -104,7 +89,12 @@ export default class RegisterCapabilityComponent {
       });
   }
 
-  public onUnregister(): void {
+  protected onClearRegisterResponse(): void {
+    this.registerResponse.set(undefined);
+    this.registerError.set(undefined);
+  }
+
+  protected onUnregister(): void {
     const nilQualifierIfEmpty = this.unregisterForm.controls.nilqualifierIfEmpty.value;
     const qualifier = SciKeyValueFieldComponent.toDictionary(this.unregisterForm.controls.qualifier);
     const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
@@ -127,5 +117,10 @@ export default class RegisterCapabilityComponent {
         this.unregisterForm.reset({}, {emitEvent: false});
         this.unregisterForm.setControl('qualifier', this._formBuilder.array<FormGroup<KeyValueEntry>>([]), {emitEvent: false});
       });
+  }
+
+  protected onClearUnregisterResponse(): void {
+    this.unregisterResponse.set(undefined);
+    this.unregisterError.set(undefined);
   }
 }
