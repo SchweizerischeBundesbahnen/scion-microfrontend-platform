@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, effect, inject, signal, untracked, viewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, effect, inject, signal, untracked, viewChild} from '@angular/core';
 import {fromEvent, merge} from 'rxjs';
 import {DatePipe} from '@angular/common';
 import {SciViewportComponent} from '@scion/components/viewport';
@@ -19,7 +19,6 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   selector: 'app-mouse-event-dispatch-test-page',
   templateUrl: './mouse-event-dispatch-test-page.component.html',
   styleUrls: ['./mouse-event-dispatch-test-page.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DatePipe,
     ReactiveFormsModule,

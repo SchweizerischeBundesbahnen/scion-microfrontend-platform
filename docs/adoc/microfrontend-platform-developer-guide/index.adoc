@@ -22,13 +22,6 @@
 :typedoc-url: https://microfrontend-platform-api-v{revnumber-dasherized}.scion.vercel.app
 :testing-app-url: https://microfrontend-platform-testing-app1-v{revnumber-dasherized}.scion.vercel.app
 
-// Use prism.js instead of highlight.js to have typescript support; see https://www.npmjs.com/package/asciidoctor-prism-extension
-:source-highlighter: prism
-
-// See available prism themes: https://github.com/PrismJS/prism/tree/master/themes
-:prism-theme: prism.css
-:prism-languages: typescript,html,json
-
 // Include 'docinfo.html; see https://asciidoctor.org/docs/user-manual/#docinfo-file
 :docinfo: shared
 :table-caption!:

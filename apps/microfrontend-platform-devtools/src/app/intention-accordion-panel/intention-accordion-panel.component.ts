@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from '@angular/core';
+import {Component, effect, inject, input, signal, untracked} from '@angular/core';
 import {Application, Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router} from '@angular/router';
@@ -16,7 +16,6 @@ import {Router} from '@angular/router';
   selector: 'devtools-intention-accordion-panel',
   templateUrl: './intention-accordion-panel.component.html',
   styleUrls: ['./intention-accordion-panel.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IntentionAccordionPanelComponent {
 

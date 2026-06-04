@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Capability} from '@scion/microfrontend-platform';
 import {CapabilityFilterSession} from '../find-capabilities/capability-filter-session.service';
@@ -26,7 +26,6 @@ import {SciFilterFieldComponent} from '@scion/components.internal/filter-field';
   selector: 'devtools-capability-filter-result',
   templateUrl: './capability-filter-result.component.html',
   styleUrls: ['./capability-filter-result.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     ReactiveFormsModule,

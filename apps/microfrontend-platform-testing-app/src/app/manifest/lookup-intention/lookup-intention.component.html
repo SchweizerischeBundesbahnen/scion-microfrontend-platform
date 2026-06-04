@@ -16,7 +16,7 @@
   </sci-form-field>
 
   <section class="buttons">
-    @if (!intentions$) {
+    @if (!lookupSubscription()) {
       <button type="submit" (click)="onLookup()" [disabled]="form.invalid" class="e2e-lookup" sci-primary>Lookup</button>
     } @else {
       <button type="submit" (click)="onLookupCancel()" class="e2e-cancel-lookup" sci-primary>Cancel the lookup</button>
@@ -26,7 +26,7 @@
 </form>
 
 <sci-list class="intentions e2e-intentions">
-  @for (intention of intentions$ | async; track intention) {
+  @for (intention of intentions(); track intention) {
     <ng-template sciListItem>
       <section class="intention">
         <sci-qualifier-chip-list [qualifier]="intention.qualifier" [type]="intention.type"/>

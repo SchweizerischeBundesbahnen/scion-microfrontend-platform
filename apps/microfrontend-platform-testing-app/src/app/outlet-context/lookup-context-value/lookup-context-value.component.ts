@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, DestroyRef, inject, signal} from '@angular/core';
+import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ContextService} from '@scion/microfrontend-platform';
@@ -23,7 +23,6 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   selector: 'app-context-value-lookup',
   templateUrl: './lookup-context-value.component.html',
   styleUrls: ['./lookup-context-value.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     JsonPipe,
     ReactiveFormsModule,

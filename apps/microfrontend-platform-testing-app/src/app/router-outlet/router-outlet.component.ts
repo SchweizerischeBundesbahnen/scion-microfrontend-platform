@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, Injector, signal, viewChild} from '@angular/core';
+import {Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, inject, Injector, signal, viewChild} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {RouterOutletContextComponent} from '../router-outlet-context/router-outlet-context.component';
 import {Overlay} from '@angular/cdk/overlay';
@@ -22,7 +22,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'app-router-outlet',
   templateUrl: './router-outlet.component.html',
   styleUrls: ['./router-outlet.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA], // required because <sci-router-outlet> is a custom element
   imports: [
     AsyncPipe,

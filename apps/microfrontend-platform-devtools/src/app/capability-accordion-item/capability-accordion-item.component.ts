@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, computed, inject, input, Signal} from '@angular/core';
+import {Component, computed, inject, input, Signal} from '@angular/core';
 import {Clipboard} from '@angular/cdk/clipboard';
 import {Capability} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
@@ -18,7 +18,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'devtools-capability-accordion-item',
   templateUrl: './capability-accordion-item.component.html',
   styleUrls: ['./capability-accordion-item.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     SciQualifierChipListComponent,
     SciMaterialIconDirective,

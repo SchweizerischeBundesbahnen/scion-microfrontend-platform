@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NavigationOptions, OutletRouter} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -23,7 +23,6 @@ import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.intern
   selector: 'app-outlet-router',
   templateUrl: './outlet-router.component.html',
   styleUrls: ['./outlet-router.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     SciFormFieldComponent,

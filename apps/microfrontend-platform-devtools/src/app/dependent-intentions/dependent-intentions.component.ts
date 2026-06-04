@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from '@angular/core';
+import {Component, effect, inject, input, signal, untracked} from '@angular/core';
 import {Intention} from '@scion/microfrontend-platform';
 import {Router} from '@angular/router';
 import {expand, map, take} from 'rxjs/operators';
@@ -26,7 +26,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'devtools-dependent-intentions',
   templateUrl: './dependent-intentions.component.html',
   styleUrls: ['./dependent-intentions.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     KeyValuePipe,
     ReactiveFormsModule,
