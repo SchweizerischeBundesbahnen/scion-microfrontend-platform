@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, output} from '@angular/core';
+import {Component, output} from '@angular/core';
 import {animate, AnimationMetadata, style, transition, trigger} from '@angular/animations';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {SciViewportComponent} from '@scion/components/viewport';
@@ -17,7 +17,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'devtools-app-menu',
   templateUrl: './app-menu.component.html',
   styleUrls: ['./app-menu.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterLink,
     RouterLinkActive,

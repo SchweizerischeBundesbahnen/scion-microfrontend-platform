@@ -22,11 +22,18 @@
           "defaultConfiguration": "production"
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular/build:karma",
           "options": {
             "main": "projects/scion/microfrontend-platform/src/test.ts",
             "tsConfig": "projects/scion/microfrontend-platform/tsconfig.spec.json",
-            "karmaConfig": "projects/scion/microfrontend-platform/karma.conf.js"
+            "karmaConfig": "projects/scion/microfrontend-platform/karma.conf.js",
+            "assets": [
+              {
+                "glob": "**/*.script.js",
+                "input": "dist/lib",
+                "output": "/lib"
+              }
+            ]
           }
         },
         "lint": {

@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {Component} from '@angular/core';
 import {ContextService} from '@scion/microfrontend-platform';
 import {Observable, OperatorFunction} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -20,7 +20,6 @@ import {SciListComponent, SciListItemDirective} from '@scion/components.internal
   selector: 'app-context',
   templateUrl: './context.component.html',
   styleUrls: ['./context.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     KeyValuePipe,

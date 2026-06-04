@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, DestroyRef, inject, signal} from '@angular/core';
+import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {IntentClient, MessageClient, TopicMessage} from '@scion/microfrontend-platform';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
@@ -29,7 +29,6 @@ import {parseTypedValues} from '../../common/typed-value-parser.util';
   selector: 'app-publish-message',
   templateUrl: './publish-message.component.html',
   styleUrls: ['./publish-message.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     ReactiveFormsModule,

@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject, NgZone} from '@angular/core';
+import {Component, inject, NgZone, ChangeDetectionStrategy} from '@angular/core';
 import {NgTemplateOutlet} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
@@ -22,6 +22,8 @@ import {SciAccordionComponent, SciAccordionItemDirective} from '@scion/component
   selector: 'app-angular-zone-test-page',
   templateUrl: './angular-zone-test-page.component.html',
   styleUrls: ['./angular-zone-test-page.component.scss'],
+  // Required for zone based tests.
+  changeDetection: ChangeDetectionStrategy.Eager, // eslint-disable-line @angular-eslint/prefer-on-push-component-change-detection
   imports: [
     NgTemplateOutlet,
     FormsModule,

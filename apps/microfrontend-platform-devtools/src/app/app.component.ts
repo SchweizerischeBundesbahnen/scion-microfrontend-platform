@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {ShellService} from './shell.service';
 import {ContextService, MicrofrontendPlatformClient, OUTLET_CONTEXT} from '@scion/microfrontend-platform';
 import {AsyncPipe} from '@angular/common';
@@ -22,7 +22,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'devtools-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     RouterOutlet,

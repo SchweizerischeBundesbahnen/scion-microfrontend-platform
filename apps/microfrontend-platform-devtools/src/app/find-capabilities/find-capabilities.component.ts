@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {KeyValuePair, LogicalOperator} from './filter-field/filter-field';
 import {CapabilityFilterSession} from './capability-filter-session.service';
 import {Observable} from 'rxjs';
@@ -24,7 +24,6 @@ import {VisibilityFilterFieldComponent} from './visibility-filter-field/visibili
   selector: 'devtools-find-capabilities',
   templateUrl: './find-capabilities.component.html',
   styleUrls: ['./find-capabilities.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     SciViewportComponent,

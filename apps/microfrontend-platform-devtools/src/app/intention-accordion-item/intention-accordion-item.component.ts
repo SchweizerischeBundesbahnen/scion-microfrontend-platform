@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from '@angular/core';
+import {Component, effect, inject, input, signal, untracked} from '@angular/core';
 import {Intention} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {map} from 'rxjs/operators';
@@ -17,7 +17,6 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
   selector: 'devtools-intention-accordion-item',
   templateUrl: './intention-accordion-item.component.html',
   styleUrls: ['./intention-accordion-item.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     SciQualifierChipListComponent,
   ],

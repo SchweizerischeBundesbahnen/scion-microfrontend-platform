@@ -104,7 +104,7 @@ export class MicrofrontendPlatform {
     }
     catch (error) {
       await this.destroy();
-      throw Error(`[MicrofrontendPlatformStartupError] Microfrontend platform failed to start: ${error}`);
+      throw Error(`[MicrofrontendPlatformStartupError] Microfrontend platform failed to start: ${error}`, {cause: error});
     }
   }
 

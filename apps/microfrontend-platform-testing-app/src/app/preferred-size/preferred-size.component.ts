@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, ElementRef, inject, signal} from '@angular/core';
+import {Component, ElementRef, inject, signal} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {PreferredSizeService} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
@@ -19,7 +19,6 @@ import {SciFormFieldComponent} from '@scion/components.internal/form-field';
   selector: 'app-preferred-size',
   templateUrl: './preferred-size.component.html',
   styleUrls: ['./preferred-size.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     SciFormFieldComponent,

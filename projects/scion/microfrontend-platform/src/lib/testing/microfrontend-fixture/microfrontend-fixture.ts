@@ -25,6 +25,11 @@ import {OutletRouter} from '../../client/router-outlet/outlet-router';
  *
  * Note that the script runs in a separate scripting/browsing context having the same origin as the current document.
  *
+ * Transpilation: a separate build script is required to transpile the scripts, which are then served by the angular dev server as assets.
+ * See also:
+ * - angular.json: projects > @scion/microfrontend-platform > architect > test > assets
+ * - package.json: microfrontend-platform-testing-scripts:build
+ *
  * ---
  * ### Usage:
  *
@@ -235,7 +240,7 @@ export class MicrofrontendFixture {
         <html>
           <head>
             <!-- Load the script file into the iframe. -->
-            <script src="${new URL('base/src/' + scriptPath, window.parent.origin).href}"></script>
+            <script src="${new URL(scriptPath, window.parent.origin).href}"></script>
             <!-- Execute the script, dispatching messages sent by the script to the fixture. -->
             <script type="module">
                 (async () => {

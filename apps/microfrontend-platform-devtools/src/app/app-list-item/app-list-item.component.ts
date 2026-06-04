@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from '@angular/core';
+import {Component, effect, inject, input, signal, untracked} from '@angular/core';
 import {Application} from '@scion/microfrontend-platform';
 import {map} from 'rxjs/operators';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
@@ -19,7 +19,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'devtools-app-list-item',
   templateUrl: './app-list-item.component.html',
   styleUrls: ['./app-list-item.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     SciMaterialIconDirective,
