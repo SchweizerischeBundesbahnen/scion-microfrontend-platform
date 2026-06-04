@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, effect, ElementRef, inject, NgZone, signal, untracked, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, effect, ElementRef, inject, NgZone, signal, untracked, viewChild} from '@angular/core';
 import {debounceTime, delay, EMPTY, from, mergeMap, of, Subject, switchMap, withLatestFrom} from 'rxjs';
 import {APP_IDENTITY, ContextService, FocusMonitor, IS_PLATFORM_HOST, ManifestService, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {tap} from 'rxjs/operators';
@@ -25,6 +25,7 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
   selector: 'app-shell',
   templateUrl: './app-shell.component.html',
   styleUrls: ['./app-shell.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     AsyncPipe,
     RouterOutlet,
@@ -121,6 +122,6 @@ export default class AppShellComponent {
    */
   protected get onAngularChangeDetectionCycle(): void {
     this._zone.runOutsideAngular(() => this._angularChangeDetectionCycle$.next());
-    return undefined as void;
+    return undefined;
   }
 }

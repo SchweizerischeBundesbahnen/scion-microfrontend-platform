@@ -143,7 +143,7 @@ describe('Message Interception', () => {
       body: ['INTERCEPTOR_1', 'INTERCEPTOR_2', 'INTERCEPTOR_3'],
       headers: new Map<string, boolean>().set('HEADER_INTERCEPTOR_1', true).set('HEADER_INTERCEPTOR_2', true).set('HEADER_INTERCEPTOR_3', true),
       topic: 'topic',
-    } as TopicMessage);
+    });
   });
 });
 
@@ -272,6 +272,6 @@ describe('Intent Interception', () => {
       headers: new Map<string, boolean>().set('HEADER_INTERCEPTOR_1', true).set('HEADER_INTERCEPTOR_2', true).set('HEADER_INTERCEPTOR_3', true),
       intent: {type: 'type'},
       capability: undefined!,
-    } as IntentMessage);
+    });
   });
 });

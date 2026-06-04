@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {afterEveryRender, Component, DestroyRef, ElementRef, inject, NgZone} from '@angular/core';
+import {afterEveryRender, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, NgZone} from '@angular/core';
 import {ContextService, MicrofrontendPlatform, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {fromEvent, merge, withLatestFrom} from 'rxjs';
@@ -19,6 +19,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
   selector: 'app-root',
   templateUrl: './app.component.html',
   imports: [RouterOutlet],
+  changeDetection: ChangeDetectionStrategy.Eager,
   host: {
     '(document:keydown.control.alt.shift.s)': `void onE2eTestKeyboardEvent($event)`,
   },

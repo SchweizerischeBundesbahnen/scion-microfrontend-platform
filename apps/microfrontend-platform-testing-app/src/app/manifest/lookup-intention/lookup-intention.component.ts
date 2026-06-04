@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy} from '@angular/core';
 import {FormGroup, NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
@@ -24,6 +24,7 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
   selector: 'app-lookup-intention',
   templateUrl: './lookup-intention.component.html',
   styleUrls: ['./lookup-intention.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     AsyncPipe,
     ReactiveFormsModule,

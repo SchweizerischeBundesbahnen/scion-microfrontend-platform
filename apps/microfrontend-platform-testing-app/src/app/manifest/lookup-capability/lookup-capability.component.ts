@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject} from '@angular/core';
+import {Component, inject, ChangeDetectionStrategy} from '@angular/core';
 import {FormGroup, NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Capability, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
@@ -26,6 +26,7 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'app-lookup-capability',
   templateUrl: './lookup-capability.component.html',
   styleUrls: ['./lookup-capability.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     AsyncPipe,
     JsonPipe,
