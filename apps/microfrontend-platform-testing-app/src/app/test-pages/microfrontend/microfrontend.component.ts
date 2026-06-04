@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {UUID} from '@scion/toolkit/uuid';
 import {TestingAppService} from '../../testing-app.service';
 import {ActivatedRoute, Params} from '@angular/router';
@@ -20,7 +20,6 @@ import {SciKeyValueComponent} from '@scion/components.internal/key-value';
   selector: 'app-microfrontend',
   templateUrl: './microfrontend.component.html',
   styleUrls: ['./microfrontend.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     SciFormFieldComponent,

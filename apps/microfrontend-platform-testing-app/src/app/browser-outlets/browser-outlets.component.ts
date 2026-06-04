@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {Observable} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {map} from 'rxjs/operators';
@@ -21,7 +21,6 @@ import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
   selector: 'app-browser-outlets',
   templateUrl: './browser-outlets.component.html',
   styleUrls: ['./browser-outlets.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     SciSashboxComponent,

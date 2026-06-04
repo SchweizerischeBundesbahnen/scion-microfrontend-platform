@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, computed, effect, input, signal, untracked} from '@angular/core';
+import {Component, computed, effect, input, signal, untracked} from '@angular/core';
 import {IntentMessage, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
 import {AppendParamDataTypePipe} from '../append-param-data-type.pipe';
 import {SciKeyValueComponent} from '@scion/components.internal/key-value';
@@ -16,7 +16,6 @@ import {SciKeyValueComponent} from '@scion/components.internal/key-value';
   selector: 'app-message-list-item',
   templateUrl: './message-list-item.component.html',
   styleUrls: ['./message-list-item.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     SciKeyValueComponent,
     AppendParamDataTypePipe,

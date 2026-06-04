@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, effect, ElementRef, inject, Injector, input, untracked, viewChild} from '@angular/core';
+import {Component, CUSTOM_ELEMENTS_SCHEMA, effect, ElementRef, inject, Injector, input, untracked, viewChild} from '@angular/core';
 import {MessageClient, OutletRouter, SciRouterOutletElement} from '@scion/microfrontend-platform';
 import {NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Overlay} from '@angular/cdk/overlay';
@@ -26,7 +26,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'app-browser-outlet',
   templateUrl: './browser-outlet.component.html',
   styleUrls: ['./browser-outlet.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     SciMaterialIconDirective,

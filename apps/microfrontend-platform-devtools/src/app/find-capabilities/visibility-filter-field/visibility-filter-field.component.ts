@@ -7,14 +7,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, effect, inject, signal, untracked} from '@angular/core';
+import {Component, effect, inject, signal, untracked} from '@angular/core';
 import {CapabilityFilterSession} from '../capability-filter-session.service';
 
 @Component({
   selector: 'devtools-visibility-filter-field',
   templateUrl: './visibility-filter-field.component.html',
   styleUrls: ['./visibility-filter-field.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VisibilityFilterFieldComponent {
 

@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, ElementRef, inject, input, output, Signal, signal, untracked, viewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, computed, effect, ElementRef, inject, input, output, Signal, signal, untracked, viewChild} from '@angular/core';
 import {NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {UUID} from '@scion/toolkit/uuid';
 import {KeyValuePair, LogicalOperator} from './filter-field';
@@ -19,7 +19,6 @@ import {toSignal} from '@angular/core/rxjs-interop';
   selector: 'devtools-filter-field',
   templateUrl: './filter-field.component.html',
   styleUrls: ['./filter-field.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     CdkMonitorFocus,

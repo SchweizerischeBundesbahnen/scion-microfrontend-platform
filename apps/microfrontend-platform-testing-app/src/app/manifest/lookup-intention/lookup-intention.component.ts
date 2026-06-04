@@ -7,14 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {Component, inject} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {FormGroup, NonNullableFormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {Intention, ManifestObjectFilter, ManifestService} from '@scion/microfrontend-platform';
 import {KeyValueEntry, SciKeyValueFieldComponent} from '@scion/components.internal/key-value-field';
-import {Observable} from 'rxjs';
-import {finalize} from 'rxjs/operators';
+import {Subscription} from 'rxjs';
 import {Beans} from '@scion/toolkit/bean-manager';
-import {AsyncPipe} from '@angular/common';
 import {SciCheckboxComponent} from '@scion/components.internal/checkbox';
 import {SciFormFieldComponent} from '@scion/components.internal/form-field';
 import {SciListComponent, SciListItemDirective} from '@scion/components.internal/list';
@@ -25,7 +23,6 @@ import {SciQualifierChipListComponent} from '@scion/components.internal/qualifie
   templateUrl: './lookup-intention.component.html',
   styleUrls: ['./lookup-intention.component.scss'],
   imports: [
-    AsyncPipe,
     ReactiveFormsModule,
     SciFormFieldComponent,
     SciKeyValueFieldComponent,
@@ -39,16 +36,17 @@ export default class LookupIntentionComponent {
 
   private readonly _formBuilder = inject(NonNullableFormBuilder);
 
-  public form = this._formBuilder.group({
+  protected readonly form = this._formBuilder.group({
     id: this._formBuilder.control(''),
     type: this._formBuilder.control(''),
     qualifier: this._formBuilder.array<FormGroup<KeyValueEntry>>([]),
     nilqualifierIfEmpty: this._formBuilder.control(false),
     appSymbolicName: this._formBuilder.control(''),
   });
-  public intentions$: Observable<Intention[]> | undefined;
+  protected readonly lookupSubscription = signal<Subscription | undefined>(undefined);
+  protected readonly intentions = signal(new Array<Intention>());
 
-  public onLookup(): void {
+  protected onLookup(): void {
     const nilQualifierIfEmpty = this.form.controls.nilqualifierIfEmpty.value;
     const qualifier = SciKeyValueFieldComponent.toDictionary(this.form.controls.qualifier);
     const nilQualifierOrUndefined = nilQualifierIfEmpty ? {} : undefined;
@@ -59,15 +57,16 @@ export default class LookupIntentionComponent {
       qualifier: qualifier ?? nilQualifierOrUndefined,
       appSymbolicName: this.form.controls.appSymbolicName.value || undefined,
     };
-    this.intentions$ = Beans.get(ManifestService).lookupIntentions$(filter)
-      .pipe(finalize(() => this.intentions$ = undefined));
+    this.lookupSubscription.set(Beans.get(ManifestService).lookupIntentions$(filter).subscribe(intentions => this.intentions.set(intentions)));
   }
 
-  public onLookupCancel(): void {
-    this.intentions$ = undefined;
+  protected onLookupCancel(): void {
+    this.lookupSubscription()!.unsubscribe();
+    this.intentions.set([]);
+    this.lookupSubscription.set(undefined);
   }
 
-  public onReset(): void {
+  protected onReset(): void {
     this.form.reset();
     this.form.setControl('qualifier', this._formBuilder.array<FormGroup<KeyValueEntry>>([]));
   }

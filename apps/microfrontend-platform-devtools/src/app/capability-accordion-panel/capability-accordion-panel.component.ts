@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, effect, inject, input, signal, untracked} from '@angular/core';
+import {Component, effect, inject, input, signal, untracked} from '@angular/core';
 import {Application, Capability} from '@scion/microfrontend-platform';
 import {DevToolsManifestService} from '../dev-tools-manifest.service';
 import {Router, RouterLink} from '@angular/router';
@@ -21,7 +21,6 @@ import {SciTabbarComponent, SciTabDirective} from '@scion/components.internal/ta
   selector: 'devtools-capability-accordion-panel',
   templateUrl: './capability-accordion-panel.component.html',
   styleUrls: ['./capability-accordion-panel.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     JsonPipe,
     RouterLink,

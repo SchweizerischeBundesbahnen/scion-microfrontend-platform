@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, DestroyRef, inject, signal} from '@angular/core';
+import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {IntentClient, IntentMessage, MessageClient, MessageHeaders, TopicMessage} from '@scion/microfrontend-platform';
 import {FormArray, FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
@@ -26,7 +26,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
   selector: 'app-receive-message',
   templateUrl: './receive-message.component.html',
   styleUrls: ['./receive-message.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     SciFormFieldComponent,

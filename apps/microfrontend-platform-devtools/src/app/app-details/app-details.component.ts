@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, effect, inject, untracked, viewChild} from '@angular/core';
+import {Component, effect, inject, untracked, viewChild} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Application, Capability, Intention} from '@scion/microfrontend-platform';
 import {distinctUntilChanged, expand, map, switchMap, take} from 'rxjs/operators';
@@ -34,7 +34,6 @@ import {SciSashboxComponent, SciSashDirective} from '@scion/components/sashbox';
   selector: 'devtools-app-details',
   templateUrl: './app-details.component.html',
   styleUrls: ['./app-details.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     ReactiveFormsModule,

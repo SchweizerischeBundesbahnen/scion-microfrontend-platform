@@ -16,7 +16,7 @@
   </sci-form-field>
 
   <section class="buttons">
-    @if (!capabilities$) {
+    @if (!lookupSubscription()) {
       <button type="submit" (click)="onLookup()" [disabled]="form.invalid" class="e2e-lookup" sci-primary>Lookup</button>
     } @else {
       <button type="submit" (click)="onLookupCancel()" class="e2e-cancel-lookup" sci-primary>Cancel the lookup</button>
@@ -26,7 +26,7 @@
 </form>
 
 <sci-list class="capabilities e2e-capabilities">
-  @for (capability of capabilities$ | async; track capability) {
+  @for (capability of capabilities(); track capability) {
     <ng-template sciListItem>
       <section class="capability" [attr.data-e2e-capability]="capability | json">
         <sci-qualifier-chip-list [qualifier]="capability.qualifier" [type]="capability.type"/>

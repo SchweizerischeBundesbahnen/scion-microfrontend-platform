@@ -7,13 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, input} from '@angular/core';
+import {Component, input} from '@angular/core';
 
 @Component({
   selector: 'app-context-entry',
   templateUrl: './context-entry.component.html',
   styleUrls: ['./context-entry.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContextEntryComponent {
 

@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {Application} from '@scion/microfrontend-platform';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -23,7 +23,6 @@ import {SciListComponent, SciListItemDirective} from '@scion/components.internal
   selector: 'devtools-app-list',
   templateUrl: './app-list.component.html',
   styleUrls: ['./app-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
     RouterLink,
