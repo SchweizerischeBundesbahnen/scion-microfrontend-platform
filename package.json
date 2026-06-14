@@ -112,7 +112,7 @@
     "conventional-changelog-cli": "5.0.0",
     "cpx2": "8.0.0",
     "cross-env": "10.1.0",
-    "esbuild": "0.27.2",
+    "esbuild": "0.28.1",
     "eslint": "9.39.2",
     "jasmine-core": "5.13.0",
     "karma": "6.4.4",
