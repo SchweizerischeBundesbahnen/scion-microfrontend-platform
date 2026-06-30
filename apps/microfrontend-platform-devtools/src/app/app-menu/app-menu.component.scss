@@ -9,6 +9,7 @@ $menu-width: 350px;
 
   > sci-viewport {
     width: $menu-width;
+    animation: open-menu 100ms ease;
     background-color: var(--sci-color-background-elevation);
     box-shadow: var(--sci-elevation) var(--sci-static-color-black);
     border-right: 1px solid var(--sci-color-border);
@@ -94,5 +95,14 @@ $menu-width: 350px;
         }
       }
     }
+  }
+}
+
+@keyframes open-menu {
+  from {
+    width: 0;
+  }
+  to {
+    width: $menu-width;
   }
 }

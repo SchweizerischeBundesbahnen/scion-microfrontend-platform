@@ -3,14 +3,12 @@ import {provideRouter, withHashLocation} from '@angular/router';
 import {routes} from './app.routes';
 import {provideMicrofrontendPlatformHost} from './microfrontend-platform-host.provider';
 import {provideMicrofrontendPlatformClient} from './microfrontend-platform-client.provider';
-import {provideAnimations} from '@angular/platform-browser/animations';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withHashLocation()),
     provideMicrofrontendPlatformHost(),
     provideMicrofrontendPlatformClient(),
-    provideAnimations(),
     // Only provide zone CD if the polyfill is loaded (see angular.json).
     'Zone' in window ? provideZoneChangeDetection() : [],
   ],

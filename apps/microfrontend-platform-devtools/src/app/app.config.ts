@@ -2,7 +2,6 @@ import {ApplicationConfig} from '@angular/core';
 import {provideRouter, withHashLocation} from '@angular/router';
 import {routes} from './app.routes';
 import {provideMicrofrontendPlatformClient} from './microfrontend-platform-client/microfrontend-platform-client.provider';
-import {provideAnimations} from '@angular/platform-browser/animations';
 import {provideTheme} from './theme/theme-switcher';
 
 export const appConfig: ApplicationConfig = {
@@ -10,6 +9,5 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withHashLocation()),
     provideMicrofrontendPlatformClient(),
     provideTheme(),
-    provideAnimations(),
   ],
 };

@@ -8,7 +8,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Component, output} from '@angular/core';
-import {animate, AnimationMetadata, style, transition, trigger} from '@angular/animations';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {SciViewportComponent} from '@scion/components/viewport';
 import {SciMaterialIconDirective} from '@scion/components.internal/material-icon';
@@ -22,9 +21,6 @@ import {SciMaterialIconDirective} from '@scion/components.internal/material-icon
     RouterLinkActive,
     SciViewportComponent,
     SciMaterialIconDirective,
-  ],
-  animations: [
-    trigger('openCloseMenu', provideMenuAnimation()),
   ],
   host: {
     '(document:keydown.escape)': `close.emit()`,
@@ -40,15 +36,4 @@ export class AppMenuComponent {
     event.preventDefault(); // Prevent href navigation imposed by accessibility rules
     this.close.emit();
   }
-}
-
-function provideMenuAnimation(): AnimationMetadata[] {
-  return [
-    transition(':enter', [
-      style({
-        width: '0',
-      }),
-      animate(100, style({width: '*'})),
-    ]),
-  ];
 }
