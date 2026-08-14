@@ -7,17 +7,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {PreDestroy} from '@scion/toolkit/bean-manager';
 import {MicrofrontendPlatform} from './microfrontend-platform';
-import {fromEvent, race, Subject} from 'rxjs';
-import {take, takeUntil} from 'rxjs/operators';
 
 /**
  * Stops the platform and disconnects this client from the host when the browser unloads the document.
  *
- * By default, the platform initiates shutdown when the browser unloads the document, i.e., when `beforeunload` is triggered.
- * The main reason for `beforeunload` instead of `unload` is to avoid posting messages to disposed windows.
- * However, if `beforeunload` is not triggered, e.g., when an iframe is removed, we fall back to `unload`.
+ * By default, the platform initiates shutdown when the `pagehide` event is triggered and the page is entering the terminated state.
  *
  * @category Platform
  */
@@ -27,22 +22,16 @@ export abstract class MicrofrontendPlatformStopper {
 /**
  * @internal
  */
-export class ɵMicrofrontendPlatformStopper implements MicrofrontendPlatformStopper, PreDestroy {
-
-  private _destroy$ = new Subject<void>();
+export class ɵMicrofrontendPlatformStopper implements MicrofrontendPlatformStopper {
 
   constructor() {
-    race(fromEvent(window, 'beforeunload'), fromEvent(window, 'unload'))
-      .pipe(
-        take(1),
-        takeUntil(this._destroy$),
-      )
-      .subscribe(() => {
-        void MicrofrontendPlatform.destroy();
-      });
-  }
-
-  public preDestroy(): void {
-    this._destroy$.next();
+    window.addEventListener('pagehide', event => {
+      // Destroy microfrontend platform only if the page is entering the `terminated` state.
+      // https://developer.chrome.com/docs/web-platform/page-lifecycle-api#event-pagehide
+      // https://developer.chrome.com/docs/web-platform/page-lifecycle-api/image/page-lifecycle-api-state.svg
+      if (!event.persisted) {
+        MicrofrontendPlatform.destroy();
+      }
+    }, {once: true});
   }
 }

@@ -98,12 +98,12 @@ export class MicrofrontendPlatform {
 
     try {
       startupFn?.();
-      await this.enterState(PlatformState.Starting);
+      this.enterState(PlatformState.Starting);
       await Beans.start({eagerBeanConstructRunlevel: Runlevel.One, initializerDefaultRunlevel: Runlevel.Two});
-      await this.enterState(PlatformState.Started);
+      this.enterState(PlatformState.Started);
     }
     catch (error) {
-      await this.destroy();
+      this.destroy();
       throw Error(`[MicrofrontendPlatformStartupError] Microfrontend platform failed to start: ${error}`, {cause: error});
     }
   }
@@ -113,10 +113,10 @@ export class MicrofrontendPlatform {
    *
    * @return a Promise that resolves once the platformed stopped.
    */
-  public static async destroy(): Promise<void> {
-    await this.enterState(PlatformState.Stopping);
+  public static destroy(): void {
+    this.enterState(PlatformState.Stopping);
     Beans.destroy();
-    await this.enterState(PlatformState.Stopped);
+    this.enterState(PlatformState.Stopped);
   }
 
   /**
@@ -136,34 +136,31 @@ export class MicrofrontendPlatform {
   }
 
   /**
-   * Waits for the platform to enter the specified {@link PlatformState}.
-   * If already in that state, the Promise resolves instantly.
+   * Registers a callback function to be executed when the platform enters the specified {@link PlatformState}.
+   * If already in that state, the callback is executed immediately.
+   * To ensure that the provided cleanup logic is executed before the browser unloads the page,
+   * the callback function registered on the {@link PlatformState.Stopping} or {@link PlatformState.Stopped} state must be synchronous.
    *
    * @param  state - the state to wait for.
-   * @return A Promise that resolves when the platform enters the given state.
-   *         If already in that state, the Promise resolves instantly.
+   * @param  callbackFn - callback function to be executed.
    */
-  public static async whenState(state: PlatformState): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      this._state$
-        .pipe(first(it => it === state))
-        .subscribe({
-          error: reject,
-          complete: resolve,
-        });
-    });
+  public static onState(state: PlatformState.Stopping | PlatformState.Stopped, callbackFn: () => void): void;
+  public static onState(state: PlatformState.Starting | PlatformState.Started, callbackFn: () => void | Promise<void>): void;
+  public static onState(state: PlatformState, callbackFn: () => void | Promise<void>): void {
+    this._state$
+      .pipe(first(it => it === state))
+      .subscribe(() => {
+        void callbackFn();
+      });
   }
 
-  private static async enterState(newState: PlatformState): Promise<void> {
+  private static enterState(newState: PlatformState): void {
     const currentState = (this.state === PlatformState.Stopped) ? -1 : this.state;
     if (currentState >= newState) {
       throw Error(`[PlatformStateError] Failed to enter platform state [prevState=${PlatformState[this.state]}, newState=${PlatformState[newState]}].`);
     }
 
     this._state$.next(newState);
-
-    // Let microtasks waiting for entering that state to resolve first.
-    await this.whenState(newState);
   }
 }
 

@@ -40,7 +40,7 @@ export class ɵClient implements Client {
    * Liveness is detected by sending ping requests at regular intervals.
    *
    * A client may fail to disconnect from the broker for a number of reasons:
-   * - The client was disposed without notice, i.e., without receiving the browser's "unload" event.
+   * - The client was disposed without notice, i.e., without receiving the browser's "pagehide" event.
    * - The browser discarded the "DISCONNECT" message because the client window became stale.
    *   Typically, the browser discards messages for windows that are already closed or if another page
    *   has been loaded into the window, both indicating a high load on the client during unloading.
@@ -79,7 +79,7 @@ export class ɵClient implements Client {
     Beans.get(Logger).warn(
       `[StaleClient] Stale client registration of application '${this.application.symbolicName}' detected.
        Removing stale registration. Most likely, the client could not disconnect from the broker, for example, because the client was
-       disposed without notice, i.e., without receiving the browser's "unload" event, or because the browser discarded the 'DISCONNECT'
+       disposed without notice, i.e., without receiving the browser's "pagehide" event, or because the browser discarded the 'DISCONNECT'
        message. Typically, the browser discards messages for windows that are already closed or if another page has been loaded into the
        window, both indicating a high load on the client during unloading.`.replace(/\s+/g, ' '),
       new LoggingContext(this.application.symbolicName, this.version),

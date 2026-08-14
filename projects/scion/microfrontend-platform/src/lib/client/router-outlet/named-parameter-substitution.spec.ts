@@ -24,8 +24,8 @@ describe('OutletRouter', () => {
 
   describe('Named parameter substitution', () => {
 
-    beforeAll(async () => await MicrofrontendPlatformHost.start({applications: []}));
-    afterAll(async () => await MicrofrontendPlatform.destroy());
+    beforeAll(() => MicrofrontendPlatformHost.start({applications: []}));
+    afterAll(() => MicrofrontendPlatform.destroy());
 
     describe('absolute URL (hash-based routing)', () => testSubstitution('http://localhost:4200/#/', {expectedBasePath: 'http://localhost:4200/#/'}));
     describe('absolute URL (push-state routing)', () => testSubstitution('http://localhost:4200/', {expectedBasePath: 'http://localhost:4200/'}));

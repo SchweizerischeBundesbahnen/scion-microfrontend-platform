@@ -86,11 +86,11 @@ Running initializers:: Advances the progress after the platform enters the `Star
 [[chapter:platform-lifecycle:platform-shutdown]]
 === Platform Shutdown
 
-When the platform is stopped, it first enters the `Stopping` platform state. In this state, the beans registered with the platform are destroyed. Beans are destroyed according to their destruction order as specified at bean registration. Beans of the same destroy order are destroyed in reverse construction order. Beans can implement the `PreDestroy` lifecycle hook to get notified when they are about to be destroyed.
+When the platform is stopped, it first enters the `Stopping` platform state. In this state, all registered callback functions are executed. Then, the beans registered with the platform are then destroyed. Beans are destroyed according to their destruction order as specified at bean registration. Beans of the same destroy order are destroyed in reverse construction order. Beans can implement the `PreDestroy` lifecycle hook to get notified when they are about to be destroyed.
 
 The platform allows the application to send messages while the platform is stopping. After all beans are destroyed, the client is disconnected from the host and the platform enters the `Stopped` state.
 
-By default, the platform initiates shutdown when the browser unloads the document, i.e., when `beforeunload` is triggered. The main reason for `beforeunload` instead of `unload` is to avoid posting messages to disposed windows. However, if `beforeunload` is not triggered, e.g., when an iframe is removed, we fall back to `unload`.
+By default, the platform initiates shutdown when the `pagehide` event is triggered and the page is entering the terminated state. See the https://developer.chrome.com/docs/web-platform/page-lifecycle-api[Page Lifecycle API] guide for more information about how this event relates to other events in the page lifecycle.
 
 You can change this behavior by registering a custom `MicrofrontendPlatformStopper` bean, as follows:
 

@@ -116,7 +116,7 @@ export class MicrofrontendPlatformHost {
       const progress$ = defer(() => Beans.get(StartupProgressMonitor).progress$).pipe(takeUntil(unsubscribe$));
 
       if (MicrofrontendPlatform.state === PlatformState.Stopped) {
-        void MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => progress$.subscribe(observer));
+        MicrofrontendPlatform.onState(PlatformState.Starting, () => void progress$.subscribe(observer));
       }
       else {
         progress$.subscribe(observer);
@@ -211,7 +211,7 @@ function provideStartupProgressMonitor(): void {
   Beans.register(StartupProgressMonitor, {useValue: monitor});
   Beans.register(ManifestLoadProgressMonitor, {useValue: manifestLoadProgressMonitor});
   Beans.register(ActivatorLoadProgressMonitor, {useValue: activatorLoadProgressMonitor});
-  void MicrofrontendPlatform.whenState(PlatformState.Started).then(() => platformProgressMonitor.done());
+  MicrofrontendPlatform.onState(PlatformState.Started, () => platformProgressMonitor.done());
 }
 
 /**

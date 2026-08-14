@@ -29,7 +29,7 @@ export class ɵClientRegistry implements ClientRegistry, PreDestroy {
       Beans.get(Logger).warn(
         `[StaleClient] Stale client registration detected when loading application '${client.application.symbolicName}'
         into the window of '${staleClient.application.symbolicName}'. Removing stale registration. Most likely, the client could not disconnect
-        from the broker, for example, because the client was disposed without notice, i.e., without receiving the browser's "unload" event, or
+        from the broker, for example, because the client was disposed without notice, i.e., without receiving the browser's "pagehide" event, or
         because the browser discarded the 'DISCONNECT' message, maybe due to a high load on the client during unloading.`.replace(/\s+/g, ' '),
         new LoggingContext(staleClient.application.symbolicName, staleClient.version),
       );

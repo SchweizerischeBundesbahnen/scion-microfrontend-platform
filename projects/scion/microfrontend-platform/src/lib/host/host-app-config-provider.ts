@@ -59,6 +59,6 @@ function provideHostManifestUrl(hostManifest: string | Manifest | undefined): st
 
 function serveHostManifest(manifest: Manifest): string {
   const url = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
-  void MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => URL.revokeObjectURL(url));
+  MicrofrontendPlatform.onState(PlatformState.Stopped, () => URL.revokeObjectURL(url));
   return url;
 }

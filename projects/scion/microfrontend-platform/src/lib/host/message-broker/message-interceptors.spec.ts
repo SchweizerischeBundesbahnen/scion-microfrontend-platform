@@ -119,7 +119,7 @@ describe('Message Interceptors', () => {
     }();
 
     // Register app-specific interceptor when starting the platform.
-    void MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
+    MicrofrontendPlatform.onState(PlatformState.Starting, () => {
       Beans.register(MessageInterceptor, {useValue: appInterceptor, multi: true});
     });
 

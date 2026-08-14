@@ -26,9 +26,9 @@ describe('Message Handler', () => {
 
   const disposables = new Set<Disposable>();
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => {
-    await MicrofrontendPlatform.destroy();
+  beforeEach(() => MicrofrontendPlatform.destroy());
+  afterEach(() => {
+    MicrofrontendPlatform.destroy();
     disposables.forEach(disposable => disposable());
   });
 
@@ -564,9 +564,9 @@ describe('Intent Handler', () => {
 
   const disposables = new Set<Disposable>();
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => {
-    await MicrofrontendPlatform.destroy();
+  beforeEach(() => MicrofrontendPlatform.destroy());
+  afterEach(() => {
+    MicrofrontendPlatform.destroy();
     disposables.forEach(disposable => disposable());
   });
 

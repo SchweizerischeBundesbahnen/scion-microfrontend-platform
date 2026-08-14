@@ -8,7 +8,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {Arrays} from '@scion/toolkit/util';
+import {Objects} from '@scion/toolkit/util';
 import {Topics} from './topics.util';
 
 /**
@@ -58,7 +58,7 @@ export class TopicMatcher {
     if (patternSegments.length !== inputTopicSegments.length) {
       return {matches: false};
     }
-    if (Arrays.isEqual(inputTopicSegments, patternSegments, {exactOrder: true})) {
+    if (Objects.isEqual(inputTopicSegments, patternSegments)) {
       return {matches: true, params: new Map()};
     }
     if (!patternSegments.some(Topics.isWildcardSegment)) {

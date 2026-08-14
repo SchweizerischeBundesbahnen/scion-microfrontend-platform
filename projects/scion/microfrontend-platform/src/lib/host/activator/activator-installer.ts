@@ -142,6 +142,6 @@ export class ActivatorInstaller implements Initializer {
     // Add the router outlet to the DOM
     document.body.appendChild(routerOutlet);
     // Unmount the router outlet on platform shutdown
-    void MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => document.body.removeChild(routerOutlet));
+    MicrofrontendPlatform.onState(PlatformState.Stopped, () => document.body.removeChild(routerOutlet));
   }
 }
