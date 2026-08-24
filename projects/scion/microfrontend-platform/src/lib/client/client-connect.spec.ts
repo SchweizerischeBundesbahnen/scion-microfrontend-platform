@@ -35,7 +35,7 @@ describe('MicrofrontendPlatform', () => {
   it('should throw if not connected to the host within the configured timeout', async () => {
     const microfrontendFixture = registerFixture(new MicrofrontendFixture()).insertIframe();
     const connectPromise = microfrontendFixture.loadScript('lib/client/client-connect.script.ts', 'connectToHost', {symbolicName: 'client', brokerDiscoverTimeout: 250});
-    await expectAsync(connectPromise).toBeRejectedWithError(/\[GatewayError] Message broker not discovered within 250ms/);
+    await expect(connectPromise).rejects.toThrow(/\[GatewayError] Message broker not discovered within 250ms/);
   });
 
   it('should repeatedly send a connect request when the client connects to a remote host (e.g. if integrated into Eclipse RCP host)', async () => {
@@ -63,9 +63,9 @@ describe('MicrofrontendPlatform', () => {
     await messageBridgeFixture.loadScript('lib/client/client-connect.script.ts', 'bridgeMessages');
 
     // Expect the client to be connected.
-    await expectAsync(connectPromise).toBeResolved();
+    await expect(connectPromise).resolves.not.toThrow();
     const clientId = await firstValueFrom(clientFixture.message$) as string;
-    expect(Beans.get(ClientRegistry).getByClientId(clientId)).withContext('expected "client" to be CONNECTED').toBeDefined();
+    expect(Beans.get(ClientRegistry).getByClientId(clientId), 'expected "client" to be CONNECTED').toBeDefined();
   });
 
   it('should ignore duplicate connect request of the same client', async () => {
@@ -97,7 +97,7 @@ describe('MicrofrontendPlatform', () => {
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
     const script = microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'bad-client'});
 
-    await expectAsync(script).toBeRejectedWithError(/\[ClientConnectError] Client connect attempt rejected: Unknown client./);
+    await expect(script).rejects.toThrow(/\[ClientConnectError] Client connect attempt rejected: Unknown client./);
   });
 
   it('should reject client connect attempt if the client\'s origin is different to the registered app origin', async () => {
@@ -114,7 +114,7 @@ describe('MicrofrontendPlatform', () => {
     // Client connects under karma test runner origin (location.origin), but is registered under `http://app-origin`.
     const script = microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
 
-    await expectAsync(script).toBeRejectedWithError(/\[ClientConnectError] Client connect attempt blocked: Wrong origin./);
+    await expect(script).rejects.toThrow(/\[ClientConnectError] Client connect attempt blocked: Wrong origin./);
   });
 
   it('should accept client connect attempt if originating from the secondary origin', async () => {
@@ -133,7 +133,7 @@ describe('MicrofrontendPlatform', () => {
     // - Base origin is 'app-origin'
     // - Application is configured to allow messages from secondary origin, which is karma test runner origin (location.origin)
     const script = microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'connectToHost', {symbolicName: 'client'});
-    await expectAsync(script).toBeResolved();
+    await expect(script).resolves.not.toThrow();
   });
 
   it('should reject startup promise if the message broker cannot be discovered', async () => {

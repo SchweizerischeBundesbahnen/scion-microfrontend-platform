@@ -8,22 +8,23 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 import {Topics} from './topics.util';
+import {arrayWithExactContents} from './testing/spec.util.spec';
 
 describe('Topics', () => {
 
   it('should detect wildcard segments in the topic', () => {
-    expect(Topics.containsWildcardSegments('myhome/livingroom/temperature')).toBeFalse();
-    expect(Topics.containsWildcardSegments('myhome/livingroom/:measurement')).toBeTrue();
-    expect(Topics.containsWildcardSegments('myhome/kitchen/:measurement')).toBeTrue();
-    expect(Topics.containsWildcardSegments('myhome/:room/temperature')).toBeTrue();
-    expect(Topics.containsWildcardSegments('myhome/:room/:measurement')).toBeTrue();
-    expect(Topics.containsWildcardSegments(':building/kitchen/:measurement')).toBeTrue();
-    expect(Topics.containsWildcardSegments('myhome/:/temperature')).toBeFalse();
+    expect(Topics.containsWildcardSegments('myhome/livingroom/temperature')).toBe(false);
+    expect(Topics.containsWildcardSegments('myhome/livingroom/:measurement')).toBe(true);
+    expect(Topics.containsWildcardSegments('myhome/kitchen/:measurement')).toBe(true);
+    expect(Topics.containsWildcardSegments('myhome/:room/temperature')).toBe(true);
+    expect(Topics.containsWildcardSegments('myhome/:room/:measurement')).toBe(true);
+    expect(Topics.containsWildcardSegments(':building/kitchen/:measurement')).toBe(true);
+    expect(Topics.containsWildcardSegments('myhome/:/temperature')).toBe(false);
   });
 
   it('should detect wildcard segment', () => {
-    expect(Topics.isWildcardSegment(':room')).toBeTrue();
-    expect(Topics.isWildcardSegment('kitchen')).toBeFalse();
+    expect(Topics.isWildcardSegment(':room')).toBe(true);
+    expect(Topics.isWildcardSegment('kitchen')).toBe(false);
   });
 
   it('should split topic into its segments', () => {
@@ -36,8 +37,8 @@ describe('Topics', () => {
   });
 
   it('should compute wildcard segment permutations', () => {
-    expect(Topics.computeWildcardSegmentPermutations('topic', '*')).toEqual(jasmine.arrayWithExactContents(['topic', '*']));
-    expect(Topics.computeWildcardSegmentPermutations('myhome/kitchen/temperature', '*')).toEqual(jasmine.arrayWithExactContents([
+    expect(Topics.computeWildcardSegmentPermutations('topic', '*')).toEqual(arrayWithExactContents(['topic', '*']));
+    expect(Topics.computeWildcardSegmentPermutations('myhome/kitchen/temperature', '*')).toEqual(arrayWithExactContents([
       'myhome/kitchen/temperature',
       'myhome/kitchen/*',
       'myhome/*/temperature',
@@ -63,69 +64,69 @@ describe('Topics', () => {
   });
 
   it('should detect empty topic segments', () => {
-    expect(Topics.containsEmptySegments('')).toBeTrue();
-    expect(Topics.containsEmptySegments('/')).toBeTrue();
-    expect(Topics.containsEmptySegments('/a')).toBeTrue();
-    expect(Topics.containsEmptySegments('a/')).toBeTrue();
-    expect(Topics.containsEmptySegments('/a/')).toBeTrue();
-    expect(Topics.containsEmptySegments('a//c')).toBeTrue();
-    expect(Topics.containsEmptySegments('/a/b/')).toBeTrue();
-    expect(Topics.containsEmptySegments('/a/b')).toBeTrue();
-    expect(Topics.containsEmptySegments('a/b/')).toBeTrue();
-    expect(Topics.containsEmptySegments('/a/b/c')).toBeTrue();
-    expect(Topics.containsEmptySegments('/a/b/c/')).toBeTrue();
-    expect(Topics.containsEmptySegments('a/b/c/')).toBeTrue();
-    expect(Topics.containsEmptySegments('a/b/c')).toBeFalse();
-    expect(Topics.containsEmptySegments('a')).toBeFalse();
+    expect(Topics.containsEmptySegments('')).toBe(true);
+    expect(Topics.containsEmptySegments('/')).toBe(true);
+    expect(Topics.containsEmptySegments('/a')).toBe(true);
+    expect(Topics.containsEmptySegments('a/')).toBe(true);
+    expect(Topics.containsEmptySegments('/a/')).toBe(true);
+    expect(Topics.containsEmptySegments('a//c')).toBe(true);
+    expect(Topics.containsEmptySegments('/a/b/')).toBe(true);
+    expect(Topics.containsEmptySegments('/a/b')).toBe(true);
+    expect(Topics.containsEmptySegments('a/b/')).toBe(true);
+    expect(Topics.containsEmptySegments('/a/b/c')).toBe(true);
+    expect(Topics.containsEmptySegments('/a/b/c/')).toBe(true);
+    expect(Topics.containsEmptySegments('a/b/c/')).toBe(true);
+    expect(Topics.containsEmptySegments('a/b/c')).toBe(false);
+    expect(Topics.containsEmptySegments('a')).toBe(false);
   });
 
   it('should validate a topic', () => {
     expect(Topics.validateTopic('a/b/c', {exactTopic: true})).toBeNull();
     expect(Topics.validateTopic('a/b/c', {exactTopic: false})).toBeNull();
 
-    expect(Topics.validateTopic('a/:b/c', {exactTopic: true})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic('a/:b/c', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
     expect(Topics.validateTopic('a/:b/c', {exactTopic: false})).toBeNull();
 
-    expect(Topics.validateTopic(':a/b/c', {exactTopic: true})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic(':a/b/c', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
     expect(Topics.validateTopic(':a/b/c', {exactTopic: false})).toBeNull();
 
-    expect(Topics.validateTopic('a/:b/c', {exactTopic: true})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic('a/:b/c', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
     expect(Topics.validateTopic('a/:b/c', {exactTopic: false})).toBeNull();
 
-    expect(Topics.validateTopic('a/b/:c', {exactTopic: true})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic('a/b/:c', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
     expect(Topics.validateTopic('a/b/:c', {exactTopic: false})).toBeNull();
 
-    expect(Topics.validateTopic(':a/:b/:c', {exactTopic: true})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic(':a/:b/:c', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
     expect(Topics.validateTopic(':a/:b/:c', {exactTopic: false})).toBeNull();
 
-    expect(Topics.validateTopic(null, {exactTopic: true})).toMatch(/IllegalTopicError/);
-    expect(Topics.validateTopic(null, {exactTopic: false})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic(null, {exactTopic: true})).toMatchObject(/IllegalTopicError/);
+    expect(Topics.validateTopic(null, {exactTopic: false})).toMatchObject(/IllegalTopicError/);
 
-    expect(Topics.validateTopic(undefined, {exactTopic: true})).toMatch(/IllegalTopicError/);
-    expect(Topics.validateTopic(undefined, {exactTopic: false})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic(undefined, {exactTopic: true})).toMatchObject(/IllegalTopicError/);
+    expect(Topics.validateTopic(undefined, {exactTopic: false})).toMatchObject(/IllegalTopicError/);
 
-    expect(Topics.validateTopic('', {exactTopic: true})).toMatch(/IllegalTopicError/);
-    expect(Topics.validateTopic('', {exactTopic: false})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic('', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
+    expect(Topics.validateTopic('', {exactTopic: false})).toMatchObject(/IllegalTopicError/);
 
-    expect(Topics.validateTopic('/', {exactTopic: true})).toMatch(/IllegalTopicError/);
-    expect(Topics.validateTopic('/', {exactTopic: false})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic('/', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
+    expect(Topics.validateTopic('/', {exactTopic: false})).toMatchObject(/IllegalTopicError/);
 
-    expect(Topics.validateTopic('/a', {exactTopic: true})).toMatch(/IllegalTopicError/);
-    expect(Topics.validateTopic('/a', {exactTopic: false})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic('/a', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
+    expect(Topics.validateTopic('/a', {exactTopic: false})).toMatchObject(/IllegalTopicError/);
 
-    expect(Topics.validateTopic('a/', {exactTopic: true})).toMatch(/IllegalTopicError/);
-    expect(Topics.validateTopic('a/', {exactTopic: false})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic('a/', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
+    expect(Topics.validateTopic('a/', {exactTopic: false})).toMatchObject(/IllegalTopicError/);
 
-    expect(Topics.validateTopic('/a/', {exactTopic: true})).toMatch(/IllegalTopicError/);
-    expect(Topics.validateTopic('/a/', {exactTopic: false})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic('/a/', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
+    expect(Topics.validateTopic('/a/', {exactTopic: false})).toMatchObject(/IllegalTopicError/);
 
-    expect(Topics.validateTopic('/a/b/c', {exactTopic: true})).toMatch(/IllegalTopicError/);
-    expect(Topics.validateTopic('/a/b/c', {exactTopic: false})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic('/a/b/c', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
+    expect(Topics.validateTopic('/a/b/c', {exactTopic: false})).toMatchObject(/IllegalTopicError/);
 
-    expect(Topics.validateTopic('a/b/c/', {exactTopic: true})).toMatch(/IllegalTopicError/);
-    expect(Topics.validateTopic('a/b/c/', {exactTopic: false})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic('a/b/c/', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
+    expect(Topics.validateTopic('a/b/c/', {exactTopic: false})).toMatchObject(/IllegalTopicError/);
 
-    expect(Topics.validateTopic('a//b', {exactTopic: true})).toMatch(/IllegalTopicError/);
-    expect(Topics.validateTopic('a//b', {exactTopic: false})).toMatch(/IllegalTopicError/);
+    expect(Topics.validateTopic('a//b', {exactTopic: true})).toMatchObject(/IllegalTopicError/);
+    expect(Topics.validateTopic('a//b', {exactTopic: false})).toMatchObject(/IllegalTopicError/);
   });
 });

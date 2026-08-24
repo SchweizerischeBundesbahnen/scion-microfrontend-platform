@@ -152,7 +152,7 @@ describe('Message Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual(['A']);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should reply with a single response (Promise) and then complete the requestor\'s Observable', async () => {
@@ -167,7 +167,7 @@ describe('Message Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual(['A']);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should reply with a single response (Observable) and then complete the requestor\'s Observable', async () => {
@@ -182,7 +182,7 @@ describe('Message Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual(['A']);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should reply with multiple responses and then complete the requestor\'s Observable', async () => {
@@ -198,7 +198,7 @@ describe('Message Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual(['A-1', 'A-2', 'A-3']);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should reply with multiple responses without completing the requestor\'s Observable', async () => {
@@ -219,8 +219,8 @@ describe('Message Handler', () => {
       await captor.waitUntilEmitCount(3);
       expect(captor.getValues()).toEqual(['A-1', 'A-2', 'A-3']);
       await waitFor(1000);
-      expect(captor.hasCompleted()).toBeFalse();
-      expect(captor.hasErrored()).toBeFalse();
+      expect(captor.hasCompleted()).toBe(false);
+      expect(captor.hasErrored()).toBe(false);
       expect(captor.getValues()).toEqual(['A-1', 'A-2', 'A-3']);
     });
 
@@ -236,7 +236,7 @@ describe('Message Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual([]);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should immediately complete the requestor\'s Observable when returning `undefined`', async () => {
@@ -251,7 +251,7 @@ describe('Message Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual([]);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should treat `null` as valid reply', async () => {
@@ -266,7 +266,7 @@ describe('Message Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual([null]);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should immediately complete the requestor\'s Observable when returning a Promise that resolves without value', async () => {
@@ -281,7 +281,7 @@ describe('Message Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual([]);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should immediately complete the requestor\'s Observable when returning a Promise that resolves with `undefined`', async () => {
@@ -296,7 +296,7 @@ describe('Message Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual([]);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should transport `undefined` and `null` values emitted by an Observable', async () => {
@@ -312,7 +312,7 @@ describe('Message Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual(['A-1', undefined, 'A-2', null, 'A-3']);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should error the requestor\'s Observable when throwing an error', async () => {
@@ -326,7 +326,7 @@ describe('Message Handler', () => {
       Beans.get(MessageClient).request$('topic', 'a').subscribe(captor);
 
       await captor.waitUntilCompletedOrErrored();
-      expect(captor.hasErrored()).toBeTrue();
+      expect(captor.hasErrored()).toBe(true);
       expect(captor.getError().name).toEqual('RequestError');
       expect(captor.getError().message).toEqual('some error');
       expect(captor.getValues()).toEqual([]);
@@ -343,7 +343,7 @@ describe('Message Handler', () => {
       Beans.get(MessageClient).request$('topic', 'a').subscribe(captor);
 
       await captor.waitUntilCompletedOrErrored();
-      expect(captor.hasErrored()).toBeTrue();
+      expect(captor.hasErrored()).toBe(true);
       expect(captor.getError().name).toEqual('RequestError');
       expect(captor.getError().message).toEqual('some error');
       expect(captor.getValues()).toEqual([]);
@@ -360,7 +360,7 @@ describe('Message Handler', () => {
       Beans.get(MessageClient).request$('topic', 'a').subscribe(captor);
 
       await captor.waitUntilCompletedOrErrored();
-      expect(captor.hasErrored()).toBeTrue();
+      expect(captor.hasErrored()).toBe(true);
       expect(captor.getError().name).toEqual('RequestError');
       expect(captor.getError().message).toEqual('some error');
       expect(captor.getValues()).toEqual([]);
@@ -380,7 +380,7 @@ describe('Message Handler', () => {
       Beans.get(MessageClient).request$('topic', 'a').subscribe(captor);
 
       await captor.waitUntilCompletedOrErrored();
-      expect(captor.hasErrored()).toBeTrue();
+      expect(captor.hasErrored()).toBe(true);
       expect(captor.getError().name).toEqual('RequestError');
       expect(captor.getError().message).toEqual('some error');
       expect(captor.getValues()).toEqual(['A']);
@@ -400,7 +400,7 @@ describe('Message Handler', () => {
       Beans.get(MessageClient).request$('topic', 'a').subscribe(captor1);
 
       await captor1.waitUntilCompletedOrErrored();
-      expect(captor1.hasErrored()).toBeTrue();
+      expect(captor1.hasErrored()).toBe(true);
       expect(captor1.getError().name).toEqual('RequestError');
       expect(captor1.getError().message).toEqual('some error');
       expect(captor1.getValues()).toEqual(['A']);
@@ -409,7 +409,7 @@ describe('Message Handler', () => {
       Beans.get(MessageClient).request$('topic', 'b').subscribe(captor2);
 
       await captor2.waitUntilCompletedOrErrored();
-      expect(captor2.hasErrored()).toBeTrue();
+      expect(captor2.hasErrored()).toBe(true);
       expect(captor2.getError().name).toEqual('RequestError');
       expect(captor2.getError().message).toEqual('some error');
       expect(captor2.getValues()).toEqual(['B']);
@@ -427,7 +427,7 @@ describe('Message Handler', () => {
       const captor1 = new ObserveCaptor(bodyExtractFn);
       Beans.get(MessageClient).request$('topic', 'a').subscribe(captor1);
       await captor1.waitUntilCompletedOrErrored();
-      expect(captor1.hasErrored()).toBeTrue();
+      expect(captor1.hasErrored()).toBe(true);
       expect(captor1.getError().name).toEqual('RequestError');
       expect(captor1.getError().message).toEqual('some error');
       expect(captor1.getValues()).toEqual([]);
@@ -436,7 +436,7 @@ describe('Message Handler', () => {
       const captor2 = new ObserveCaptor(bodyExtractFn);
       Beans.get(MessageClient).request$('topic', 'b').subscribe(captor2);
       await captor2.waitUntilCompletedOrErrored();
-      expect(captor2.hasErrored()).toBeTrue();
+      expect(captor2.hasErrored()).toBe(true);
       expect(captor2.getError().name).toEqual('RequestError');
       expect(captor2.getError().message).toEqual('some error');
       expect(captor2.getValues()).toEqual([]);
@@ -455,7 +455,7 @@ describe('Message Handler', () => {
       const captor1 = new ObserveCaptor(bodyExtractFn);
       Beans.get(MessageClient).request$('topic', 'a').subscribe(captor1);
       await captor1.waitUntilCompletedOrErrored();
-      expect(captor1.hasErrored()).toBeTrue();
+      expect(captor1.hasErrored()).toBe(true);
       expect(captor1.getError().name).toEqual('RequestError');
       expect(captor1.getError().message).toEqual('some error');
       expect(captor1.getValues()).toEqual([]);
@@ -464,7 +464,7 @@ describe('Message Handler', () => {
       const captor2 = new ObserveCaptor(bodyExtractFn);
       Beans.get(MessageClient).request$('topic', 'b').subscribe(captor2);
       await captor2.waitUntilCompletedOrErrored();
-      expect(captor2.hasErrored()).toBeTrue();
+      expect(captor2.hasErrored()).toBe(true);
       expect(captor2.getError().name).toEqual('RequestError');
       expect(captor2.getError().message).toEqual('some error');
       expect(captor2.getValues()).toEqual([]);
@@ -509,13 +509,13 @@ describe('Message Handler', () => {
         .subscribe();
 
       await expectPromise(replierCaptor.constructed).toResolve();
-      expect(requestorSubscription.closed).toBeFalse();
+      expect(requestorSubscription.closed).toBe(false);
 
       handlerSubscription.unsubscribe();
       await expectPromise(replierCaptor.unsubscribed).toResolve();
       await expectPromise(replierCaptor.finalized).toResolve();
       await expectPromise(requestorCaptor.finalized).toResolve();
-      expect(requestorSubscription.closed).toBeTrue();
+      expect(requestorSubscription.closed).toBe(true);
     });
 
     it('should complete the requestor\'s Observable when the replier\'s platform is shut down', async () => {
@@ -538,7 +538,7 @@ describe('Message Handler', () => {
 
       // Wait until the replier has subscribed to the request.
       await waitUntilSubscriberCount('topic', 1);
-      expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+      expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
 
       // Destroy the replier microfrontend.
       microfrontendFixture.removeIframe();
@@ -547,7 +547,7 @@ describe('Message Handler', () => {
       await waitUntilSubscriberCount('topic', 0);
 
       // Expect the requestor's Observable to be completed.
-      expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
+      expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(true);
     });
   });
 
@@ -746,7 +746,7 @@ describe('Intent Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual(['A']);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should reply with a single response (Promise) and then complete the requestor\'s Observable', async () => {
@@ -769,7 +769,7 @@ describe('Intent Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual(['A']);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should reply with a single response (Observable) and then complete the requestor\'s Observable', async () => {
@@ -792,7 +792,7 @@ describe('Intent Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual(['A']);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should reply with multiple responses and then complete the requestor\'s Observable', async () => {
@@ -816,7 +816,7 @@ describe('Intent Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual(['A-1', 'A-2', 'A-3']);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should reply with multiple responses without completing the requestor\'s Observable', async () => {
@@ -845,8 +845,8 @@ describe('Intent Handler', () => {
       await captor.waitUntilEmitCount(3);
       expect(captor.getValues()).toEqual(['A-1', 'A-2', 'A-3']);
       await waitFor(1000);
-      expect(captor.hasCompleted()).toBeFalse();
-      expect(captor.hasErrored()).toBeFalse();
+      expect(captor.hasCompleted()).toBe(false);
+      expect(captor.hasErrored()).toBe(false);
       expect(captor.getValues()).toEqual(['A-1', 'A-2', 'A-3']);
     });
 
@@ -870,7 +870,7 @@ describe('Intent Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual([]);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should immediately complete the requestor\'s Observable when returning `undefined`', async () => {
@@ -893,7 +893,7 @@ describe('Intent Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual([]);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should treat `null` as valid reply', async () => {
@@ -916,7 +916,7 @@ describe('Intent Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual([null]);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should immediately complete the requestor\'s Observable when returning a Promise that resolves without value', async () => {
@@ -939,7 +939,7 @@ describe('Intent Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual([]);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should immediately complete the requestor\'s Observable when returning a Promise that resolves with `undefined`', async () => {
@@ -962,7 +962,7 @@ describe('Intent Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual([]);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should transport `undefined` and `null` values emitted by an Observable', async () => {
@@ -986,7 +986,7 @@ describe('Intent Handler', () => {
 
       await captor.waitUntilCompletedOrErrored();
       expect(captor.getValues()).toEqual(['A-1', undefined, 'A-2', null, 'A-3']);
-      expect(captor.hasCompleted()).toBeTrue();
+      expect(captor.hasCompleted()).toBe(true);
     });
 
     it('should error the requestor\'s Observable when throwing an error', async () => {
@@ -1008,7 +1008,7 @@ describe('Intent Handler', () => {
       Beans.get(IntentClient).request$({type: 'capability'}, 'a').subscribe(captor);
 
       await captor.waitUntilCompletedOrErrored();
-      expect(captor.hasErrored()).toBeTrue();
+      expect(captor.hasErrored()).toBe(true);
       expect(captor.getError().name).toEqual('RequestError');
       expect(captor.getError().message).toEqual('some error');
       expect(captor.getValues()).toEqual([]);
@@ -1033,7 +1033,7 @@ describe('Intent Handler', () => {
       Beans.get(IntentClient).request$({type: 'capability'}, 'a').subscribe(captor);
 
       await captor.waitUntilCompletedOrErrored();
-      expect(captor.hasErrored()).toBeTrue();
+      expect(captor.hasErrored()).toBe(true);
       expect(captor.getError().name).toEqual('RequestError');
       expect(captor.getError().message).toEqual('some error');
       expect(captor.getValues()).toEqual([]);
@@ -1058,7 +1058,7 @@ describe('Intent Handler', () => {
       Beans.get(IntentClient).request$({type: 'capability'}, 'a').subscribe(captor);
 
       await captor.waitUntilCompletedOrErrored();
-      expect(captor.hasErrored()).toBeTrue();
+      expect(captor.hasErrored()).toBe(true);
       expect(captor.getError().name).toEqual('RequestError');
       expect(captor.getError().message).toEqual('some error');
       expect(captor.getValues()).toEqual([]);
@@ -1086,7 +1086,7 @@ describe('Intent Handler', () => {
       Beans.get(IntentClient).request$({type: 'capability'}, 'a').subscribe(captor);
 
       await captor.waitUntilCompletedOrErrored();
-      expect(captor.hasErrored()).toBeTrue();
+      expect(captor.hasErrored()).toBe(true);
       expect(captor.getError().name).toEqual('RequestError');
       expect(captor.getError().message).toEqual('some error');
       expect(captor.getValues()).toEqual(['A']);
@@ -1114,7 +1114,7 @@ describe('Intent Handler', () => {
       Beans.get(IntentClient).request$({type: 'capability'}, 'a').subscribe(captor1);
 
       await captor1.waitUntilCompletedOrErrored();
-      expect(captor1.hasErrored()).toBeTrue();
+      expect(captor1.hasErrored()).toBe(true);
       expect(captor1.getError().name).toEqual('RequestError');
       expect(captor1.getError().message).toEqual('some error');
       expect(captor1.getValues()).toEqual(['A']);
@@ -1123,7 +1123,7 @@ describe('Intent Handler', () => {
       Beans.get(IntentClient).request$({type: 'capability'}, 'b').subscribe(captor2);
 
       await captor2.waitUntilCompletedOrErrored();
-      expect(captor2.hasErrored()).toBeTrue();
+      expect(captor2.hasErrored()).toBe(true);
       expect(captor2.getError().name).toEqual('RequestError');
       expect(captor2.getError().message).toEqual('some error');
       expect(captor2.getValues()).toEqual(['B']);
@@ -1149,7 +1149,7 @@ describe('Intent Handler', () => {
       const captor1 = new ObserveCaptor(bodyExtractFn);
       Beans.get(IntentClient).request$({type: 'capability'}, 'a').subscribe(captor1);
       await captor1.waitUntilCompletedOrErrored();
-      expect(captor1.hasErrored()).toBeTrue();
+      expect(captor1.hasErrored()).toBe(true);
       expect(captor1.getError().name).toEqual('RequestError');
       expect(captor1.getError().message).toEqual('some error');
       expect(captor1.getValues()).toEqual([]);
@@ -1158,7 +1158,7 @@ describe('Intent Handler', () => {
       const captor2 = new ObserveCaptor(bodyExtractFn);
       Beans.get(IntentClient).request$({type: 'capability'}, 'b').subscribe(captor2);
       await captor2.waitUntilCompletedOrErrored();
-      expect(captor2.hasErrored()).toBeTrue();
+      expect(captor2.hasErrored()).toBe(true);
       expect(captor2.getError().name).toEqual('RequestError');
       expect(captor2.getError().message).toEqual('some error');
       expect(captor2.getValues()).toEqual([]);
@@ -1185,7 +1185,7 @@ describe('Intent Handler', () => {
       const captor1 = new ObserveCaptor(bodyExtractFn);
       Beans.get(IntentClient).request$({type: 'capability'}, 'a').subscribe(captor1);
       await captor1.waitUntilCompletedOrErrored();
-      expect(captor1.hasErrored()).toBeTrue();
+      expect(captor1.hasErrored()).toBe(true);
       expect(captor1.getError().name).toEqual('RequestError');
       expect(captor1.getError().message).toEqual('some error');
       expect(captor1.getValues()).toEqual([]);
@@ -1194,7 +1194,7 @@ describe('Intent Handler', () => {
       const captor2 = new ObserveCaptor(bodyExtractFn);
       Beans.get(IntentClient).request$({type: 'capability'}, 'b').subscribe(captor2);
       await captor2.waitUntilCompletedOrErrored();
-      expect(captor2.hasErrored()).toBeTrue();
+      expect(captor2.hasErrored()).toBe(true);
       expect(captor2.getError().name).toEqual('RequestError');
       expect(captor2.getError().message).toEqual('some error');
       expect(captor2.getValues()).toEqual([]);
@@ -1255,13 +1255,13 @@ describe('Intent Handler', () => {
         .subscribe();
 
       await expectPromise(replierCaptor.constructed).toResolve();
-      expect(requestorSubscription.closed).toBeFalse();
+      expect(requestorSubscription.closed).toBe(false);
 
       handlerSubscription.unsubscribe();
       await expectPromise(replierCaptor.unsubscribed).toResolve();
       await expectPromise(replierCaptor.finalized).toResolve();
       await expectPromise(requestorCaptor.finalized).toResolve();
-      expect(requestorSubscription.closed).toBeTrue();
+      expect(requestorSubscription.closed).toBe(true);
     });
 
     it('should complete the requestor\'s Observable when the replier\'s platform is shut down', async () => {
@@ -1287,7 +1287,7 @@ describe('Intent Handler', () => {
 
       // Wait until the replier has subscribed to the request.
       await replyCaptor.waitUntilEmitCount(1);
-      expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+      expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
 
       // Destroy the replier microfrontend.
       microfrontendFixture.removeIframe();
@@ -1296,7 +1296,7 @@ describe('Intent Handler', () => {
       await replyCaptor.waitUntilCompletedOrErrored();
 
       // Expect the requestor's Observable to be completed.
-      expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
+      expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(true);
     });
   });
 

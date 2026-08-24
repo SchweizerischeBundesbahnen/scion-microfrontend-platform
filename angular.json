@@ -17,23 +17,19 @@
             },
             "development": {
               "tsConfig": "projects/scion/microfrontend-platform/tsconfig.lib.json"
+            },
+            "unittest": {
+              "tsConfig": "projects/scion/microfrontend-platform/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular/build:unit-test",
           "options": {
-            "main": "projects/scion/microfrontend-platform/src/test.ts",
+            "browsers": ["chromium"],
             "tsConfig": "projects/scion/microfrontend-platform/tsconfig.spec.json",
-            "karmaConfig": "projects/scion/microfrontend-platform/karma.conf.js",
-            "assets": [
-              {
-                "glob": "**/*.script.js",
-                "input": "dist/lib",
-                "output": "/lib"
-              }
-            ]
+            "runnerConfig": "projects/scion/microfrontend-platform/vitest.config.ts"
           }
         },
         "lint": {

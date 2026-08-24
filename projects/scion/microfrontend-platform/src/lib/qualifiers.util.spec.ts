@@ -24,23 +24,23 @@ describe('Qualifiers', () => {
     expect(Qualifiers.validateQualifier({entity: 'person'}, {exactQualifier: true})).toBeNull();
     expect(Qualifiers.validateQualifier({entity: 'person'}, {exactQualifier: false})).toBeNull();
 
-    expect(Qualifiers.validateQualifier({entity: '*'}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
+    expect(Qualifiers.validateQualifier({entity: '*'}, {exactQualifier: true})).toEqual(expect.objectContaining(/IllegalQualifierError/));
     expect(Qualifiers.validateQualifier({entity: '*'}, {exactQualifier: false})).toBeNull();
 
     expect(Qualifiers.validateQualifier({entity: '?'}, {exactQualifier: true})).toBeNull();
     expect(Qualifiers.validateQualifier({entity: '?'}, {exactQualifier: false})).toBeNull();
 
-    expect(Qualifiers.validateQualifier({entity: 'person', '*': '_'}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
+    expect(Qualifiers.validateQualifier({entity: 'person', '*': '_'}, {exactQualifier: true})).toEqual(expect.objectContaining(/IllegalQualifierError/));
     expect(Qualifiers.validateQualifier({entity: 'person', '*': '_'}, {exactQualifier: false})).toBeNull();
 
-    expect(Qualifiers.validateQualifier({entity: null!}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
-    expect(Qualifiers.validateQualifier({entity: null!}, {exactQualifier: false})).toMatch(/IllegalQualifierError/);
+    expect(Qualifiers.validateQualifier({entity: null!}, {exactQualifier: true})).toEqual(expect.objectContaining(/IllegalQualifierError/));
+    expect(Qualifiers.validateQualifier({entity: null!}, {exactQualifier: false})).toEqual(expect.objectContaining(/IllegalQualifierError/));
 
-    expect(Qualifiers.validateQualifier({entity: undefined!}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
-    expect(Qualifiers.validateQualifier({entity: undefined!}, {exactQualifier: false})).toMatch(/IllegalQualifierError/);
+    expect(Qualifiers.validateQualifier({entity: undefined!}, {exactQualifier: true})).toEqual(expect.objectContaining(/IllegalQualifierError/));
+    expect(Qualifiers.validateQualifier({entity: undefined!}, {exactQualifier: false})).toEqual(expect.objectContaining(/IllegalQualifierError/));
 
-    expect(Qualifiers.validateQualifier({entity: ''}, {exactQualifier: true})).toMatch(/IllegalQualifierError/);
-    expect(Qualifiers.validateQualifier({entity: ''}, {exactQualifier: false})).toMatch(/IllegalQualifierError/);
+    expect(Qualifiers.validateQualifier({entity: ''}, {exactQualifier: true})).toEqual(expect.objectContaining(/IllegalQualifierError/));
+    expect(Qualifiers.validateQualifier({entity: ''}, {exactQualifier: false})).toEqual(expect.objectContaining(/IllegalQualifierError/));
 
     expect(Qualifiers.validateQualifier({stringEntry: 'string'}, {exactQualifier: true})).toBeNull();
     expect(Qualifiers.validateQualifier({stringEntry: 'string'}, {exactQualifier: false})).toBeNull();
@@ -57,7 +57,7 @@ describe('Qualifiers', () => {
     expect(Qualifiers.validateQualifier({booleanEntry: false}, {exactQualifier: true})).toBeNull();
     expect(Qualifiers.validateQualifier({booleanEntry: false}, {exactQualifier: false})).toBeNull();
 
-    expect(Qualifiers.validateQualifier({objectEntry: {} as any}, {exactQualifier: true})).toMatch(/IllegalQualifierError/); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-    expect(Qualifiers.validateQualifier({objectEntry: {} as any}, {exactQualifier: false})).toMatch(/IllegalQualifierError/); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+    expect(Qualifiers.validateQualifier({objectEntry: {} as any}, {exactQualifier: true})).toEqual(expect.objectContaining(/IllegalQualifierError/)); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+    expect(Qualifiers.validateQualifier({objectEntry: {} as any}, {exactQualifier: false})).toEqual(expect.objectContaining(/IllegalQualifierError/)); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
   });
 });

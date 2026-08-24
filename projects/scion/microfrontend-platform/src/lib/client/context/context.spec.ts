@@ -26,8 +26,8 @@ describe('Context', () => {
     Beans.get(ContextService).observe$('some-context').subscribe(captor);
 
     expect(captor.getValues()).toEqual([null]);
-    expect(captor.hasErrored()).toBeFalse();
-    expect(captor.hasCompleted()).toBeFalse();
+    expect(captor.hasErrored()).toBe(false);
+    expect(captor.hasCompleted()).toBe(false);
   });
 
   it('should not complete the Observable when looking up the names of context values from inside the host app (no context)', async () => {
@@ -37,7 +37,7 @@ describe('Context', () => {
     Beans.get(ContextService).names$().subscribe(captor);
 
     expect(captor.getValues()).toEqual([new Set()]);
-    expect(captor.hasErrored()).toBeFalse();
-    expect(captor.hasCompleted()).toBeFalse();
+    expect(captor.hasErrored()).toBe(false);
+    expect(captor.hasCompleted()).toBe(false);
   });
 });

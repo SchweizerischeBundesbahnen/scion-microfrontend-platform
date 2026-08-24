@@ -24,7 +24,7 @@ describe('ProgressMonitor', () => {
     const captor = new ObserveCaptor<number>();
     monitor.progress$.subscribe(captor);
     expect(captor.getLastValue()).toEqual(100);
-    expect(captor.hasCompleted()).toBeTrue();
+    expect(captor.hasCompleted()).toBe(true);
   });
 
   it('should report `0` as initial progress', () => {
@@ -33,7 +33,7 @@ describe('ProgressMonitor', () => {
     const captor = new ObserveCaptor<number>();
     monitor.progress$.subscribe(captor);
     expect(captor.getLastValue()).toEqual(0);
-    expect(captor.hasCompleted()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(false);
   });
 
   it('should emit the current progress upon subscription, even after "done"', () => {
@@ -45,17 +45,17 @@ describe('ProgressMonitor', () => {
     const captor1 = new ObserveCaptor<number>();
     monitor.progress$.subscribe(captor1);
     expect(captor1.getLastValue()).toEqual(50);
-    expect(captor1.hasCompleted()).toBeFalse();
+    expect(captor1.hasCompleted()).toBe(false);
 
     mon2.done();
 
     const captor2 = new ObserveCaptor<number>();
     monitor.progress$.subscribe(captor2);
     expect(captor2.getLastValue()).toEqual(100);
-    expect(captor2.hasCompleted()).toBeTrue();
+    expect(captor2.hasCompleted()).toBe(true);
 
     expect(captor1.getLastValue()).toEqual(100);
-    expect(captor1.hasCompleted()).toBeTrue();
+    expect(captor1.hasCompleted()).toBe(true);
   });
 
   it('should report progress continuously', () => {
@@ -96,8 +96,8 @@ describe('ProgressMonitor', () => {
     mon3b.done();
     expect(captor.getLastValue()).toEqual(100);
 
-    expect(captor.hasCompleted()).toBeTrue();
-    expect(captor.hasErrored()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(true);
+    expect(captor.hasErrored()).toBe(false);
   });
 
   it('should allow completing a monitor having child monitors', () => {
@@ -113,8 +113,8 @@ describe('ProgressMonitor', () => {
 
     mon2.done();
     expect(captor.getLastValue()).toEqual(100);
-    expect(captor.hasCompleted()).toBeTrue();
-    expect(captor.hasErrored()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(true);
+    expect(captor.hasErrored()).toBe(false);
     expect(captor.getValues().length).toEqual(3);
 
     // assert no emission when the parent monitor already completed.
@@ -155,20 +155,20 @@ describe('ProgressMonitor', () => {
     expect(captor.getLastValue()).toEqual(100);
 
     expect(captor.getLastValue()).toEqual(100);
-    expect(captor.hasCompleted()).toBeTrue();
-    expect(captor.hasErrored()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(true);
+    expect(captor.hasErrored()).toBe(false);
   });
 
   it('should error when splitting the monitor multiple times', () => {
     const monitor = new ProgressMonitor();
     monitor.split(1, 2, 3);
 
-    expect(() => monitor.split(1, 2, 3)).toThrowError('[IllegalMonitorStateError] Monitor cannot be split multiple times.');
+    expect(() => monitor.split(1, 2, 3)).toThrow('[IllegalMonitorStateError] Monitor cannot be split multiple times.');
   });
 
   it('should error when splitting even by non-positive value', () => {
     const monitor = new ProgressMonitor();
-    expect(() => monitor.splitEven(0)).toThrowError('[IllegalMonitorArgumentError] Monitor split count must be greater than 0, but was 0.');
-    expect(() => monitor.splitEven(-1)).toThrowError('[IllegalMonitorArgumentError] Monitor split count must be greater than 0, but was -1.');
+    expect(() => monitor.splitEven(0)).toThrow('[IllegalMonitorArgumentError] Monitor split count must be greater than 0, but was 0.');
+    expect(() => monitor.splitEven(-1)).toThrow('[IllegalMonitorArgumentError] Monitor split count must be greater than 0, but was -1.');
   });
 });

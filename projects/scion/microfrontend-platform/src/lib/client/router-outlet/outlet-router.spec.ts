@@ -52,7 +52,7 @@ describe('OutletRouter', () => {
     it('should reject navigation if passing "relativeTo" navigation option', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
       const navigate = Beans.get(OutletRouter).navigate({entity: 'person'}, {relativeTo: 'url'});
-      await expectAsync(navigate).toBeRejectedWithError(/\[OutletRouterError]\[UnsupportedOptionError]/);
+      await expect(navigate).rejects.toThrow(/\[OutletRouterError]\[UnsupportedOptionError]/);
     });
 
     it('should validate microfrontend params', async () => {
@@ -76,7 +76,7 @@ describe('OutletRouter', () => {
       });
 
       const navigate = Beans.get(OutletRouter).navigate({entity: 'person'});
-      await expectAsync(navigate).toBeRejectedWithError(/IntentParamValidationError/);
+      await expect(navigate).rejects.toThrow(/IntentParamValidationError/);
     });
   });
 });

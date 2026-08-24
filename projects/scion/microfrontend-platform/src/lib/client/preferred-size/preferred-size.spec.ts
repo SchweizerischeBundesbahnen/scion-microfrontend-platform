@@ -38,9 +38,9 @@ describe('PreferredSize', () => {
     await microfrontendFixture.insertIframe().loadScript('lib/client/preferred-size/preferred-size.script.ts', 'reportPreferredSize', {scriptPreferredSizeTopic});
     await waitUntilStable(() => microfrontendFixture.routerOutlet.preferredSize, {isStable: Objects.isEqual});
 
-    expect(microfrontendFixture.routerOutlet.preferredSize).toEqual(jasmine.objectContaining({width: '15px', height: '30px'}));
-    expect(microfrontendFixture.iframe.getBoundingClientRect()).toEqual(jasmine.objectContaining({width: 15, height: 30}));
-    expect(microfrontendFixture.routerOutlet.getBoundingClientRect()).toEqual(jasmine.objectContaining({width: 15, height: 30}));
+    expect(microfrontendFixture.routerOutlet.preferredSize).toEqual(expect.objectContaining({width: '15px', height: '30px'}));
+    expect(microfrontendFixture.iframe.getBoundingClientRect()).toEqual(expect.objectContaining({width: 15, height: 30}));
+    expect(microfrontendFixture.routerOutlet.getBoundingClientRect()).toEqual(expect.objectContaining({width: 15, height: 30}));
   });
 
   it('should change the size of the router outlet', async () => {
@@ -57,25 +57,25 @@ describe('PreferredSize', () => {
     await Beans.get(MessageClient).publish(scriptPreferredSizeTopic, {width: '10px', height: '20px'});
     await waitUntilStable(() => microfrontendFixture.routerOutlet.preferredSize, {isStable: Objects.isEqual});
     // THEN expect router outlet to change its size
-    expect(microfrontendFixture.routerOutlet.preferredSize).toEqual(jasmine.objectContaining({width: '10px', height: '20px'}));
-    expect(microfrontendFixture.iframe.getBoundingClientRect()).toEqual(jasmine.objectContaining({width: 10, height: 20}));
-    expect(microfrontendFixture.routerOutlet.getBoundingClientRect()).toEqual(jasmine.objectContaining({width: 10, height: 20}));
+    expect(microfrontendFixture.routerOutlet.preferredSize).toEqual(expect.objectContaining({width: '10px', height: '20px'}));
+    expect(microfrontendFixture.iframe.getBoundingClientRect()).toEqual(expect.objectContaining({width: 10, height: 20}));
+    expect(microfrontendFixture.routerOutlet.getBoundingClientRect()).toEqual(expect.objectContaining({width: 10, height: 20}));
 
     // WHEN reporting a preferred size
     await Beans.get(MessageClient).publish(scriptPreferredSizeTopic, {width: '50px', height: '100px'});
     await waitUntilStable(() => microfrontendFixture.routerOutlet.preferredSize, {isStable: Objects.isEqual});
     // THEN expect router outlet to change its size
-    expect(microfrontendFixture.routerOutlet.preferredSize).toEqual(jasmine.objectContaining({width: '50px', height: '100px'}));
-    expect(microfrontendFixture.iframe.getBoundingClientRect()).toEqual(jasmine.objectContaining({width: 50, height: 100}));
-    expect(microfrontendFixture.routerOutlet.getBoundingClientRect()).toEqual(jasmine.objectContaining({width: 50, height: 100}));
+    expect(microfrontendFixture.routerOutlet.preferredSize).toEqual(expect.objectContaining({width: '50px', height: '100px'}));
+    expect(microfrontendFixture.iframe.getBoundingClientRect()).toEqual(expect.objectContaining({width: 50, height: 100}));
+    expect(microfrontendFixture.routerOutlet.getBoundingClientRect()).toEqual(expect.objectContaining({width: 50, height: 100}));
 
     // WHEN reporting a preferred size
     await Beans.get(MessageClient).publish(scriptPreferredSizeTopic, {width: '30px', height: '70px'});
     await waitUntilStable(() => microfrontendFixture.routerOutlet.preferredSize, {isStable: Objects.isEqual});
     // THEN expect router outlet to change its size
-    expect(microfrontendFixture.routerOutlet.preferredSize).toEqual(jasmine.objectContaining({width: '30px', height: '70px'}));
-    expect(microfrontendFixture.iframe.getBoundingClientRect()).toEqual(jasmine.objectContaining({width: 30, height: 70}));
-    expect(microfrontendFixture.routerOutlet.getBoundingClientRect()).toEqual(jasmine.objectContaining({width: 30, height: 70}));
+    expect(microfrontendFixture.routerOutlet.preferredSize).toEqual(expect.objectContaining({width: '30px', height: '70px'}));
+    expect(microfrontendFixture.iframe.getBoundingClientRect()).toEqual(expect.objectContaining({width: 30, height: 70}));
+    expect(microfrontendFixture.routerOutlet.getBoundingClientRect()).toEqual(expect.objectContaining({width: 30, height: 70}));
   });
 
   /**

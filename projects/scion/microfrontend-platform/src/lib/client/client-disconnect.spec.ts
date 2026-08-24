@@ -52,16 +52,16 @@ describe('MicrofrontendPlatform', () => {
     // Load client 1
     await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-1'});
     const client1Id = await getClientId(microfrontendFixture);
-    expect(clientRegistry.getByClientId(client1Id)).withContext('expected "client-1" to be CONNECTED').toBeDefined();
+    expect(clientRegistry.getByClientId(client1Id), 'expected "client-1" to be CONNECTED').toBeDefined();
 
     // Load client 2
     await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-2'});
     const client2Id = await getClientId(microfrontendFixture);
 
     // Expect client 1 to be disconnected
-    expect(clientRegistry.getByClientId(client1Id)).withContext('expected "client-1" to be DISCONNECTED').toBeUndefined();
+    expect(clientRegistry.getByClientId(client1Id), 'expected "client-1" to be DISCONNECTED').toBeUndefined();
     // Expect client 2 to be connected
-    expect(clientRegistry.getByClientId(client2Id)).withContext('expected "client-2" to be CONNECTED').toBeDefined();
+    expect(clientRegistry.getByClientId(client2Id), 'expected "client-2" to be CONNECTED').toBeDefined();
   });
 
   it('should disconnect the client when loading a non-SCION app into its window', async () => {
@@ -80,14 +80,14 @@ describe('MicrofrontendPlatform', () => {
     // Load client
     await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client'});
     const clientId = await getClientId(microfrontendFixture);
-    expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be CONNECTED').toBeDefined();
+    expect(clientRegistry.getByClientId(clientId), 'expected "client" to be CONNECTED').toBeDefined();
 
     // Navigate to "about:blank"
     microfrontendFixture.setUrl('about:blank');
     await waitUntilClientUnregistered(clientId);
 
     // Expect client to be disconnected
-    expect(clientRegistry.getByClientId(clientId)).withContext('expected "client-1" to be DISCONNECTED').toBeUndefined();
+    expect(clientRegistry.getByClientId(clientId), 'expected "client-1" to be DISCONNECTED').toBeUndefined();
   });
 
   it('should disconnect the client when it navigates to a SCION micro application', async () => {
@@ -119,9 +119,9 @@ describe('MicrofrontendPlatform', () => {
     const client2Id = await getClientId(microfrontendFixture);
 
     // Expect client 1 to be disconnected
-    expect(clientRegistry.getByClientId(client1Id)).withContext('expected "client-1" to be DISCONNECTED').toBeUndefined();
+    expect(clientRegistry.getByClientId(client1Id), 'expected "client-1" to be DISCONNECTED').toBeUndefined();
     // Expect client 2 to be connected
-    expect(clientRegistry.getByClientId(client2Id)).withContext('expected "client-2" to be CONNECTED').toBeDefined();
+    expect(clientRegistry.getByClientId(client2Id), 'expected "client-2" to be CONNECTED').toBeDefined();
   });
 
   it('should disconnect the client when it navigates to a non-SCION app', async () => {
@@ -142,7 +142,7 @@ describe('MicrofrontendPlatform', () => {
     const clientId = await getClientId(microfrontendFixture);
 
     await waitUntilClientUnregistered(clientId);
-    expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be DISCONNECTED').toBeUndefined();
+    expect(clientRegistry.getByClientId(clientId), 'expected "client" to be DISCONNECTED').toBeUndefined();
   });
 
   it('should disconnect the client when removing its iframe', async () => {
@@ -161,14 +161,14 @@ describe('MicrofrontendPlatform', () => {
     // Load client
     await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client'});
     const clientId = await getClientId(microfrontendFixture);
-    expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be CONNECTED').toBeDefined();
+    expect(clientRegistry.getByClientId(clientId), 'expected "client" to be CONNECTED').toBeDefined();
 
     // Remove the iframe
     microfrontendFixture.removeIframe();
     await waitUntilClientUnregistered(clientId);
 
     // Expect client to be disconnected
-    expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be DISCONNECTED').toBeUndefined();
+    expect(clientRegistry.getByClientId(clientId), 'expected "client" to be DISCONNECTED').toBeUndefined();
   });
 
   it('should disconnect the client when stopping its platform', async () => {
@@ -189,7 +189,7 @@ describe('MicrofrontendPlatform', () => {
     const clientId = await getClientId(microfrontendFixture);
 
     // Expect client to be disconnected
-    expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be DISCONNECTED').toBeUndefined();
+    expect(clientRegistry.getByClientId(clientId), 'expected "client" to be DISCONNECTED').toBeUndefined();
   });
 
   it('should disconnect client if not receiving a "DISCONNECT" when loading a SCION micro application into its window (staleness)', async () => {
@@ -212,19 +212,19 @@ describe('MicrofrontendPlatform', () => {
     // Load client 1 (disconnectOnUnloadDisabled: true)
     await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-1', disconnectOnUnloadDisabled: true});
     const client1Id = await getClientId(microfrontendFixture);
-    expect(clientRegistry.getByClientId(client1Id)).withContext('expected "client-1" to be CONNECTED').toBeDefined();
+    expect(clientRegistry.getByClientId(client1Id), 'expected "client-1" to be CONNECTED').toBeDefined();
 
     // Load client 2
     await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client-2'});
     const client2Id = await getClientId(microfrontendFixture);
 
     // Expect client 1 to be disconnected
-    expect(clientRegistry.getByClientId(client1Id)).withContext('expected "client-1" to be DISCONNECTED').toBeUndefined();
+    expect(clientRegistry.getByClientId(client1Id), 'expected "client-1" to be DISCONNECTED').toBeUndefined();
     // Expect client 2 to be connected
-    expect(clientRegistry.getByClientId(client2Id)).withContext('expected "client-2" to be CONNECTED').toBeDefined();
+    expect(clientRegistry.getByClientId(client2Id), 'expected "client-2" to be CONNECTED').toBeDefined();
 
     // Assert staleness warning
-    expect(readConsoleLog('warn', {filter: /\[StaleClient]/})).toEqual(jasmine.arrayContaining([jasmine.stringMatching(`Stale client registration detected when loading application 'client-2' into the window of 'client-1'.`)]));
+    expect(readConsoleLog('warn', {filter: /\[StaleClient]/})).toEqual(expect.arrayContaining([expect.stringMatching(`Stale client registration detected when loading application 'client-2' into the window of 'client-1'.`)]));
   });
 
   it('should disconnect client if not receiving a "DISCONNECT" when loading a non-SCION app into its window (staleness)', async () => {
@@ -247,17 +247,17 @@ describe('MicrofrontendPlatform', () => {
     // Load client (disconnectOnUnloadDisabled: true)
     await microfrontendFixture.loadScript('lib/client/client-disconnect.script.ts', 'connectToHost', {symbolicName: 'client', disconnectOnUnloadDisabled: true, version: '1.0.0-rc.11'});
     const clientId = await getClientId(microfrontendFixture);
-    expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be CONNECTED').toBeDefined();
+    expect(clientRegistry.getByClientId(clientId), 'expected "client" to be CONNECTED').toBeDefined();
 
     // Load page
     microfrontendFixture.setUrl('about:blank');
     await waitUntilClientUnregistered(clientId);
 
     // Expect client to be disconnected
-    expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be DISCONNECTED').toBeUndefined();
+    expect(clientRegistry.getByClientId(clientId), 'expected "client" to be DISCONNECTED').toBeUndefined();
 
     // Assert staleness warning
-    expect(readConsoleLog('warn', {filter: /\[StaleClient]/})).toEqual(jasmine.arrayContaining([jasmine.stringMatching(`Stale client registration of application 'client' detected.`)]));
+    expect(readConsoleLog('warn', {filter: /\[StaleClient]/})).toEqual(expect.arrayContaining([expect.stringMatching(`Stale client registration of application 'client' detected.`)]));
   });
 
   it('should disconnect client if not receiving a "DISCONNECT" when removing its iframe (staleness)', async () => {
@@ -282,17 +282,17 @@ describe('MicrofrontendPlatform', () => {
     const clientId = await getClientId(microfrontendFixture);
 
     // Expect client to be connected
-    expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be CONNECTED').toBeDefined();
+    expect(clientRegistry.getByClientId(clientId), 'expected "client" to be CONNECTED').toBeDefined();
 
     // Remove the client.
     microfrontendFixture.removeIframe();
     await waitUntilClientUnregistered(clientId);
 
     // Expect client to be disconnected
-    expect(clientRegistry.getByClientId(clientId)).withContext('expected "client" to be DISCONNECTED').toBeUndefined();
+    expect(clientRegistry.getByClientId(clientId), 'expected "client" to be DISCONNECTED').toBeUndefined();
 
     // Assert staleness warning
-    expect(readConsoleLog('warn', {filter: /\[StaleClient]/})).toEqual(jasmine.arrayContaining([jasmine.stringMatching(`Stale client registration of application 'client' detected.`)]));
+    expect(readConsoleLog('warn', {filter: /\[StaleClient]/})).toEqual(expect.arrayContaining([expect.stringMatching(`Stale client registration of application 'client' detected.`)]));
   });
 
   async function getClientId(fixture: MicrofrontendFixture): Promise<string> {

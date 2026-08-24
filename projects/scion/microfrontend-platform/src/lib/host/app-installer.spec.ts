@@ -12,28 +12,34 @@ import {MicrofrontendPlatform} from '../microfrontend-platform';
 import {MicrofrontendPlatformHost} from './microfrontend-platform-host';
 import {Manifest} from '../platform.model';
 import {ApplicationRegistry} from './application-registry';
-import {Logger} from '../logger';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestService} from '../client/manifest-registry/manifest-service';
 import {ManifestFixture} from '../testing/manifest-fixture/manifest-fixture';
+import {getLoggerSpy, installLoggerSpies} from '../testing/spec.util.spec';
 
 describe('AppInstaller', () => {
 
-  beforeEach(() => MicrofrontendPlatform.destroy());
+  beforeEach(() => {
+    MicrofrontendPlatform.destroy();
+    installLoggerSpies();
+  });
   afterEach(() => MicrofrontendPlatform.destroy());
 
   it('should fetch and register applications', async () => {
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
-    httpClientSpy.fetch
-      .withArgs('http://www.app-1/manifest').and.returnValue(okAnswer({body: {name: 'App 1'}, delay: 120}))
-      .withArgs('http://www.app-2/manifest').and.returnValue(okAnswer({body: {name: 'App 2'}, delay: 30}))
-      .and.callFake(arg => fetch(arg)); // fetches the manifest of the host app
+    const httpClientSpy = {
+      fetch: vi.fn((url: string) => {
+        switch (url) {
+          case 'http://www.app-1/manifest':
+            return okAnswer({body: {name: 'App 1'}, delay: 120});
+          case 'http://www.app-2/manifest':
+            return okAnswer({body: {name: 'App 2'}, delay: 30});
+          default:
+            return fetch(url); // fetches the manifest of the host app;
+        }
+      }),
+    } satisfies HttpClient;
     Beans.register(HttpClient, {useValue: httpClientSpy});
-
-    // mock {Logger}
-    const loggerSpy = jasmine.createSpyObj<Logger>(Logger.name, ['info', 'warn', 'error']);
-    Beans.register(Logger, {useValue: loggerSpy});
 
     // start the platform
     await MicrofrontendPlatformHost.start({
@@ -51,30 +57,33 @@ describe('AppInstaller', () => {
     expect(Beans.get(ApplicationRegistry).getApplication('host-app').name).toEqual('Host App');
     expect(Beans.get(ApplicationRegistry).getApplication('app-1').name).toEqual('App 1');
     expect(Beans.get(ApplicationRegistry).getApplication('app-2').name).toEqual('App 2');
-    expect(loggerSpy.error.calls.count()).toEqual(0);
 
-    expect(Beans.get(ManifestService).applications).toEqual(jasmine.arrayContaining([
-      jasmine.objectContaining({symbolicName: 'host-app'}),
-      jasmine.objectContaining({symbolicName: 'app-1'}),
-      jasmine.objectContaining({symbolicName: 'app-2'}),
+    expect(Beans.get(ManifestService).applications).toEqual(expect.arrayContaining([
+      expect.objectContaining({symbolicName: 'host-app'}),
+      expect.objectContaining({symbolicName: 'app-1'}),
+      expect.objectContaining({symbolicName: 'app-2'}),
     ]));
   });
 
   it('should ignore applications which are not available', async () => {
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
-    httpClientSpy.fetch
-      .withArgs('http://www.app-1/manifest').and.returnValue(okAnswer({body: {name: 'App 1'}, delay: 12}))
-      .withArgs('http://www.app-2/manifest').and.returnValue(nokAnswer({status: 500, delay: 100}))
-      .withArgs('http://www.app-3/manifest').and.returnValue(okAnswer({body: {name: 'App 3'}, delay: 600}))
-      .withArgs('http://www.app-4/manifest').and.returnValue(nokAnswer({status: 502, delay: 200}))
-      .and.callFake(arg => fetch(arg)); // fetches the manifest of the host app
-
+    const httpClientSpy = {
+      fetch: vi.fn((url: string) => {
+        switch (url) {
+          case 'http://www.app-1/manifest':
+            return okAnswer({body: {name: 'App 1'}, delay: 12});
+          case 'http://www.app-2/manifest':
+            return nokAnswer({status: 500, delay: 100});
+          case 'http://www.app-3/manifest':
+            return okAnswer({body: {name: 'App 3'}, delay: 600});
+          case 'http://www.app-4/manifest':
+            return nokAnswer({status: 502, delay: 200});
+          default:
+            return fetch(url); // fetches the manifest of the host app;
+        }
+      }),
+    } satisfies HttpClient;
     Beans.register(HttpClient, {useValue: httpClientSpy});
-
-    // mock {Logger}
-    const loggerSpy = jasmine.createSpyObj<Logger>(Logger.name, ['info', 'warn', 'error']);
-    Beans.register(Logger, {useValue: loggerSpy});
 
     // start the platform
     await MicrofrontendPlatformHost.start({
@@ -88,27 +97,31 @@ describe('AppInstaller', () => {
 
     // assert application registrations
     expect(Beans.get(ApplicationRegistry).getApplication('app-1').name).toEqual('App 1');
-    expect(() => Beans.get(ApplicationRegistry).getApplication('app-2')).toThrowError(/NullApplicationError/);
+    expect(() => Beans.get(ApplicationRegistry).getApplication('app-2')).toThrow(/NullApplicationError/);
     expect(Beans.get(ApplicationRegistry).getApplication('app-3').name).toEqual('App 3');
-    expect(() => Beans.get(ApplicationRegistry).getApplication('app-4')).toThrowError(/NullApplicationError/);
-    expect(loggerSpy.error.calls.count()).toEqual(2);
+    expect(() => Beans.get(ApplicationRegistry).getApplication('app-4')).toThrow(/NullApplicationError/);
+    expect(getLoggerSpy('error')).callCount(2);
   });
 
   it('should cancel fetching an application\'s manifest after the timeout expires and not register it', async () => {
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
-    httpClientSpy.fetch
-      .withArgs('http://www.app-1/manifest').and.returnValue(okAnswer({body: {name: 'App 1'}, delay: 1000})) // greater than the app-specific manifestLoadTimeout => expect failure
-      .withArgs('http://www.app-2/manifest').and.returnValue(okAnswer({body: {name: 'App 2'}, delay: 400}))
-      .withArgs('http://www.app-3/manifest').and.returnValue(okAnswer({body: {name: 'App 3'}, delay: 600})) // greater than the global manifestLoadTimeout => expect failure
-      .withArgs('http://www.app-4/manifest').and.returnValue(okAnswer({body: {name: 'App 4'}, delay: 600})) // less than the app-specific manifestLoadTimeout => expect success
-      .and.callFake(arg => fetch(arg)); // fetches the manifest of the host app
-
+    const httpClientSpy = {
+      fetch: vi.fn((url: string) => {
+        switch (url) {
+          case 'http://www.app-1/manifest':
+            return okAnswer({body: {name: 'App 1'}, delay: 1000}); // greater than the app-specific manifestLoadTimeout => expect failure
+          case 'http://www.app-2/manifest':
+            return okAnswer({body: {name: 'App 2'}, delay: 1});
+          case 'http://www.app-3/manifest':
+            return okAnswer({body: {name: 'App 3'}, delay: 600}); // greater than the global manifestLoadTimeout => expect failure
+          case 'http://www.app-4/manifest':
+            return okAnswer({body: {name: 'App 4'}, delay: 600}); // less than the app-specific manifestLoadTimeout => expect success
+          default:
+            return fetch(url); // fetches the manifest of the host app;
+        }
+      }),
+    } satisfies HttpClient;
     Beans.register(HttpClient, {useValue: httpClientSpy});
-
-    // mock {Logger}
-    const loggerSpy = jasmine.createSpyObj<Logger>(Logger.name, ['info', 'warn', 'error']);
-    Beans.register(Logger, {useValue: loggerSpy});
 
     // start the platform
     await MicrofrontendPlatformHost.start({
@@ -122,13 +135,13 @@ describe('AppInstaller', () => {
     });
 
     // assert application registrations
-    expect(() => Beans.get(ApplicationRegistry).getApplication('app-1')).toThrowError(/NullApplicationError/);
+    expect(() => Beans.get(ApplicationRegistry).getApplication('app-1')).toThrow(/NullApplicationError/);
     expect(Beans.get(ApplicationRegistry).getApplication('app-2').name).toEqual('App 2');
-    expect(() => Beans.get(ApplicationRegistry).getApplication('app-3')).toThrowError(/NullApplicationError/);
+    expect(() => Beans.get(ApplicationRegistry).getApplication('app-3')).toThrow(/NullApplicationError/);
     expect(Beans.get(ApplicationRegistry).getApplication('app-4').name).toEqual('App 4');
-    expect(loggerSpy.error.calls.count()).toEqual(2);
-    expect(loggerSpy.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[AppInstaller] Failed to install application/), jasmine.stringMatching(/\[ManifestFetchError] Failed to fetch manifest for application 'app-1'\. Timeout of 300ms elapsed/));
-    expect(loggerSpy.error).toHaveBeenCalledWith(jasmine.stringMatching(/\[AppInstaller] Failed to install application/), jasmine.stringMatching(/\[ManifestFetchError] Failed to fetch manifest for application 'app-3'\. Timeout of 500ms elapsed/));
+    expect(getLoggerSpy('error')).callCount(2);
+    expect(getLoggerSpy('error')).toHaveBeenCalledWith(expect.objectContaining(/\[AppInstaller] Failed to install application/), expect.objectContaining(/\[ManifestFetchError] Failed to fetch manifest for application 'app-1'\. Timeout of 300ms elapsed/));
+    expect(getLoggerSpy('error')).toHaveBeenCalledWith(expect.objectContaining(/\[AppInstaller] Failed to install application/), expect.objectContaining(/\[ManifestFetchError] Failed to fetch manifest for application 'app-3'\. Timeout of 500ms elapsed/));
   });
 });
 

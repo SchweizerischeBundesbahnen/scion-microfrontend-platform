@@ -30,8 +30,8 @@ describe('BrokerGateway', () => {
     // WHEN
     MicrofrontendPlatform.destroy();
     // THEN
-    expect(captor.hasCompleted()).toBeFalse();
-    expect(captor.hasErrored()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(false);
+    expect(captor.hasErrored()).toBe(false);
     expect(captor.getValues()).toEqual([]);
   });
 
@@ -50,8 +50,8 @@ describe('BrokerGateway', () => {
     // WHEN
     MicrofrontendPlatform.destroy();
     // THEN
-    expect(captor.hasCompleted()).toBeFalse();
-    expect(captor.hasErrored()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(false);
+    expect(captor.hasErrored()).toBe(false);
     expect(captor.getValues()).toEqual([]);
   });
 
@@ -70,8 +70,8 @@ describe('BrokerGateway', () => {
     // WHEN
     MicrofrontendPlatform.destroy();
     // THEN
-    expect(captor.hasCompleted()).toBeFalse();
-    expect(captor.hasErrored()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(false);
+    expect(captor.hasErrored()).toBe(false);
     expect(captor.getValues()).toEqual([]);
   });
 });

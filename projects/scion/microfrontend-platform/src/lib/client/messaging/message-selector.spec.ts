@@ -28,7 +28,7 @@ describe('Message Selector', () => {
 
     // THEN
     expect(captor.getValues()).toEqual([{id: '2', text: 'bar'}]);
-    expect(captor.hasCompleted()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(false);
   });
 
   it('should select messages with id `2`', async () => {
@@ -46,7 +46,7 @@ describe('Message Selector', () => {
 
     // THEN
     expect(captor.getValues()).toEqual([{id: '2', text: 'msg-2'}, {id: '2', text: 'msg-4'}]);
-    expect(captor.hasCompleted()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(false);
   });
 
   it('should support multiple subscribers on the same key', async () => {
@@ -65,10 +65,10 @@ describe('Message Selector', () => {
 
     // THEN
     expect(captor1.getValues()).toEqual([{id: '1', text: 'foo'}]);
-    expect(captor1.hasCompleted()).toBeFalse();
+    expect(captor1.hasCompleted()).toBe(false);
 
     expect(captor2.getValues()).toEqual([{id: '1', text: 'foo'}]);
-    expect(captor2.hasCompleted()).toBeFalse();
+    expect(captor2.hasCompleted()).toBe(false);
   });
 
   it('should not buffer messages sent before subscription', async () => {
@@ -83,7 +83,7 @@ describe('Message Selector', () => {
 
     // THEN
     expect(captor.getValues()).toEqual([]);
-    expect(captor.hasCompleted()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(false);
   });
 
   it('should complete when disconnected', async () => {
@@ -99,7 +99,7 @@ describe('Message Selector', () => {
 
     // THEN
     expect(captor.getValues()).toEqual([]);
-    expect(captor.hasCompleted()).toBeTrue();
+    expect(captor.hasCompleted()).toBe(true);
     expect(selectMessagesById.ɵsubscriberCount()).toBe(0);
   });
 
@@ -110,13 +110,13 @@ describe('Message Selector', () => {
 
     const selectMessagesById = new MessageSelector({source$, keySelector: identity});
     selectMessagesById.select$('1').subscribe(captor);
-    expect(captor.hasCompleted()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(false);
 
     // WHEN completing the source
     source$.complete();
 
     // THEN expect source to be completed
-    expect(captor.hasCompleted()).toBeTrue();
+    expect(captor.hasCompleted()).toBe(true);
     expect(selectMessagesById.ɵsubscriberCount()).toBe(0);
   });
 
@@ -131,7 +131,7 @@ describe('Message Selector', () => {
     source$.error('error');
 
     // THEN expect source to be errored
-    expect(captor.hasErrored()).toBeTrue();
+    expect(captor.hasErrored()).toBe(true);
     expect(selectMessagesById.ɵsubscriberCount()).toBe(0);
   });
 

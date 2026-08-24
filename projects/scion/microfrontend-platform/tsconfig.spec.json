@@ -5,11 +5,12 @@
   "compilerOptions": {
     "outDir": "../../../out-tsc/microfrontend-platform.spec",
     "types": [
-      "jasmine"
+      "vitest/globals"
     ]
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "vitest.config.ts"
   ],
   "exclude": [
     "**/*.script.ts" // "*.script.ts" files are included in a separate TypeScript config tsconfig.script.spec.json.

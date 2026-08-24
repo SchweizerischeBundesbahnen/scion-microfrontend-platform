@@ -23,59 +23,91 @@ describe('ManifestFetcher', () => {
     const manifest: Manifest = {name: 'Application'};
 
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
-    httpClientSpy.fetch.withArgs('http://app/manifest').and.returnValue(okAnswer({body: manifest, delay: 100}));
+    const httpClientSpy = {
+      fetch: vi.fn((url: string): Promise<Response> => {
+        switch (url) {
+          case 'http://app/manifest':
+            return okAnswer({body: manifest, delay: 100});
+          default:
+            throw new Error('Not expected');
+        }
+      }),
+    } satisfies HttpClient;
     Beans.register(HttpClient, {useValue: httpClientSpy});
     Beans.register(MicrofrontendPlatformConfig, {useValue: platformConfig});
     Beans.register(ManifestFetcher);
 
-    await expectAsync(Beans.get(ManifestFetcher).fetch({symbolicName: 'app', manifestUrl: 'http://app/manifest'})).toBeResolvedTo(manifest);
+    await expect(Beans.get(ManifestFetcher).fetch({symbolicName: 'app', manifestUrl: 'http://app/manifest'})).resolves.toEqual(manifest);
   });
 
   it('should throw if manifest cannot be fetched', async () => {
     const platformConfig: MicrofrontendPlatformConfig = {applications: []};
 
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
-    httpClientSpy.fetch.withArgs('http://app/manifest').and.returnValue(nokAnswer({status: 500, delay: 100}));
+    const httpClientSpy = {
+      fetch: vi.fn((url: string): Promise<Response> => {
+        switch (url) {
+          case 'http://app/manifest':
+            return nokAnswer({status: 500, delay: 100});
+          default:
+            throw new Error('Not expected');
+        }
+      }),
+    } satisfies HttpClient;
     Beans.register(HttpClient, {useValue: httpClientSpy});
     Beans.register(MicrofrontendPlatformConfig, {useValue: platformConfig});
     Beans.register(ManifestFetcher);
 
-    await expectAsync(Beans.get(ManifestFetcher).fetch({symbolicName: 'app', manifestUrl: 'http://app/manifest'})).toBeRejectedWithError(/ManifestFetchError/);
+    await expect(Beans.get(ManifestFetcher).fetch({symbolicName: 'app', manifestUrl: 'http://app/manifest'})).rejects.toThrow(/ManifestFetchError/);
   });
 
   it('should cancel fetching manifest if manifest load timeout expires', async () => {
     const platformConfig: MicrofrontendPlatformConfig = {applications: []};
 
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
-    httpClientSpy.fetch.withArgs('http://app/manifest').and.returnValue(okAnswer({body: {name: 'Application'}, delay: 1000})); // greater than the app-specific manifestLoadTimeout
+    const httpClientSpy = {
+      fetch: vi.fn((url: string): Promise<Response> => {
+        switch (url) {
+          case 'http://app/manifest':
+            return okAnswer({body: {name: 'Application'}, delay: 1000}); // greater than the app-specific manifestLoadTimeout
+          default:
+            throw new Error('Not expected');
+        }
+      }),
+    } satisfies HttpClient;
     Beans.register(HttpClient, {useValue: httpClientSpy});
     Beans.register(MicrofrontendPlatformConfig, {useValue: platformConfig});
     Beans.register(ManifestFetcher);
 
-    await expectAsync(Beans.get(ManifestFetcher).fetch({symbolicName: 'app', manifestUrl: 'http://app/manifest', manifestLoadTimeout: 500})).toBeRejectedWithError(/\[ManifestFetchError].*Timeout of 500ms elapsed/);
+    await expect(Beans.get(ManifestFetcher).fetch({symbolicName: 'app', manifestUrl: 'http://app/manifest', manifestLoadTimeout: 500})).rejects.toThrow(/\[ManifestFetchError].*Timeout of 500ms elapsed/);
   });
 
   it('should cancel fetching manifest if global manifest load timeout expires', async () => {
     const platformConfig: MicrofrontendPlatformConfig = {applications: [], manifestLoadTimeout: 300};
 
     // mock {HttpClient}
-    const httpClientSpy = jasmine.createSpyObj<HttpClient>(HttpClient.name, ['fetch']);
-    httpClientSpy.fetch.withArgs('http://app/manifest').and.returnValue(okAnswer({body: {name: 'Application'}, delay: 1000})); // greater than the global manifestLoadTimeout
+    const httpClientSpy = {
+      fetch: vi.fn((url: string): Promise<Response> => {
+        switch (url) {
+          case 'http://app/manifest':
+            return okAnswer({body: {name: 'Application'}, delay: 1000}); // greater than the global manifestLoadTimeout
+          default:
+            throw new Error('Not expected');
+        }
+      }),
+    } satisfies HttpClient;
     Beans.register(HttpClient, {useValue: httpClientSpy});
     Beans.register(MicrofrontendPlatformConfig, {useValue: platformConfig});
     Beans.register(ManifestFetcher);
 
-    await expectAsync(Beans.get(ManifestFetcher).fetch({symbolicName: 'app', manifestUrl: 'http://app/manifest'})).toBeRejectedWithError(/\[ManifestFetchError].*Timeout of 300ms elapsed/);
+    await expect(Beans.get(ManifestFetcher).fetch({symbolicName: 'app', manifestUrl: 'http://app/manifest'})).rejects.toThrow(/\[ManifestFetchError].*Timeout of 300ms elapsed/);
   });
 
   it('should error if passing an invalid application config', async () => {
     Beans.register(ManifestFetcher);
 
-    await expectAsync(Beans.get(ManifestFetcher).fetch({symbolicName: undefined!, manifestUrl: 'http://app/manifest'})).toBeRejectedWithError(/\[ManifestFetchError].*Invalid application config/);
-    await expectAsync(Beans.get(ManifestFetcher).fetch({symbolicName: 'app', manifestUrl: undefined!})).toBeRejectedWithError(/\[ManifestFetchError].*Invalid application config/);
+    await expect(Beans.get(ManifestFetcher).fetch({symbolicName: undefined!, manifestUrl: 'http://app/manifest'})).rejects.toThrow(/\[ManifestFetchError].*Invalid application config/);
+    await expect(Beans.get(ManifestFetcher).fetch({symbolicName: 'app', manifestUrl: undefined!})).rejects.toThrow(/\[ManifestFetchError].*Invalid application config/);
   });
 });
 

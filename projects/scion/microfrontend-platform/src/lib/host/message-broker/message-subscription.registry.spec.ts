@@ -45,21 +45,21 @@ describe('MessageSubscriptionRegistry', () => {
     // WHEN unregistering client 1
     Beans.get(ClientRegistry).unregisterClient(client1);
     expect(testee.subscriptions()).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#3'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#4'}),
+      expect.objectContaining({subscriberId: 'subscriber#3'}),
+      expect.objectContaining({subscriberId: 'subscriber#4'}),
     ]);
-    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription3.whenUnsubscribe).toBePending();
-    await expectAsync(subscription4.whenUnsubscribe).toBePending();
+    await expect(subscription1.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription2.whenUnsubscribe).resolves.not.toThrow();
+    await expectPending(subscription3.whenUnsubscribe);
+    await expectPending(subscription4.whenUnsubscribe);
 
     // WHEN unregistering client 2
     Beans.get(ClientRegistry).unregisterClient(client2);
     expect(testee.subscriptions()).toEqual([]);
-    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription3.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription4.whenUnsubscribe).toBeResolved();
+    await expect(subscription1.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription2.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription3.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription4.whenUnsubscribe).resolves.not.toThrow();
   });
 
   it('should remove subscription by client', async () => {
@@ -80,21 +80,21 @@ describe('MessageSubscriptionRegistry', () => {
     // WHEN unregistering subscriptions of client 1
     testee.unregister({clientId: client1.id});
     expect(testee.subscriptions()).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#3'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#4'}),
+      expect.objectContaining({subscriberId: 'subscriber#3'}),
+      expect.objectContaining({subscriberId: 'subscriber#4'}),
     ]);
-    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription3.whenUnsubscribe).toBePending();
-    await expectAsync(subscription4.whenUnsubscribe).toBePending();
+    await expect(subscription1.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription2.whenUnsubscribe).resolves.not.toThrow();
+    await expectPending(subscription3.whenUnsubscribe);
+    await expectPending(subscription4.whenUnsubscribe);
 
     // WHEN unregistering subscriptions of client 2
     testee.unregister({clientId: client2.id});
     expect(testee.subscriptions()).toEqual([]);
-    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription3.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription4.whenUnsubscribe).toBeResolved();
+    await expect(subscription1.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription2.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription3.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription4.whenUnsubscribe).resolves.not.toThrow();
   });
 
   it('should remove subscription by id', async () => {
@@ -113,31 +113,31 @@ describe('MessageSubscriptionRegistry', () => {
     // WHEN unregistering subscription 2
     testee.unregister({subscriberId: 'subscriber#2'});
     expect(testee.subscriptions()).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#1'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#3'}),
+      expect.objectContaining({subscriberId: 'subscriber#1'}),
+      expect.objectContaining({subscriberId: 'subscriber#3'}),
     ]);
-    await expectAsync(subscription1.whenUnsubscribe).toBePending();
-    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription3.whenUnsubscribe).toBePending();
+    await expectPending(subscription1.whenUnsubscribe);
+    await expect(subscription2.whenUnsubscribe).resolves.not.toThrow();
+    await expectPending(subscription3.whenUnsubscribe);
 
     // WHEN unregistering subscription 3 (wrong client)
     testee.unregister({subscriberId: 'subscriber#3', clientId: client1.id});
     expect(testee.subscriptions()).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#1'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#3'}),
+      expect.objectContaining({subscriberId: 'subscriber#1'}),
+      expect.objectContaining({subscriberId: 'subscriber#3'}),
     ]);
-    await expectAsync(subscription1.whenUnsubscribe).toBePending();
-    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription3.whenUnsubscribe).toBePending();
+    await expectPending(subscription1.whenUnsubscribe);
+    await expect(subscription2.whenUnsubscribe).resolves.not.toThrow();
+    await expectPending(subscription3.whenUnsubscribe);
 
     // WHEN unregistering subscription 3
     testee.unregister({subscriberId: 'subscriber#3', clientId: client2.id});
     expect(testee.subscriptions()).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#1'}),
+      expect.objectContaining({subscriberId: 'subscriber#1'}),
     ]);
-    await expectAsync(subscription1.whenUnsubscribe).toBePending();
-    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription3.whenUnsubscribe).toBeResolved();
+    await expectPending(subscription1.whenUnsubscribe);
+    await expect(subscription2.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription3.whenUnsubscribe).resolves.not.toThrow();
   });
 
   it('should emit when registering a subscription', () => {
@@ -150,14 +150,14 @@ describe('MessageSubscriptionRegistry', () => {
     // WHEN registering a subscription
     testee.register(new MessageSubscription('subscriber#1', client));
     expect(registerCaptor.getValues()).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#1'}),
+      expect.objectContaining({subscriberId: 'subscriber#1'}),
     ]);
     registerCaptor.reset();
 
     // WHEN registering a subscription
     testee.register(new MessageSubscription('subscriber#2', client));
     expect(registerCaptor.getValues()).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#2'}),
+      expect.objectContaining({subscriberId: 'subscriber#2'}),
     ]);
     registerCaptor.reset();
   });
@@ -183,28 +183,28 @@ describe('MessageSubscriptionRegistry', () => {
     // WHEN unregistering subscription 4
     testee.unregister({subscriberId: 'subscriber#4'});
     expect(unregisterCaptor.getValues().length).toEqual(1);
-    await expectAsync(subscription1.whenUnsubscribe).toBePending();
-    await expectAsync(subscription2.whenUnsubscribe).toBePending();
-    await expectAsync(subscription3.whenUnsubscribe).toBePending();
-    await expectAsync(subscription4.whenUnsubscribe).toBeResolved();
+    await expectPending(subscription1.whenUnsubscribe);
+    await expectPending(subscription2.whenUnsubscribe);
+    await expectPending(subscription3.whenUnsubscribe);
+    await expect(subscription4.whenUnsubscribe).resolves.not.toThrow();
     unregisterCaptor.reset();
 
     // WHEN unregistering subscriptions of client 1
     testee.unregister({clientId: client1.id});
     expect(unregisterCaptor.getValues().length).toEqual(1);
-    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription3.whenUnsubscribe).toBePending();
-    await expectAsync(subscription4.whenUnsubscribe).toBeResolved();
+    await expect(subscription1.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription2.whenUnsubscribe).resolves.not.toThrow();
+    await expectPending(subscription3.whenUnsubscribe);
+    await expect(subscription4.whenUnsubscribe).resolves.not.toThrow();
     unregisterCaptor.reset();
 
     // WHEN unregistering subscriptions of client 2
     testee.unregister({clientId: client2.id});
     expect(unregisterCaptor.getValues().length).toEqual(1);
-    await expectAsync(subscription1.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription2.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription3.whenUnsubscribe).toBeResolved();
-    await expectAsync(subscription4.whenUnsubscribe).toBeResolved();
+    await expect(subscription1.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription2.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription3.whenUnsubscribe).resolves.not.toThrow();
+    await expect(subscription4.whenUnsubscribe).resolves.not.toThrow();
     unregisterCaptor.reset();
   });
 
@@ -216,8 +216,8 @@ describe('MessageSubscriptionRegistry', () => {
     testee.register(new MessageSubscription('subscriber#2', client));
 
     expect(testee.subscriptions()).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#1'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#2'}),
+      expect.objectContaining({subscriberId: 'subscriber#1'}),
+      expect.objectContaining({subscriberId: 'subscriber#2'}),
     ]);
   });
 
@@ -229,10 +229,10 @@ describe('MessageSubscriptionRegistry', () => {
     testee.register(new MessageSubscription('subscriber#2', client));
 
     expect(testee.subscriptions({subscriberId: 'subscriber#1'})).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#1'}),
+      expect.objectContaining({subscriberId: 'subscriber#1'}),
     ]);
     expect(testee.subscriptions({subscriberId: 'subscriber#2'})).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#2'}),
+      expect.objectContaining({subscriberId: 'subscriber#2'}),
     ]);
   });
 
@@ -247,12 +247,12 @@ describe('MessageSubscriptionRegistry', () => {
     testee.register(new MessageSubscription('subscriber#4', client2));
 
     expect(testee.subscriptions({clientId: client1.id})).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#1'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#2'}),
+      expect.objectContaining({subscriberId: 'subscriber#1'}),
+      expect.objectContaining({subscriberId: 'subscriber#2'}),
     ]);
     expect(testee.subscriptions({clientId: client2.id})).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#3'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#4'}),
+      expect.objectContaining({subscriberId: 'subscriber#3'}),
+      expect.objectContaining({subscriberId: 'subscriber#4'}),
     ]);
   });
 
@@ -273,16 +273,16 @@ describe('MessageSubscriptionRegistry', () => {
     testee.register(new MessageSubscription('subscriber#8', client4));
 
     expect(testee.subscriptions({appSymbolicName: 'app1'})).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#1'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#2'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#3'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#4'}),
+      expect.objectContaining({subscriberId: 'subscriber#1'}),
+      expect.objectContaining({subscriberId: 'subscriber#2'}),
+      expect.objectContaining({subscriberId: 'subscriber#3'}),
+      expect.objectContaining({subscriberId: 'subscriber#4'}),
     ]);
     expect(testee.subscriptions({appSymbolicName: 'app2'})).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#5'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#6'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#7'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#8'}),
+      expect.objectContaining({subscriberId: 'subscriber#5'}),
+      expect.objectContaining({subscriberId: 'subscriber#6'}),
+      expect.objectContaining({subscriberId: 'subscriber#7'}),
+      expect.objectContaining({subscriberId: 'subscriber#8'}),
     ]);
   });
 
@@ -303,18 +303,18 @@ describe('MessageSubscriptionRegistry', () => {
     testee.register(new MessageSubscription('subscriber#8', client4));
 
     expect(testee.subscriptions({clientId: client1.id, appSymbolicName: 'app1'})).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#1'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#2'}),
+      expect.objectContaining({subscriberId: 'subscriber#1'}),
+      expect.objectContaining({subscriberId: 'subscriber#2'}),
     ]);
     expect(testee.subscriptions({subscriberId: 'subscriber#1', clientId: client1.id, appSymbolicName: 'app1'})).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#1'}),
+      expect.objectContaining({subscriberId: 'subscriber#1'}),
     ]);
     expect(testee.subscriptions({subscriberId: 'subscriber#1', clientId: client1.id})).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#1'}),
+      expect.objectContaining({subscriberId: 'subscriber#1'}),
     ]);
     expect(testee.subscriptions({clientId: client3.id, appSymbolicName: 'app2'})).toEqual([
-      jasmine.objectContaining({subscriberId: 'subscriber#5'}),
-      jasmine.objectContaining({subscriberId: 'subscriber#6'}),
+      expect.objectContaining({subscriberId: 'subscriber#5'}),
+      expect.objectContaining({subscriberId: 'subscriber#6'}),
     ]);
     expect(testee.subscriptions({subscriberId: 'subscriber#1', clientId: client1.id, appSymbolicName: 'app2'})).toEqual([]);
     expect(testee.subscriptions({subscriberId: 'subscriber#7', clientId: client1.id})).toEqual([]);
@@ -328,4 +328,12 @@ function newClient(descriptor: {id: string; appSymbolicName?: string}): Client {
     public readonly application = {symbolicName: descriptor.appSymbolicName} as ɵApplication;
     public readonly dispose = noop;
   }() as Client;
+}
+
+async function expectPending<T>(promise: Promise<T>, timeout: number = 10): Promise<void> {
+  const settledWithinTimeout = await Promise.race([
+    promise.then(() => true, () => true),
+    new Promise<boolean>(resolve => setTimeout(() => resolve(false), timeout)),
+  ]);
+  expect(settledWithinTimeout).toBe(false);
 }

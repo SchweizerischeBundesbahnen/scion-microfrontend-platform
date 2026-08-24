@@ -7,7 +7,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-
 import {Arrays} from '@scion/toolkit/util';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {ConsoleLogger, Logger} from '../logger';
@@ -16,8 +15,7 @@ import {MessageClient} from '../client/messaging/message-client';
 import {first} from 'rxjs/operators';
 import {stringifyError} from '../error.util';
 import {exhaustMap, filter, firstValueFrom, map, pairwise, timer} from 'rxjs';
-import CallInfo = jasmine.CallInfo;
-import Func = jasmine.Func;
+import type {Mock} from 'vitest';
 
 /**
  * Expects the given Promise to either resolve or reject.
@@ -28,6 +26,9 @@ import Func = jasmine.Func;
  * - Jasmine `toBeResolved` sometimes does not wait for the Promise to resolve. We did not investigate this further.
  *
  * @see https://jasmine.github.io/api/3.5/async-matchers.html
+ *
+ * TODO do we need thos custom matcher?
+ * https://vitest.dev/guide/learn/async.html#resolves-and-rejects
  */
 export function expectPromise(actual: Promise<unknown>): PromiseMatcher {
   return {
@@ -38,24 +39,24 @@ export function expectPromise(actual: Promise<unknown>): PromiseMatcher {
           expect(value).toEqual(expected);
         }
         else {
-          expect(true).toBeTrue();
+          expect(true).toBe(true);
         }
       }
       catch (reason) {
-        fail(`Promise expected to be resolved but was rejected: ${reason}`);
+        throw new Error(`Promise expected to be resolved but was rejected: ${reason}`, {cause: reason});
       }
     },
     toReject: async (expected?: RegExp): Promise<void> => {
       try {
         const value = await actual;
-        fail(`Promise expected to be rejected but was resolved: ${value}`);
+        throw new Error(`Promise expected to be rejected but was resolved: ${value}`);
       }
       catch (reason) {
         if (expected && !stringifyError(reason).match(expected)) {
-          fail(`Expected promise to be rejected with a reason matching '${expected.source}', but was '${(stringifyError(reason))}'.`);
+          throw new Error(`Expected promise to be rejected with a reason matching '${expected.source}', but was '${(stringifyError(reason))}'.`, {cause: reason});
         }
         else {
-          expect(true).toBeTrue();
+          expect(true).toBe(true);
         }
       }
     },
@@ -73,6 +74,34 @@ export interface PromiseMatcher {
    * Expects the Promise to reject. If passing a regular expression, also tests the error to match the regex.
    */
   toReject(expected?: RegExp): Promise<void>;
+}
+
+export function arrayWithExactContents<T>(expectedItems: T[]): T[] {
+  return {
+    asymmetricMatch: (actual: unknown): boolean => {
+      if (!Array.isArray(actual) || actual.length !== expectedItems.length) {
+        return false;
+      }
+
+      const unmatchedIndices = new Set(actual.map((_, index) => index));
+      for (const expectedItem of expectedItems) {
+        const matchedIndex = [...unmatchedIndices].find(index => {
+          try {
+            expect(actual[index]).toEqual(expectedItem);
+            return true;
+          }
+          catch {
+            return false;
+          }
+        });
+        if (matchedIndex === undefined) {
+          return false;
+        }
+        unmatchedIndices.delete(matchedIndex);
+      }
+      return unmatchedIndices.size === 0;
+    },
+  } as unknown as T[];
 }
 
 /**
@@ -96,7 +125,7 @@ export function waitForCondition(condition: () => boolean | Promise<boolean>, ti
         reject(Error(`[SpecTimeoutError] Timeout elapsed. Condition not fulfilled within ${timeout}ms.`));
       }
       else {
-        setTimeout(periodicConditionCheckerFn, 10);
+        setTimeout(() => void periodicConditionCheckerFn(), 10);
       }
     };
     void periodicConditionCheckerFn();
@@ -140,39 +169,39 @@ export function expectEmissions<T = unknown, R = T>(captor: ObserveCaptor<T, R>)
 }
 
 export interface ToEqualMatcher<T> {
-  toEqual(expected: jasmine.Expected<T>): Promise<void>;
+  toEqual(expected: T): Promise<void>;
 }
 
 export function installLoggerSpies(): void {
   const logger = new ConsoleLogger();
-  spyOn(logger, 'info').and.callThrough();
-  spyOn(logger, 'warn').and.callThrough();
-  spyOn(logger, 'error').and.callThrough();
+  vi.spyOn(logger, 'info');
+  vi.spyOn(logger, 'warn');
+  vi.spyOn(logger, 'error');
   Beans.register(Logger, {useValue: logger});
 }
 
-export function readConsoleLog(severity: 'info' | 'warn' | 'error', options?: {filter?: RegExp; projectFn?: (call: CallInfo<Func>) => string}): string[] {
-  return getLoggerSpy(severity).calls
-    .all()
-    .map(call => options?.projectFn ? options.projectFn(call) : call.args[0] as string)
+export function readConsoleLog(severity: 'info' | 'warn' | 'error', options?: {filter?: RegExp; projectFn?: (call: MockCall) => string}): string[] {
+  return vi.mocked(getLoggerSpy(severity)).mock.calls.map(call => options?.projectFn ? options.projectFn(call) : call[0] as string)
     .filter(msg => options?.filter ? msg.match(options.filter) !== null : true);
 }
 
-export function getLoggerSpy(severity: 'info' | 'warn' | 'error'): jasmine.Spy {
+type MockCall = Parameters<(...args: unknown[]) => unknown>;
+
+export function getLoggerSpy(severity: 'info' | 'warn' | 'error'): Mock {
   switch (severity) {
     case 'info':
-      return Beans.get(Logger).info as jasmine.Spy;
+      return Beans.get(Logger).info as Mock;
     case 'warn':
-      return Beans.get(Logger).warn as jasmine.Spy;
+      return Beans.get(Logger).warn as Mock;
     case 'error':
-      return Beans.get(Logger).error as jasmine.Spy;
+      return Beans.get(Logger).error as Mock;
     default:
       throw Error(`[SpecError] Unsupported severity for logger spy. Expected one of ['info', 'warn', 'error'], but was '${severity}'.`);
   }
 }
 
 export function resetLoggerSpy(severity: 'info' | 'warn' | 'error'): void {
-  getLoggerSpy(severity).calls.reset();
+  getLoggerSpy(severity).mockClear();
 }
 
 /**
@@ -201,5 +230,5 @@ export class Latch {
   /**
    * Promise that resolves when released this latch.
    */
-  public whenRelesed = new Promise<void>(resolve => this.release = resolve);
+  public whenReleased = new Promise<void>(resolve => this.release = resolve);
 }

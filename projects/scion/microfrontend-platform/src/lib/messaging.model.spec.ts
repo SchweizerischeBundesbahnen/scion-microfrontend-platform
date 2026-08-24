@@ -23,9 +23,9 @@ describe('Messaging', () => {
       source$.pipe(throwOnErrorStatus()).subscribe(captor);
 
       source$.next(newTopicMessage());
-      expect(captor.getValues()).toEqual([jasmine.objectContaining<TopicMessage>({headers: new Map()})]);
-      expect(captor.hasErrored()).withContext('errored check').toBeFalse();
-      expect(captor.hasCompleted()).withContext('completion check').toBeFalse();
+      expect(captor.getValues()).toEqual([expect.objectContaining<Partial<TopicMessage>>({headers: new Map()})]);
+      expect(captor.hasErrored(), 'errored check').toBe(false);
+      expect(captor.hasCompleted(), 'completion check').toBe(false);
     });
 
     it('should pass messages with a status code between 0 and 399', () => {
@@ -37,9 +37,9 @@ describe('Messaging', () => {
         const captor = new ObserveCaptor<TopicMessage>();
         source$.pipe(throwOnErrorStatus()).subscribe(captor);
         source$.next(newTopicMessage({statusCode: i}));
-        expect(captor.getValues()).withContext(`expect message with status '${i}' to be emitted`).toEqual([jasmine.objectContaining<TopicMessage>({headers: new Map().set(MessageHeaders.Status, i)})]);
-        expect(captor.hasErrored()).withContext(`expect message with status '${i}' not to error the observable`).toBeFalse();
-        expect(captor.hasCompleted()).withContext(`expect message with status '${i}' not to complete the observable`).toBeFalse();
+        expect(captor.getValues(), `expect message with status '${i}' to be emitted`).toEqual([expect.objectContaining<Partial<TopicMessage>>({headers: new Map().set(MessageHeaders.Status, i)})]);
+        expect(captor.hasErrored(), `expect message with status '${i}' not to error the observable`).toBe(false);
+        expect(captor.hasCompleted(), `expect message with status '${i}' not to complete the observable`).toBe(false);
       }
     });
 
@@ -47,9 +47,9 @@ describe('Messaging', () => {
       const captor = new ObserveCaptor<TopicMessage>();
       source$.pipe(throwOnErrorStatus()).subscribe(captor);
       source$.next(newTopicMessage({body: 'body', statusCode: ResponseStatusCodes.TERMINAL}));
-      expect(captor.getValues()).toEqual([jasmine.objectContaining<TopicMessage>({body: 'body', headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)})]);
-      expect(captor.hasErrored()).withContext('errored check').toBeFalse();
-      expect(captor.hasCompleted()).withContext('completion check').toBeTrue();
+      expect(captor.getValues()).toEqual([expect.objectContaining<Partial<TopicMessage>>({body: 'body', headers: new Map().set(MessageHeaders.Status, ResponseStatusCodes.TERMINAL)})]);
+      expect(captor.hasErrored(), 'errored check').toBe(false);
+      expect(captor.hasCompleted(), 'completion check').toBe(true);
     });
 
     it('should complete the Observable if the message has the status code \'250\' (TERMINAL) [payload=undefined]', () => {
@@ -57,8 +57,8 @@ describe('Messaging', () => {
       source$.pipe(throwOnErrorStatus()).subscribe(captor);
       source$.next(newTopicMessage({body: undefined, statusCode: ResponseStatusCodes.TERMINAL}));
       expect(captor.getValues()).toEqual([]);
-      expect(captor.hasErrored()).withContext('errored check').toBeFalse();
-      expect(captor.hasCompleted()).withContext('completion check').toBeTrue();
+      expect(captor.hasErrored(), 'errored check').toBe(false);
+      expect(captor.hasCompleted(), 'completion check').toBe(true);
     });
 
     it('should error the Observable if the message has a status code greater than or equal to 400', () => {
@@ -68,12 +68,12 @@ describe('Messaging', () => {
 
         source$.next(newTopicMessage({statusCode: i}));
         expect(captor.getValues()).toEqual([]);
-        expect(captor.hasErrored()).withContext(`expect message with status '${i}' to error the observable`).toBeTrue();
-        expect(captor.hasCompleted()).withContext(`expect message with status '${i}' not to complete the observable`).toBeFalse();
+        expect(captor.hasErrored(), `expect message with status '${i}' to error the observable`).toBe(true);
+        expect(captor.hasCompleted(), `expect message with status '${i}' not to complete the observable`).toBe(false);
         // expect(captor.getError()).toBeInstanceOf(RequestError); // does not work if transpiling to ES5 (tsconfig.spec.json), enable when dropping support for ES5
         expect(captor.getError().name).toEqual('RequestError');
         expect(captor.getError().status).toEqual(i);
-        expect(captor.getError().msg).toEqual(jasmine.objectContaining<TopicMessage>({headers: new Map().set(MessageHeaders.Status, i)}));
+        expect(captor.getError().msg).toEqual(expect.objectContaining<Partial<TopicMessage>>({headers: new Map().set(MessageHeaders.Status, i)}));
       }
     });
 
@@ -83,8 +83,8 @@ describe('Messaging', () => {
 
       source$.next(newTopicMessage({body: 'some error', statusCode: ResponseStatusCodes.ERROR}));
       expect(captor.getValues()).toEqual([]);
-      expect(captor.hasErrored()).withContext('errored check').toBeTrue();
-      expect(captor.hasCompleted()).withContext('completion check').toBeFalse();
+      expect(captor.hasErrored(), 'errored check').toBe(true);
+      expect(captor.hasCompleted(), 'completion check').toBe(false);
       // expect(captor.getError()).toBeInstanceOf(RequestError); // does not work if transpiling to ES5 (tsconfig.spec.json), enable when dropping support for ES5
       expect(captor.getError().name).toEqual('RequestError');
       expect(captor.getError().status).toEqual(ResponseStatusCodes.ERROR);
@@ -126,7 +126,10 @@ describe('Messaging', () => {
   });
 });
 
-function newTopicMessage(template?: {body?: unknown; statusCode?: number}): TopicMessage {
+function newTopicMessage(template?: {
+  body?: unknown;
+  statusCode?: number;
+}): TopicMessage {
   const topicMessage: TopicMessage = {
     topic: 'test-topic',
     headers: new Map(),

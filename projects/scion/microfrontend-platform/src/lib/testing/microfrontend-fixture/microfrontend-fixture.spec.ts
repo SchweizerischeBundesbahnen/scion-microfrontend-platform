@@ -20,13 +20,13 @@ describe('MicrofrontendFixture', () => {
 
   it('should error if the script does not end with ".script.ts"', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
-    expect(() => fixture.insertIframe().loadScript('lib/testing/microfrontend-fixture/some-script.ts', 'noop')).toThrowError(/MicrofrontendFixtureError/);
+    expect(() => fixture.insertIframe().loadScript('lib/testing/microfrontend-fixture/some-script.ts', 'noop')).toThrow(/MicrofrontendFixtureError/);
   });
 
   it('should insert the iframe to the DOM', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
     fixture.insertIframe().setUrl('about:blank');
-    expect(Array.from(document.body.children).includes(fixture.iframe)).toBeTrue();
+    expect(Array.from(document.body.children).includes(fixture.iframe)).toBe(true);
   });
 
   it('should load the passed script into the iframe', async () => {
@@ -49,12 +49,12 @@ describe('MicrofrontendFixture', () => {
     const whenScriptLoaded = fixture.insertIframe().loadScript('lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_3');
 
     // Expect the script promise to reject.
-    await expectAsync(whenScriptLoaded).toBeRejectedWithError('ERROR FROM SCRIPT');
+    await expect(whenScriptLoaded).rejects.toThrow('ERROR FROM SCRIPT');
 
     // Expect the data Observable to error.
     const captor = new ObserveCaptor();
     fixture.message$.subscribe(captor);
-    expect(captor.hasErrored()).toBeTrue();
+    expect(captor.hasErrored()).toBe(true);
     expect(captor.getError()).toEqual(Error('ERROR FROM SCRIPT'));
   });
 
@@ -63,12 +63,12 @@ describe('MicrofrontendFixture', () => {
     const whenScriptLoaded = fixture.insertIframe().loadScript('lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_4');
 
     // Expect the script promise to reject.
-    await expectAsync(whenScriptLoaded).toBeRejectedWithError('SCRIPT EXECUTION ERROR');
+    await expect(whenScriptLoaded).rejects.toThrow('SCRIPT EXECUTION ERROR');
 
     // Expect the data Observable to error.
     const captor = new ObserveCaptor();
     fixture.message$.subscribe(captor);
-    expect(captor.hasErrored()).toBeTrue();
+    expect(captor.hasErrored()).toBe(true);
     expect(captor.getError()).toEqual(Error('SCRIPT EXECUTION ERROR'));
   });
 
@@ -78,7 +78,7 @@ describe('MicrofrontendFixture', () => {
 
     const captor = new ObserveCaptor();
     fixture.message$.subscribe(captor);
-    expect(captor.hasCompleted()).toBeTrue();
+    expect(captor.hasCompleted()).toBe(true);
   });
 
   it('should wait until finished loading the script', async () => {
@@ -128,7 +128,7 @@ describe('MicrofrontendFixture', () => {
     expect(document.querySelector('iframe.testee')).toBeDefined();
 
     fixture.removeIframe();
-    expect(() => fixture.iframe).toThrowError(/MicrofrontendFixtureError/);
+    expect(() => fixture.iframe).toThrow(/MicrofrontendFixtureError/);
     expect(document.querySelector('iframe.testee')).toBeNull();
     expect(fixture.message$).toBe(NEVER);
   });
@@ -139,10 +139,10 @@ describe('MicrofrontendFixture', () => {
     const captor = new ObserveCaptor();
     fixture.message$.subscribe(captor);
 
-    expect(captor.hasCompleted()).toBeFalse();
+    expect(captor.hasCompleted()).toBe(false);
 
     fixture.removeIframe();
-    expect(captor.hasCompleted()).toBeTrue();
+    expect(captor.hasCompleted()).toBe(true);
     expect(fixture.message$).toBe(NEVER);
   });
 

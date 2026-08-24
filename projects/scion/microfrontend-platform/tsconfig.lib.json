@@ -10,12 +10,12 @@
     "inlineSources": true,
     "types": []
   },
-    "include": [
+  "include": [
     "src/**/*.ts"
   ],
   "exclude": [
     "**/*.spec.ts",
     "**/*.script.ts",
-    "src/test.ts"
+    "src/test-move-to-vitest.ts"
   ]
 }

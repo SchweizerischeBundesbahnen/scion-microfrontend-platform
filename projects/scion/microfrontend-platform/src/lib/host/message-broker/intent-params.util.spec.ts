@@ -78,7 +78,7 @@ describe('IntentParams', () => {
       headers: new Map<string, unknown>().set(MessageHeaders.AppSymbolicName, 'app'),
     };
 
-    expect(() => IntentParams.validateParams(intentMessage)).toThrowError(/IntentParamValidationError/);
+    expect(() => IntentParams.validateParams(intentMessage)).toThrow(/IntentParamValidationError/);
   });
 
   it('should error if the intent is missing required params', () => {
@@ -91,7 +91,7 @@ describe('IntentParams', () => {
       headers: new Map<string, unknown>().set(MessageHeaders.AppSymbolicName, 'app'),
     };
 
-    expect(() => IntentParams.validateParams(intentMessage)).toThrowError(/IntentParamValidationError/);
+    expect(() => IntentParams.validateParams(intentMessage)).toThrow(/IntentParamValidationError/);
   });
 
   it('should not error if the intent is missing optional params', () => {
@@ -120,7 +120,7 @@ describe('IntentParams', () => {
 
     IntentParams.validateParams(intentMessage);
     expect(intentMessage.intent.params).toEqual(new Map<string, unknown>().set('param', 'value'));
-    expect(getLoggerSpy('warn')).toHaveBeenCalledWith(jasmine.stringMatching(/\[DEPRECATION]\[4EAC5956] Application 'app' passes a deprecated parameter in the intent: 'param'/), jasmine.anything(), jasmine.anything());
+    expect(getLoggerSpy('warn')).toHaveBeenCalledWith(expect.stringMatching(/\[DEPRECATION]\[4EAC5956] Application 'app' passes a deprecated parameter in the intent: 'param'/), expect.anything(), expect.anything());
   });
 
   it('should map deprecated params and log a warning', () => {
@@ -138,7 +138,7 @@ describe('IntentParams', () => {
 
     IntentParams.validateParams(intentMessage);
     expect(intentMessage.intent.params).toEqual(new Map<string, unknown>().set('param2', 'value'));
-    expect(getLoggerSpy('warn')).toHaveBeenCalledWith(jasmine.stringMatching(/\[DEPRECATION]\[4EAC5956] Application 'app' passes a deprecated parameter in the intent: 'param1'\. Pass parameter 'param2' instead\./), jasmine.anything(), jasmine.anything());
+    expect(getLoggerSpy('warn')).toHaveBeenCalledWith(expect.stringMatching(/\[DEPRECATION]\[4EAC5956] Application 'app' passes a deprecated parameter in the intent: 'param1'\. Pass parameter 'param2' instead\./), expect.anything(), expect.anything());
   });
 
   it('should not log a warning if not passing deprecated params', () => {

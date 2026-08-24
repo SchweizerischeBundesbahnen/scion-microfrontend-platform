@@ -15,32 +15,32 @@ describe('Urls', () => {
   describe('Urls.isAbsoluteUrl', () => {
 
     it('should evaluate to `true` if given an absolute URL (http)', () => {
-      expect(Urls.isAbsoluteUrl('http://localhost:4200')).toBeTrue();
-      expect(Urls.isAbsoluteUrl('http://localhost:4200/#/')).toBeTrue();
-      expect(Urls.isAbsoluteUrl('http://localhost:4200/a/b/c')).toBeTrue();
-      expect(Urls.isAbsoluteUrl('http://localhost:4200/#/a/b/c')).toBeTrue();
+      expect(Urls.isAbsoluteUrl('http://localhost:4200')).toBe(true);
+      expect(Urls.isAbsoluteUrl('http://localhost:4200/#/')).toBe(true);
+      expect(Urls.isAbsoluteUrl('http://localhost:4200/a/b/c')).toBe(true);
+      expect(Urls.isAbsoluteUrl('http://localhost:4200/#/a/b/c')).toBe(true);
     });
 
     it('should evaluate to `true` if given an absolute URL (https)', () => {
-      expect(Urls.isAbsoluteUrl('https://localhost:4200')).toBeTrue();
-      expect(Urls.isAbsoluteUrl('https://localhost:4200/#/')).toBeTrue();
-      expect(Urls.isAbsoluteUrl('https://localhost:4200/a/b/c')).toBeTrue();
-      expect(Urls.isAbsoluteUrl('https://localhost:4200/#/a/b/c')).toBeTrue();
+      expect(Urls.isAbsoluteUrl('https://localhost:4200')).toBe(true);
+      expect(Urls.isAbsoluteUrl('https://localhost:4200/#/')).toBe(true);
+      expect(Urls.isAbsoluteUrl('https://localhost:4200/a/b/c')).toBe(true);
+      expect(Urls.isAbsoluteUrl('https://localhost:4200/#/a/b/c')).toBe(true);
     });
 
     it('should evaluate to `false` if given a relative URL', () => {
-      expect(Urls.isAbsoluteUrl('../a/b/c')).toBeFalse();
-      expect(Urls.isAbsoluteUrl('./a/b/c')).toBeFalse();
-      expect(Urls.isAbsoluteUrl('/a/b/c')).toBeFalse();
-      expect(Urls.isAbsoluteUrl('a/b/c')).toBeFalse();
+      expect(Urls.isAbsoluteUrl('../a/b/c')).toBe(false);
+      expect(Urls.isAbsoluteUrl('./a/b/c')).toBe(false);
+      expect(Urls.isAbsoluteUrl('/a/b/c')).toBe(false);
+      expect(Urls.isAbsoluteUrl('a/b/c')).toBe(false);
     });
 
     it('should evaluate to `true` if given the \'about:blank\' URL', () => {
-      expect(Urls.isAbsoluteUrl('about:blank')).toBeTrue();
+      expect(Urls.isAbsoluteUrl('about:blank')).toBe(true);
     });
 
     it('should evaluate to `true` if given a blob URL', () => {
-      expect(Urls.isAbsoluteUrl('blob:https://localhost:4200/bbcc7119-13e2-4f99-95fc-c1872f1e322c')).toBeTrue();
+      expect(Urls.isAbsoluteUrl('blob:https://localhost:4200/bbcc7119-13e2-4f99-95fc-c1872f1e322c')).toBe(true);
     });
   });
 

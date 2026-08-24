@@ -9,7 +9,7 @@
  */
 
 import {Keystroke} from './keystroke';
-import {Logger} from '../../logger';
+import {Logger, NULL_LOGGER} from '../../logger';
 import {Beans} from '@scion/toolkit/bean-manager';
 
 describe('Keystroke', () => {
@@ -80,34 +80,34 @@ describe('Keystroke', () => {
     });
 
     it('should throw if parsing an unsupported modifier', () => {
-      expect(() => Keystroke.fromString('keydown.abc.z')).toThrowError(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString('keydown.abc.z')).toThrow(/KeystrokeParseError/);
     });
 
     it('should throw if parsing a `null` keystroke', () => {
-      expect(() => Keystroke.fromString(null!)).toThrowError(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString(null!)).toThrow(/KeystrokeParseError/);
     });
 
     it('should throw if parsing an `undefined` keystroke', () => {
-      expect(() => Keystroke.fromString(undefined!)).toThrowError(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString(undefined!)).toThrow(/KeystrokeParseError/);
     });
 
     it('should throw if parsing an empty keystroke', () => {
-      expect(() => Keystroke.fromString('')).toThrowError(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString('')).toThrow(/KeystrokeParseError/);
     });
 
     it('should throw if not specifying the keyboard key', () => {
-      expect(() => Keystroke.fromString('keydown')).toThrowError(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString('keydown')).toThrow(/KeystrokeParseError/);
     });
 
     it('should throw if using a modifier key as the keyboard key', () => {
-      expect(() => Keystroke.fromString('keydown.control')).toThrowError(/KeystrokeParseError/);
-      expect(() => Keystroke.fromString('keydown.alt')).toThrowError(/KeystrokeParseError/);
-      expect(() => Keystroke.fromString('keydown.shift')).toThrowError(/KeystrokeParseError/);
-      expect(() => Keystroke.fromString('keydown.meta')).toThrowError(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString('keydown.control')).toThrow(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString('keydown.alt')).toThrow(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString('keydown.shift')).toThrow(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString('keydown.meta')).toThrow(/KeystrokeParseError/);
     });
 
     it('should throw if not specifying the event type', () => {
-      expect(() => Keystroke.fromString('z')).toThrowError(/KeystrokeParseError/);
+      expect(() => Keystroke.fromString('z')).toThrow(/KeystrokeParseError/);
     });
 
     it('should parse \'keydown.s{preventDefault=true}\' keystroke', () => {
@@ -119,19 +119,19 @@ describe('Keystroke', () => {
     });
 
     it('should not log a warning if flags is empty', () => {
-      const loggerSpy = jasmine.createSpyObj<Logger>(Logger.name, ['error', 'warn', 'info']);
-      Beans.register(Logger, {useValue: loggerSpy});
+      const loggerSpy = vi.spyOn(NULL_LOGGER, 'warn');
+      Beans.register(Logger, {useValue: NULL_LOGGER});
 
       expect(Keystroke.fromString('keydown.s{}')).toEqual(new Keystroke('keydown', 's', undefined, {}));
-      expect(loggerSpy.warn.calls.any()).toBeFalse();
+      expect(loggerSpy).not.toHaveBeenCalled();
     });
 
     it('should log a warning if a flag is not supported', () => {
-      const loggerSpy = jasmine.createSpyObj<Logger>(Logger.name, ['error', 'warn', 'info']);
-      Beans.register(Logger, {useValue: loggerSpy});
+      const loggerSpy = vi.spyOn(NULL_LOGGER, 'warn');
+      Beans.register(Logger, {useValue: NULL_LOGGER});
 
       expect(Keystroke.fromString('keydown.s{unsupported=false}')).toEqual(new Keystroke('keydown', 's', undefined, {}));
-      expect(loggerSpy.warn.calls.mostRecent().args[0]).toMatch(/KeystrokeParseError/);
+      expect(loggerSpy).lastCalledWith(expect.stringMatching(/KeystrokeParseError/));
     });
   });
 

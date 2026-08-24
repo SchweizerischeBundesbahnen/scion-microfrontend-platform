@@ -9,7 +9,7 @@
  */
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {MicrofrontendPlatformHost} from '../microfrontend-platform-host';
-import {expectEmissions, installLoggerSpies, readConsoleLog} from '../../testing/spec.util.spec';
+import {arrayWithExactContents, expectEmissions, installLoggerSpies, readConsoleLog} from '../../testing/spec.util.spec';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestRegistry} from './manifest-registry';
 import {Capability, Intention} from '../../platform.model';
@@ -18,8 +18,6 @@ import {ObserveCaptor} from '@scion/toolkit/testing';
 import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 import {firstValueFrom} from 'rxjs';
 import {CapabilityInterceptor} from './capability-interceptors';
-import CallInfo = jasmine.CallInfo;
-import Func = jasmine.Func;
 
 const capabilityIdExtractFn = (capability: Capability): string => capability.metadata!.id;
 
@@ -52,7 +50,7 @@ describe('ManifestRegistry', () => {
       const captor = new ObserveCaptor();
       Beans.get(ManifestService).lookupCapabilities$({type: 'testee'}).subscribe(captor);
       await expectEmissions(captor).toEqual([
-        [jasmine.objectContaining({type: 'testee', private: true} satisfies Partial<Capability>)],
+        [expect.objectContaining({type: 'testee', private: true} satisfies Partial<Capability>)],
       ]);
     });
 
@@ -75,7 +73,7 @@ describe('ManifestRegistry', () => {
       const captor = new ObserveCaptor();
       Beans.get(ManifestService).lookupCapabilities$({type: 'testee'}).subscribe(captor);
       await expectEmissions(captor).toEqual([
-        [jasmine.objectContaining({type: 'testee', inactive: false} satisfies Partial<Capability>)],
+        [expect.objectContaining({type: 'testee', inactive: false})],
       ]);
     });
   });
@@ -88,7 +86,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(() => Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toThrowError(/IllegalQualifierError/);
+      expect(() => Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toThrow(/IllegalQualifierError/);
     });
 
     it(`should have an implicit intention for a capability having the qualifier ({entity: 'person', mode: 'new'})`, async () => {
@@ -104,15 +102,15 @@ describe('ManifestRegistry', () => {
       await Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1');
 
       // Expect app-1 to have an implicit intention because providing the capability
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBe(true);
 
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'edit'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'edit'}}, 'app-1')).toBe(false);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBe(false);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBe(false);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBe(false);
 
       // Expect app-2 to not have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBe(false);
     });
 
     it(`should match an intention having an exact qualifier ({entity: 'person', mode: 'new'})`, async () => {
@@ -128,15 +126,15 @@ describe('ManifestRegistry', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1');
 
       // Expect app-1 to have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBe(true);
 
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'edit'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'edit'}}, 'app-1')).toBe(false);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBe(false);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBe(false);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBe(false);
 
       // Expect app-2 to not have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBe(false);
     });
 
     it(`should match an intention having an asterisk wildcard qualifier ({entity: 'person', mode: '*'})`, async () => {
@@ -152,14 +150,14 @@ describe('ManifestRegistry', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'app-1');
 
       // Expect app-1 to have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBe(true);
 
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBe(false);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBe(false);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBe(false);
 
       // Expect app-2 to not have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBe(false);
     });
 
     it(`should match an intention having an any-more wildcard (**) qualifier ({entity: 'person', '*': '*'})`, async () => {
@@ -175,15 +173,15 @@ describe('ManifestRegistry', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'app-1');
 
       // Expect app-1 to have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-1')).toBe(true);
 
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBeTrue();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBeTrue();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBeTrue();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'company'}}, 'app-1')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person'}}, 'app-1')).toBe(true);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', other: 'property'}}, 'app-1')).toBe(true);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new', other: 'property'}}, 'app-1')).toBe(true);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'company'}}, 'app-1')).toBe(false);
 
       // Expect app-2 to not have an intention
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBeFalse();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'view', qualifier: {entity: 'person', mode: 'new'}}, 'app-2')).toBe(false);
     });
 
     it('should not have implicit intention for own inactive capabilities', async () => {
@@ -213,9 +211,9 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'false'}}, 'host-app')).toBeTrue();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'true'}}, 'host-app')).toBeFalse();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'default'}}, 'host-app')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'false'}}, 'host-app')).toBe(true);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'true'}}, 'host-app')).toBe(false);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'default'}}, 'host-app')).toBe(true);
     });
 
     it('should have implicit intention for own inactive capabilities if "Capability Active Check" is disabled', async () => {
@@ -246,9 +244,9 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'false'}}, 'host-app')).toBeTrue();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'true'}}, 'host-app')).toBeTrue();
-      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'default'}}, 'host-app')).toBeTrue();
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'false'}}, 'host-app')).toBe(true);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'true'}}, 'host-app')).toBe(true);
+      expect(Beans.get(ManifestRegistry).hasIntention({type: 'testee', qualifier: {inactive: 'default'}}, 'host-app')).toBe(true);
     });
   });
 
@@ -260,7 +258,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(() => Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toThrowError(/IllegalQualifierError/);
+      expect(() => Beans.get(ManifestRegistry).resolveCapabilitiesByIntent({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toThrow(/IllegalQualifierError/);
     });
 
     describe('implicit intention', () => {
@@ -387,7 +385,7 @@ describe('ManifestRegistry', () => {
       applications: [],
     });
 
-    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'host-app')).toBeRejectedWithError('[IllegalQualifierError] Qualifier must be exact, i.e., not contain wildcards. [qualifier=\'{"entity":"person","*":"*"}\']');
+    await expect(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', '*': '*'}}, 'host-app')).rejects.toThrow('[IllegalQualifierError] Qualifier must be exact, i.e., not contain wildcards. [qualifier=\'{"entity":"person","*":"*"}\']');
   });
 
   it('should not allow registering a capability using the asterisk wildcard (*) in its qualifier', async () => {
@@ -396,7 +394,7 @@ describe('ManifestRegistry', () => {
       applications: [],
     });
 
-    await expectAsync(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).toBeRejectedWithError('[IllegalQualifierError] Qualifier must be exact, i.e., not contain wildcards. [qualifier=\'{"entity":"person","mode":"*"}\']');
+    await expect(Beans.get(ManifestRegistry).registerCapability({type: 'view', qualifier: {entity: 'person', mode: '*'}}, 'host-app')).rejects.toThrow('[IllegalQualifierError] Qualifier must be exact, i.e., not contain wildcards. [qualifier=\'{"entity":"person","mode":"*"}\']');
   });
 
   describe('Capability Params', () => {
@@ -424,9 +422,9 @@ describe('ManifestRegistry', () => {
       // Assert registration
       const captor = new ObserveCaptor();
       Beans.get(ManifestService).lookupCapabilities$({type: 'capability'}).subscribe(captor);
-      await expectEmissions(captor).toEqual([[jasmine.objectContaining<Capability>({
+      await expectEmissions(captor).toEqual([[expect.objectContaining<Capability>({
         type: 'capability',
-        params: jasmine.arrayWithExactContents([
+        params: arrayWithExactContents([
           {name: 'param1', required: true},
           {name: 'param2', required: false},
         ]),
@@ -451,9 +449,9 @@ describe('ManifestRegistry', () => {
       // Assert registration
       const captor = new ObserveCaptor();
       Beans.get(ManifestService).lookupCapabilities$({id: capabilityId}).subscribe(captor);
-      await expectEmissions(captor).toEqual([[jasmine.objectContaining<Capability>({
+      await expectEmissions(captor).toEqual([[expect.objectContaining<Capability>({
         type: 'capability',
-        params: jasmine.arrayWithExactContents([
+        params: arrayWithExactContents([
           {name: 'param1', required: true},
           {name: 'param2', required: false},
         ]),
@@ -479,7 +477,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<Func>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: unknown[]) => (call[1] as Error).message})).toEqual(expect.arrayContaining([
         `[CapabilityParamError] Parameter 'param' must be explicitly defined as required or optional.`,
       ]));
     });
@@ -488,10 +486,10 @@ describe('ManifestRegistry', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       // Register capability via ManifestServie
-      await expectAsync(Beans.get(ManifestService).registerCapability({
+      await expect(Beans.get(ManifestService).registerCapability({
         type: 'capability',
         params: [{name: 'param', required: undefined!}],
-      })).toBeRejectedWithError(`[CapabilityParamError] Parameter 'param' must be explicitly defined as required or optional.`);
+      })).rejects.toThrow(`[CapabilityParamError] Parameter 'param' must be explicitly defined as required or optional.`);
       expect(readConsoleLog('error', {filter: /CapabilityParamError/})).toEqual([]);
     });
 
@@ -515,7 +513,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<Func>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: unknown[]) => (call[1] as Error).message})).toEqual(expect.arrayContaining([
         `[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`,
       ]));
     });
@@ -541,7 +539,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<Func>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: unknown[]) => (call[1] as Error).message})).toEqual(expect.arrayContaining([
         `[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`,
       ]));
     });
@@ -550,10 +548,10 @@ describe('ManifestRegistry', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       // Register capability via ManifestServie
-      await expectAsync(Beans.get(ManifestService).registerCapability({
+      await expect(Beans.get(ManifestService).registerCapability({
         type: 'capability',
         params: [{name: 'param1', required: true, deprecated: true}],
-      })).toBeRejectedWithError(`[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`);
+      })).rejects.toThrow(`[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`);
       expect(readConsoleLog('error', {filter: /CapabilityParamError/})).toEqual([]);
     });
 
@@ -561,13 +559,13 @@ describe('ManifestRegistry', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       // Register capability via ManifestServie
-      await expectAsync(Beans.get(ManifestService).registerCapability({
+      await expect(Beans.get(ManifestService).registerCapability({
         type: 'capability',
         params: [
           {name: 'param1', required: true, deprecated: {useInstead: 'param2'}},
           {name: 'param2', required: true},
         ],
-      })).toBeRejectedWithError(`[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`);
+      })).rejects.toThrow(`[CapabilityParamError] Deprecated parameters must be optional, not required. Alternatively, deprecated parameters can define a mapping to a required parameter via the 'useInstead' property. [param='param1']`);
       expect(readConsoleLog('error', {filter: /CapabilityParamError/})).toEqual([]);
     });
 
@@ -593,7 +591,7 @@ describe('ManifestRegistry', () => {
         applications: [],
       });
 
-      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: CallInfo<Func>) => (call.args[1] as Error).message})).toEqual(jasmine.arrayContaining([
+      expect(readConsoleLog('error', {filter: /CapabilityParamError/, projectFn: (call: unknown[]) => (call[1] as Error).message})).toEqual(expect.arrayContaining([
         `[CapabilityParamError] The deprecated parameter 'param1' defines an invalid substitute 'paramX'. Valid substitutes are: [param2,param3]`,
       ]));
     });
@@ -602,14 +600,14 @@ describe('ManifestRegistry', () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
       // Register capability via ManifestServie
-      await expectAsync(Beans.get(ManifestService).registerCapability({
+      await expect(Beans.get(ManifestService).registerCapability({
         type: 'capability',
         params: [
           {name: 'param1', required: false, deprecated: {useInstead: 'paramX'}},
           {name: 'param2', required: true},
           {name: 'param3', required: false},
         ],
-      })).toBeRejectedWithError(`[CapabilityParamError] The deprecated parameter 'param1' defines an invalid substitute 'paramX'. Valid substitutes are: [param2,param3]`);
+      })).rejects.toThrow(`[CapabilityParamError] The deprecated parameter 'param1' defines an invalid substitute 'paramX'. Valid substitutes are: [param2,param3]`);
       expect(readConsoleLog('error', {filter: /CapabilityParamError/})).toEqual([]);
     });
   });
@@ -684,7 +682,7 @@ describe('ManifestRegistry', () => {
     const captor = new ObserveCaptor();
     Beans.get(ManifestService).lookupCapabilities$({type: 'testee'}).subscribe(captor);
     await expectEmissions(captor).toEqual([
-      [jasmine.objectContaining({type: 'testee', properties: {interceptors: ['interceptor-1', 'interceptor-2']}} satisfies Partial<Capability>)],
+      [expect.objectContaining({type: 'testee', properties: {interceptors: ['interceptor-1', 'interceptor-2']}} satisfies Partial<Capability>)],
     ]);
   });
 
@@ -717,7 +715,7 @@ describe('ManifestRegistry', () => {
     // Expect capability 2 not to be registered.
     const actual = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({type: 'testee'}));
     expect(actual).toEqual([
-      jasmine.objectContaining({type: 'testee', qualifier: {reject: false}} satisfies Partial<Capability>),
+      expect.objectContaining({type: 'testee', qualifier: {reject: false}} satisfies Partial<Capability>),
     ]);
   });
 
@@ -776,23 +774,23 @@ describe('ManifestRegistry', () => {
 
     // Expect capabilities of the host app.
     const capabilitiesHostApp = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: 'host-app'}));
-    expect(capabilitiesHostApp.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
-      jasmine.objectContaining({type: 'testee-1', properties: {intercepted: true}} satisfies Capability),
-      jasmine.objectContaining({type: 'testee-1a', properties: {intercepted: true}} satisfies Capability),
+    expect(capabilitiesHostApp.filter(capability => capability.type.startsWith('testee'))).toEqual(arrayWithExactContents([
+      expect.objectContaining({type: 'testee-1', properties: {intercepted: true}} satisfies Capability),
+      expect.objectContaining({type: 'testee-1a', properties: {intercepted: true}} satisfies Capability),
     ]));
 
     // Expect capabilities of 'app-1'.
     const capabilitiesApp1 = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: 'app-1'}));
-    expect(capabilitiesApp1.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
-      jasmine.objectContaining({type: 'testee-2', properties: {intercepted: true}} satisfies Capability),
-      jasmine.objectContaining({type: 'testee-2a', properties: {intercepted: true}} satisfies Capability),
+    expect(capabilitiesApp1.filter(capability => capability.type.startsWith('testee'))).toEqual(arrayWithExactContents([
+      expect.objectContaining({type: 'testee-2', properties: {intercepted: true}} satisfies Capability),
+      expect.objectContaining({type: 'testee-2a', properties: {intercepted: true}} satisfies Capability),
     ]));
 
     // Expect capabilities of 'app-2'.
     const capabilitiesApp2 = await firstValueFrom(Beans.get(ManifestService).lookupCapabilities$({appSymbolicName: 'app-2'}));
-    expect(capabilitiesApp2.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
-      jasmine.objectContaining({type: 'testee-3', properties: {intercepted: true}} satisfies Capability),
-      jasmine.objectContaining({type: 'testee-3a', properties: {intercepted: true}} satisfies Capability),
+    expect(capabilitiesApp2.filter(capability => capability.type.startsWith('testee'))).toEqual(arrayWithExactContents([
+      expect.objectContaining({type: 'testee-3', properties: {intercepted: true}} satisfies Capability),
+      expect.objectContaining({type: 'testee-3a', properties: {intercepted: true}} satisfies Capability),
     ]));
   });
 
@@ -846,20 +844,20 @@ describe('ManifestRegistry', () => {
 
     // Expect intentions of the host app.
     const intentionsHostApp = await firstValueFrom(Beans.get(ManifestService).lookupIntentions$({appSymbolicName: 'host-app'}));
-    expect(intentionsHostApp.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
-      jasmine.objectContaining({type: 'testee-1a'} satisfies Intention),
+    expect(intentionsHostApp.filter(capability => capability.type.startsWith('testee'))).toEqual(arrayWithExactContents([
+      expect.objectContaining({type: 'testee-1a'} satisfies Intention),
     ]));
 
     // Expect intentions of 'app-1'.
     const intentionsApp1 = await firstValueFrom(Beans.get(ManifestService).lookupIntentions$({appSymbolicName: 'app-1'}));
-    expect(intentionsApp1.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
-      jasmine.objectContaining({type: 'testee-2a'} satisfies Intention),
+    expect(intentionsApp1.filter(capability => capability.type.startsWith('testee'))).toEqual(arrayWithExactContents([
+      expect.objectContaining({type: 'testee-2a'} satisfies Intention),
     ]));
 
     // Expect intentions of 'app-2'.
     const intentionsApp2 = await firstValueFrom(Beans.get(ManifestService).lookupIntentions$({appSymbolicName: 'app-2'}));
-    expect(intentionsApp2.filter(capability => capability.type.startsWith('testee'))).toEqual(jasmine.arrayWithExactContents([
-      jasmine.objectContaining({type: 'testee-3a'} satisfies Intention),
+    expect(intentionsApp2.filter(capability => capability.type.startsWith('testee'))).toEqual(arrayWithExactContents([
+      expect.objectContaining({type: 'testee-3a'} satisfies Intention),
     ]));
   });
 

@@ -9,7 +9,7 @@
  */
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {MicrofrontendPlatformHost} from '../../host/microfrontend-platform-host';
-import {expectEmissions} from '../../testing/spec.util.spec';
+import {arrayWithExactContents, expectEmissions} from '../../testing/spec.util.spec';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {ManifestService} from '../../client/manifest-registry/manifest-service';
 import {ObserveCaptor} from '@scion/toolkit/testing';
@@ -38,7 +38,8 @@ describe('ManifestService', () => {
       });
 
       // Assert applications.
-      expect(Beans.get(ManifestService).applications.map(app => app.symbolicName)).toEqual(jasmine.arrayWithExactContents(['host-app', 'app-1', 'app-2']));
+      expect(Beans.get(ManifestService).applications.map(app => app.symbolicName)).toHaveLength(3);
+      expect(Beans.get(ManifestService).applications.map(app => app.symbolicName)).toEqual(expect.arrayContaining(['host-app', 'app-1', 'app-2']));
       // Assert same array reference.
       expect(Beans.get(ManifestService).applications).toBe(Beans.get(ManifestService).applications);
     });
@@ -72,7 +73,7 @@ describe('ManifestService', () => {
         applications: [],
       });
 
-      expect(() => Beans.get(ManifestService).getApplication('app-1').symbolicName).toThrowError(/NullApplicationError/);
+      expect(() => Beans.get(ManifestService).getApplication('app-1').symbolicName).toThrow(/NullApplicationError/);
     });
   });
 
@@ -568,11 +569,11 @@ describe('ManifestService', () => {
       const captor = new ObserveCaptor();
       Beans.get(ManifestService).lookupCapabilities$({qualifier: {inactive: '*'}}).subscribe(captor);
       await expectEmissions(captor).toEqual([
-        jasmine.arrayWithExactContents([
-          jasmine.objectContaining({type: 'testee-1'} satisfies Partial<Capability>),
-          jasmine.objectContaining({type: 'testee-3'} satisfies Partial<Capability>),
-          jasmine.objectContaining({type: 'testee-4'} satisfies Partial<Capability>),
-          jasmine.objectContaining({type: 'testee-6'} satisfies Partial<Capability>),
+        arrayWithExactContents([
+          expect.objectContaining({type: 'testee-1'}),
+          expect.objectContaining({type: 'testee-3'}),
+          expect.objectContaining({type: 'testee-4'}),
+          expect.objectContaining({type: 'testee-6'}),
         ]),
       ]);
     });
@@ -649,13 +650,13 @@ describe('ManifestService', () => {
       const captor = new ObserveCaptor();
       Beans.get(ManifestService).lookupCapabilities$({qualifier: {inactive: '*'}}).subscribe(captor);
       await expectEmissions(captor).toEqual([
-        jasmine.arrayWithExactContents([
-          jasmine.objectContaining({type: 'testee-1'} satisfies Partial<Capability>),
-          jasmine.objectContaining({type: 'testee-2'} satisfies Partial<Capability>),
-          jasmine.objectContaining({type: 'testee-3'} satisfies Partial<Capability>),
-          jasmine.objectContaining({type: 'testee-4'} satisfies Partial<Capability>),
-          jasmine.objectContaining({type: 'testee-5'} satisfies Partial<Capability>),
-          jasmine.objectContaining({type: 'testee-6'} satisfies Partial<Capability>),
+        arrayWithExactContents([
+          expect.objectContaining({type: 'testee-1'}),
+          expect.objectContaining({type: 'testee-2'}),
+          expect.objectContaining({type: 'testee-3'}),
+          expect.objectContaining({type: 'testee-4'}),
+          expect.objectContaining({type: 'testee-5'}),
+          expect.objectContaining({type: 'testee-6'}),
         ]),
       ]);
     });
@@ -704,8 +705,8 @@ describe('ManifestService', () => {
       const captor = new ObserveCaptor();
       Beans.get(ManifestService).lookupCapabilities$({}).subscribe(captor);
       await expectEmissions(captor).toEqual([[
-        jasmine.objectContaining({type: 'testee-host', qualifier: {reject: false}} satisfies Partial<Capability>),
-        jasmine.objectContaining({type: 'testee-app', qualifier: {reject: false}} satisfies Partial<Capability>),
+        expect.objectContaining({type: 'testee-host', qualifier: {reject: false}}),
+        expect.objectContaining({type: 'testee-app', qualifier: {reject: false}}),
       ]]);
     });
   });
@@ -1312,12 +1313,12 @@ describe('ManifestService', () => {
       const publicCapabilityId = (await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: false}, 'app-1'))!;
 
       // Expect app-1 to be qualified (app-1 provides capability)
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-1', {capabilityId: privateCapabilityId}))).toBeTrue();
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-1', {capabilityId: publicCapabilityId}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-1', {capabilityId: privateCapabilityId}))).toBe(true);
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-1', {capabilityId: publicCapabilityId}))).toBe(true);
 
       // Expect app-2 NOT to be qualified (app-2 does NOT provide capability)
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBe(false);
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBe(false);
     });
 
     it('should be qualified if application has intention', async () => {
@@ -1338,10 +1339,10 @@ describe('ManifestService', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'testee'}, 'app-2');
 
       // Expect app-2 NOT to be qualified (has intention BUT private capability)
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBe(false);
 
       // Expect app-2 to be qualified (has intention and public capability)
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBe(true);
     });
 
     it('should be qualified if application has scope check disabled', async () => {
@@ -1360,7 +1361,7 @@ describe('ManifestService', () => {
       Beans.get(ManifestRegistry).registerIntention({type: 'testee'}, 'app-2');
 
       // Expect app-2 to be qualified (has intention and scope check disabled)
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBe(true);
     });
 
     it('should be qualified if application has intention check disabled', async () => {
@@ -1378,10 +1379,10 @@ describe('ManifestService', () => {
       const publicCapabilityId = (await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: false}, 'app-1'))!;
 
       // Expect app-2 NOT to be qualified (intention check disabled BUT private capability)
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBe(false);
 
       // Expect app-2 to be qualified (intention check disabled and public capability)
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: publicCapabilityId}))).toBe(true);
     });
 
     it('should be qualified if application has scope check and intention check disabled', async () => {
@@ -1397,7 +1398,7 @@ describe('ManifestService', () => {
       const privateCapabilityId = (await Beans.get(ManifestRegistry).registerCapability({type: 'testee', private: true}, 'app-1'))!;
 
       // Expect app-2 to be qualified (scope check and intention check disabled)
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId: privateCapabilityId}))).toBe(true);
     });
 
     it('should not be qualified for inactive capabilities', async () => {
@@ -1497,33 +1498,33 @@ describe('ManifestService', () => {
 
       // ## Test qualification of own capabilities.
       // Capability 'testee-1' is active [inactive=false, provider=host-app].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-1'}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-1'}))).toBe(true);
 
       // Capability 'testee-2' is inactive [inactive=true, provider=host-app].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-2'}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-2'}))).toBe(false);
 
       // Capability 'testee-3' is active [inactive=default, provider=host-app].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-3'}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-3'}))).toBe(true);
 
       // ## Test qualification of capabilities provided by app-1.
       // Capability 'testee-4' is active [inactive=false, provider=app-1].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-4'}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-4'}))).toBe(true);
 
       // Capability 'testee-5' is inactive [inactive=true, provider=app-1].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-5'}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-5'}))).toBe(false);
 
       // Capability 'testee-6' is active [inactive=default, provider=app-1].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-6'}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-6'}))).toBe(true);
 
       // ## Test qualification of capabilities provided by app-2 without having an intention.
       // Capability 'testee-7' is active [inactive=false, provider=app-2].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-7'}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-7'}))).toBe(false);
 
       // Capability 'testee-8' is inactive [inactive=true, provider=app-2].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-8'}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-8'}))).toBe(false);
 
       // Capability 'testee-9' is active [inactive=default, provider=app-2].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-9'}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-9'}))).toBe(false);
     });
 
     it('should be qualified for inactive capabilities if "Capability Active Check" is disabled', async () => {
@@ -1624,33 +1625,33 @@ describe('ManifestService', () => {
 
       // ## Test qualification of own capabilities.
       // Capability 'testee-1' is active [inactive=false, provider=host-app].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-1'}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-1'}))).toBe(true);
 
       // Capability 'testee-2' is inactive [inactive=true, provider=host-app].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-2'}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-2'}))).toBe(true);
 
       // Capability 'testee-3' is active [inactive=default, provider=host-app].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-3'}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-3'}))).toBe(true);
 
       // ## Test qualification of capabilities provided by app-1.
       // Capability 'testee-4' is active [inactive=false, provider=app-1].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-4'}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-4'}))).toBe(true);
 
       // Capability 'testee-5' is inactive [inactive=true, provider=app-1].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-5'}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-5'}))).toBe(true);
 
       // Capability 'testee-6' is active [inactive=default, provider=app-1].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-6'}))).toBeTrue();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-6'}))).toBe(true);
 
       // ## Test qualification of capabilities provided by app-2 without having an intention.
       // Capability 'testee-7' is active [inactive=false, provider=app-2].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-7'}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-7'}))).toBe(false);
 
       // Capability 'testee-8' is inactive [inactive=true, provider=app-2].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-8'}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-8'}))).toBe(false);
 
       // Capability 'testee-9' is active [inactive=default, provider=app-2].
-      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-9'}))).toBeFalse();
+      expect(await firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('host-app', {capabilityId: 'testee-9'}))).toBe(false);
     });
 
     it('should error if requesting the qualification for a non-existing capability', async () => {
@@ -1662,7 +1663,7 @@ describe('ManifestService', () => {
       });
 
       // Expect request to error because capability does not exist
-      await expectAsync(firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-1', {capabilityId: 'xyz'}))).toBeRejectedWithError(/NullManifestObjectError/);
+      await expect(firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-1', {capabilityId: 'xyz'}))).rejects.toThrow(/NullManifestObjectError/);
     });
 
     it('should error if requesting the qualification for a non-existing application', async () => {
@@ -1677,7 +1678,7 @@ describe('ManifestService', () => {
       const capabilityId = (await Beans.get(ManifestRegistry).registerCapability({type: 'testee'}, 'app-1'))!;
 
       // Expect request to error because application does not exist
-      await expectAsync(firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId}))).toBeRejectedWithError(/NullApplicationError/);
+      await expect(firstValueFrom(Beans.get(ManifestService).isApplicationQualified$('app-2', {capabilityId}))).rejects.toThrow(/NullApplicationError/);
     });
 
     it('should continuously emit the application\' qualification for the capability', async () => {
@@ -1711,7 +1712,7 @@ describe('ManifestService', () => {
 
       // Expect request to error because capability does not exist
       await captor.waitUntilCompletedOrErrored();
-      expect(captor.getError()).toMatch(/NullManifestObjectError/);
+      expect(captor.getError()).toMatchObject(/NullManifestObjectError/);
     });
   });
 });

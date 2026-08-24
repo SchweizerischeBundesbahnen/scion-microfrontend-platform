@@ -14,6 +14,7 @@ import {Beans} from '@scion/toolkit/bean-manager';
 import {ɵClient} from './ɵclient';
 import {Client} from './client';
 import {ɵApplication, ɵVERSION} from '../../ɵplatform.model';
+import {arrayWithExactContents} from '../../testing/spec.util.spec';
 
 describe('ClientRegistry', () => {
 
@@ -58,8 +59,8 @@ describe('ClientRegistry', () => {
     Beans.get(ClientRegistry).registerClient(client4);
     Beans.get(ClientRegistry).registerClient(client5);
 
-    expect(Beans.get(ClientRegistry).getByApplication('app-1')).toEqual(jasmine.arrayWithExactContents([client1, client2, client3]));
-    expect(Beans.get(ClientRegistry).getByApplication('app-2')).toEqual(jasmine.arrayWithExactContents([client4, client5]));
+    expect(Beans.get(ClientRegistry).getByApplication('app-1')).toEqual(arrayWithExactContents([client1, client2, client3]));
+    expect(Beans.get(ClientRegistry).getByApplication('app-2')).toEqual(arrayWithExactContents([client4, client5]));
   });
 
   it('should unregister a client', async () => {

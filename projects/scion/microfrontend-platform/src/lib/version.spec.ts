@@ -46,7 +46,7 @@ describe('MicrofrontendPlatform', () => {
     await microfrontendFixture.loadScript('lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: '1.0.0'});
 
     // Assert version mismatch warning
-    expect(readConsoleLog('warn', {filter: /\[VersionMismatch]/})).toEqual(jasmine.arrayContaining([
+    expect(readConsoleLog('warn', {filter: /\[VersionMismatch]/})).toEqual(expect.arrayContaining([
       `[VersionMismatch] Application 'client' uses a different major version of the @scion/microfrontend-platform than the host application, which may not be compatible. Please upgrade @scion/microfrontend-platform of application 'client' from version '1.0.0' to version '2.0.0'.`,
     ]));
   });
@@ -67,7 +67,7 @@ describe('MicrofrontendPlatform', () => {
     await microfrontendFixture.loadScript('lib/version.script.ts', 'connectToHost', {symbolicName: 'client', version: null /* do not pass a version when connecting to the host */});
 
     // Assert version mismatch warning
-    expect(readConsoleLog('warn', {filter: /\[VersionMismatch]/})).toEqual(jasmine.arrayContaining([
+    expect(readConsoleLog('warn', {filter: /\[VersionMismatch]/})).toEqual(expect.arrayContaining([
       `[VersionMismatch] Application 'client' uses a different major version of the @scion/microfrontend-platform than the host application, which may not be compatible. Please upgrade @scion/microfrontend-platform of application 'client' from version '0.0.0' to version '1.0.0'.`,
     ]));
   });

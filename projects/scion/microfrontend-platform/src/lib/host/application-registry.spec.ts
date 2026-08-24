@@ -162,21 +162,21 @@ describe('ApplicationRegistry', () => {
 
     it('should be unique', async () => {
       await registerApp({symbolicName: 'app-1'});
-      await expectAsync(registerApp({symbolicName: 'app-1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
+      await expect(registerApp({symbolicName: 'app-1'})).rejects.toThrow(/ApplicationRegistrationError/);
     });
 
     it('should be lowercase and contain alphanumeric and/or dash characters', async () => {
       await registerApp({symbolicName: 'app-1'});
-      await expectAsync(registerApp({symbolicName: 'APP-1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
-      await expectAsync(registerApp({symbolicName: 'app.1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
-      await expectAsync(registerApp({symbolicName: 'app#1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
-      await expectAsync(registerApp({symbolicName: 'app/1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
-      await expectAsync(registerApp({symbolicName: 'app\\1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
-      await expectAsync(registerApp({symbolicName: 'app&1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
-      await expectAsync(registerApp({symbolicName: 'app?1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
-      await expectAsync(registerApp({symbolicName: ' app-1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
-      await expectAsync(registerApp({symbolicName: 'app-1 '})).toBeRejectedWithError(/ApplicationRegistrationError/);
-      await expectAsync(registerApp({symbolicName: 'app 1'})).toBeRejectedWithError(/ApplicationRegistrationError/);
+      await expect(registerApp({symbolicName: 'APP-1'})).rejects.toThrow(/ApplicationRegistrationError/);
+      await expect(registerApp({symbolicName: 'app.1'})).rejects.toThrow(/ApplicationRegistrationError/);
+      await expect(registerApp({symbolicName: 'app#1'})).rejects.toThrow(/ApplicationRegistrationError/);
+      await expect(registerApp({symbolicName: 'app/1'})).rejects.toThrow(/ApplicationRegistrationError/);
+      await expect(registerApp({symbolicName: 'app\\1'})).rejects.toThrow(/ApplicationRegistrationError/);
+      await expect(registerApp({symbolicName: 'app&1'})).rejects.toThrow(/ApplicationRegistrationError/);
+      await expect(registerApp({symbolicName: 'app?1'})).rejects.toThrow(/ApplicationRegistrationError/);
+      await expect(registerApp({symbolicName: ' app-1'})).rejects.toThrow(/ApplicationRegistrationError/);
+      await expect(registerApp({symbolicName: 'app-1 '})).rejects.toThrow(/ApplicationRegistrationError/);
+      await expect(registerApp({symbolicName: 'app 1'})).rejects.toThrow(/ApplicationRegistrationError/);
     });
 
     function registerApp(app: {symbolicName: string}): Promise<void> {

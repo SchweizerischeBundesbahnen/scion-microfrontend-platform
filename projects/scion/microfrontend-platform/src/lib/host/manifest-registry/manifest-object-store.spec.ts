@@ -31,7 +31,7 @@ describe('ManifestObjectStore', () => {
 
       expect(store.findById('id')).toBe(manifestObject);
       expect(store.findById('xxx', {orElse: null})).toBeNull();
-      expect(() => store.findById('xxx')).toThrowError(/NullManifestObjectError/);
+      expect(() => store.findById('xxx')).toThrow(/NullManifestObjectError/);
     });
 
     it('should find manifest objects by type', () => {

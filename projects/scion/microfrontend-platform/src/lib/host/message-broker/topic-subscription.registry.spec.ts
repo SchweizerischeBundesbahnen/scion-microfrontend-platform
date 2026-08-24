@@ -9,7 +9,7 @@
  */
 import {TopicSubscription, TopicSubscriptionRegistry} from './topic-subscription.registry';
 import {ClientRegistry} from '../client-registry/client.registry';
-import {expectEmissions} from '../../testing/spec.util.spec';
+import {arrayWithExactContents, expectEmissions} from '../../testing/spec.util.spec';
 import {ObserveCaptor} from '@scion/toolkit/testing';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {Client} from '../client-registry/client';
@@ -18,7 +18,6 @@ import {ɵClientRegistry} from '../client-registry/ɵclient.registry';
 import {Logger, NULL_LOGGER} from '../../logger';
 import {ɵApplication} from '../../ɵplatform.model';
 import {map} from 'rxjs/operators';
-import Expected = jasmine.Expected;
 
 describe('TopicSubscriptionRegistry', () => {
 
@@ -224,7 +223,7 @@ describe('TopicSubscriptionRegistry', () => {
 
     // Resolve the subscribers which observe the topic 'myhome/livingroom/temperature'.
     const subscribers = testee.subscriptions({topic: 'myhome/livingroom/temperature'});
-    expect(subscribers.map(subscription => subscription.subscriberId)).toEqual(jasmine.arrayWithExactContents([
+    expect(subscribers.map(subscription => subscription.subscriberId)).toEqual(arrayWithExactContents([
       'client#1;sub#1',
       'client#1;sub#2',
       'client#1;sub#4',
@@ -235,42 +234,42 @@ describe('TopicSubscriptionRegistry', () => {
       'client#2;sub#5',
     ]));
 
-    expect(subscribers).withContext('(a)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(a)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#1;sub#1',
       topic: 'myhome/livingroom/temperature',
       client: client1,
     })]));
-    expect(subscribers).withContext('(b)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(b)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#1;sub#2',
       topic: 'myhome/livingroom/:measurement',
       client: client1,
     })]));
-    expect(subscribers).withContext('(c)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(c)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#1;sub#4',
       topic: 'myhome/:room/temperature',
       client: client1,
     })]));
-    expect(subscribers).withContext('(d)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(d)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#1;sub#5',
       topic: 'myhome/:room/:measurement',
       client: client1,
     })]));
-    expect(subscribers).withContext('(e)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(e)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#2;sub#1',
       topic: 'myhome/livingroom/temperature',
       client: client2,
     })]));
-    expect(subscribers).withContext('(f)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(f)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#2;sub#2',
       topic: 'myhome/livingroom/:measurement',
       client: client2,
     })]));
-    expect(subscribers).withContext('(g)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(g)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#2;sub#4',
       topic: 'myhome/:room/temperature',
       client: client2,
     })]));
-    expect(subscribers).withContext('(h)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(h)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#2;sub#5',
       topic: 'myhome/:room/:measurement',
       client: client2,
@@ -300,7 +299,7 @@ describe('TopicSubscriptionRegistry', () => {
 
     // Resolve the subscribers which observe the topic 'myhome/kitchen/temperature'.
     const subscribers = testee.subscriptions({topic: 'myhome/kitchen/temperature'});
-    expect(subscribers.map(subscription => subscription.subscriberId)).toEqual(jasmine.arrayWithExactContents([
+    expect(subscribers.map(subscription => subscription.subscriberId)).toEqual(arrayWithExactContents([
       'client#1;sub#3',
       'client#1;sub#4',
       'client#1;sub#5',
@@ -313,52 +312,52 @@ describe('TopicSubscriptionRegistry', () => {
       'client#2;sub#7',
     ]));
 
-    expect(subscribers).withContext('(client 1)(a)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(client 1)(a)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#1;sub#3',
       topic: 'myhome/kitchen/:measurement',
       client: client1,
     })]));
-    expect(subscribers).withContext('(client 1)(b)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(client 1)(b)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#1;sub#4',
       topic: 'myhome/:room/temperature',
       client: client1,
     })]));
-    expect(subscribers).withContext('(client 1)(c)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(client 1)(c)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#1;sub#5',
       topic: 'myhome/:room/:measurement',
       client: client1,
     })]));
-    expect(subscribers).withContext('(client 1)(d)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(client 1)(d)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#1;sub#6',
       topic: ':building/kitchen/:measurement',
       client: client1,
     })]));
-    expect(subscribers).withContext('(client 1)(e)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(client 1)(e)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#1;sub#7',
       topic: ':building/:room/:measurement',
       client: client1,
     })]));
-    expect(subscribers).withContext('(client 2)(a)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(client 2)(a)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#2;sub#3',
       topic: 'myhome/kitchen/:measurement',
       client: client2,
     })]));
-    expect(subscribers).withContext('(client 2)(b)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(client 2)(b)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#2;sub#4',
       topic: 'myhome/:room/temperature',
       client: client2,
     })]));
-    expect(subscribers).withContext('(client 2)(c)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(client 2)(c)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#2;sub#5',
       topic: 'myhome/:room/:measurement',
       client: client2,
     })]));
-    expect(subscribers).withContext('(client 2)(d)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(client 2)(d)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#2;sub#6',
       topic: ':building/kitchen/:measurement',
       client: client2,
     })]));
-    expect(subscribers).withContext('(client 2)(e)').toEqual(jasmine.arrayContaining([jasmine.objectContaining({
+    expect(subscribers, '(client 2)(e)').toEqual(expect.arrayContaining([expect.objectContaining({
       subscriberId: 'client#2;sub#7',
       topic: ':building/:room/:measurement',
       client: client2,
@@ -397,8 +396,8 @@ describe('TopicSubscriptionRegistry', () => {
 
   function expectSubscriptionCount(topic: string): {toBe: (expected: number) => Promise<void>} {
     return {
-      toBe: async (expected: Expected<number>): Promise<void> => {
-        expect(await firstValueFrom(Beans.get(TopicSubscriptionRegistry).subscriptionCount$(topic))).withContext(`topic: ${topic}`).toBe(expected);
+      toBe: async (expected): Promise<void> => {
+        expect(await firstValueFrom(Beans.get(TopicSubscriptionRegistry).subscriptionCount$(topic)), `topic: ${topic}`).toBe(expected);
       },
     };
   }

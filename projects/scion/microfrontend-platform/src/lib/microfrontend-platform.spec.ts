@@ -24,38 +24,38 @@ describe('MicrofrontendPlatform', () => {
 
     it('should report that the app is not connected to the platform host when the host platform is not found', async () => {
       const startup = MicrofrontendPlatformClient.connect('client-app', {brokerDiscoverTimeout: 250});
-      await expectAsync(startup).toBeRejected();
-      expect(await MicrofrontendPlatformClient.isConnected()).toBeFalse();
+      await expect(startup).rejects.toThrow();
+      expect(await MicrofrontendPlatformClient.isConnected()).toBe(false);
     });
 
     it('should report that the app is not connected to the platform host when the client platform is not started', async () => {
-      expect(await MicrofrontendPlatformClient.isConnected()).toBeFalse();
+      expect(await MicrofrontendPlatformClient.isConnected()).toBe(false);
     });
 
     it('should report that the app is connected to the platform host when connected', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
-      expect(await MicrofrontendPlatformClient.isConnected()).toBeTrue();
+      expect(await MicrofrontendPlatformClient.isConnected()).toBe(true);
     });
 
     it('should enter state \'started\' when started', async () => {
       const startup = MicrofrontendPlatformClient.connect('A', {connect: false});
 
-      await expectAsync(startup).toBeResolved();
+      await expect(startup).resolves.not.toThrow();
       expect(MicrofrontendPlatform.state).toEqual(PlatformState.Started);
     });
 
     it('should reject starting the client platform multiple times', async () => {
       const connect = MicrofrontendPlatformClient.connect('A', {connect: false});
-      await expectAsync(connect).toBeResolved();
+      await expect(connect).resolves.not.toThrow();
       // Connect to the host again
-      await expectAsync(MicrofrontendPlatformClient.connect('A')).toBeRejectedWithError(/\[MicrofrontendPlatformStartupError] Platform already started/);
+      await expect(MicrofrontendPlatformClient.connect('A')).rejects.toThrow(/\[MicrofrontendPlatformStartupError] Platform already started/);
     });
 
     it('should reject starting the host platform multiple times', async () => {
       const startup = MicrofrontendPlatformHost.start({applications: []});
-      await expectAsync(startup).toBeResolved();
+      await expect(startup).resolves.not.toThrow();
       // Start the platform again
-      await expectAsync(MicrofrontendPlatformHost.start({applications: []})).toBeRejectedWithError(/\[MicrofrontendPlatformStartupError] Platform already started/);
+      await expect(MicrofrontendPlatformHost.start({applications: []})).rejects.toThrow(/\[MicrofrontendPlatformStartupError] Platform already started/);
     });
 
     it('should construct eager beans at platform startup', async () => {
@@ -71,7 +71,7 @@ describe('MicrofrontendPlatform', () => {
         Beans.register(Bean, {eager: true});
       });
 
-      expect(constructed).toBeTrue();
+      expect(constructed).toBe(true);
     });
 
     it('should construct eager beans in runlevel 1', async () => {
@@ -106,7 +106,7 @@ describe('MicrofrontendPlatform', () => {
     });
 
     it('should wait for initializers to complete before resolving the platform\'s startup promise', async () => {
-      jasmine.clock().install();
+      vi.useFakeTimers();
 
       const log: string[] = [];
 
@@ -153,62 +153,62 @@ describe('MicrofrontendPlatform', () => {
       await drainMicrotaskQueue(100);
 
       // after 1s
-      jasmine.clock().tick(1000);
+      vi.advanceTimersByTime(1000);
       await drainMicrotaskQueue(100);
       expect(log).toEqual([]);
-      expect(started).toBeFalse();
+      expect(started).toBe(false);
 
       // after 2s
-      jasmine.clock().tick(1000);
+      vi.advanceTimersByTime(1000);
       await drainMicrotaskQueue(100);
       expect(log).toEqual(['initializer 2s']);
-      expect(started).toBeFalse();
+      expect(started).toBe(false);
 
       // after 3s
-      jasmine.clock().tick(1000);
+      vi.advanceTimersByTime(1000);
       await drainMicrotaskQueue(100);
       expect(log).toEqual(['initializer 2s']);
-      expect(started).toBeFalse();
+      expect(started).toBe(false);
 
       // after 4s
-      jasmine.clock().tick(1000);
+      vi.advanceTimersByTime(1000);
       await drainMicrotaskQueue(100);
       expect(log).toEqual(['initializer 2s']);
-      expect(started).toBeFalse();
+      expect(started).toBe(false);
 
       // after 5s
-      jasmine.clock().tick(1000);
+      vi.advanceTimersByTime(1000);
       await drainMicrotaskQueue(100);
       expect(log).toEqual(['initializer 2s', 'initializer 5s']);
-      expect(started).toBeFalse();
+      expect(started).toBe(false);
 
       // after 6s
-      jasmine.clock().tick(1000);
+      vi.advanceTimersByTime(1000);
       await drainMicrotaskQueue(100);
       expect(log).toEqual(['initializer 2s', 'initializer 5s', 'initializer 6s']);
-      expect(started).toBeFalse();
+      expect(started).toBe(false);
 
       // after 7s
-      jasmine.clock().tick(1000);
+      vi.advanceTimersByTime(1000);
       await drainMicrotaskQueue(100);
       expect(log).toEqual(['initializer 2s', 'initializer 5s', 'initializer 6s']);
-      expect(started).toBeFalse();
+      expect(started).toBe(false);
 
       // after 8s
-      jasmine.clock().tick(1000);
+      vi.advanceTimersByTime(1000);
       await drainMicrotaskQueue(100);
       expect(log).toEqual(['initializer 2s', 'initializer 5s', 'initializer 6s', 'initializer 8s']);
-      expect(started).toBeFalse();
+      expect(started).toBe(false);
 
       // after 9s
-      jasmine.clock().tick(1000);
+      vi.advanceTimersByTime(1000);
       await drainMicrotaskQueue(100);
       expect(log).toEqual(['initializer 2s', 'initializer 5s', 'initializer 6s', 'initializer 8s', 'initializer 1s [runlevel 5]']);
 
       // assert the platform to be started
-      expect(started).toBeTrue();
+      expect(started).toBe(true);
 
-      jasmine.clock().uninstall();
+      vi.useRealTimers();
     });
 
     it('should resolve the \'start\' Promise when all initializers resolve', async () => {
@@ -216,7 +216,7 @@ describe('MicrofrontendPlatform', () => {
       Beans.registerInitializer(() => Promise.resolve());
       Beans.registerInitializer(() => Promise.resolve());
 
-      await expectAsync(MicrofrontendPlatform.startPlatform()).toBeResolved();
+      await expect(MicrofrontendPlatform.startPlatform()).resolves.not.toThrow();
     });
 
     it('should reject the \'start\' Promise when an initializer rejects', async () => {
@@ -224,7 +224,7 @@ describe('MicrofrontendPlatform', () => {
       Beans.registerInitializer(() => Promise.reject(Error()));
       Beans.registerInitializer(() => Promise.resolve());
 
-      await expectAsync(MicrofrontendPlatform.startPlatform()).toBeRejectedWithError(/MicrofrontendPlatformStartupError/);
+      await expect(MicrofrontendPlatform.startPlatform()).rejects.toThrow(/MicrofrontendPlatformStartupError/);
     });
 
     it('should allow looking up platform properties from the host', async () => {
@@ -240,8 +240,7 @@ describe('MicrofrontendPlatform', () => {
       expect(Beans.get(PlatformPropertyService).properties()).toEqual(new Map()
         .set('prop1', 'PROP1')
         .set('prop2', 'PROP2')
-        .set('prop3', 'PROP3'),
-      );
+        .set('prop3', 'PROP3'));
     });
   });
 

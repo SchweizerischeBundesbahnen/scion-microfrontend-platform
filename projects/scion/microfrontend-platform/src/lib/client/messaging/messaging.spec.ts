@@ -11,7 +11,7 @@ import {concat, NEVER, of, Subject} from 'rxjs';
 import {Intent, IntentMessage, MessageHeaders, ResponseStatusCodes, TopicMessage} from '../../messaging.model';
 import {MessageClient, takeUntilUnsubscribe} from './message-client';
 import {IntentClient} from './intent-client';
-import {expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, Latch, readConsoleLog, resetLoggerSpy, waitFor, waitUntilStable, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
+import {arrayWithExactContents, expectEmissions, expectPromise, getLoggerSpy, installLoggerSpies, Latch, readConsoleLog, resetLoggerSpy, waitFor, waitUntilStable, waitUntilSubscriberCount} from '../../testing/spec.util.spec';
 import {MicrofrontendPlatform} from '../../microfrontend-platform';
 import {MicrofrontendPlatformHost} from '../../host/microfrontend-platform-host';
 import {ClientRegistry} from '../../host/client-registry/client.registry';
@@ -22,6 +22,7 @@ import {Handler, IntentInterceptor, MessageInterceptor} from '../../host/message
 import {MicrofrontendFixture} from '../../testing/microfrontend-fixture/microfrontend-fixture';
 import {ManifestFixture} from '../../testing/manifest-fixture/manifest-fixture';
 import {PublishOptions, RequestOptions} from './publish-options';
+import {Capability} from '../../platform.model';
 
 const bodyExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): T | undefined => msg.body;
 const headersExtractFn = <T>(msg: TopicMessage<T> | IntentMessage<T>): Map<string, unknown> => msg.headers;
@@ -187,7 +188,7 @@ describe('Messaging', () => {
 
     await Beans.get(MessageClient).publish('some-topic', undefined, {headers: new Map().set('header1', 'value').set('header2', 42)});
     await headerCaptor.waitUntilEmitCount(1);
-    expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('header1', 'value').set('header2', 42)));
+    expect(headerCaptor.getLastValue()).toEqual(mapContaining(new Map().set('header1', 'value').set('header2', 42)));
   });
 
   it('should allow passing headers when issuing an intent', async () => {
@@ -206,7 +207,7 @@ describe('Messaging', () => {
 
     await Beans.get(IntentClient).publish({type: 'some-capability'}, undefined, {headers: new Map().set('header1', 'value').set('header2', 42)});
     await headerCaptor.waitUntilEmitCount(1);
-    expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('header1', 'value').set('header2', 42)));
+    expect(headerCaptor.getLastValue()).toEqual(mapContaining(new Map().set('header1', 'value').set('header2', 42)));
   });
 
   it('should return an empty headers dictionary if no headers are set', async () => {
@@ -217,7 +218,7 @@ describe('Messaging', () => {
 
     await Beans.get(MessageClient).publish('some-topic', 'payload');
     await headerCaptor.waitUntilEmitCount(1);
-    expect(headerCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map()));
+    expect(headerCaptor.getLastValue()).toEqual(mapContaining(new Map()));
   });
 
   it('should allow passing headers when sending a request', async () => {
@@ -232,7 +233,7 @@ describe('Messaging', () => {
     const replyHeaderCaptor = new ObserveCaptor(headersExtractFn);
     Beans.get(MessageClient).request$('some-topic', undefined, {headers: new Map().set('request-header', 'ping')}).subscribe(replyHeaderCaptor);
     await replyHeaderCaptor.waitUntilEmitCount(1);
-    expect(replyHeaderCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('reply-header', 'PING')));
+    expect(replyHeaderCaptor.getLastValue()).toEqual(mapContaining(new Map().set('reply-header', 'PING')));
   });
 
   it('should allow passing headers when sending an intent request', async () => {
@@ -255,7 +256,7 @@ describe('Messaging', () => {
     const replyHeaderCaptor = new ObserveCaptor(headersExtractFn);
     void Beans.get(IntentClient).request$({type: 'some-capability'}, undefined, {headers: new Map().set('request-header', 'ping')}).subscribe(replyHeaderCaptor);
     await replyHeaderCaptor.waitUntilEmitCount(1);
-    expect(replyHeaderCaptor.getLastValue()).toEqual(jasmine.mapContaining(new Map().set('reply-header', 'PING')));
+    expect(replyHeaderCaptor.getLastValue()).toEqual(mapContaining(new Map().set('reply-header', 'PING')));
   });
 
   it('should allow receiving a reply for a request (by not replying with a status code)', async () => {
@@ -269,8 +270,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should allow receiving a reply for a request (by replying with the status code 200)', async () => {
@@ -284,8 +285,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should allow receiving multiple replies for a request', async () => {
@@ -301,8 +302,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should complete the request when replying with the status code 250 (with the first reply)', async () => {
@@ -316,8 +317,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(true);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should complete the request when replying with the status code 250 (after multiple replies)', async () => {
@@ -333,8 +334,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(true);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should error the request when replying with the status code 500', async () => {
@@ -348,9 +349,9 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
-    expect(replyCaptor.getValues()).withContext('emissions').toEqual([]);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeTrue();
+    expect(replyCaptor.getValues(), 'emissions').toEqual([]);
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(true);
     expect(replyCaptor.getError().message).toEqual('PING');
   });
 
@@ -363,9 +364,9 @@ describe('Messaging', () => {
     // WHEN
     MicrofrontendPlatform.destroy();
     // THEN
-    expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
-    expect(captor.getValues()).withContext('emissions').toEqual([]);
+    expect(captor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(captor.hasErrored(), 'hasErrored').toBe(false);
+    expect(captor.getValues(), 'emissions').toEqual([]);
   });
 
   it('should not complete the request Observable upon platform shutdown (as per API)', async () => {
@@ -379,9 +380,9 @@ describe('Messaging', () => {
     // WHEN
     MicrofrontendPlatform.destroy();
     // THEN
-    expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
-    expect(captor.getValues()).withContext('emissions').toEqual([]);
+    expect(captor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(captor.hasErrored(), 'hasErrored').toBe(false);
+    expect(captor.getValues(), 'emissions').toEqual([]);
   });
 
   it('should allow receiving a reply for an intent request (by not replying with a status code)', async () => {
@@ -403,8 +404,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should allow receiving a reply for an intent request (by replying with the status code 200)', async () => {
@@ -426,8 +427,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should allow receiving multiple replies for an intent request', async () => {
@@ -451,8 +452,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should complete the intent request when replying with the status code 250 (with the first reply)', async () => {
@@ -474,8 +475,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(true);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should complete the intent request when replying with the status code 250 (after multiple replies)', async () => {
@@ -499,8 +500,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING', 'PING', 'PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeTrue();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(true);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should error the intent request when replying with the status code 500', async () => {
@@ -522,9 +523,9 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await replyCaptor.waitUntilCompletedOrErrored();
-    expect(replyCaptor.getValues()).withContext('emissions').toEqual([]);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeTrue();
+    expect(replyCaptor.getValues(), 'emissions').toEqual([]);
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(true);
     expect(replyCaptor.getError().message).toEqual('PING');
   });
 
@@ -561,8 +562,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(IntentClient).request$({type: 'some-capability'}, 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should allow an interceptor to handle a \'request-response\' topic message if no replier is running', async () => {
@@ -585,8 +586,8 @@ describe('Messaging', () => {
     const replyCaptor = new ObserveCaptor(bodyExtractFn);
     Beans.get(MessageClient).request$<string>('some-topic', 'ping').subscribe(replyCaptor);
     await expectEmissions(replyCaptor).toEqual(['PING']);
-    expect(replyCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(replyCaptor.hasErrored()).withContext('hasErrored').toBeFalse();
+    expect(replyCaptor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(replyCaptor.hasErrored(), 'hasErrored').toBe(false);
   });
 
   it('should not error with `ClientConnectError` when starting the platform host and if initializers in runlevel 0 take a long time to complete, e.g., to fetch manifests', async () => {
@@ -606,7 +607,7 @@ describe('Messaging', () => {
     const startup = MicrofrontendPlatformHost.start({host: {brokerDiscoverTimeout: 250}, applications: []});
 
     await expectPromise(startup).toResolve();
-    expect(initializerCompleted).toBeTrue();
+    expect(initializerCompleted).toBe(true);
     expect(loggerSpy).not.toHaveBeenCalled();
   });
 
@@ -655,9 +656,9 @@ describe('Messaging', () => {
     await Beans.get(MessageClient).publish('topic', 'message');
     await captor.waitUntilEmitCount(1);
     // THEN
-    expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
-    expect(captor.getValues()).withContext('emissions').toEqual(['message']);
+    expect(captor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(captor.hasErrored(), 'hasErrored').toBe(false);
+    expect(captor.getValues(), 'emissions').toEqual(['message']);
   });
 
   it('should receive multiple messages sent to a topic', async () => {
@@ -672,9 +673,9 @@ describe('Messaging', () => {
     await Beans.get(MessageClient).publish('topic', 'message 3');
     await captor.waitUntilEmitCount(3);
     // THEN
-    expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
-    expect(captor.getValues()).withContext('emissions').toEqual(['message 1', 'message 2', 'message 3']);
+    expect(captor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(captor.hasErrored(), 'hasErrored').toBe(false);
+    expect(captor.getValues(), 'emissions').toEqual(['message 1', 'message 2', 'message 3']);
   });
 
   it('should allow multiple subscriptions to the same topic in the same client', async () => {
@@ -920,13 +921,13 @@ describe('Messaging', () => {
     await waitUntilStable(() => microfrontend2TopicMessageChannel.getValues());
 
     // Expect message to be transported to client 1 because subscribed to the topic.
-    expect(microfrontend1TopicMessageChannel.getValues()).toContain(jasmine.objectContaining({
+    expect(microfrontend1TopicMessageChannel.getValues()).toContain(expect.objectContaining({
       topic: 'test/topic',
       body: 'Topic message',
     }));
 
     // Expect message NOT to be transported to client 2 because not subscribed to the topic.
-    expect(microfrontend2TopicMessageChannel.getValues()).not.toContain(jasmine.objectContaining({
+    expect(microfrontend2TopicMessageChannel.getValues()).not.toContain(expect.objectContaining({
       topic: 'test/topic',
       body: 'Topic message',
     }));
@@ -975,14 +976,14 @@ describe('Messaging', () => {
     await waitUntilStable(() => microfrontend2IntentMessageChannel.getValues());
 
     // Expect message to be transported to client 1 because subscribed to the intent.
-    expect(microfrontend1IntentMessageChannel.getValues()).toContain(jasmine.objectContaining({
-      intent: jasmine.objectContaining({type: 'testee'}),
+    expect(microfrontend1IntentMessageChannel.getValues()).toContain(expect.objectContaining({
+      intent: expect.objectContaining({type: 'testee'}) as Intent,
       body: 'Intent message',
     }));
 
     // Expect message NOT to be transported to client 2 because not subscribed to the intent.
-    expect(microfrontend2IntentMessageChannel.getValues()).not.toContain(jasmine.objectContaining({
-      intent: jasmine.objectContaining({type: 'testee'}),
+    expect(microfrontend2IntentMessageChannel.getValues()).not.toContain(expect.objectContaining({
+      intent: expect.objectContaining({type: 'testee'}) as Intent,
       body: 'Intent message',
     }));
   });
@@ -1015,7 +1016,7 @@ describe('Messaging', () => {
     await subscriberCountCaptor.waitUntilEmitCount(7);
 
     expect(subscriberCountCaptor.getValues()).toEqual([0, 1, 0, 1, 2, 1, 0]);
-    expect(subscriberCountCaptor.hasCompleted()).withContext('hasCompleted').toBeFalse();
+    expect(subscriberCountCaptor.hasCompleted(), 'hasCompleted').toBe(false);
   });
 
   it('should not complete the "topic subscriber count" Observable upon platform shutdown (as per API)', async () => {
@@ -1027,9 +1028,9 @@ describe('Messaging', () => {
     // WHEN
     MicrofrontendPlatform.destroy();
     // THEN
-    expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-    expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
-    expect(captor.getValues()).withContext('emissions').toEqual([]);
+    expect(captor.hasCompleted(), 'hasCompleted').toBe(false);
+    expect(captor.hasErrored(), 'hasErrored').toBe(false);
+    expect(captor.getValues(), 'emissions').toEqual([]);
   });
 
   it('should set message headers about the sender', async () => {
@@ -1175,15 +1176,15 @@ describe('Messaging', () => {
       subscription1.unsubscribe();
       await waitUntilSubscriberCount('some-topic', 1);
 
-      expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-      expect(captor.getValues()).withContext('emissions').toEqual([]);
+      expect(captor.hasCompleted(), 'hasCompleted').toBe(false);
+      expect(captor.getValues(), 'emissions').toEqual([]);
 
       // unsubscribe subscription2
       subscription2.unsubscribe();
       await waitUntilSubscriberCount('some-topic', 0);
 
-      expect(captor.hasCompleted()).withContext('hasCompleted').toBeTrue();
-      expect(captor.getValues()).withContext('emissions').toEqual([]);
+      expect(captor.hasCompleted(), 'hasCompleted').toBe(true);
+      expect(captor.getValues(), 'emissions').toEqual([]);
     });
 
     it('should complete the source observable immediately when no subscriber is subscribed', async () => {
@@ -1195,8 +1196,8 @@ describe('Messaging', () => {
         .subscribe(captor);
 
       await waitUntilSubscriberCount('nobody-subscribed-to-this-topic', 0);
-      expect(captor.hasCompleted()).withContext('hasCompleted').toBeTrue();
-      expect(captor.getValues()).withContext('emissions').toEqual([]);
+      expect(captor.hasCompleted(), 'hasCompleted').toBe(true);
+      expect(captor.getValues(), 'emissions').toEqual([]);
     });
 
     it('should not complete the source Observable upon platform shutdown (as per API)', async () => {
@@ -1210,9 +1211,9 @@ describe('Messaging', () => {
       // WHEN
       MicrofrontendPlatform.destroy();
       // THEN
-      expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
-      expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
-      expect(captor.getValues()).withContext('emissions').toEqual([]);
+      expect(captor.hasCompleted(), 'hasCompleted').toBe(false);
+      expect(captor.hasErrored(), 'hasErrored').toBe(false);
+      expect(captor.getValues(), 'emissions').toEqual([]);
 
       subscription.unsubscribe();
     });
@@ -1443,7 +1444,7 @@ describe('Messaging', () => {
 
       // assert the deprecation warning
       const expectedLogMessage = `[DEPRECATION][4EAC5956] Application 'host-app' passes a deprecated parameter in the intent: 'param1'. Pass parameter 'param2' instead.`;
-      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]\[4EAC5956]/})).toEqual(jasmine.arrayContaining([expectedLogMessage]));
+      expect(readConsoleLog('warn', {filter: /\[DEPRECATION]\[4EAC5956]/})).toEqual(expect.arrayContaining([expectedLogMessage]));
     });
 
     it('should make deprecated params optional', async () => {
@@ -1584,8 +1585,8 @@ describe('Messaging', () => {
       });
 
       // Publish intent without passing required param.
-      await expectAsync(Beans.get(IntentClient).publish({type: 'capability'})).toBeRejectedWithError(/IntentParamValidationError/);
-      expect(intercepted).toBeFalse();
+      await expect(Beans.get(IntentClient).publish({type: 'capability'})).rejects.toThrow(/IntentParamValidationError/);
+      expect(intercepted).toBe(false);
     });
   });
 
@@ -1596,31 +1597,31 @@ describe('Messaging', () => {
 
       // Send message.
       const whenPublished = Beans.get(MessageClient).publish('myhome/temperature/kitchen', '20°C');
-      await expectAsync(whenPublished).toBeResolved();
+      await expect(whenPublished).resolves.not.toThrow();
     });
 
     it('should error if publish topic is "empty", "null" or "undefined"', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      await expectAsync(Beans.get(MessageClient).publish('')).toBeRejectedWithError(/IllegalTopicError/);
-      await expectAsync(Beans.get(MessageClient).publish(null!)).toBeRejectedWithError(/IllegalTopicError/);
-      await expectAsync(Beans.get(MessageClient).publish(undefined!)).toBeRejectedWithError(/IllegalTopicError/);
+      await expect(Beans.get(MessageClient).publish('')).rejects.toThrow(/IllegalTopicError/);
+      await expect(Beans.get(MessageClient).publish(null!)).rejects.toThrow(/IllegalTopicError/);
+      await expect(Beans.get(MessageClient).publish(undefined!)).rejects.toThrow(/IllegalTopicError/);
     });
 
     it('should error if publish topic contains empty segments', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      await expectAsync(Beans.get(MessageClient).publish('/myhome/kitchen/')).toBeRejectedWithError(/IllegalTopicError/);
-      await expectAsync(Beans.get(MessageClient).publish('/myhome/kitchen')).toBeRejectedWithError(/IllegalTopicError/);
-      await expectAsync(Beans.get(MessageClient).publish('myhome/kitchen/')).toBeRejectedWithError(/IllegalTopicError/);
-      await expectAsync(Beans.get(MessageClient).publish('/myhome//temperature')).toBeRejectedWithError(/IllegalTopicError/);
-      await expectAsync(Beans.get(MessageClient).publish('/')).toBeRejectedWithError(/IllegalTopicError/);
+      await expect(Beans.get(MessageClient).publish('/myhome/kitchen/')).rejects.toThrow(/IllegalTopicError/);
+      await expect(Beans.get(MessageClient).publish('/myhome/kitchen')).rejects.toThrow(/IllegalTopicError/);
+      await expect(Beans.get(MessageClient).publish('myhome/kitchen/')).rejects.toThrow(/IllegalTopicError/);
+      await expect(Beans.get(MessageClient).publish('/myhome//temperature')).rejects.toThrow(/IllegalTopicError/);
+      await expect(Beans.get(MessageClient).publish('/')).rejects.toThrow(/IllegalTopicError/);
     });
 
     it('should error if publish topic contains wildcard segments', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      await expectAsync(Beans.get(MessageClient).publish('myhome/:room/temperature')).toBeRejectedWithError(/IllegalTopicError/);
+      await expect(Beans.get(MessageClient).publish('myhome/:room/temperature')).rejects.toThrow(/IllegalTopicError/);
     });
 
     it('should error if observe topic is "empty", "null" or "undefined"', async () => {
@@ -1796,7 +1797,7 @@ describe('Messaging', () => {
 
         // Expect the request to error.
         await responseCaptor.waitUntilCompletedOrErrored();
-        expect(responseCaptor.hasErrored()).toBeTrue();
+        expect(responseCaptor.hasErrored()).toBe(true);
         expect(responseCaptor.getError()).toMatch(/\[MessagingError].*No subscriber registered to answer the request/);
       });
     });
@@ -1808,7 +1809,7 @@ describe('Messaging', () => {
 
         // Send intent.
         const whenPublished = Beans.get(MessageClient).publish('myhome/temperature/kitchen', '20°C', {retain: true});
-        await expectAsync(whenPublished).toBeResolved();
+        await expect(whenPublished).resolves.not.toThrow();
       });
 
       it('should receive retained messages matching an exact subscription', async () => {
@@ -1825,8 +1826,8 @@ describe('Messaging', () => {
         const messageCaptor1 = new ObserveCaptor();
         Beans.get(MessageClient).observe$<string>('myhome/kitchen/temperature').subscribe(messageCaptor1);
         await waitUntilSubscriberCount('myhome/kitchen/temperature', 1);
-        expect(messageCaptor1.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<TopicMessage>({
+        expect(messageCaptor1.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             topic: 'myhome/kitchen/temperature',
             body: '19.5°C',
             params: new Map(),
@@ -1837,8 +1838,8 @@ describe('Messaging', () => {
         const messageCaptor2 = new ObserveCaptor();
         Beans.get(MessageClient).observe$<string>('myhome/livingroom/temperature').subscribe(messageCaptor2);
         await waitUntilSubscriberCount('myhome/livingroom/temperature', 1);
-        expect(messageCaptor2.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<TopicMessage>({
+        expect(messageCaptor2.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             topic: 'myhome/livingroom/temperature',
             body: '22°C',
             params: new Map(),
@@ -1849,8 +1850,8 @@ describe('Messaging', () => {
         const messageCaptor3 = new ObserveCaptor();
         Beans.get(MessageClient).observe$<string>('myhome/diningroom/temperature').subscribe(messageCaptor3);
         await waitUntilSubscriberCount('myhome/diningroom/temperature', 1);
-        expect(messageCaptor3.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<TopicMessage>({
+        expect(messageCaptor3.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             topic: 'myhome/diningroom/temperature',
             body: '21.5°C',
             params: new Map(),
@@ -1873,21 +1874,21 @@ describe('Messaging', () => {
         // Subscribe to topic 'myhome/:room/temperature'
         Beans.get(MessageClient).observe$<string>('myhome/:room/temperature').subscribe(messageCaptor);
         await waitUntilStable(() => messageCaptor.getValues().length);
-        expect(messageCaptor.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<TopicMessage>({
+        expect(messageCaptor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             topic: 'myhome/livingroom/temperature',
             body: '22°C',
-            params: jasmine.mapContaining(new Map().set('room', 'livingroom')),
+            params: mapContaining(new Map().set('room', 'livingroom')),
           }),
-          jasmine.objectContaining<TopicMessage>({
+          expect.objectContaining({
             topic: 'myhome/kitchen/temperature',
             body: '19.5°C',
-            params: jasmine.mapContaining(new Map().set('room', 'kitchen')),
+            params: mapContaining(new Map().set('room', 'kitchen')),
           }),
-          jasmine.objectContaining<TopicMessage>({
+          expect.objectContaining({
             topic: 'myhome/diningroom/temperature',
             body: '21.5°C',
-            params: jasmine.mapContaining(new Map().set('room', 'diningroom')),
+            params: mapContaining(new Map().set('room', 'diningroom')),
           }),
         ]));
       });
@@ -1913,7 +1914,7 @@ describe('Messaging', () => {
         Beans.get(MessageClient).observe$<string>('myhome/kitchen/temperature').subscribe(messageCaptor2);
         await waitUntilSubscriberCount('myhome/kitchen/temperature', 1);
         expect(messageCaptor2.getValues()).toEqual([
-          jasmine.objectContaining({
+          expect.objectContaining({
             topic: 'myhome/kitchen/temperature',
             body: '20°C',
             params: new Map(),
@@ -1934,8 +1935,8 @@ describe('Messaging', () => {
         const messageCaptor = new ObserveCaptor();
         Beans.get(MessageClient).observe$<string>('myhome/livingroom/temperature').subscribe(messageCaptor);
         await waitUntilSubscriberCount('myhome/livingroom/temperature', 1);
-        expect(messageCaptor.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<TopicMessage>({
+        expect(messageCaptor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             topic: 'myhome/livingroom/temperature',
             body: null,
             params: new Map(),
@@ -1949,15 +1950,15 @@ describe('Messaging', () => {
         // Publish retained message
         await Beans.get(MessageClient).publish('myhome/livingroom/temperature', '22°C', {retain: true});
 
-        // Publish retained message with `0` payload
+        // Publish retained message with a `falsy` payload
         await Beans.get(MessageClient).publish('myhome/livingroom/temperature', 0, {retain: true});
 
         // Subscribe to topic 'myhome/livingroom/temperature'
         const messageCaptor = new ObserveCaptor();
         Beans.get(MessageClient).observe$<string>('myhome/livingroom/temperature').subscribe(messageCaptor);
         await waitUntilSubscriberCount('myhome/livingroom/temperature', 1);
-        expect(messageCaptor.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<TopicMessage>({
+        expect(messageCaptor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             topic: 'myhome/livingroom/temperature',
             body: 0,
             params: new Map(),
@@ -1975,8 +1976,8 @@ describe('Messaging', () => {
         const messageCaptor = new ObserveCaptor();
         Beans.get(MessageClient).observe$<string>('myhome/livingroom/temperature').subscribe(messageCaptor);
         await waitUntilSubscriberCount('myhome/livingroom/temperature', 1);
-        expect(messageCaptor.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<TopicMessage>({
+        expect(messageCaptor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             topic: 'myhome/livingroom/temperature',
             body: '22°C',
             params: new Map(),
@@ -1987,7 +1988,7 @@ describe('Messaging', () => {
 
         // Delete retained message
         await Beans.get(MessageClient).publish('myhome/livingroom/temperature', undefined, {retain: true});
-        expect(messageCaptor.getValues()).toEqual(jasmine.arrayWithExactContents([]));
+        expect(messageCaptor.getValues()).toEqual(arrayWithExactContents([]));
       });
 
       it('should dispatch a retained message only to the newly subscribed subscriber', async () => {
@@ -2094,10 +2095,10 @@ describe('Messaging', () => {
 
         await waitUntilStable(() => captor.getValues().length);
         expect(captor.getValues()).toEqual([
-          jasmine.objectContaining<TopicMessage>({
+          expect.objectContaining({
             topic: 'temperature',
             body: '18°C',
-            headers: jasmine.mapContaining(new Map()
+            headers: mapContaining(new Map()
               .set('room', 'livingroom')
               .set(MessageHeaders.AppSymbolicName, 'host-app')
               .set(MessageHeaders.ClientId, senderClientId),
@@ -2118,7 +2119,7 @@ describe('Messaging', () => {
 
         // Expect the request not to error.
         await waitFor(100);
-        expect(responseCaptor.hasErrored()).toBeFalse();
+        expect(responseCaptor.hasErrored()).toBe(false);
       });
 
       it('should deliver retained request to late subscribers', async () => {
@@ -2184,10 +2185,10 @@ describe('Messaging', () => {
         // However, we should still receive the retained message sent to the same topic.
         await requestCaptor.waitUntilEmitCount(1);
         expect(requestCaptor.getValues()).toEqual([
-          jasmine.objectContaining<TopicMessage>({
+          expect.objectContaining({
             topic: 'myhome/temperature',
             body: 'basement',
-            headers: jasmine.mapContaining(new Map().set('temperature', '18°C')),
+            headers: mapContaining(new Map().set('temperature', '18°C')),
           }),
         ]);
       });
@@ -2230,7 +2231,7 @@ describe('Messaging', () => {
           latch.release();
           return replier$;
         });
-        await latch.whenRelesed;
+        await latch.whenReleased;
         replier$.next('20°C');
 
         // Expect the response to be received.
@@ -2242,9 +2243,9 @@ describe('Messaging', () => {
         Beans.get(MessageClient).observe$('myhome/:room/temperature').subscribe(requestCaptor1);
         await requestCaptor1.waitUntilEmitCount(1);
         expect(requestCaptor1.getValues()).toEqual([
-          jasmine.objectContaining<TopicMessage>({
+          expect.objectContaining({
             topic: 'myhome/kitchen/temperature',
-            params: jasmine.mapContaining(new Map().set('room', 'kitchen')),
+            params: mapContaining(new Map().set('room', 'kitchen')),
           }),
         ]);
 
@@ -2260,13 +2261,13 @@ describe('Messaging', () => {
         Beans.get(MessageClient).observe$('myhome/kitchen/temperature').subscribe(requestCaptor2);
         await requestCaptor2.waitUntilEmitCount(1);
         expect(requestCaptor2.getValues()).not.toEqual([
-          jasmine.objectContaining<TopicMessage>({
+          expect.objectContaining({
             topic: 'myhome/kitchen/temperature',
-            params: jasmine.mapContaining(new Map().set('room', 'kitchen')),
+            params: mapContaining(new Map().set('room', 'kitchen')),
           }),
         ]);
         expect(requestCaptor2.getValues()).toEqual([
-          jasmine.objectContaining<TopicMessage>({
+          expect.objectContaining({
             topic: 'myhome/kitchen/temperature',
           }),
         ]);
@@ -2277,7 +2278,7 @@ describe('Messaging', () => {
         // Expect the communication to be terminated.
         await responseCaptor.waitUntilCompletedOrErrored();
         expect(responseCaptor.getValues()).toEqual(['20°C', '21°C']);
-        expect(responseCaptor.hasCompleted()).toBeTrue();
+        expect(responseCaptor.hasCompleted()).toBe(true);
 
         // Expect the retained request to be deleted.
         const requestCaptor3 = new ObserveCaptor();
@@ -2299,7 +2300,7 @@ describe('Messaging', () => {
         const requestCaptor1 = new ObserveCaptor();
         Beans.get(MessageClient).observe$('myhome/kitchen/temperature').subscribe(requestCaptor1);
         await requestCaptor1.waitUntilEmitCount(1);
-        expect(requestCaptor1.getValues()).toEqual([jasmine.objectContaining<TopicMessage>({topic: 'myhome/kitchen/temperature'})]);
+        expect(requestCaptor1.getValues()).toEqual([expect.objectContaining({topic: 'myhome/kitchen/temperature'})]);
 
         // Unsubscribe the requestor.
         subscription.unsubscribe();
@@ -2338,7 +2339,7 @@ describe('Messaging', () => {
         const requestCaptor1 = new ObserveCaptor();
         Beans.get(MessageClient).observe$('myhome/kitchen/temperature').subscribe(requestCaptor1);
         await waitUntilStable(() => requestCaptor1.getValues().length);
-        expect(requestCaptor1.getValues()).toEqual([jasmine.objectContaining<TopicMessage>({topic: 'myhome/kitchen/temperature'})]);
+        expect(requestCaptor1.getValues()).toEqual([expect.objectContaining({topic: 'myhome/kitchen/temperature'})]);
 
         // Unsubscribe the requestor.
         subscription.unsubscribe();
@@ -2367,7 +2368,7 @@ describe('Messaging', () => {
         const requestCaptor = new ObserveCaptor();
         Beans.get(MessageClient).observe$('myhome/:room/temperature').subscribe(requestCaptor);
         await requestCaptor.waitUntilEmitCount(2);
-        expect(requestCaptor.getValues()).toHaveSize(2);
+        expect(requestCaptor.getValues()).toHaveLength(2);
       });
 
       it('should receive request by multiple subscribers', async () => {
@@ -2402,11 +2403,11 @@ describe('Messaging', () => {
 
         // Expect the retained request to be received in app 1.
         await requestCaptorApp1.waitUntilEmitCount(1);
-        expect(requestCaptorApp1.getValues()).toEqual([jasmine.objectContaining<TopicMessage>({topic: 'myhome/kitchen/temperature'})]);
+        expect(requestCaptorApp1.getValues()).toEqual([expect.objectContaining({topic: 'myhome/kitchen/temperature'})]);
 
         // Expect the retained request to be received in app 2.
         await requestCaptorApp2.waitUntilEmitCount(1);
-        expect(requestCaptorApp2.getValues()).toEqual([jasmine.objectContaining<TopicMessage>({topic: 'myhome/kitchen/temperature'})]);
+        expect(requestCaptorApp2.getValues()).toEqual([expect.objectContaining({topic: 'myhome/kitchen/temperature'})]);
       });
     });
   });
@@ -2428,7 +2429,7 @@ describe('Messaging', () => {
 
       // Send intent.
       const whenPublished = Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '20°C');
-      await expectAsync(whenPublished).toBeRejectedWithError(/NullProviderError/);
+      await expect(whenPublished).rejects.toThrow(/NullProviderError/);
     });
 
     it('should not error if no subscriber is found', async () => {
@@ -2451,28 +2452,28 @@ describe('Messaging', () => {
 
       // Send intent.
       const whenPublished = Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '20°C');
-      await expectAsync(whenPublished).toBeResolved();
+      await expect(whenPublished).resolves.not.toThrow();
     });
 
     it('should error if publish qualifier contains wildcards', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: '*'}})).toBeRejectedWithError(/IllegalQualifierError/);
-      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {'*': '*'}})).toBeRejectedWithError(/IllegalQualifierError/);
+      await expect(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: '*'}})).rejects.toThrow(/IllegalQualifierError/);
+      await expect(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {'*': '*'}})).rejects.toThrow(/IllegalQualifierError/);
     });
 
     it('should error if publish qualifier contains entries with an illegal data type', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: {} as any}})).toBeRejectedWithError(/IllegalQualifierError/); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      await expect(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: {} as any}})).rejects.toThrow(/IllegalQualifierError/); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     });
 
     it('should error if publish qualifier contains empty entries', async () => {
       await MicrofrontendPlatformHost.start({applications: []});
 
-      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: ''}})).toBeRejectedWithError(/IllegalQualifierError/);
-      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: null!}})).toBeRejectedWithError(/IllegalQualifierError/);
-      await expectAsync(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: undefined!}})).toBeRejectedWithError(/IllegalQualifierError/);
+      await expect(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: ''}})).rejects.toThrow(/IllegalQualifierError/);
+      await expect(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: null!}})).rejects.toThrow(/IllegalQualifierError/);
+      await expect(Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: undefined!}})).rejects.toThrow(/IllegalQualifierError/);
     });
 
     it('should error if observe qualifier contains entries with an illegal data type', async () => {
@@ -2566,7 +2567,7 @@ describe('Messaging', () => {
 
         // Expect the request to error.
         await responseCaptor.waitUntilCompletedOrErrored();
-        expect(responseCaptor.hasErrored()).toBeTrue();
+        expect(responseCaptor.hasErrored()).toBe(true);
         expect(responseCaptor.getError()).toMatch(/NullProviderError/);
       });
 
@@ -2594,7 +2595,7 @@ describe('Messaging', () => {
 
         // Expect the request to error.
         await responseCaptor.waitUntilCompletedOrErrored();
-        expect(responseCaptor.hasErrored()).toBeTrue();
+        expect(responseCaptor.hasErrored()).toBe(true);
         expect(responseCaptor.getError()).toMatch(/\[MessagingError].*No subscriber registered to answer the intent/);
       });
     });
@@ -2616,7 +2617,7 @@ describe('Messaging', () => {
 
         // Send retained intent.
         const whenPublished = Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '20°C', {retain: true});
-        await expectAsync(whenPublished).toBeRejectedWithError(/NullProviderError/);
+        await expect(whenPublished).rejects.toThrow(/NullProviderError/);
       });
 
       it('should not error if no subscriber is found', async () => {
@@ -2639,7 +2640,7 @@ describe('Messaging', () => {
 
         // Send intent.
         const whenPublished = Beans.get(IntentClient).publish({type: 'temperature', qualifier: {room: 'kitchen'}}, '20°C', {retain: true});
-        await expectAsync(whenPublished).toBeResolved();
+        await expect(whenPublished).resolves.not.toThrow();
       });
 
       it('should receive retained intents matching an exact subscription', async () => {
@@ -2669,7 +2670,7 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(intentCaptor1);
         await waitUntilStable(() => intentCaptor1.getValues().length);
         expect(intentCaptor1.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
             body: '19.5°C',
           }),
@@ -2680,7 +2681,7 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor2);
         await waitUntilStable(() => intentCaptor2.getValues().length);
         expect(intentCaptor2.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '22°C',
           }),
@@ -2691,7 +2692,7 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'diningroom'}}).subscribe(intentCaptor3);
         await waitUntilStable(() => intentCaptor3.getValues().length);
         expect(intentCaptor3.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'diningroom'}, params: new Map()},
             body: '21.5°C',
           }),
@@ -2726,16 +2727,16 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: '*'}}).subscribe(intentCaptor);
 
         await waitUntilStable(() => intentCaptor.getValues().length);
-        expect(intentCaptor.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<IntentMessage>({
+        expect(intentCaptor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '22°C',
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
             body: '19.5°C',
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'diningroom'}, params: new Map()},
             body: '21.5°C',
           }),
@@ -2774,7 +2775,7 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(intentCaptor2);
         await waitUntilStable(() => intentCaptor2.getValues().length);
         expect(intentCaptor2.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
             body: '20°C',
           }),
@@ -2805,7 +2806,7 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor);
         await waitUntilStable(() => intentCaptor.getValues().length);
         expect(intentCaptor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: null,
           }),
@@ -2836,7 +2837,7 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor);
         await waitUntilStable(() => intentCaptor.getValues().length);
         expect(intentCaptor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: 0,
           }),
@@ -2864,7 +2865,7 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$<string>({type: 'temperature', qualifier: {room: 'livingroom'}}).subscribe(intentCaptor);
         await waitUntilStable(() => intentCaptor.getValues().length);
         expect(intentCaptor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '22°C',
           }),
@@ -2934,13 +2935,13 @@ describe('Messaging', () => {
 
         await waitUntilStable(() => intentCaptor1.getValues().length);
         expect(intentCaptor1.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '25°C',
           }),
         ]);
         expect(intentCaptor2.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '25°C',
           }),
@@ -2954,7 +2955,7 @@ describe('Messaging', () => {
         // Expect subscriber 1 not to receive the intent again
         await waitUntilStable(() => intentCaptor1.getValues().length);
         expect(intentCaptor1.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '25°C',
           }),
@@ -2962,7 +2963,7 @@ describe('Messaging', () => {
         // Expect subscriber 2 not to receive the intent again
         await waitUntilStable(() => intentCaptor2.getValues().length);
         expect(intentCaptor2.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '25°C',
           }),
@@ -2970,7 +2971,7 @@ describe('Messaging', () => {
         // Expect subscriber 3 to receive the retained intent
         await waitUntilStable(() => intentCaptor3.getValues().length);
         expect(intentCaptor3.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '25°C',
           }),
@@ -2978,7 +2979,7 @@ describe('Messaging', () => {
         // Expect subscriber 4 to receive the retained intent
         await waitUntilStable(() => intentCaptor4.getValues().length);
         expect(intentCaptor4.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '25°C',
           }),
@@ -3011,10 +3012,10 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$<string>({type: 'temperature'}).subscribe(intentCaptor);
         await waitUntilStable(() => intentCaptor.getValues().length);
         expect(intentCaptor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map()},
             body: '22°C',
-            headers: jasmine.mapContaining(new Map()
+            headers: mapContaining(new Map()
               .set('room', 'livingroom')
               .set(MessageHeaders.AppSymbolicName, 'host-app')
               .set(MessageHeaders.ClientId, senderClientId),
@@ -3079,22 +3080,22 @@ describe('Messaging', () => {
         // Expect app1 to receive retained intent sent by app 1
         await waitUntilStable(() => intentApp1Captor.getValues().length);
         expect(intentApp1Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '20°C',
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
         ]);
 
         // Expect app2 to receive retained intent sent by app 2
         await waitUntilStable(() => intentApp2Captor.getValues().length);
         expect(intentApp2Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '21°C',
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
         ]);
       }, 10_000);
@@ -3161,22 +3162,22 @@ describe('Messaging', () => {
         // Expect app1 to receive retained intent sent by app 2
         await waitUntilStable(() => intentApp1Captor.getValues().length);
         expect(intentApp1Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '21°C',
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
         ]);
 
         // Expect app2 to receive retained intent sent by app 2
         await waitUntilStable(() => intentApp2Captor.getValues().length);
         expect(intentApp2Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '21°C',
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
         ]);
       }, 10_000);
@@ -3193,7 +3194,7 @@ describe('Messaging', () => {
                   {type: 'temperature', qualifier: {room: 'livingroom'}, private: true},
                 ],
                 intentions: [
-                  {type: 'temperature', qualifier: {room: 'livingroom'}},
+                  {type: 'temperature'},
                 ],
               }).serve(),
             },
@@ -3205,7 +3206,7 @@ describe('Messaging', () => {
                   {type: 'temperature', qualifier: {room: 'livingroom'}, private: true},
                 ],
                 intentions: [
-                  {type: 'temperature', qualifier: {room: 'livingroom'}},
+                  {type: 'temperature'},
                 ],
               }).serve(),
             },
@@ -3243,22 +3244,22 @@ describe('Messaging', () => {
         // Expect app1 to receive retained intent sent by app 1
         await waitUntilStable(() => intentApp1Captor.getValues().length);
         expect(intentApp1Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining<IntentMessage>({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '20°C',
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'})}),
           }),
         ]);
 
         // Expect app2 to receive retained intent sent by app 2
         await waitUntilStable(() => intentApp2Captor.getValues().length);
         expect(intentApp2Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining<IntentMessage>({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '21°C',
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'})}),
           }),
         ]);
       }, 10_000);
@@ -3339,22 +3340,22 @@ describe('Messaging', () => {
         // Expect app1 to receive retained intent sent by app 1
         await waitUntilStable(() => intentApp1Captor.getValues().length);
         expect(intentApp1Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining<IntentMessage>({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '20°C',
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'})}),
           }),
         ]);
 
         // Expect app2 to receive retained intent sent by app 3
         await waitUntilStable(() => intentApp2Captor.getValues().length);
         expect(intentApp2Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining<IntentMessage>({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '22°C',
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'})}),
           }),
         ]);
       }, 10_000);
@@ -3427,11 +3428,11 @@ describe('Messaging', () => {
         // Expect app2 to still receive retained intent sent by app 2
         await waitUntilStable(() => intentApp2Captor.getValues().length);
         expect(intentApp2Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining<IntentMessage>({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '21°C',
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'})}),
           }),
         ]);
       });
@@ -3504,11 +3505,11 @@ describe('Messaging', () => {
         // Expect app2 to still receive retained intent sent by app 2
         await waitUntilStable(() => intentApp2Captor.getValues().length);
         expect(intentApp2Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining<IntentMessage>({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '21°C',
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'})}),
           }),
         ]);
       });
@@ -3557,11 +3558,11 @@ describe('Messaging', () => {
         // Expect app1 to receive retained intent
         await waitUntilStable(() => intentApp1Captor.getValues().length);
         expect(intentApp1Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
             body: '20°C',
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'})}),
           }),
         ]);
 
@@ -3597,7 +3598,7 @@ describe('Messaging', () => {
 
         // Expect the request not to error.
         await waitFor(100);
-        expect(responseCaptor.hasErrored()).toBeFalse();
+        expect(responseCaptor.hasErrored()).toBe(false);
       });
 
       it('should error if no application provides a fulfilling capability', async () => {
@@ -3619,7 +3620,7 @@ describe('Messaging', () => {
 
         // Expect the request to error.
         await responseCaptor.waitUntilCompletedOrErrored();
-        expect(responseCaptor.hasErrored()).toBeTrue();
+        expect(responseCaptor.hasErrored()).toBe(true);
         expect(responseCaptor.getError()).toMatch(/NullProviderError/);
       });
 
@@ -3705,7 +3706,7 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$({type: 'temperature'}).subscribe(requestCaptor);
         await requestCaptor.waitUntilEmitCount(1);
         expect(requestCaptor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'basement')},
             body: '18°C',
           }),
@@ -3770,7 +3771,7 @@ describe('Messaging', () => {
           latch.release();
           return replier$;
         });
-        await latch.whenRelesed;
+        await latch.whenReleased;
         replier$.next('20°C');
 
         // Expect the response to be received.
@@ -3782,7 +3783,7 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: '*'}}).subscribe(requestCaptor1);
         await requestCaptor1.waitUntilEmitCount(1);
         expect(requestCaptor1.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
           }),
         ]);
@@ -3794,12 +3795,12 @@ describe('Messaging', () => {
         await responseCaptor.waitUntilEmitCount(2);
         expect(responseCaptor.getValues()).toEqual(['20°C', '21°C']);
 
-        // Expect the retained intentrequest still to be received.
+        // Expect the retained intent request still to be received.
         const requestCaptor2 = new ObserveCaptor();
         Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: '*'}}).subscribe(requestCaptor2);
         await waitUntilStable(() => requestCaptor2.getValues().length);
         expect(requestCaptor2.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
           }),
         ]);
@@ -3810,7 +3811,7 @@ describe('Messaging', () => {
         // Expect the communication to be terminated.
         await responseCaptor.waitUntilCompletedOrErrored();
         expect(responseCaptor.getValues()).toEqual(['20°C', '21°C']);
-        expect(responseCaptor.hasCompleted()).toBeTrue();
+        expect(responseCaptor.hasCompleted()).toBe(true);
 
         // Expect the retained intent request to be deleted.
         const requestCaptor3 = new ObserveCaptor();
@@ -3843,7 +3844,7 @@ describe('Messaging', () => {
         Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(requestCaptor1);
         await waitUntilStable(() => requestCaptor1.getValues().length);
         expect(requestCaptor1.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()},
           }),
         ]);
@@ -3895,7 +3896,7 @@ describe('Messaging', () => {
         const requestCaptor1 = new ObserveCaptor();
         Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: 'kitchen'}}).subscribe(requestCaptor1);
         await requestCaptor1.waitUntilEmitCount(1);
-        expect(requestCaptor1.getValues()).toEqual([jasmine.objectContaining<IntentMessage>({intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()}})]);
+        expect(requestCaptor1.getValues()).toEqual([expect.objectContaining({intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()}})]);
 
         // Unsubscribe the requestor.
         subscription.unsubscribe();
@@ -3936,7 +3937,7 @@ describe('Messaging', () => {
         const requestCaptor = new ObserveCaptor();
         Beans.get(IntentClient).observe$({type: 'temperature', qualifier: {room: '*'}}).subscribe(requestCaptor);
         await requestCaptor.waitUntilEmitCount(2);
-        expect(requestCaptor.getValues()).toHaveSize(2);
+        expect(requestCaptor.getValues()).toHaveLength(2);
       });
 
       it('should delete retained intent request(s) when unregistering associated capability', async () => {
@@ -4017,11 +4018,11 @@ describe('Messaging', () => {
 
         // Expect the retained intent request to be received in app 1.
         await requestCaptorApp1.waitUntilEmitCount(1);
-        expect(requestCaptorApp1.getValues()).toEqual([jasmine.objectContaining<IntentMessage>({intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()}})]);
+        expect(requestCaptorApp1.getValues()).toEqual([expect.objectContaining({intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()}})]);
 
         // Expect the retained intent request to be received in app 2.
         await requestCaptorApp2.waitUntilEmitCount(1);
-        expect(requestCaptorApp2.getValues()).toEqual([jasmine.objectContaining<IntentMessage>({intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()}})]);
+        expect(requestCaptorApp2.getValues()).toEqual([expect.objectContaining({intent: {type: 'temperature', qualifier: {room: 'kitchen'}, params: new Map()}})]);
       }, 10_000);
 
       it('should receive intent requests per capability which the application is qualified to receive (1/4)', async () => {
@@ -4091,31 +4092,31 @@ describe('Messaging', () => {
 
         // Expect app1 to receive retained intent requests
         await waitUntilStable(() => intentApp1Captor.getValues().length);
-        expect(intentApp1Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<IntentMessage>({
+        expect(intentApp1Captor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
         ]));
 
         // Expect app2 to receive retained intent requests
         await waitUntilStable(() => intentApp2Captor.getValues().length);
         expect(intentApp2Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'basement')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
         ]);
       }, 10_000);
@@ -4193,51 +4194,51 @@ describe('Messaging', () => {
 
         // Expect app1 to receive retained intent requests
         await waitUntilStable(() => intentApp1Captor.getValues().length);
-        expect(intentApp1Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<IntentMessage>({
+        expect(intentApp1Captor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'basement')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
         ]));
 
         // Expect app2 to receive retained intent requests
         await waitUntilStable(() => intentApp2Captor.getValues().length);
-        expect(intentApp2Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<IntentMessage>({
+        expect(intentApp2Captor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'basement')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
         ]));
       }, 10_000);
@@ -4315,31 +4316,31 @@ describe('Messaging', () => {
 
         // Expect app1 to receive retained intent requests
         await waitUntilStable(() => intentApp1Captor.getValues().length);
-        expect(intentApp1Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<IntentMessage>({
+        expect(intentApp1Captor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
         ]));
 
         // Expect app2 to receive retained intent requests
         await waitUntilStable(() => intentApp2Captor.getValues().length);
-        expect(intentApp2Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<IntentMessage>({
+        expect(intentApp2Captor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'basement')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
         ]));
       }, 10_000);
@@ -4444,46 +4445,46 @@ describe('Messaging', () => {
 
         // Expect app1 to receive retained intent requests
         await waitUntilStable(() => intentApp1Captor.getValues().length);
-        expect(intentApp1Captor.getValues()).toEqual(jasmine.arrayWithExactContents([
-          jasmine.objectContaining<IntentMessage>({
+        expect(intentApp1Captor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
         ]));
 
         // Expect app2 to receive retained intent requests
         await waitUntilStable(() => intentApp2Captor.getValues().length);
-        expect(intentApp2Captor.getValues()).toEqual(jasmine.arrayContaining([
-          jasmine.objectContaining<IntentMessage>({
+        expect(intentApp2Captor.getValues()).toEqual(arrayWithExactContents([
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'basement')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app2')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'basement')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'kitchen')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', params: new Map().set('room', 'livingroom')},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app2'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app3')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app2'}) as Metadata}) as Capability,
           }),
         ]));
       }, 10_000);
@@ -4531,10 +4532,10 @@ describe('Messaging', () => {
         // Expect app1 to receive retained intent
         await waitUntilStable(() => intentApp1Captor.getValues().length);
         expect(intentApp1Captor.getValues()).toEqual([
-          jasmine.objectContaining<IntentMessage>({
+          expect.objectContaining({
             intent: {type: 'temperature', qualifier: {room: 'livingroom'}, params: new Map()},
-            headers: jasmine.mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
-            capability: jasmine.objectContaining({metadata: jasmine.objectContaining({appSymbolicName: 'app1'})}),
+            headers: mapContaining(new Map().set(MessageHeaders.AppSymbolicName, 'app1')),
+            capability: expect.objectContaining({metadata: expect.objectContaining({appSymbolicName: 'app1'}) as Metadata}) as Capability,
           }),
         ]);
 
@@ -4560,12 +4561,39 @@ describe('Messaging', () => {
 function expectMessage(actual: TopicMessage): {toMatch: (expected: TopicMessage) => void} {
   return {
     toMatch: (expected: TopicMessage): void => {
-      expect(actual).toEqual(jasmine.objectContaining({
+      expect(actual).toEqual(expect.objectContaining({
         ...expected,
-        headers: jasmine.mapContaining(expected.headers),
+        headers: mapContaining(expected.headers),
       }));
     },
   };
+}
+
+function mapContaining<K, V>(expectedEntries: Map<K, V>): Map<K, V> {
+  return {
+    asymmetricMatch: (actual: unknown): boolean => {
+      if (!(actual instanceof Map)) {
+        return false;
+      }
+      for (const [key, expectedValue] of expectedEntries) {
+        if (!actual.has(key)) {
+          return false;
+        }
+        try {
+          expect(actual.get(key)).toEqual(expectedValue);
+        }
+        catch {
+          return false;
+        }
+      }
+      return true;
+    },
+  } as unknown as Map<K, V>;
+}
+
+interface Metadata {
+  appSymbolicName: string;
+  id: string;
 }
 
 type Disposable = () => void;

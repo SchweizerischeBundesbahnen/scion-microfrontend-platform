@@ -26,7 +26,7 @@ describe('StartupProgress', () => {
 
     await MicrofrontendPlatformHost.start({applications: []});
     expect(captor1.getValues()).toEqual([0, 33.33, 88.89, 100]);
-    expect(captor1.hasCompleted()).toBeTrue();
+    expect(captor1.hasCompleted()).toBe(true);
 
     // Stop the platform
     MicrofrontendPlatform.destroy();
@@ -37,7 +37,7 @@ describe('StartupProgress', () => {
 
     await MicrofrontendPlatformHost.start({applications: []});
     expect(captor2.getValues()).toEqual([0, 33.33, 88.89, 100]);
-    expect(captor2.hasCompleted()).toBeTrue();
+    expect(captor2.hasCompleted()).toBe(true);
   });
 
   it('should complete progress Observable if the platform has already been started', async () => {
@@ -48,7 +48,7 @@ describe('StartupProgress', () => {
     const captor = new ObserveCaptor();
     MicrofrontendPlatformHost.startupProgress$.subscribe(captor);
     expect(captor.getValues()).toEqual([100]);
-    expect(captor.hasCompleted()).toBeTrue();
+    expect(captor.hasCompleted()).toBe(true);
   });
 
   it('should not emit progress if not startet yet, report progress during startup, and complete after started', async () => {
@@ -56,23 +56,23 @@ describe('StartupProgress', () => {
     const captor1 = new ObserveCaptor<number>();
     MicrofrontendPlatformHost.startupProgress$.subscribe(captor1);
     expect(captor1.getValues()).toEqual([]); // no emission
-    expect(captor1.hasCompleted()).toBeFalse();
+    expect(captor1.hasCompleted()).toBe(false);
 
     await MicrofrontendPlatformHost.start({applications: []});
     // Expect the progress to be 100% after the platform is started and the Observable to be completed.
     expect(captor1.getLastValue()).toEqual(100);
-    expect(captor1.hasCompleted()).toBeTrue();
+    expect(captor1.hasCompleted()).toBe(true);
 
     MicrofrontendPlatform.destroy();
     // Expect no emission if the platform is not yet started
     const captor2 = new ObserveCaptor<number>();
     MicrofrontendPlatformHost.startupProgress$.subscribe(captor2);
     expect(captor2.getValues()).toEqual([]); // no emission
-    expect(captor2.hasCompleted()).toBeFalse();
+    expect(captor2.hasCompleted()).toBe(false);
 
     await MicrofrontendPlatformHost.start({applications: []});
     // Expect the progress to be 100% after the platform completed startup and the Observable to be completed.
     expect(captor2.getLastValue()).toEqual(100);
-    expect(captor2.hasCompleted()).toBeTrue();
+    expect(captor2.hasCompleted()).toBe(true);
   });
 });
