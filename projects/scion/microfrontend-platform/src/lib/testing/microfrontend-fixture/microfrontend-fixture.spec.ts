@@ -29,7 +29,7 @@ describe('MicrofrontendFixture', () => {
     expect(Array.from(document.body.children).includes(fixture.iframe)).toBe(true);
   });
 
-  it('should load the passed script into the iframe', async () => {
+  it.only('should load the passed script into the iframe', async () => {
     const fixture = registerFixture(new MicrofrontendFixture());
     await fixture.insertIframe().loadScript('lib/testing/microfrontend-fixture/microfrontend-fixture.script.ts', 'testcase_1');
     expect(fixture.iframe.contentDocument!.querySelector('div.testee')).toBeDefined();

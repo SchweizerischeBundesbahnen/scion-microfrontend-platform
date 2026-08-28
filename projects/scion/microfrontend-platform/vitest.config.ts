@@ -13,9 +13,33 @@
 // https://vitest.dev/guide/projects
 
 import {defineConfig} from 'vitest/config';
+import {existsSync, readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
 
 export default defineConfig({
-  assetsInclude: '**/*.script.js', // TODO test me
+  plugins: [
+    {
+      // Serves compiled *.script.js files (built by esbuild to dist/lib/) at /lib/ so MicrofrontendFixture can load them into iframes.
+      // The esbuild build command outputs scripts to dist/lib/, preserving the path structure from src/lib/.
+      // MicrofrontendFixture generates HTML that loads scripts via <script src="http://localhost:PORT/lib/...">.
+      name: 'serve-esbuild-scripts',
+      configureServer(server: import('vite').ViteDevServer): void {
+        server.middlewares.use((req, res, next) => {
+          const url: string | undefined = req.url;
+          if (url?.includes('.script.js')) {
+            const filePath = resolve(process.cwd(), 'dist', url.split('?')[0]!.slice(1));
+            if (existsSync(filePath)) {
+              res.setHeader('Content-Type', 'application/javascript');
+              res.setHeader('Cache-Control', 'no-cache');
+              res.end(readFileSync(filePath));
+              return;
+            }
+          }
+          next();
+        });
+      },
+    },
+  ],
   test: {
     exclude: ['**/spec.util.spec.ts'],
     globals: true, // skip explicit imports in tests for global APIs https://vitest.dev/config/globals

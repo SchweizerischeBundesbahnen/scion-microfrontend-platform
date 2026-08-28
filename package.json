@@ -24,12 +24,10 @@
     "e2e-zone": "run-s \"**:e2e-zone:run -- {@}\" --",
     "e2e-zone:headless": "cross-env HEADLESS=true run-s \"**:e2e-zone:run -- {@}\" --",
     "postinstall": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright install chromium",
-
     "copy-src": "run-p copy-src:*",
     "copy-src:scion-toolkit": "cpx --clean --watch --verbose ../scion-toolkit/projects/scion/toolkit/** ./src-lib/@scion/toolkit",
     "copy-src:scion-components": "cpx --clean --watch --verbose ../scion-toolkit/projects/scion/components/** ./src-lib/@scion/components",
     "copy-src:scion-components.internal": "cpx --clean --watch --verbose ../scion-toolkit/projects/scion/components.internal/** ./src-lib/@scion/components.internal",
-
     "microfrontend-platform-testing-scripts:build": "esbuild \"projects/scion/microfrontend-platform/src/lib/**/*.script.ts\" --format=iife --global-name=esbuild_script --outdir=dist/lib --tsconfig=projects/scion/microfrontend-platform/tsconfig.script.spec.json --bundle",
     "microfrontend-platform:build": "ng build --configuration production @scion/microfrontend-platform",
     "microfrontend-platform:lint": "ng lint @scion/microfrontend-platform",
@@ -43,7 +41,6 @@
     "microfrontend-platform:adoc:copy:prism-theme": "cp ./node_modules/prismjs/themes/prism.min.css dist/microfrontend-platform-developer-guide/prism.min.css",
     "microfrontend-platform:adoc:copy:images": "cp -r ./docs/adoc/microfrontend-platform-developer-guide/images dist/microfrontend-platform-developer-guide",
     "microfrontend-platform:adoc:copy:favicon": "cp ./resources/branding/favicon.ico dist/microfrontend-platform-developer-guide",
-
     "microfrontend-platform-testing-app:build": "ng build microfrontend-platform-testing-app --configuration=development",
     "microfrontend-platform-testing-app-vercel:build": "ng build microfrontend-platform-testing-app --configuration=production-vercel",
     "microfrontend-platform-testing-app-ci:build": "ng build microfrontend-platform-testing-app --configuration=production-ci",
@@ -65,16 +62,13 @@
     "microfrontend-platform-testing-app:4203:dist-serve-zone": "serve dist/microfrontend-platform-testing-app-ci-zone/browser -p 4203 --config ../../../apps/microfrontend-platform-testing-app/vercel-test-server.config.json --no-request-logging",
     "microfrontend-platform-testing-app:4204:serve-zone": "ng serve microfrontend-platform-testing-app --configuration=development-zone --port 4204",
     "microfrontend-platform-testing-app:4204:dist-serve-zone": "serve dist/microfrontend-platform-testing-app-ci-zone/browser -p 4204 --config ../../../apps/microfrontend-platform-testing-app/vercel-test-server.config.json --no-request-logging",
-
     "microfrontend-platform-devtools:build": "ng build microfrontend-platform-devtools --configuration=development",
     "microfrontend-platform-devtools-vercel:build": "ng build microfrontend-platform-devtools --configuration=production-vercel",
     "microfrontend-platform-devtools:lint": "ng lint microfrontend-platform-devtools",
     "microfrontend-platform-devtools:serve": "ng serve microfrontend-platform-devtools --port 5200",
-
     "changelog": "run-p changelog:*",
     "changelog:full": "conventional-changelog -p angular -i CHANGELOG.md -s && markdown-include docs/site/changelog/changelog.template.json",
     "changelog:latest": "conventional-changelog -p angular -o CHANGELOG_LATEST.md",
-
     "e2e:run": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 playwright test --config projects/scion/microfrontend-platform.e2e/playwright.config.ts",
     "e2e:debug": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 PWDEBUG=1 playwright test --config projects/scion/microfrontend-platform.e2e/playwright.config.ts",
     "e2e:lint": "ng lint @scion/microfrontend-platform.e2e",
@@ -106,6 +100,7 @@
     "@playwright/test": "1.62.1",
     "@smarttools/eslint-plugin-rxjs": "1.0.22",
     "@stylistic/eslint-plugin": "5.10.0",
+    "@types/node": "^26.4.0",
     "@typescript-eslint/eslint-plugin": "8.62.0",
     "@typescript-eslint/parser": "8.62.0",
     "@vitest/browser-playwright": "4.1.11",
