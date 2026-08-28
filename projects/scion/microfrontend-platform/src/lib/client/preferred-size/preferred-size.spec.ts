@@ -19,12 +19,10 @@ describe('PreferredSize', () => {
 
   const disposables = new Set<Disposable>();
 
-  beforeEach(async () => {
-    await MicrofrontendPlatform.destroy();
-  });
+  beforeEach(() => MicrofrontendPlatform.destroy());
 
-  afterEach(async () => {
-    await MicrofrontendPlatform.destroy();
+  afterEach(() => {
+    MicrofrontendPlatform.destroy();
     disposables.forEach(disposable => disposable());
   });
 

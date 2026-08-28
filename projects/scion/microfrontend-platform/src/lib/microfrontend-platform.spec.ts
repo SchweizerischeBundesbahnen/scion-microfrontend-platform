@@ -13,13 +13,13 @@ import {MicrofrontendPlatformHost} from './host/microfrontend-platform-host';
 import {MicrofrontendPlatformClient} from './client/microfrontend-platform-client';
 import {waitFor} from './testing/spec.util.spec';
 import {PlatformState} from './platform-state';
-import {Beans} from '@scion/toolkit/bean-manager';
+import {Beans, PreDestroy} from '@scion/toolkit/bean-manager';
 import {PlatformPropertyService} from './platform-property-service';
 
 describe('MicrofrontendPlatform', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  beforeEach(() => MicrofrontendPlatform.destroy());
+  afterEach(() => MicrofrontendPlatform.destroy());
 
   it('should report that the app is not connected to the platform host when the host platform is not found', async () => {
     const startup = MicrofrontendPlatformClient.connect('client-app', {brokerDiscoverTimeout: 250});
@@ -241,6 +241,33 @@ describe('MicrofrontendPlatform', () => {
       .set('prop2', 'PROP2')
       .set('prop3', 'PROP3'),
     );
+  });
+
+  it('should shutdown platform synchronously', async () => {
+    // GIVEN
+    const log: string[] = [];
+
+    class Bean implements PreDestroy {
+      public preDestroy(): void {
+        log.push(`bean destroyed [state=${MicrofrontendPlatform.state}]`);
+      }
+    }
+
+    Beans.register(Bean, {eager: true});
+
+    await MicrofrontendPlatform.startPlatform();
+    MicrofrontendPlatform.onState(PlatformState.Stopping, () => log.push(`microfrontend platform stopping [state=${MicrofrontendPlatform.state}]`));
+    MicrofrontendPlatform.onState(PlatformState.Stopped, () => log.push(`microfrontend platform stopped [state=${MicrofrontendPlatform.state}]`));
+
+    // WHEN
+    MicrofrontendPlatform.destroy();
+
+    // THEN
+    expect(log).toEqual([
+      `microfrontend platform stopping [state=${PlatformState.Stopping}]`,
+      `bean destroyed [state=${PlatformState.Stopping}]`,
+      `microfrontend platform stopped [state=${PlatformState.Stopped}]`,
+    ]);
   });
 });
 

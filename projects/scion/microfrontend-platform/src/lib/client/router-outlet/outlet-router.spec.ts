@@ -17,8 +17,8 @@ import {take} from 'rxjs/operators';
 
 describe('OutletRouter', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  beforeEach(() => MicrofrontendPlatform.destroy());
+  afterEach(() => MicrofrontendPlatform.destroy());
 
   it('should support navigating to blob URL', async () => {
     await MicrofrontendPlatformHost.start({applications: []});

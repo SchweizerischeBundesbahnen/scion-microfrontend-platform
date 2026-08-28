@@ -25,11 +25,11 @@ const capabilityIdExtractFn = (capability: Capability): string => capability.met
 
 describe('ManifestRegistry', () => {
 
-  beforeEach(async () => {
-    await MicrofrontendPlatform.destroy();
+  beforeEach(() => {
+    MicrofrontendPlatform.destroy();
     installLoggerSpies();
   });
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  afterEach(() => MicrofrontendPlatform.destroy());
 
   describe('Capability Registration', () => {
 

@@ -14,19 +14,19 @@ import {MicrofrontendPlatform, MicrofrontendPlatformHost, MicrofrontendPlatformS
 
 {
   // tag::platform-lifecycle:when-state[]
-  MicrofrontendPlatform.whenState(PlatformState.Starting).then(() => {
+  MicrofrontendPlatform.onState(PlatformState.Starting, () => {
     // invoked when the platform is about to start.
   });
 
-  MicrofrontendPlatform.whenState(PlatformState.Started).then(() => {
+  MicrofrontendPlatform.onState(PlatformState.Started, () => {
     // invoked after the platform is started
   });
 
-  MicrofrontendPlatform.whenState(PlatformState.Stopping).then(() => {
+  MicrofrontendPlatform.onState(PlatformState.Stopping, () => {
     // invoked when the platform is about to stop.
   });
 
-  MicrofrontendPlatform.whenState(PlatformState.Stopped).then(() => {
+  MicrofrontendPlatform.onState(PlatformState.Stopped, () => {
     // invoked when the platform is stopped.
   });
   // end::platform-lifecycle:when-state[]
@@ -46,16 +46,16 @@ import {MicrofrontendPlatform, MicrofrontendPlatformHost, MicrofrontendPlatformS
 
 {
   // tag::platform-lifecycle:microfrontend-platform-stopper[]
-  class OnUnloadMicrofrontendPlatformStopper implements MicrofrontendPlatformStopper {
+  class CustomMicrofrontendPlatformStopper implements MicrofrontendPlatformStopper {
 
     constructor() {
-      // Destroys the platform when the document is about to be unloaded.
-      window.addEventListener('unload', () => MicrofrontendPlatform.destroy(), {once: true});
+      // Destroys the platform before the document is unloaded.
+      window.addEventListener('beforeunload', () => MicrofrontendPlatform.destroy());
     }
   }
 
   // Registers custom platform stopper.
-  Beans.register(MicrofrontendPlatformStopper, {useClass: OnUnloadMicrofrontendPlatformStopper});
+  Beans.register(MicrofrontendPlatformStopper, {useClass: CustomMicrofrontendPlatformStopper});
   // end::platform-lifecycle:microfrontend-platform-stopper[]
 }
 

@@ -19,8 +19,8 @@ import {ManifestFixture} from '../testing/manifest-fixture/manifest-fixture';
 
 describe('AppInstaller', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  beforeEach(() => MicrofrontendPlatform.destroy());
+  afterEach(() => MicrofrontendPlatform.destroy());
 
   it('should fetch and register applications', async () => {
     // mock {HttpClient}

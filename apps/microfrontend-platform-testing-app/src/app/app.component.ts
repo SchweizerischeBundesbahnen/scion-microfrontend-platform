@@ -7,8 +7,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-import {afterEveryRender, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, NgZone} from '@angular/core';
-import {ContextService, MicrofrontendPlatform, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
+import {afterEveryRender, ChangeDetectionStrategy, Component, ElementRef, inject, NgZone} from '@angular/core';
+import {ContextService, OUTLET_CONTEXT, OutletContext} from '@scion/microfrontend-platform';
 import {Beans} from '@scion/toolkit/bean-manager';
 import {fromEvent, merge, withLatestFrom} from 'rxjs';
 import {subscribeIn} from '@scion/toolkit/operators';
@@ -28,7 +28,6 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 export class AppComponent {
 
   private readonly _zone = inject(NgZone);
-  private readonly _destroyRef = inject(DestroyRef);
   private readonly _host = inject(ElementRef).nativeElement as HTMLElement;
   private readonly _outletContext = Beans.get(ContextService).lookup<OutletContext>(OUTLET_CONTEXT);
 
@@ -38,8 +37,6 @@ export class AppComponent {
     afterEveryRender(() => {
       this._host.setAttribute('data-last-render', Date.now().toString());
     });
-
-    this._destroyRef.onDestroy(() => void MicrofrontendPlatform.destroy()); // Platform is started in {@link PlatformInitializer}
   }
 
   // TODO [Angular 23] Remove if cast is not required anymore. See https://github.com/angular/angular/issues/40778

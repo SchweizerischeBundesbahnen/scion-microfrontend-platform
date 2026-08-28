@@ -29,7 +29,7 @@ describe('StartupProgress', () => {
     expect(captor1.hasCompleted()).toBeTrue();
 
     // Stop the platform
-    await MicrofrontendPlatform.destroy();
+    MicrofrontendPlatform.destroy();
 
     // Start the platform again
     const captor2 = new ObserveCaptor();
@@ -63,7 +63,7 @@ describe('StartupProgress', () => {
     expect(captor1.getLastValue()).toEqual(100);
     expect(captor1.hasCompleted()).toBeTrue();
 
-    await MicrofrontendPlatform.destroy();
+    MicrofrontendPlatform.destroy();
     // Expect no emission if the platform is not yet started
     const captor2 = new ObserveCaptor<number>();
     MicrofrontendPlatformHost.startupProgress$.subscribe(captor2);

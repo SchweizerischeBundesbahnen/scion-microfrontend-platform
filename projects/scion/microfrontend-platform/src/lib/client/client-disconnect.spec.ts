@@ -22,13 +22,13 @@ describe('MicrofrontendPlatform', () => {
 
   const disposables = new Set<Disposable>();
 
-  beforeEach(async () => {
-    await MicrofrontendPlatform.destroy();
+  beforeEach(() => {
+    MicrofrontendPlatform.destroy();
     installLoggerSpies();
   });
 
-  afterEach(async () => {
-    await MicrofrontendPlatform.destroy();
+  afterEach(() => {
+    MicrofrontendPlatform.destroy();
     disposables.forEach(disposable => disposable());
   });
 

@@ -22,7 +22,7 @@ describe('ApplicationRegistry', () => {
   let registry: ApplicationRegistry;
 
   beforeEach(async () => {
-    await MicrofrontendPlatform.destroy();
+    MicrofrontendPlatform.destroy();
     await MicrofrontendPlatform.startPlatform(() => {
       Beans.register(MicrofrontendPlatformConfig);
       Beans.register(ApplicationRegistry);
@@ -32,7 +32,7 @@ describe('ApplicationRegistry', () => {
     });
     registry = Beans.get(ApplicationRegistry);
   });
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  afterEach(() => MicrofrontendPlatform.destroy());
 
   describe('app base URL', () => {
 

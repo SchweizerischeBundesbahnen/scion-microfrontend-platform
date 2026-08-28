@@ -32,13 +32,13 @@ describe('Messaging', () => {
 
   const disposables = new Set<Disposable>();
 
-  beforeEach(async () => {
-    await MicrofrontendPlatform.destroy();
+  beforeEach(() => {
+    MicrofrontendPlatform.destroy();
     installLoggerSpies();
   });
 
-  afterEach(async () => {
-    await MicrofrontendPlatform.destroy();
+  afterEach(() => {
+    MicrofrontendPlatform.destroy();
     disposables.forEach(disposable => disposable());
   });
 
@@ -55,7 +55,7 @@ describe('Messaging', () => {
     await expectEmissions(messageCaptor).toEqual(['A', 'B', 'C']);
   });
 
-  it('should allow publishing a message in the platform\'s `whenState(PlatformState.Stopping)` hook', async () => {
+  it('should allow publishing a message in the platform\'s `onState(PlatformState.Stopping)` hook', async () => {
     await MicrofrontendPlatformHost.start({
       applications: [
         {
@@ -69,7 +69,7 @@ describe('Messaging', () => {
     Beans.get(MessageClient).observe$<string>('client/whenPlatformStateStopping').subscribe(captor);
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-    await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageWhenPlatformStateStopping', {symbolicName: 'client'});
+    await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageOnPlatformStateStopping', {symbolicName: 'client'});
     microfrontendFixture.removeIframe();
     await expectEmissions(captor).toEqual(['message from client']);
   });
@@ -89,48 +89,6 @@ describe('Messaging', () => {
 
     const microfrontendFixture = registerFixture(new MicrofrontendFixture());
     await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageOnBeanPreDestroy', {symbolicName: 'client'});
-    microfrontendFixture.removeIframe();
-    await expectEmissions(captor).toEqual(['message from client']);
-  });
-
-  it('should allow publishing a message in `window.beforeunload` browser hook', async () => {
-    await MicrofrontendPlatformHost.start({
-      applications: [
-        {
-          symbolicName: 'client',
-          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
-        },
-      ],
-    });
-
-    const captor = new ObserveCaptor<TopicMessage<string>, string>(msg => msg.body!);
-    Beans.get(MessageClient).observe$<string>('client/beforeunload').subscribe(captor);
-
-    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-    await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageInBeforeUnload', {symbolicName: 'client'});
-
-    // The browser does not trigger the 'beforeunload' event when removing the iframe.
-    // For that reason, we navigate to another side.
-    microfrontendFixture.setUrl('about:blank');
-    await expectEmissions(captor).toEqual(['message from client']);
-  });
-
-  it('should allow publishing a message in `window.unload` browser hook', async () => {
-    await MicrofrontendPlatformHost.start({
-      applications: [
-        {
-          symbolicName: 'client',
-          manifestUrl: new ManifestFixture({name: 'Client'}).serve(),
-        },
-      ],
-    });
-
-    const captor = new ObserveCaptor<TopicMessage<string>, string>(msg => msg.body!);
-    Beans.get(MessageClient).observe$<string>('client/unload').subscribe(captor);
-
-    const microfrontendFixture = registerFixture(new MicrofrontendFixture());
-    await microfrontendFixture.insertIframe().loadScript('lib/client/messaging/messaging.script.ts', 'sendMessageInUnload', {symbolicName: 'client'});
-
     microfrontendFixture.removeIframe();
     await expectEmissions(captor).toEqual(['message from client']);
   });
@@ -403,7 +361,7 @@ describe('Messaging', () => {
     const captor = new ObserveCaptor();
     Beans.get(MessageClient).observe$('topic').subscribe(captor);
     // WHEN
-    await MicrofrontendPlatform.destroy();
+    MicrofrontendPlatform.destroy();
     // THEN
     expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
     expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
@@ -419,7 +377,7 @@ describe('Messaging', () => {
     Beans.get(MessageClient).request$('topic').subscribe(captor);
     await waitUntilSubscriberCount('topic', 1);
     // WHEN
-    await MicrofrontendPlatform.destroy();
+    MicrofrontendPlatform.destroy();
     // THEN
     expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
     expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
@@ -1067,7 +1025,7 @@ describe('Messaging', () => {
     const captor = new ObserveCaptor();
     Beans.get(MessageClient).subscriberCount$('topic').subscribe(captor);
     // WHEN
-    await MicrofrontendPlatform.destroy();
+    MicrofrontendPlatform.destroy();
     // THEN
     expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
     expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
@@ -1250,7 +1208,7 @@ describe('Messaging', () => {
         .pipe(takeUntilUnsubscribe('nobody-subscribed-to-this-topic'))
         .subscribe(captor);
       // WHEN
-      await MicrofrontendPlatform.destroy();
+      MicrofrontendPlatform.destroy();
       // THEN
       expect(captor.hasCompleted()).withContext('hasCompleted').toBeFalse();
       expect(captor.hasErrored()).withContext('hasErrored').toBeFalse();
