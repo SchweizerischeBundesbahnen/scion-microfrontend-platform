@@ -26,10 +26,10 @@ export async function connectToHost(args: {symbolicName: string}): Promise<void>
   await MicrofrontendPlatformClient.connect(args.symbolicName);
 }
 
-export async function sendMessageWhenPlatformStateStopping(args: {symbolicName: string}): Promise<void> {
+export async function sendMessageOnPlatformStateStopping(args: {symbolicName: string}): Promise<void> {
   await MicrofrontendPlatformClient.connect(args.symbolicName);
-  void MicrofrontendPlatform.whenState(PlatformState.Stopping).then(async () => {
-    await Beans.get(MessageClient).publish(`${args.symbolicName}/whenPlatformStateStopping`, 'message from client');
+  MicrofrontendPlatform.onState(PlatformState.Stopping, () => {
+    void Beans.get(MessageClient).publish(`${args.symbolicName}/whenPlatformStateStopping`, 'message from client');
   });
 }
 
@@ -42,20 +42,6 @@ export async function sendMessageOnBeanPreDestroy(args: {symbolicName: string}):
 
   Beans.register(LifecycleHook, {eager: true});
   await MicrofrontendPlatformClient.connect(args.symbolicName);
-}
-
-export async function sendMessageInBeforeUnload(args: {symbolicName: string}): Promise<void> {
-  await MicrofrontendPlatformClient.connect(args.symbolicName);
-  fromEvent(window, 'beforeunload', {once: true}).subscribe(() => {
-    void Beans.get(MessageClient).publish(`${args.symbolicName}/beforeunload`, 'message from client');
-  });
-}
-
-export async function sendMessageInUnload(args: {symbolicName: string}): Promise<void> {
-  await MicrofrontendPlatformClient.connect(args.symbolicName);
-  fromEvent(window, 'unload', {once: true}).subscribe(() => {
-    void Beans.get(MessageClient).publish(`${args.symbolicName}/unload`, 'message from client');
-  });
 }
 
 export async function subscribeToTopic(args: {symbolicName: string; topic: string; monitorTopicMessageChannel?: boolean}, observer: Observer<TopicMessage>): Promise<void> {

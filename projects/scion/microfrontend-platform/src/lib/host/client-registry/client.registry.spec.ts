@@ -17,8 +17,8 @@ import {ɵApplication, ɵVERSION} from '../../ɵplatform.model';
 
 describe('ClientRegistry', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  beforeEach(() => MicrofrontendPlatform.destroy());
+  afterEach(() => MicrofrontendPlatform.destroy());
 
   it('should register a client by its id', async () => {
     await MicrofrontendPlatformHost.start({applications: []});

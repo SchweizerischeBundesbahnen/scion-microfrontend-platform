@@ -17,8 +17,8 @@ import {IntentSubscribeCommand, MessagingChannel, TopicSubscribeCommand} from '.
 
 describe('BrokerGateway', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  beforeEach(() => MicrofrontendPlatform.destroy());
+  afterEach(() => MicrofrontendPlatform.destroy());
 
   it('should not complete `requestReply$` Observable upon platform shutdown (as per API)', async () => {
     await MicrofrontendPlatformHost.start({applications: []});
@@ -28,7 +28,7 @@ describe('BrokerGateway', () => {
     const message: TopicMessage = {topic: 'topic', headers: new Map()};
     Beans.get(BrokerGateway).requestReply$(MessagingChannel.Topic, message).subscribe(captor);
     // WHEN
-    await MicrofrontendPlatform.destroy();
+    MicrofrontendPlatform.destroy();
     // THEN
     expect(captor.hasCompleted()).toBeFalse();
     expect(captor.hasErrored()).toBeFalse();
@@ -48,7 +48,7 @@ describe('BrokerGateway', () => {
     };
     Beans.get(BrokerGateway).subscribe$(descriptor).subscribe(captor);
     // WHEN
-    await MicrofrontendPlatform.destroy();
+    MicrofrontendPlatform.destroy();
     // THEN
     expect(captor.hasCompleted()).toBeFalse();
     expect(captor.hasErrored()).toBeFalse();
@@ -68,7 +68,7 @@ describe('BrokerGateway', () => {
     };
     Beans.get(BrokerGateway).subscribe$(descriptor).subscribe(captor);
     // WHEN
-    await MicrofrontendPlatform.destroy();
+    MicrofrontendPlatform.destroy();
     // THEN
     expect(captor.hasCompleted()).toBeFalse();
     expect(captor.hasErrored()).toBeFalse();

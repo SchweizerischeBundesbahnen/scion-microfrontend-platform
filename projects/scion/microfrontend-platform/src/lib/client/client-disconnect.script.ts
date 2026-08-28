@@ -32,7 +32,7 @@ export async function connectToHost(args: {symbolicName: string; disconnectOnUnl
 export async function connectToHostThenStopPlatform(args: {symbolicName: string}, observer: Observer<string>): Promise<void> {
   await MicrofrontendPlatformClient.connect(args.symbolicName);
   observer.next(Beans.get(ɵBrokerGateway).session!.clientId);
-  await MicrofrontendPlatform.destroy();
+  MicrofrontendPlatform.destroy();
 }
 
 export async function connectToHostThenLocationHref(args: {symbolicName: string; locationHref: string}, observer: Observer<string>): Promise<void> {

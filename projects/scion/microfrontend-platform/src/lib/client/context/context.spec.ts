@@ -16,8 +16,8 @@ import {ObserveCaptor} from '@scion/toolkit/testing';
 
 describe('Context', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  beforeEach(() => MicrofrontendPlatform.destroy());
+  afterEach(() => MicrofrontendPlatform.destroy());
 
   it('should not complete the Observable when looking up context values from inside the host app (no context)', async () => {
     await MicrofrontendPlatformHost.start({applications: []});

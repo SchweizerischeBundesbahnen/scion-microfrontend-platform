@@ -14,6 +14,7 @@
     "before-push": "run-s build lint \"test:headless -- --no-watch\" e2e:headless",
     "build": "run-s **:*:build **:*:typedoc",
     "start": "run-p -r microfrontend-platform-testing-app:*:serve microfrontend-platform-devtools:serve",
+    "start-zone": "run-p -r microfrontend-platform-testing-app:*:serve-zone microfrontend-platform-devtools:serve",
     "lint": "run-p **:*:lint",
     "test": "run-p \"microfrontend-platform-testing-scripts:build -- --watch\" \"**:*:test\"",
     "test:headless": "cross-env HEADLESS=true run-s test",

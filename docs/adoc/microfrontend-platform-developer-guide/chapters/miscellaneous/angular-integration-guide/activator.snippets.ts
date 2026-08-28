@@ -31,7 +31,7 @@ export class ActivatorModule {
 
   // tag::activator-module-using-resolver[]
   constructor() {
-    MicrofrontendPlatform.whenState(PlatformState.Started).then(() => {
+    MicrofrontendPlatform.onState(PlatformState.Started, () => {
       // Perform initialization tasks such as installing message handlers.
     });
   }

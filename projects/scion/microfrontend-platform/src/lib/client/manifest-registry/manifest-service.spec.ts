@@ -24,8 +24,8 @@ const manifestObjectIdsExtractFn = (manifestObjects: Array<Capability | Intentio
 
 describe('ManifestService', () => {
 
-  beforeEach(async () => await MicrofrontendPlatform.destroy());
-  afterEach(async () => await MicrofrontendPlatform.destroy());
+  beforeEach(() => MicrofrontendPlatform.destroy());
+  afterEach(() => MicrofrontendPlatform.destroy());
 
   describe('Application', () => {
     it('should return applications', async () => {
