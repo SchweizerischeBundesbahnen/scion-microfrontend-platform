@@ -87,7 +87,7 @@
     "@angular/animations": "22.0.4",
     "@angular/cdk": "22.0.2",
     "@angular/common": "22.0.4",
-    "@angular/compiler": "22.0.4",
+    "@angular/compiler": "22.1.0",
     "@angular/core": "22.0.4",
     "@angular/forms": "22.0.4",
     "@angular/platform-browser": "22.0.4",
